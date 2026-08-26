@@ -25,7 +25,7 @@ async function verifyReleaseEnvelope(envelope) {
   return payload;
 }
 
-export const DEFAULT_UPDATE_FEED_URL = 'https://raw.githubusercontent.com/rhashiki/lovable-decrypter-extension/main/updates/latest.json';
+export const DEFAULT_UPDATE_FEED_URL = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-release-feed';
 
 export async function checkUpdates({ currentVersion, updateFeedUrl = '' }) {
   let browser = null;
@@ -43,13 +43,13 @@ export async function checkUpdates({ currentVersion, updateFeedUrl = '' }) {
       currentVersion,
       browser,
       feedConfigured: true,
-      feedSource: configuredFeed ? 'custom' : 'github-default',
+      feedSource: configuredFeed ? 'custom' : 'supabase-default',
       available: browserAvailable || compareVersions(release.version, currentVersion) > 0,
       release
     };
   } catch (error) {
     if (browserAvailable) return { currentVersion, browser, feedConfigured: !!configuredFeed, feedSource: 'browser', available: true, release: null, feedError: error?.message || String(error) };
-    return { currentVersion, browser, feedConfigured: !!configuredFeed, feedSource: configuredFeed ? 'custom' : 'github-default', available: false, release: null, feedError: error?.message || String(error) };
+    return { currentVersion, browser, feedConfigured: !!configuredFeed, feedSource: configuredFeed ? 'custom' : 'supabase-default', available: false, release: null, feedError: error?.message || String(error) };
   }
 }
 
