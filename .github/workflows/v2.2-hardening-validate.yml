@@ -37,6 +37,11 @@ jobs:
           if (blocks.some(block => block.world === 'MAIN')) throw new Error('MAIN-world content scripts are forbidden');
           const scripts = blocks.flatMap(block => block.js || []);
           if (scripts.includes('content/route-probe.js')) throw new Error('Legacy MAIN-world route probe still referenced');
+          const documentStart = blocks.find(block => block.run_at === 'document_start')?.js || [];
+          const guardIndex = documentStart.indexOf('content/credential-ui-guard.js');
+          const contentIndex = documentStart.indexOf('content/content.js');
+          const uiIndex = documentStart.indexOf('ui/ui.js');
+          if (guardIndex < 0 || contentIndex < 0 || uiIndex < 0 || !(guardIndex < contentIndex && contentIndex < uiIndex)) throw new Error('Credential guard must load before runtime and UI');
           for (const file of [...scripts, ...(manifest.background.scripts || []), manifest.background.service_worker, ...(manifest.web_accessible_resources || []).flatMap(x => x.resources || [])].filter(Boolean)) {
             if (!fs.existsSync(file)) throw new Error(`Manifest references missing file: ${file}`);
           }
@@ -56,6 +61,23 @@ jobs:
             'https://*.supabase.co/*'
           ].sort();
           if (JSON.stringify(hosts) !== JSON.stringify(expectedHosts)) throw new Error(`Unexpected host permissions: ${hosts.join(',')}`);
+          NODE
+
+      - name: Shared DOM credential isolation
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const guard = fs.readFileSync('content/credential-ui-guard.js', 'utf8');
+          const runtime = fs.readFileSync('content/content.js', 'utf8');
+          for (const required of [
+            '__LD2_SAVED_CREDENTIAL__',
+            "Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')",
+            'sanitizeHtml(value)',
+            'insertAdjacentHTML',
+            'getCurrentSettings',
+            'resolveSentinels'
+          ]) if (!guard.includes(required)) throw new Error(`Missing credential DOM guard invariant: ${required}`);
+          if (!runtime.includes('LovableDecrypterCredentialGuard') || !runtime.includes('await guard.prepareMessage(message)')) throw new Error('Runtime does not resolve saved credential sentinels');
           NODE
 
       - name: OTA signature and origin invariants
