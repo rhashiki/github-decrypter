@@ -10,8 +10,9 @@ O código-fonte da extensão fica neste repositório. A distribuição estável 
 4. Atualize `.github/RELEASE_TRIGGER` (ou dispare manualmente `release.yml`).
 5. O workflow `release.yml` gera `Lovable-Decrypter-vX.Y.Z.zip`, calcula SHA-256, cria/atualiza a GitHub Release e publica `updates/release.json` em `main`.
 6. A Edge Function Supabase `ld-release-feed` lê o metadata estável, valida versão/URL/SHA-256 e devolve um envelope ECDSA assinado. A extensão só aceita releases verificadas.
+7. Para compatibilidade de upgrade com a v2.1.1, o workflow copia um envelope já assinado pelo `ld-release-feed` para `updates/latest.json`. Assim clientes antigos conseguem descobrir a nova versão sem expor a chave privada ao GitHub Actions.
 
-A chave privada de assinatura permanece no backend/Supabase e nunca deve ser versionada ou exposta no content script.
+A chave privada de assinatura permanece no backend/Supabase e nunca deve ser versionada, enviada ao GitHub Actions ou exposta no content script.
 
 ## Limitação do Chrome
 
