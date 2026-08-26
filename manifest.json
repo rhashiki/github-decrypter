@@ -76,6 +76,7 @@
         "content/cloud-runtime.js",
         "content/composer-bridge.js",
         "content/batch-mode.js",
+        "content/automatic-suggestions.js",
         "content/cloud-ui.js",
         "content/queue-project-context.js",
         "content/queue-executor.js",
