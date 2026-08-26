@@ -35,6 +35,8 @@ jobs:
           if (missing.length) throw new Error(`Missing manifest files: ${missing.join(', ')}`);
           const config = fs.readFileSync('settings/config.js', 'utf8');
           if (!/VERSION\s*=\s*['"]2\.2\.0['"]/.test(config)) throw new Error('settings/config.js version mismatch');
+          const ui = fs.readFileSync('ui/ui.js', 'utf8');
+          if (!ui.includes('const VERSION = chrome.runtime.getManifest().version;')) throw new Error('legacy UI must derive version from manifest');
           console.log(`Manifest OK: ${new Set(refs).size} referenced files present`);
           NODE
 
@@ -45,6 +47,50 @@ jobs:
           while IFS= read -r -d '' file; do
             node --check "$file"
           done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
+
+      - name: Scope Lock behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp core/scope-lock.js /tmp/scope-lock.mjs
+          node --input-type=module <<'NODE'
+          import { evaluateScopeLock, assertScopeLock } from 'file:///tmp/scope-lock.mjs';
+
+          const allowed = bundle => {
+            const result = evaluateScopeLock(bundle);
+            if (!result.allowed) throw new Error(`Expected allowed: ${result.violations.join(' | ')}`);
+            assertScopeLock(bundle);
+          };
+          const blocked = bundle => {
+            const result = evaluateScopeLock(bundle);
+            if (result.allowed) throw new Error('Expected Scope Lock block');
+            let didBlock = false;
+            try { assertScopeLock(bundle); } catch (e) { didBlock = e?.code === 'SCOPE_LOCK_BLOCKED'; }
+            if (!didBlock) throw new Error('assertScopeLock did not throw SCOPE_LOCK_BLOCKED');
+          };
+
+          allowed({
+            command: 'Melhore a responsividade da página inicial',
+            plan: { files: [{ path: 'src/pages/Home.tsx', action: 'update' }] }
+          });
+          allowed({
+            command: 'Crie uma migration SQL no Supabase para adicionar a coluna status',
+            plan: { files: [{ path: 'supabase/migrations/20260826_add_status.sql', action: 'create' }] }
+          });
+          blocked({
+            command: 'Melhore o layout da página inicial',
+            plan: { files: [{ path: 'supabase/migrations/20260826_hidden.sql', action: 'create' }] }
+          });
+          blocked({
+            command: 'Ajuste o formulário de login',
+            plan: { files: [{ path: '.env', action: 'update' }] }
+          });
+          blocked({
+            command: 'Melhore o componente antigo',
+            plan: { files: [{ path: 'src/components/Legacy.tsx', action: 'delete' }] }
+          });
+          console.log('Scope Lock behavior OK');
+          NODE
 
       - name: Safety invariants
         shell: bash
@@ -78,5 +124,3 @@ jobs:
             Lovable-Decrypter-v2.2.0-test.zip
             Lovable-Decrypter-v2.2.0-test.sha256
           if-no-files-found: error
-
-# validation revision 2
