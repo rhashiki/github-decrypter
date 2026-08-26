@@ -1,0 +1,27 @@
+name: Create owner key temp
+
+on:
+  push:
+    branches:
+      - diagnostic-v2.2.1-safe-core
+    paths:
+      - .github/workflows/create-owner-key-temp.yml
+
+permissions:
+  contents: read
+
+jobs:
+  create-key:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate owner key
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-owner-key-bootstrap-temp?k=VGL3jsZylK-YkJF4Xl9SHqiFd4hO9hkMRwtRHOKrDOU' -o owner-key.json
+          node -e "const x=require('./owner-key.json'); if(!x.ok || !x.key) process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owner-key-temp-result
+          path: owner-key.json
+          if-no-files-found: error
