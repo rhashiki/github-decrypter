@@ -54,6 +54,7 @@
         "https://*.lovable.dev/*"
       ],
       "js": [
+        "content/credential-ui-guard.js",
         "content/content.js",
         "ui/ui.js",
         "ui/control-center.js",
