@@ -1,0 +1,40 @@
+name: One-shot v2.2 UI version fix
+
+on:
+  push:
+    branches:
+      - control-center-v2.2.0
+    paths:
+      - .github/workflows/v2.2-fix-ui-version-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: control-center-v2.2.0
+          fetch-depth: 0
+      - name: Replace legacy hardcoded version
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('ui/ui.js')
+          s = p.read_text()
+          old = "const VERSION = '2.1.1';"
+          new = "const VERSION = chrome.runtime.getManifest().version;"
+          if old not in s:
+              raise SystemExit('Expected legacy version marker not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ui/ui.js
+          git commit -m "fix: derive legacy UI version from manifest"
+          git push origin HEAD:control-center-v2.2.0
