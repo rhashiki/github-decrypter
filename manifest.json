@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "AI engineering layer for Lovable projects with signed licenses, Supabase commerce, cloud skills, command queue, encrypted vault and Gemini Free/User-Paid modes.",
   "icons": {
     "16": "assets/icon16.png",
@@ -45,7 +45,7 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.2.0"
+    "default_title": "Lovable Decrypter v2.2.1"
   },
   "content_scripts": [
     {
