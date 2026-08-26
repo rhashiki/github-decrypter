@@ -1,0 +1,9 @@
+*.zip
+*.crx
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+node_modules/
+.DS_Store
