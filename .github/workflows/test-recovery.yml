@@ -1,0 +1,31 @@
+name: Verify recovery source
+
+on:
+  push:
+    branches:
+      - baseline-recovery-test
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify recovery archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(recovery/part*.b64)
+          test ${#parts[@]} -gt 0
+          cat "${parts[@]}" | tr -d '\n\r' | base64 -d > /tmp/recovery.zip
+          echo 'da8468905d4936439da15ef3a7901a50c21dec976ae5ddf867c1e654b12f52a9  /tmp/recovery.zip' | sha256sum -c -
+          rm -rf /tmp/recovered && mkdir -p /tmp/recovered
+          unzip -q /tmp/recovery.zip -d /tmp/recovered
+          echo "VERSION=$(node -p \"require('/tmp/recovered/manifest.json').version\")"
+          sha1sum /tmp/recovered/ai/gemini-agent.js /tmp/recovered/ui/ui.js /tmp/recovered/background/service-worker.js /tmp/recovered/manifest.json
+          node --check /tmp/recovered/ai/gemini-agent.js
+          node --check /tmp/recovered/ui/ui.js
+          node --check /tmp/recovered/background/service-worker.js
