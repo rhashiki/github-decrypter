@@ -1,0 +1,81 @@
+name: Release Lovable Decrypter
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          MANIFEST_VERSION="$(node -p "require('./manifest.json').version")"
+          test "$VERSION" = "$MANIFEST_VERSION" || { echo "Tag $VERSION != manifest $MANIFEST_VERSION"; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Package extension
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          zip -qr "Lovable-Decrypter-v${VERSION}.zip" . \
+            -x '.git/*' '.github/*' 'updates/*' '*.zip' '*.pem' '*.key' 'RELEASE.md'
+          sha256sum "Lovable-Decrypter-v${VERSION}.zip" | tee "Lovable-Decrypter-v${VERSION}.sha256"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          gh release create "v${VERSION}" \
+            "Lovable-Decrypter-v${VERSION}.zip" \
+            "Lovable-Decrypter-v${VERSION}.sha256" \
+            --title "Lovable Decrypter v${VERSION}" \
+            --generate-notes
+
+      - name: Sign OTA feed
+        env:
+          LD_OWNER_SIGNING_KEY_PEM: ${{ secrets.LD_OWNER_SIGNING_KEY_PEM }}
+        shell: bash
+        run: |
+          test -n "$LD_OWNER_SIGNING_KEY_PEM" || { echo 'Missing LD_OWNER_SIGNING_KEY_PEM'; exit 1; }
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIP="Lovable-Decrypter-v${VERSION}.zip"
+          HASH="$(sha256sum "$ZIP" | awk '{print $1}')"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/${ZIP}"
+          export VERSION HASH URL
+          node <<'NODE' > updates/latest.json
+          const crypto = require('node:crypto');
+          const version=process.env.VERSION, sha256=process.env.HASH, download_url=process.env.URL;
+          const payload={v:1,aud:'lovable-decrypter',license_id:`release-${version}`,type:'release',version,download_url,sha256,notes:`Release v${version}`,iat:Math.floor(Date.now()/1000),features:['release']};
+          const payloadPart=Buffer.from(JSON.stringify(payload)).toString('base64url');
+          const signature=crypto.sign('sha256',Buffer.from(payloadPart),{key:process.env.LD_OWNER_SIGNING_KEY_PEM,dsaEncoding:'ieee-p1363'}).toString('base64url');
+          process.stdout.write(JSON.stringify({payload:payloadPart,signature},null,2)+'\n');
+          NODE
+
+      - name: Publish OTA feed to main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp updates/latest.json /tmp/latest.json
+          git fetch origin main
+          git checkout main
+          mkdir -p updates
+          cp /tmp/latest.json updates/latest.json
+          git add updates/latest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore: publish OTA v${{ steps.version.outputs.version }}"
+          git push origin main
