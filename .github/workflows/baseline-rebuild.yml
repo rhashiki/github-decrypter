@@ -6,12 +6,16 @@ on:
       - baseline-v2.1.1
     paths:
       - _baseline/READY
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   rebuild:
+    if: github.ref_name == 'baseline-v2.1.1' || github.head_ref == 'baseline-v2.1.1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
