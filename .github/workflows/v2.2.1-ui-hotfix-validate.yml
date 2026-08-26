@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Version and manifest integrity
+      - name: Chrome MV3 manifest and worker integrity
         shell: bash
         run: |
           set -euo pipefail
@@ -24,6 +24,9 @@ jobs:
           const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
           if (m.manifest_version !== 3) throw new Error('manifest_version must be 3');
           if (m.version !== '2.2.1') throw new Error(`Expected 2.2.1, got ${m.version}`);
+          if (m.background?.scripts) throw new Error('Chrome MV3 must not contain background.scripts');
+          if (m.background?.service_worker !== 'background/service-worker-entry.js') throw new Error('MV3 service_worker entry mismatch');
+          if (m.background?.type !== 'module') throw new Error('MV3 service worker must be an ES module');
           const config = fs.readFileSync('settings/config.js', 'utf8');
           if (!/VERSION\s*=\s*['"]2\.2\.1['"]/.test(config)) throw new Error('Runtime version mismatch');
           const refs = [];
@@ -31,13 +34,25 @@ jobs:
             for (const f of cs.js || []) refs.push(f);
             for (const f of cs.css || []) refs.push(f);
           }
-          if (m.background?.service_worker) refs.push(m.background.service_worker);
-          for (const f of m.background?.scripts || []) refs.push(f);
+          refs.push(m.background.service_worker);
           for (const group of m.web_accessible_resources || []) for (const f of group.resources || []) refs.push(f);
           const missing = [...new Set(refs)].filter(f => !fs.existsSync(f));
           if (missing.length) throw new Error(`Missing manifest files: ${missing.join(', ')}`);
           if ((m.content_scripts || []).some(x => x.world === 'MAIN')) throw new Error('MAIN-world scripts are forbidden');
+
+          const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
+          const bootstrap = fs.readFileSync('background/guarded-commit-bootstrap.js', 'utf8');
+          if (/\bawait\s+import\s*\(/.test(entry)) throw new Error('Top-level await import is forbidden in Chrome extension service workers');
+          if (/\bimport\s*\(/.test(entry)) throw new Error('Dynamic import() is unsupported in Chrome extension service workers');
+          const guardImport = entry.indexOf("import './guarded-commit-bootstrap.js'");
+          const runtimeImport = entry.indexOf("import './service-worker.js'");
+          if (!(guardImport >= 0 && runtimeImport > guardImport)) throw new Error('Guard bootstrap must be statically imported before service-worker runtime');
+          if (!bootstrap.includes('installGuardedCommit();')) throw new Error('Guarded commit bootstrap installer missing');
           NODE
+          if grep -R -n -E '\bimport[[:space:]]*\(' background --include='*.js'; then
+            echo 'Dynamic import() found under background/' >&2
+            exit 1
+          fi
 
       - name: JavaScript syntax
         shell: bash
@@ -91,8 +106,8 @@ jobs:
           const config = fs.readFileSync('settings/config.js', 'utf8');
           if (!config.includes("billingMode: 'free'")) throw new Error('Gemini free default changed');
           if (!config.includes('zeroCost: true')) throw new Error('Gemini zero-cost default changed');
-          const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
-          if (!entry.includes('installGuardedCommit();')) throw new Error('Guarded commit installer missing');
+          const bootstrap = fs.readFileSync('background/guarded-commit-bootstrap.js', 'utf8');
+          if (!bootstrap.includes('installGuardedCommit();')) throw new Error('Guarded commit installer missing');
           NODE
 
       - name: Package hotfix candidate
