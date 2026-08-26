@@ -41,15 +41,27 @@
       "js": [
         "content/content.js",
         "ui/ui.js",
-        "ui/control-center.js",
-        "content/composer-bridge.js"
+        "ui/control-center.js"
       ],
       "css": [
         "ui/matrix.css",
-        "ui/control-center.css",
-        "ui/composer-bridge.css"
+        "ui/control-center.css"
       ],
       "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://lovable.dev/*",
+        "https://*.lovable.dev/*"
+      ],
+      "js": [
+        "content/composer-bridge.js"
+      ],
+      "css": [
+        "ui/composer-bridge.css"
+      ],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ],
