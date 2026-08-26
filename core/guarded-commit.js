@@ -1,6 +1,7 @@
 import { GitAdapter } from '../github/git-adapter.js';
 import { prepareShadowBuild, applyShadowBuild } from './shadow-build.js';
 import { runRegressionSentinel } from './regression-sentinel.js';
+import { runValidationGate } from './validation-gate.js';
 
 const INSTALLED = Symbol.for('ld2.guardedCommit.installed');
 const LAST_REFS = Symbol.for('ld2.guardedCommit.lastRefs');
@@ -56,6 +57,7 @@ export function installGuardedCommit() {
 
     const shadow = await prepareShadowBuild({ adapter: this, bundle });
     const regressionSentinel = await runRegressionSentinel({ adapter: this, bundle, shadow });
+    const validationGate = await runValidationGate({ adapter: this, bundle, shadow });
     const result = await applyShadowBuild({ adapter: this, shadow });
 
     return {
@@ -64,7 +66,8 @@ export function installGuardedCommit() {
       shadow: {
         ...(result.shadow || {}),
         commitSha: shadow.commitSha,
-        regressionSentinel
+        regressionSentinel,
+        validationGate
       }
     };
   };
