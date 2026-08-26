@@ -1,5 +1,7 @@
 import { verifyLicenseKey } from '../security/license.js';
 
+const VERIFIED_RELEASES = new WeakSet();
+
 function compareVersions(a = '0', b = '0') {
   const A = String(a).split('.').map(x => Number(x) || 0), B = String(b).split('.').map(x => Number(x) || 0);
   for (let i = 0; i < Math.max(A.length, B.length); i++) {
@@ -8,9 +10,13 @@ function compareVersions(a = '0', b = '0') {
   }
   return 0;
 }
-function b64urlText(value = '') {
-  const s = String(value).replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
-  return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+
+function assertHttpsUrl(value = '', label = 'URL') {
+  let url;
+  try { url = new URL(String(value || '')); }
+  catch { throw new Error(`${label} inválida.`); }
+  if (url.protocol !== 'https:') throw new Error(`${label} deve usar HTTPS.`);
+  return url.toString();
 }
 
 // A release feed is signed with the same owner signing key used for licenses.
@@ -22,6 +28,8 @@ async function verifyReleaseEnvelope(envelope) {
   const auth = await verifyLicenseKey(`LD2.${envelope.payload}.${envelope.signature}`);
   const payload = auth.payload;
   if (payload.type !== 'release' || !payload.version || !payload.download_url) throw new Error('Manifesto de atualização assinado é inválido.');
+  payload.download_url = assertHttpsUrl(payload.download_url, 'URL de download da release');
+  VERIFIED_RELEASES.add(payload);
   return payload;
 }
 
@@ -33,7 +41,7 @@ export async function checkUpdates({ currentVersion, updateFeedUrl = '' }) {
     if (chrome.runtime.requestUpdateCheck) browser = await chrome.runtime.requestUpdateCheck();
   } catch (_) {}
   const configuredFeed = String(updateFeedUrl || '').trim();
-  const feed = configuredFeed || DEFAULT_UPDATE_FEED_URL;
+  const feed = assertHttpsUrl(configuredFeed || DEFAULT_UPDATE_FEED_URL, 'Feed de atualização');
   const browserAvailable = browser?.status === 'update_available';
   try {
     const res = await fetch(feed, { cache: 'no-store' });
@@ -54,9 +62,12 @@ export async function checkUpdates({ currentVersion, updateFeedUrl = '' }) {
 }
 
 export async function downloadUpdate(release) {
-  if (!release?.download_url) throw new Error('Release sem URL de download.');
+  if (!release || typeof release !== 'object' || !VERIFIED_RELEASES.has(release)) {
+    throw new Error('Release não verificada. Consulte novamente o feed OTA assinado antes de baixar.');
+  }
+  const downloadUrl = assertHttpsUrl(release.download_url, 'URL de download da release');
   const id = await chrome.downloads.download({
-    url: release.download_url,
+    url: downloadUrl,
     filename: `Lovable-Decrypter-v${release.version}.zip`,
     saveAs: true
   });
