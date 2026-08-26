@@ -3,7 +3,7 @@
   if (window.__LOVABLE_DECRYPTER_V2_UI__) return;
   window.__LOVABLE_DECRYPTER_V2_UI__ = true;
 
-  const VERSION = '2.1.1';
+  const VERSION = chrome.runtime.getManifest().version;
   const POS_KEY = 'ld2_fab_pos';
   const MODE_KEY = 'ld2_chat_mode';
   const STORE_URL = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-store';
