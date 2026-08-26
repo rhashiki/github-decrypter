@@ -41,11 +41,13 @@
       "js": [
         "content/content.js",
         "ui/ui.js",
-        "ui/control-center.js"
+        "ui/control-center.js",
+        "content/composer-bridge.js"
       ],
       "css": [
         "ui/matrix.css",
-        "ui/control-center.css"
+        "ui/control-center.css",
+        "ui/composer-bridge.css"
       ],
       "run_at": "document_start",
       "all_frames": false
