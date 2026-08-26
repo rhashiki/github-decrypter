@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
+    paths:
+      - '.github/RELEASE_TRIGGER'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,9 +25,13 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           MANIFEST_VERSION="$(node -p "require('./manifest.json').version")"
-          test "$VERSION" = "$MANIFEST_VERSION" || { echo "Tag $VERSION != manifest $MANIFEST_VERSION"; exit 1; }
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            test "$VERSION" = "$MANIFEST_VERSION" || { echo "Tag $VERSION != manifest $MANIFEST_VERSION"; exit 1; }
+          else
+            VERSION="$MANIFEST_VERSION"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Package extension
@@ -33,17 +42,23 @@ jobs:
             -x '.git/*' '.github/*' 'updates/latest.json' '*.zip' '*.pem' '*.key' 'RELEASE.md'
           sha256sum "Lovable-Decrypter-v${VERSION}.zip" | tee "Lovable-Decrypter-v${VERSION}.sha256"
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" \
-            "Lovable-Decrypter-v${VERSION}.zip" \
-            "Lovable-Decrypter-v${VERSION}.sha256" \
-            --title "Lovable Decrypter v${VERSION}" \
-            --generate-notes
+          TAG="v${VERSION}"
+          ZIP="Lovable-Decrypter-v${VERSION}.zip"
+          SHA="Lovable-Decrypter-v${VERSION}.sha256"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" "$SHA" --clobber
+          else
+            gh release create "$TAG" "$ZIP" "$SHA" \
+              --target "$GITHUB_SHA" \
+              --title "Lovable Decrypter v${VERSION}" \
+              --generate-notes
+          fi
 
       - name: Sign OTA feed
         env:
