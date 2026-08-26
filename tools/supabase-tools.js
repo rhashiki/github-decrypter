@@ -1,7 +1,20 @@
+function normalizeSupabaseProjectUrl(value = '') {
+  const raw = String(value || '').trim().replace(/\/+$/, '');
+  let url;
+  try { url = new URL(raw); }
+  catch { throw new Error('Project URL do Supabase inválida.'); }
+  if (url.protocol !== 'https:' || !url.hostname.endsWith('.supabase.co')) {
+    throw new Error('Project URL deve usar HTTPS em um domínio *.supabase.co.');
+  }
+  url.hash = '';
+  url.search = '';
+  return url.toString().replace(/\/+$/, '');
+}
+
 export async function testSupabase(config = {}) {
-  const url = String(config.url || '').replace(/\/$/, '');
+  const url = normalizeSupabaseProjectUrl(config.url || '');
   const anonKey = config.anonKey || '';
-  if (!url || !anonKey) throw new Error('Informe URL e anon key do Supabase.');
+  if (!anonKey) throw new Error('Informe URL e anon key do Supabase.');
   const res = await fetch(`${url}/rest/v1/`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }
   });
@@ -10,9 +23,10 @@ export async function testSupabase(config = {}) {
 }
 
 export async function runSupabaseSql({ projectRef, managementToken, sql }) {
-  if (!projectRef || !managementToken) throw new Error('Configure Project Ref e Management Token do Supabase.');
+  const safeRef = String(projectRef || '').trim();
+  if (!/^[a-z0-9]{8,32}$/i.test(safeRef) || !managementToken) throw new Error('Configure Project Ref e Management Token do Supabase.');
   if (!String(sql || '').trim()) throw new Error('SQL vazio.');
-  const res = await fetch(`https://api.supabase.com/v1/projects/${encodeURIComponent(projectRef)}/database/query`, {
+  const res = await fetch(`https://api.supabase.com/v1/projects/${encodeURIComponent(safeRef)}/database/query`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${managementToken}`,
