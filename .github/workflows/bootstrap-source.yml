@@ -3,7 +3,7 @@ name: Bootstrap extension source
 on:
   push:
     paths:
-      - 'bootstrap/source.zip.b64'
+      - 'bootstrap/READY'
   workflow_dispatch:
 
 permissions:
@@ -20,8 +20,10 @@ jobs:
       - name: Decode prepared source
         shell: bash
         run: |
-          test -f bootstrap/source.zip.b64
-          base64 -d bootstrap/source.zip.b64 > /tmp/source.zip
+          shopt -s nullglob
+          parts=(bootstrap/source.part*.b64)
+          test ${#parts[@]} -gt 0 || { echo 'No source parts found'; exit 1; }
+          cat "${parts[@]}" | tr -d '\n\r' | base64 -d > /tmp/source.zip
           rm -rf /tmp/source
           mkdir -p /tmp/source
           unzip -q /tmp/source.zip -d /tmp/source
