@@ -79,6 +79,44 @@ jobs:
           mkdir -p updates
           cp /tmp/release.json updates/release.json
           git add updates/release.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "chore: publish release metadata v${VERSION}"
-          git push origin main
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: publish release metadata v${VERSION}"
+            git push origin main
+          fi
+
+      - name: Publish signed legacy OTA bridge
+        shell: bash
+        env:
+          RELEASE_FEED_URL: https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-release-feed
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          export VERSION
+          ok=0
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error "${RELEASE_FEED_URL}?release=${VERSION}&attempt=${attempt}&run=${GITHUB_RUN_ID}" -o /tmp/latest.json; then
+              if node <<'NODE'
+          const fs = require('fs');
+          const env = JSON.parse(fs.readFileSync('/tmp/latest.json','utf8'));
+          if (!env.payload || !env.signature) process.exit(2);
+          const text = Buffer.from(env.payload, 'base64url').toString('utf8');
+          const payload = JSON.parse(text);
+          if (payload.type !== 'release' || payload.version !== process.env.VERSION) process.exit(3);
+          NODE
+              then
+                ok=1
+                break
+              fi
+            fi
+            sleep 3
+          done
+          test "$ok" = 1 || { echo "Signed feed did not converge to v${VERSION}"; exit 1; }
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          mkdir -p updates
+          cp /tmp/latest.json updates/latest.json
+          git add updates/latest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: publish signed legacy OTA v${VERSION}"
+            git push origin main
+          fi
