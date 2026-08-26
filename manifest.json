@@ -69,6 +69,7 @@
       ],
       "js": [
         "content/project-intelligence.js",
+        "content/project-rules-cache.js",
         "content/skill-router.js",
         "content/composer-pro.js",
         "content/cloud-runtime.js",
