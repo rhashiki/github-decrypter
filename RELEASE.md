@@ -5,7 +5,7 @@ O código-fonte da extensão fica neste repositório. O feed assinado fica em `u
 ## Release automática
 
 1. Crie no GitHub Actions Secret `LD_OWNER_SIGNING_KEY_PEM` com a chave privada ECDSA do Owner Toolkit.
-2. Faça commit das alterações e atualize a versão em `manifest.json`, `settings/config.js`, `content/content.js` e `ui/ui.js`.
+2. Faça commit das alterações e atualize a versão em `manifest.json`, `settings/config.js` e `ui/ui.js`. O content script lê a versão diretamente do manifest.
 3. Crie/push uma tag no formato `vX.Y.Z`.
 4. O workflow `release.yml` gera o ZIP, calcula SHA-256, cria GitHub Release e atualiza `updates/latest.json` com assinatura ECDSA.
 

@@ -33,7 +33,7 @@
   }
 
   window.LovableDecrypterV2 = {
-    version: '2.0.10',
+    version: chrome.runtime.getManifest().version,
     state,
     runtime,
     getProjectId: () => state.projectId,

@@ -52,9 +52,9 @@ A ferramenta analisa arquivos importantes do repositório e salva localmente:
 
 Esse perfil é incluído nos prompts futuros para o mesmo repositório.
 
-## 6. Migrar Cloud → Supabase
+## 6. Aplicar Migrations no Supabase
 
-A ferramenta procura `supabase/migrations/*.sql` no GitHub, consolida em ordem alfabética e mostra o SQL antes da execução.
+A ferramenta procura `supabase/migrations/*.sql` no GitHub, consolida em ordem alfabética e mostra o SQL antes da execução. Este executor não é o migrador completo Lovable Cloud → Supabase.
 
 A execução exige `Project Ref` e `Management Token` do seu Supabase.
 

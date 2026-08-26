@@ -30,7 +30,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           zip -qr "Lovable-Decrypter-v${VERSION}.zip" . \
-            -x '.git/*' '.github/*' 'updates/*' '*.zip' '*.pem' '*.key' 'RELEASE.md'
+            -x '.git/*' '.github/*' 'updates/latest.json' '*.zip' '*.pem' '*.key' 'RELEASE.md'
           sha256sum "Lovable-Decrypter-v${VERSION}.zip" | tee "Lovable-Decrypter-v${VERSION}.sha256"
 
       - name: Create GitHub release

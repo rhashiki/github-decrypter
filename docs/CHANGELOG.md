@@ -1,3 +1,17 @@
+## 2.1.1 — Baseline & Cleanup
+- Corrige a versão exposta pelo content script usando `chrome.runtime.getManifest().version`.
+- Renomeia o antigo “Migrar Cloud → Supabase” para “Aplicar Migrations no Supabase”, refletindo a funcionalidade real.
+- Corrige o empacotamento de release para manter `updates/update-manager.js` dentro do ZIP e excluir somente `updates/latest.json`.
+- Atualiza documentação da arquitetura backend da linha 2.1.
+
+## 2.1.0 — Commerce & Credits
+- Planos por tempo: 7, 15, 30, 60, 90 e 365 dias.
+- Créditos sem validade; 1 crédito a cada 4 comandos.
+- Plano por tempo ativo pausa o consumo de créditos.
+- Checkout Mercado Pago (Pix/cartão), webhook assinado, refund/chargeback e emissão automática de KEY.
+- Área de licença e botões de renovar/comprar créditos.
+- Gemini gratuito por padrão ou billing opcional da própria API do usuário.
+
 ## v2.0.10
 - Botão Atualizar no launcher.
 - Atualização automática quando gerenciada pelo Chrome Web Store.

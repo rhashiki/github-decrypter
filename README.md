@@ -1,4 +1,4 @@
-# Lovable Decrypter v2.0.10
+# Lovable Decrypter v2.1.1
 
 Extensão Chromium para trabalhar em projetos Lovable através do GitHub usando Google Gemini, com modos Planejar/Construir, anexos, patches mínimos e atualização visual pelo GitSync do próprio Lovable.
 
@@ -11,7 +11,7 @@ A v2 abandona completamente a interceptação/camuflagem de requisições do Lov
 - `fix_error` ou transformação de prompts;
 - captura de Bearer token/sessão do Lovable;
 - chamadas a APIs internas de chat do Lovable;
-- backend de execução de comandos; o único backend opcional da v2.0.10 é um **vault do próprio Decrypter** para backup criptografado de configurações.
+- execução autoritativa via backend próprio do Decrypter para licença, créditos, Vault e comandos.
 
 Fluxo:
 
@@ -36,11 +36,12 @@ Fluxo:
 - Skills personalizadas.
 - Notas por projeto.
 - Download ZIP do projeto via GitHub.
-- Migração de `supabase/migrations/*.sql` para Supabase Management API.
+- Aplicação revisável de `supabase/migrations/*.sql` no Supabase configurado. O migrador Cloud → Supabase completo será um módulo separado.
 - Ação de remoção de badge/marca apenas quando ela estiver no código do próprio projeto.
 - Múltiplos projetos por associação `projectId → owner/repo/branch`.
 
-## Login, persistência e atualizações (v2.0.10)
+
+## Login, persistência e atualizações (v2.1.1)
 
 - A extensão exige uma **KEY LD2 assinada** pelo proprietário.
 - A chave privada de emissão **não faz parte da extensão**; somente a chave pública de verificação é distribuída.
@@ -83,6 +84,7 @@ Configure:
 
 A branch configurada é persistente. **A extensão não cria uma nova branch a cada comando.** Cada execução no modo Construir gera um novo commit na mesma branch, permitindo que o GitSync do Lovable reflita a mudança no preview real.
 
+
 ### Modos do chat
 
 - **Planejar**: analisa prompt, anexos e repositório e retorna somente um plano. Não cria patch, commit ou alteração.
@@ -111,11 +113,13 @@ As credenciais são enviadas somente aos respectivos provedores:
 - GitHub token → GitHub API;
 - Supabase credentials → Supabase.
 
+A extensão não possui servidor próprio na v2.0.
+
 ## Limites conhecidos
 
 - A extensão não acessa APIs internas do Lovable para descobrir GitSync. O repositório é configurado pelo usuário e pode ser associado ao ID do projeto detectado na URL.
 - A atualização do preview depende do GitSync do próprio projeto Lovable.
-- A ferramenta “Migrar Cloud” executa migrations SQL versionadas já existentes em `supabase/migrations`; ela não extrai dados de um backend privado do Lovable.
+- A ferramenta **Aplicar Migrations** executa apenas migrations SQL versionadas em `supabase/migrations`; ela não deve ser confundida com o futuro migrador completo Lovable Cloud → Supabase.
 - OAuth GitHub está planejado; v2.0 usa Fine-grained PAT.
 
 Veja `docs/USER_GUIDE.md` e `docs/CHANGELOG.md`.
@@ -124,13 +128,22 @@ Veja `docs/USER_GUIDE.md` e `docs/CHANGELOG.md`.
 
 O context builder ignora automaticamente arquivos potencialmente sensíveis como `.env`, credenciais, private keys e certificados. `.env.example`, `.env.sample` e `.env.template` podem ser usados por não conterem segredos reais por definição esperada.
 
-## ZERO COST
-A v2.0.10 opera por padrão em ZERO COST. O catálogo de modelos é consultado dinamicamente na Gemini API, mas somente modelos com Free Tier verificado na lista de segurança da versão podem ser selecionados. Modelos pagos ou ainda não verificados aparecem bloqueados.
 
-## Cache do projeto
+## ZERO COST
+A v2.0.5 opera por padrão em ZERO COST. O catálogo de modelos é consultado dinamicamente na Gemini API, mas somente modelos com Free Tier verificado na lista de segurança da versão podem ser selecionados. Modelos pagos ou ainda não verificados aparecem bloqueados.
+
+
+## Preview Center — v2.0.5
+
+O modal de revisão ocupa a viewport da extensão sem provocar rolagem da página do Lovable e oferece **Visual/Código**, **Componente/Página** e **Antes/Depois/Lado a lado**. O código exibido é o conteúdo real do plano pendente.
+
+**Importante:** o renderer visual herdado da v2.0.4 usa Gemini para produzir HTML/CSS estático e, portanto, é apenas uma aproximação. Ele não deve ser tratado como preview pixel-perfect do projeto. A arquitetura v2.0.5 prepara um cache persistente do repositório para substituir esse renderer por um runtime que execute o projeto real.
+
+## Cache do projeto — v2.0.5
 
 Ao abrir um projeto com GitHub configurado, a extensão faz warm-up do repositório. O cache é indexado pelo SHA da branch e pelos SHAs imutáveis dos blobs. Em comandos seguintes, arquivos não alterados são lidos do `chrome.storage.local` em vez de serem baixados novamente. Caminhos sensíveis (`.env`, private keys, credenciais e certificados) continuam excluídos do contexto da IA.
 
-## Layout do painel
+
+## Layout do painel — v2.0.6
 
 O painel usa regiões de scroll isoladas: cabeçalho/status e composer são fixos; apenas a navegação lateral e o histórico da conversa podem rolar verticalmente. O container principal permanece com overflow travado para não provocar rolagem na página do Lovable.
