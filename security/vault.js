@@ -18,7 +18,19 @@ async function deriveKey(licenseKey, salt) {
     ['encrypt', 'decrypt']
   );
 }
-function cleanBase(url = '') { return String(url || '').trim().replace(/\/+$/, ''); }
+function cleanBase(url = '') {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  let parsed;
+  try { parsed = new URL(raw); }
+  catch { throw new Error('Vault API inválida.'); }
+  if (parsed.protocol !== 'https:' || !parsed.hostname.endsWith('.supabase.co')) {
+    throw new Error('Vault API deve usar HTTPS em um domínio *.supabase.co.');
+  }
+  parsed.hash = '';
+  parsed.search = '';
+  return parsed.toString().replace(/\/+$/, '');
+}
 function backupPayload(settings = {}) {
   const copy = structuredClone(settings || {});
   if (copy.auth) {
