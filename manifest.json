@@ -61,7 +61,7 @@
         "ui/matrix.css",
         "ui/control-center.css"
       ],
-      "run_at": "document_start",
+      "run_at": "document_idle",
       "all_frames": false
     },
     {
