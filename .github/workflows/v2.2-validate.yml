@@ -37,6 +37,7 @@ jobs:
           if (!/VERSION\s*=\s*['"]2\.2\.0['"]/.test(config)) throw new Error('settings/config.js version mismatch');
           const ui = fs.readFileSync('ui/ui.js', 'utf8');
           if (!ui.includes('const VERSION = chrome.runtime.getManifest().version;')) throw new Error('legacy UI must derive version from manifest');
+          if (manifest.background?.service_worker !== 'background/service-worker-entry.js') throw new Error('guarded background entrypoint is not active');
           console.log(`Manifest OK: ${new Set(refs).size} referenced files present`);
           NODE
 
@@ -90,6 +91,69 @@ jobs:
             plan: { files: [{ path: 'src/components/Legacy.tsx', action: 'delete' }] }
           });
           console.log('Scope Lock behavior OK');
+          NODE
+
+      - name: Regression Sentinel behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp core/regression-sentinel.js /tmp/regression-sentinel.mjs
+          node --input-type=module <<'NODE'
+          import { evaluateRegressionDelta } from 'file:///tmp/regression-sentinel.mjs';
+
+          const baseEntries = [
+            { path: 'src/app.js', type: 'blob', mode: '100644', sha: 'aaa' },
+            { path: 'src/legacy.js', type: 'blob', mode: '100644', sha: 'bbb' }
+          ];
+          const shadowEntries = [
+            { path: 'src/app.js', type: 'blob', mode: '100644', sha: 'ccc' },
+            { path: 'src/new.js', type: 'blob', mode: '100644', sha: 'ddd' }
+          ];
+          const files = [
+            { path: 'src/app.js', action: 'update', before: 'old', content: 'new' },
+            { path: 'src/legacy.js', action: 'delete' },
+            { path: 'src/new.js', action: 'create', content: 'new file' }
+          ];
+
+          const allowed = evaluateRegressionDelta({ files, baseEntries, shadowEntries });
+          if (!allowed.ok) throw new Error(`Expected sentinel allow: ${allowed.violations.join(' | ')}`);
+          if (allowed.changedPathCount !== 3) throw new Error('Unexpected changed path count');
+
+          const rogue = evaluateRegressionDelta({
+            files,
+            baseEntries,
+            shadowEntries: [...shadowEntries, { path: 'src/rogue.js', type: 'blob', mode: '100644', sha: 'eee' }]
+          });
+          if (rogue.ok || !rogue.violations.some(x => x.includes('fora do plano'))) throw new Error('Sentinel failed to block rogue path');
+
+          const noop = evaluateRegressionDelta({
+            files: [{ path: 'src/app.js', action: 'update', content: 'same' }],
+            baseEntries: [{ path: 'src/app.js', type: 'blob', mode: '100644', sha: 'aaa' }],
+            shadowEntries: [{ path: 'src/app.js', type: 'blob', mode: '100644', sha: 'aaa' }]
+          });
+          if (noop.ok || !noop.violations.some(x => x.includes('não mudou'))) throw new Error('Sentinel failed to block silent no-op');
+          console.log('Regression Sentinel behavior OK');
+          NODE
+
+      - name: Guarded commit wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
+          const guard = fs.readFileSync('core/guarded-commit.js', 'utf8');
+          if (!entry.includes('installGuardedCommit();')) throw new Error('guard installer missing from background entry');
+          if (!entry.includes("await import('./service-worker.js')")) throw new Error('legacy runtime is not loaded after guard installation');
+          const prepare = guard.indexOf('prepareShadowBuild');
+          const sentinel = guard.indexOf('runRegressionSentinel');
+          const apply = guard.indexOf('applyShadowBuild');
+          if (prepare < 0 || sentinel < 0 || apply < 0) throw new Error('guarded pipeline imports are incomplete');
+          const bodyPrepare = guard.indexOf('const shadow = await prepareShadowBuild');
+          const bodySentinel = guard.indexOf('const regressionSentinel = await runRegressionSentinel');
+          const bodyApply = guard.indexOf('const result = await applyShadowBuild');
+          if (!(bodyPrepare >= 0 && bodyPrepare < bodySentinel && bodySentinel < bodyApply)) throw new Error('guarded pipeline order is invalid');
+          console.log('Guarded pipeline wiring OK');
           NODE
 
       - name: Safety invariants
