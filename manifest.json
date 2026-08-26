@@ -42,7 +42,7 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.2.1"
+    "default_title": "Lovable Decrypter v2.2.1 SAFE CORE"
   },
   "content_scripts": [
     {
@@ -55,43 +55,12 @@
         "content/content.js",
         "ui/ui.js",
         "ui/control-center.js",
-        "content/checkpoint-ui.js"
+        "content/composer-bridge.js"
       ],
       "css": [
         "ui/matrix.css",
-        "ui/control-center.css"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    },
-    {
-      "matches": [
-        "https://lovable.dev/*",
-        "https://*.lovable.dev/*"
-      ],
-      "js": [
-        "content/project-intelligence.js",
-        "content/project-rules-cache.js",
-        "content/skill-router.js",
-        "content/composer-pro.js",
-        "content/cloud-runtime.js",
-        "content/preview-progress-overlay.js",
-        "content/composer-bridge.js",
-        "content/batch-mode.js",
-        "content/automatic-suggestions.js",
-        "content/cloud-ui.js",
-        "content/queue-project-context.js",
-        "content/queue-executor.js",
-        "content/monitor.js",
-        "content/dom-guardian.js"
-      ],
-      "css": [
-        "ui/composer-bridge.css",
-        "ui/composer-pro.css",
-        "ui/preview-progress-overlay.css",
-        "ui/cloud-ui.css",
-        "ui/cloud-runtime.css",
-        "ui/monitor.css"
+        "ui/control-center.css",
+        "ui/composer-bridge.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
