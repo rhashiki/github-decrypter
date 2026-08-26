@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - control-center-v2.2.0
+      - checkpoint-rollback-wiring-v2.2.0
     paths:
       - core/checkpoint-manager.js
       - core/guarded-commit.js
+      - background/checkpoint-runtime.js
+      - background/service-worker-entry.js
       - content/checkpoint-ui.js
       - manifest.json
       - .github/workflows/v2.2-checkpoint-validate.yml
@@ -27,6 +30,8 @@ jobs:
           set -euo pipefail
           node --check core/checkpoint-manager.js
           node --check core/guarded-commit.js
+          node --check background/checkpoint-runtime.js
+          node --check background/service-worker-entry.js
           node --check content/checkpoint-ui.js
 
       - name: Checkpoint and rollback behavior
@@ -119,13 +124,15 @@ jobs:
           console.log('Checkpoint and rollback behavior OK');
           NODE
 
-      - name: Guard wiring and UI invariants
+      - name: Guard wiring and background authority
         shell: bash
         run: |
           set -euo pipefail
           node <<'NODE'
           const fs = require('fs');
           const guard = fs.readFileSync('core/guarded-commit.js', 'utf8');
+          const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
+          const runtime = fs.readFileSync('background/checkpoint-runtime.js', 'utf8');
           const ui = fs.readFileSync('content/checkpoint-ui.js', 'utf8');
           const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 
@@ -137,11 +144,19 @@ jobs:
             throw new Error('Checkpoint must be created after Validation Gate and before branch publication, then verified afterward');
           }
           if (!guard.includes('autoRollbackIfDefinitiveFailure')) throw new Error('Automatic rollback wiring missing');
-          if (!ui.includes('force: false')) throw new Error('Manual rollback must never force-update a branch');
-          if (!ui.includes('parents: [currentHead]')) throw new Error('Manual rollback must preserve Git history');
-          if (!ui.includes('currentHead !== String(checkpoint.appliedCommitSha)')) throw new Error('Manual rollback must refuse advanced branches');
 
+          if (!entry.includes('installCheckpointRuntime();')) throw new Error('Checkpoint background runtime is not installed');
+          if (!runtime.includes("case 'rollback'")) throw new Error('Background rollback action missing');
+          if (!runtime.includes("checkpoint.status !== 'published'")) throw new Error('Background must reject non-published checkpoints');
+          if (!runtime.includes('rollbackCheckpoint({ adapter, checkpoint, reason: \'manual\' })')) throw new Error('Background must use checkpoint manager rollback');
+          if (!runtime.includes('verifyLicenseKey(licenseKey)') || !runtime.includes("'x-device-id': deviceId")) throw new Error('Rollback authority must validate signed license and bound device');
+          if (!runtime.includes('HISTORY_KEY')) throw new Error('Rollback history persistence missing');
+
+          if (!ui.includes("chrome.runtime.connect({ name: PORT_NAME })")) throw new Error('Checkpoint UI must call background port');
+          if (ui.includes('https://api.github.com') || ui.includes('github.token') || ui.includes('Authorization:')) {
+            throw new Error('Checkpoint UI must not access GitHub credentials/API directly');
+          }
           const scripts = (manifest.content_scripts || []).flatMap(x => x.js || []);
           if (!scripts.includes('content/checkpoint-ui.js')) throw new Error('Checkpoint Control Center UI is not loaded by manifest');
-          console.log('Checkpoint guard and UI invariants OK');
+          console.log('Checkpoint guard and authoritative background invariants OK');
           NODE
