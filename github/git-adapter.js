@@ -1,6 +1,35 @@
 import { assertSafeRepoPath, decodeBase64Utf8, encodeBase64Utf8, slugify } from '../core/utils.js';
 
 const API_VERSION = '2026-03-10';
+const REQUEST_TIMEOUT_MS = 45000;
+
+function trustedGitHubDownloadUrl(value = '') {
+  let url;
+  try { url = new URL(String(value || '')); }
+  catch { throw new Error('GitHub retornou uma URL de download inválida.'); }
+  const host = url.hostname.toLowerCase();
+  const trusted = url.protocol === 'https:' && (
+    host === 'github.com' ||
+    host === 'api.github.com' ||
+    host === 'codeload.github.com' ||
+    host.endsWith('.githubusercontent.com')
+  );
+  if (!trusted) throw new Error(`GitHub retornou uma origem de download não confiável: ${host || 'desconhecida'}.`);
+  return url.toString();
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: options.signal || controller.signal });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw new Error('GitHub não respondeu dentro do tempo limite.');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export class GitAdapter {
   constructor(config = {}) {
@@ -22,7 +51,7 @@ export class GitAdapter {
       ...(options.headers || {})
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
-    const res = await fetch(`https://api.github.com${path}`, { ...options, headers });
+    const res = await fetchWithTimeout(`https://api.github.com${path}`, { ...options, headers });
     const ct = res.headers.get('content-type') || '';
     let body = null;
     if (ct.includes('application/json')) body = await res.json().catch(() => null);
@@ -65,8 +94,9 @@ export class GitAdapter {
     if (Array.isArray(data)) throw new Error(`${safe} é um diretório.`);
     if (data.encoding === 'base64' && typeof data.content === 'string') return { ...data, text: decodeBase64Utf8(data.content) };
     if (data.download_url) {
+      const downloadUrl = trustedGitHubDownloadUrl(data.download_url);
       const headers = this.token ? { Authorization: `Bearer ${this.token}` } : {};
-      const res = await fetch(data.download_url, { headers });
+      const res = await fetchWithTimeout(downloadUrl, { headers });
       if (!res.ok) throw new Error(`Falha ao ler ${safe}.`);
       return { ...data, text: await res.text() };
     }
@@ -186,7 +216,7 @@ export class GitAdapter {
     this.ensureRepo();
     const headers = { Accept: 'application/vnd.github+json' };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
-    const res = await fetch(`https://api.github.com/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/zipball/${encodeURIComponent(branch)}`, { headers, redirect: 'follow' });
+    const res = await fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/zipball/${encodeURIComponent(branch)}`, { headers, redirect: 'follow' }, 120000);
     if (!res.ok) throw new Error(`Falha ao baixar ZIP (${res.status}).`);
     return Array.from(new Uint8Array(await res.arrayBuffer()));
   }
