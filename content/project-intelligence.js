@@ -51,18 +51,25 @@
     try {
       const { projectId, github } = await context();
       if (!projectId || !github?.owner || !github?.repo) return null;
-      const out = await cloud('get_brain');
-      const brain = out?.brain;
+      const [brainOut, rulesOut] = await Promise.all([
+        cloud('get_brain'),
+        cloud('list_rules').catch(() => ({ rules: [] }))
+      ]);
+      const brain = brainOut?.brain;
       if (!brain) return null;
+      const manualRules = (Array.isArray(rulesOut?.rules) ? rulesOut.rules : [])
+        .filter(r => r?.enabled !== false)
+        .map(r => String(r?.rule_text || '').trim())
+        .filter(Boolean);
       const profile = {
         project_summary: brain.project_summary || '',
         architecture: Array.isArray(brain.architecture) ? brain.architecture : [],
-        rules: Array.isArray(brain.rules) ? brain.rules : [],
+        rules: [...new Set([...(Array.isArray(brain.rules) ? brain.rules : []), ...manualRules])],
         important_paths: Array.isArray(brain.important_paths) ? brain.important_paths : [],
         validation_checklist: Array.isArray(brain.validation_checklist) ? brain.validation_checklist : []
       };
       await chrome.storage.local.set({ [brainCacheKey(github)]: profile });
-      return brain;
+      return { brain, projectRules: manualRules };
     } catch (_) { return null; }
   }
 
@@ -149,7 +156,7 @@
     const body = brain ? `
       <div class="ld2-cloud-empty" style="text-align:left"><b>${esc(brain.project_summary || 'Brain treinado')}</b><br><br>
       Arquitetura: ${Array.isArray(brain.architecture) ? brain.architecture.length : 0} item(ns)<br>
-      Regras: ${Array.isArray(brain.rules) ? brain.rules.length : 0}<br>
+      Regras do Brain: ${Array.isArray(brain.rules) ? brain.rules.length : 0}<br>
       Paths importantes: ${Array.isArray(brain.important_paths) ? brain.important_paths.length : 0}<br>
       Atualizado: ${brain.updated_at ? esc(new Date(brain.updated_at).toLocaleString('pt-BR')) : '—'}</div>` : '<div class="ld2-cloud-empty">Este projeto ainda não possui Brain Cloud.</div>';
     card.querySelector('.ld2-cloud-loading').outerHTML = `${body}<div class="ld2-fragment-footer"><button type="button" class="primary" data-brain-train>${brain ? 'Atualizar Brain' : 'Treinar Brain'}</button></div>`;
@@ -170,7 +177,7 @@
         profile,
         metadata: { repo: `${github.owner}/${github.repo}`, trained_from: 'extension' }
       });
-      await chrome.storage.local.set({ [brainCacheKey(github)]: profile });
+      await syncBrain();
       const brain = (await cloud('get_brain'))?.brain;
       renderBrain(card, brain);
     } catch (e) {
@@ -188,24 +195,70 @@
     } catch (e) { card.querySelector('.ld2-cloud-loading').textContent = e?.message || String(e); }
   }
 
+  async function openRules() {
+    const card = openCard('Project Rules', 'Regras permanentes e independentes do prompt atual.');
+    if (!card) return;
+    try { await renderRules(card); }
+    catch (e) { card.querySelector('.ld2-cloud-loading').textContent = e?.message || String(e); }
+  }
+  async function renderRules(card) {
+    const rules = (await cloud('list_rules'))?.rules || [];
+    card.querySelector('.ld2-cloud-loading')?.remove();
+    const old = card.querySelector('[data-rules-body]'); old?.remove();
+    const body = document.createElement('div'); body.dataset.rulesBody = '1';
+    body.innerHTML = `<div class="ld2-fragment-row"><span>+</span><textarea rows="2" data-rule-new placeholder="Ex.: Sempre validar mobile e desktop"></textarea><button type="button" data-rule-add>Salvar</button></div><div class="ld2-history-list">${rules.length ? rules.map(r => `<article class="ld2-history-row"><div class="ld2-history-meta"><b>${r.enabled ? 'ON' : 'OFF'}</b><span>${esc(r.source)}</span></div><p>${esc(r.rule_text)}</p><div class="ld2-queue-actions"><button type="button" data-rule-toggle="${esc(r.id)}" data-enabled="${r.enabled ? '1' : '0'}">${r.enabled ? 'Desligar' : 'Ligar'}</button><button type="button" data-rule-delete="${esc(r.id)}">×</button></div></article>`).join('') : '<div class="ld2-cloud-empty">Nenhuma regra permanente cadastrada.</div>'}</div>`;
+    card.appendChild(body);
+    body.querySelector('[data-rule-add]').onclick = async () => {
+      const input = body.querySelector('[data-rule-new]'); const rule = String(input.value || '').trim(); if (!rule) return;
+      await cloud('save_rule', { rule_text: rule, enabled: true, source: 'manual' });
+      await syncBrain(); await renderRules(card);
+    };
+    body.querySelectorAll('[data-rule-toggle]').forEach(btn => btn.onclick = async () => {
+      await cloud('toggle_rule', { id: btn.dataset.ruleToggle, enabled: btn.dataset.enabled !== '1' });
+      await syncBrain(); await renderRules(card);
+    });
+    body.querySelectorAll('[data-rule-delete]').forEach(btn => btn.onclick = async () => {
+      await cloud('delete_rule', { id: btn.dataset.ruleDelete });
+      await syncBrain(); await renderRules(card);
+    });
+  }
+
+  async function openExplain() {
+    const card = openCard('Explain Project', 'Resumo técnico do projeto sem nova chamada Gemini.');
+    if (!card) return;
+    try {
+      const explain = (await cloud('explain_project'))?.explain || {};
+      const brain = explain.brain || {};
+      const rules = Array.isArray(explain.project_rules) ? explain.project_rules : [];
+      const stats = explain.impact_stats || {};
+      card.querySelector('.ld2-cloud-loading').outerHTML = `<div class="ld2-cloud-empty" style="text-align:left"><b>${esc(brain.project_summary || 'Brain ainda não treinado.')}</b><br><br><b>Arquitetura</b><br>${(Array.isArray(brain.architecture)?brain.architecture:[]).map(x=>`• ${esc(x)}`).join('<br>') || '—'}<br><br><b>Regras ativas</b><br>${rules.map(r=>`• ${esc(r.rule_text)}`).join('<br>') || '—'}<br><br><b>Paths importantes</b><br>${(Array.isArray(brain.important_paths)?brain.important_paths:[]).slice(0,30).map(x=>`• ${esc(x)}`).join('<br>') || '—'}<br><br><b>Risco recente</b><br>LOW ${Number(stats.low||0)} · MEDIUM ${Number(stats.medium||0)} · HIGH ${Number(stats.high||0)} · CRITICAL ${Number(stats.critical||0)}</div>`;
+    } catch (e) { card.querySelector('.ld2-cloud-loading').textContent = e?.message || String(e); }
+  }
+
+  function addIntelCard(grid, key, icon, title, small) {
+    if (!grid || grid.querySelector(`[data-cc-intel="${key}"]`)) return;
+    const btn = document.createElement('button'); btn.className = 'ld2-cc-card'; btn.type = 'button'; btn.dataset.ccIntel = key;
+    btn.innerHTML = `<span>${icon}</span><div><b>${title}</b><small>${small}</small></div>`; grid.appendChild(btn);
+  }
   function reconcileControlCenter() {
     const root = $('#ld2-root');
     const grid = root?.querySelector('.ld2-cc-section .ld2-cc-grid');
-    if (grid && !grid.querySelector('[data-cc-intel="impact"]')) {
-      const btn = document.createElement('button');
-      btn.className = 'ld2-cc-card'; btn.type = 'button'; btn.dataset.ccIntel = 'impact';
-      btn.innerHTML = '<span>◈</span><div><b>Impact Map</b><small>Arquivos, dependências e risco</small></div>';
-      grid.appendChild(btn);
-    }
+    addIntelCard(grid, 'impact', '◈', 'Impact Map', 'Arquivos, dependências e risco');
+    addIntelCard(grid, 'rules', '≡', 'Project Rules', 'Regras permanentes do projeto');
+    addIntelCard(grid, 'explain', '?', 'Explain Project', 'Arquitetura, regras e riscos');
     const copy = root?.querySelector('.ld2-cc-native-chat small');
-    if (copy) copy.textContent = 'O chat nativo do Lovable incorpora Plan/Build, Auto Skill, Queue, Think, Rewrite, Visual, Voice, histórico Cloud, Project Brain e Impact Map.';
+    if (copy) copy.textContent = 'O chat nativo do Lovable incorpora Plan/Build, Auto Skill, Queue, Think, Rewrite, Visual, Voice, histórico Cloud, Project Brain, Impact Map e Project Rules.';
   }
 
   document.addEventListener('click', e => {
     const brain = e.target.closest?.('#ld2-root [data-cc-action="train"]');
     if (brain) { e.preventDefault(); e.stopImmediatePropagation(); openBrain(); return; }
     const impact = e.target.closest?.('#ld2-root [data-cc-intel="impact"]');
-    if (impact) { e.preventDefault(); e.stopImmediatePropagation(); openImpacts(); }
+    if (impact) { e.preventDefault(); e.stopImmediatePropagation(); openImpacts(); return; }
+    const rules = e.target.closest?.('#ld2-root [data-cc-intel="rules"]');
+    if (rules) { e.preventDefault(); e.stopImmediatePropagation(); openRules(); return; }
+    const explain = e.target.closest?.('#ld2-root [data-cc-intel="explain"]');
+    if (explain) { e.preventDefault(); e.stopImmediatePropagation(); openExplain(); }
   }, true);
   window.addEventListener('ld2:project', () => { syncBrain(); reconcileControlCenter(); });
   window.addEventListener('ld2:dom-reconcile', reconcileControlCenter);
