@@ -113,6 +113,17 @@ export class GitAdapter {
     });
   }
 
+  async deleteBranch(name) {
+    return this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/git/refs/heads/${encodeURIComponent(name)}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async listActionsRuns(branch) {
+    const data = await this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/actions/runs?branch=${encodeURIComponent(branch)}&event=push&per_page=20`);
+    return Array.isArray(data?.workflow_runs) ? data.workflow_runs : [];
+  }
+
   async createPullRequest({ title, body, head, base }) {
     return this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/pulls`, {
       method: 'POST',
