@@ -66,65 +66,66 @@ export function installGuardedCommit() {
     const regressionSentinel = await runRegressionSentinel({ adapter: this, bundle, shadow });
     const validationGate = await runValidationGate({ adapter: this, bundle, shadow });
     const checkpoint = await createCheckpoint({ adapter: this, bundle, shadow });
+    let published = false;
 
-    let result = null;
     try {
-      result = await applyShadowBuild({ adapter: this, shadow });
+      const result = await applyShadowBuild({ adapter: this, shadow });
+      published = true;
       await markCheckpointPublished(checkpoint, result.commitSha || shadow.commitSha);
-    } catch (error) {
-      await markCheckpointAborted(checkpoint, error).catch(() => null);
-      throw error;
-    }
 
-    let postPublishVerification = null;
-    try {
-      postPublishVerification = await verifyPublishedCheckpoint({
-        adapter: this,
-        checkpoint: { ...checkpoint, appliedCommitSha: result.commitSha || shadow.commitSha },
-        expectedCommitSha: result.commitSha || shadow.commitSha
-      });
-    } catch (error) {
-      // Falha de rede/leitura não é evidência suficiente para desfazer um commit válido.
-      postPublishVerification = {
-        ok: false,
-        definitive: false,
-        reason: 'verification-unavailable',
-        message: error?.message || String(error)
-      };
-    }
-
-    let automaticRollback = { rolledBack: false, verification: postPublishVerification };
-    if (!postPublishVerification.ok && postPublishVerification.definitive) {
-      automaticRollback = await autoRollbackIfDefinitiveFailure({
-        adapter: this,
-        checkpoint: { ...checkpoint, appliedCommitSha: result.commitSha || shadow.commitSha },
-        verification: postPublishVerification
-      });
-      const error = new Error(`POST_PUBLISH_VERIFICATION_FAILED: publicação revertida automaticamente (${postPublishVerification.reason}).`);
-      error.code = 'POST_PUBLISH_ROLLED_BACK';
-      error.checkpoint = checkpoint;
-      error.rollback = automaticRollback;
-      throw error;
-    }
-
-    return {
-      ...result,
-      guarded: true,
-      checkpoint: {
-        id: checkpoint.id,
-        baseHeadSha: checkpoint.baseHeadSha,
-        baseTreeSha: checkpoint.baseTreeSha,
-        appliedCommitSha: result.commitSha || shadow.commitSha,
-        postPublishVerification,
-        automaticRollback
-      },
-      shadow: {
-        ...(result.shadow || {}),
-        commitSha: shadow.commitSha,
-        regressionSentinel,
-        validationGate
+      let postPublishVerification = null;
+      try {
+        postPublishVerification = await verifyPublishedCheckpoint({
+          adapter: this,
+          checkpoint: { ...checkpoint, appliedCommitSha: result.commitSha || shadow.commitSha },
+          expectedCommitSha: result.commitSha || shadow.commitSha
+        });
+      } catch (error) {
+        // Falha de rede/leitura não é evidência suficiente para desfazer um commit válido.
+        postPublishVerification = {
+          ok: false,
+          definitive: false,
+          reason: 'verification-unavailable',
+          message: error?.message || String(error)
+        };
       }
-    };
+
+      let automaticRollback = { rolledBack: false, verification: postPublishVerification };
+      if (!postPublishVerification.ok && postPublishVerification.definitive) {
+        automaticRollback = await autoRollbackIfDefinitiveFailure({
+          adapter: this,
+          checkpoint: { ...checkpoint, appliedCommitSha: result.commitSha || shadow.commitSha },
+          verification: postPublishVerification
+        });
+        const error = new Error(`POST_PUBLISH_VERIFICATION_FAILED: publicação revertida automaticamente (${postPublishVerification.reason}).`);
+        error.code = 'POST_PUBLISH_ROLLED_BACK';
+        error.checkpoint = checkpoint;
+        error.rollback = automaticRollback;
+        throw error;
+      }
+
+      return {
+        ...result,
+        guarded: true,
+        checkpoint: {
+          id: checkpoint.id,
+          baseHeadSha: checkpoint.baseHeadSha,
+          baseTreeSha: checkpoint.baseTreeSha,
+          appliedCommitSha: result.commitSha || shadow.commitSha,
+          postPublishVerification,
+          automaticRollback
+        },
+        shadow: {
+          ...(result.shadow || {}),
+          commitSha: shadow.commitSha,
+          regressionSentinel,
+          validationGate
+        }
+      };
+    } catch (error) {
+      if (!published) await markCheckpointAborted(checkpoint, error).catch(() => null);
+      throw error;
+    }
   };
 
   Object.defineProperty(proto, INSTALLED, { value: true, configurable: false, enumerable: false });
