@@ -40,21 +40,21 @@
         <div>
           <small>LOVABLE DECRYPTER</small>
           <h2>Control Center</h2>
-          <p>O chat próprio foi removido. Os comandos do Decrypter serão incorporados diretamente ao composer nativo do Lovable.</p>
+          <p>O chat próprio foi removido. Os comandos do Decrypter agora usam o composer nativo do Lovable pelo Native Composer Bridge.</p>
         </div>
         <span class="ld2-cc-badge">v${VERSION}</span>
       </section>
 
       <section class="ld2-cc-health" aria-label="Estado da integração">
         <div><span class="ld2-cc-dot ready"></span><small>Extensão</small><b>Ativa</b></div>
-        <div><span class="ld2-cc-dot"></span><small>Composer Bridge</small><b>Próxima etapa</b></div>
+        <div><span class="ld2-cc-dot ready"></span><small>Composer Bridge</small><b>Ativo</b></div>
         <div><span class="ld2-cc-dot"></span><small>Queue UI</small><b>Backend pronto</b></div>
       </section>
 
       <section class="ld2-cc-section">
         <div class="ld2-cc-section-head"><div><small>OPERAÇÃO</small><h3>Engenharia</h3></div></div>
         <div class="ld2-cc-grid">
-          <button class="ld2-cc-card future" type="button" data-cc-future="queue"><span>☷</span><div><b>Fila</b><small>Execuções persistentes</small></div><em>Bridge</em></button>
+          <button class="ld2-cc-card future" type="button" data-cc-future="queue"><span>☷</span><div><b>Fila</b><small>Execuções persistentes</small></div><em>Backend</em></button>
           <button class="ld2-cc-card" type="button" data-cc-action="skills"><span>✳</span><div><b>Skills</b><small>Biblioteca e preferências</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="train"><span>◎</span><div><b>Project Brain</b><small>Treinar contexto do projeto</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="history"><span>↺</span><div><b>Histórico</b><small>Execuções e alterações</small></div></button>
@@ -82,8 +82,8 @@
       </section>
 
       <section class="ld2-cc-native-chat">
-        <div><span>⌘</span><div><b>Chat nativo do Lovable</b><small>Plan/Build, Skills, Think, Rewrite, Visual, Voice e Queue serão incorporados aqui pelo Native Composer Bridge.</small></div></div>
-        <span class="ld2-cc-status">Em integração</span>
+        <div><span>⌘</span><div><b>Chat nativo do Lovable</b><small>O Native Composer Bridge já incorpora Plan/Build, anexos do Decrypter, modelo Gemini e execução. Skills, Queue, Think, Rewrite, Visual e Voice entram nas próximas etapas.</small></div></div>
+        <span class="ld2-cc-status">Bridge ativo</span>
       </section>`;
 
     $$('[data-cc-action]', workspace).forEach(button => {
@@ -96,7 +96,7 @@
         if (!wrap) return;
         const toast = document.createElement('div');
         toast.className = 'ld2-toast';
-        toast.textContent = 'A interface da fila será ligada ao backend após o Native Composer Bridge.';
+        toast.textContent = 'O backend da fila está pronto. A Queue UI será incorporada ao Native Composer Bridge na próxima etapa.';
         wrap.appendChild(toast);
         setTimeout(() => toast.remove(), 3200);
       });
