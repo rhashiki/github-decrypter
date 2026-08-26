@@ -57,16 +57,20 @@
       ],
       "js": [
         "content/skill-router.js",
+        "content/composer-pro.js",
         "content/cloud-runtime.js",
         "content/composer-bridge.js",
         "content/cloud-ui.js",
         "content/queue-project-context.js",
-        "content/queue-executor.js"
+        "content/queue-executor.js",
+        "content/monitor.js"
       ],
       "css": [
         "ui/composer-bridge.css",
+        "ui/composer-pro.css",
         "ui/cloud-ui.css",
-        "ui/cloud-runtime.css"
+        "ui/cloud-runtime.css",
+        "ui/monitor.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
