@@ -1,0 +1,57 @@
+name: Recover Lovable Decrypter v2.0.11
+
+on:
+  push:
+    paths:
+      - 'recovery/READY'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild verified source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(recovery/part*.b64)
+          test ${#parts[@]} -gt 0 || { echo 'Recovery parts missing'; exit 1; }
+          cat "${parts[@]}" | tr -d '\n\r' | base64 -d > /tmp/recovery.zip
+          echo 'da8468905d4936439da15ef3a7901a50c21dec976ae5ddf867c1e654b12f52a9  /tmp/recovery.zip' | sha256sum -c -
+          rm -rf /tmp/recovered
+          mkdir -p /tmp/recovered
+          unzip -q /tmp/recovery.zip -d /tmp/recovered
+
+      - name: Restore and validate v2.0.11
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -a --delete --exclude '.git/' --exclude 'recovery/' /tmp/recovered/ ./
+          rm -rf recovery
+          node --check background/service-worker.js
+          node --check ui/ui.js
+          node --check ai/gemini-agent.js
+          node --check backend/backend-client.js
+          node --check security/license.js
+          node --check security/vault.js
+          node --check updates/update-manager.js
+          test "$(node -p "require('./manifest.json').version")" = '2.0.11'
+          file assets/fab.png assets/icon128.png
+
+      - name: Commit recovered source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: restore Lovable Decrypter v2.0.11 with Supabase backend'
+          git push origin HEAD:main
