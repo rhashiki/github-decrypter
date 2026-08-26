@@ -10,6 +10,7 @@ import { syncRepositoryCache, getCachedFile, getCachedText } from '../core/repo-
 import { verifyLicenseKey } from '../security/license.js';
 import { backupSettingsRemote, restoreSettingsRemote } from '../security/vault.js';
 import { checkUpdates, downloadUpdate } from '../updates/update-manager.js';
+import { assertScopeLock } from '../core/scope-lock.js';
 
 const pending = new Map();
 
@@ -277,6 +278,7 @@ async function preparePlan({ command, projectId = '', preset = '', attachments =
     attachments: safeAttachments.map(({ name, mimeType, size }) => ({ name, mimeType, size })),
     plan
   };
+  bundle.scopeLock = assertScopeLock(bundle);
   emit('diff', 'Preparando revisão', `${plan.files.length} arquivo(s) pronto(s) para revisar`, 'done');
   if (options.finish !== false) emit('done', 'Concluído', plan.summary || 'Revisão pronta', 'done');
   pending.set(id, bundle);
@@ -384,6 +386,7 @@ async function getPending(id) {
 
 async function applyPlan({ id, keepBundle = false }) {
   const bundle = await getPending(id);
+  bundle.scopeLock = assertScopeLock(bundle);
   const { github } = await getActiveConfig('');
   const cfg = { ...github, ...bundle.github };
   const adapter = new GitAdapter(cfg);
