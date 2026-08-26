@@ -14,14 +14,9 @@ jobs:
   create-key:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate owner key
+      - name: Generate owner key without artifact
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-owner-key-bootstrap-temp?k=VGL3jsZylK-YkJF4Xl9SHqiFd4hO9hkMRwtRHOKrDOU' -o owner-key.json
-          node -e "const x=require('./owner-key.json'); if(!x.ok || !x.key) process.exit(1)"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: owner-key-temp-result
-          path: owner-key.json
-          if-no-files-found: error
+          curl -fsS 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-owner-key-bootstrap-temp?k=VGL3jsZylK-YkJF4Xl9SHqiFd4hO9hkMRwtRHOKrDOU' -o /tmp/owner-key-result.json
+          node -e "const x=require('/tmp/owner-key-result.json'); if(!x.ok || !x.license_id) process.exit(1)"
