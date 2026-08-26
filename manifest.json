@@ -26,9 +26,6 @@
     "https://*.supabase.co/*"
   ],
   "background": {
-    "scripts": [
-      "background/service-worker-entry.js"
-    ],
     "service_worker": "background/service-worker-entry.js",
     "type": "module"
   },
