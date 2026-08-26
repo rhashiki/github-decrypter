@@ -56,10 +56,12 @@
         "https://*.lovable.dev/*"
       ],
       "js": [
-        "content/composer-bridge.js"
+        "content/composer-bridge.js",
+        "content/cloud-ui.js"
       ],
       "css": [
-        "ui/composer-bridge.css"
+        "ui/composer-bridge.css",
+        "ui/cloud-ui.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
