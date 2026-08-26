@@ -9,7 +9,9 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const runtime = message => window.LovableDecrypterV2?.runtime?.(message);
   let refreshTimer = null;
+  let refreshScheduled = null;
   let refreshing = false;
+  let lastRefreshAt = 0;
 
   function projectId() {
     return String(window.LovableDecrypterV2?.getProjectId?.() || '');
@@ -150,7 +152,8 @@
         await queueCall(ctx, { action: 'control', operation: button.dataset.batchControl });
         if (button.dataset.batchControl === 'resume') window.LovableDecrypterQueueExecutor?.start?.();
         await renderQueue(card, ctx, await loadQueue(ctx));
-        await refreshScopedCount();
+        lastRefreshAt = 0;
+        await refreshScopedCount(true);
       } catch (error) {
         toast(error?.message || String(error), true);
         button.disabled = false;
@@ -161,7 +164,8 @@
       try {
         await queueCall(ctx, { action: 'cancel_item', item_id: button.dataset.batchCancel });
         await renderQueue(card, ctx, await loadQueue(ctx));
-        await refreshScopedCount();
+        lastRefreshAt = 0;
+        await refreshScopedCount(true);
       } catch (error) { toast(error?.message || String(error), true); button.disabled = false; }
     });
     $$('[data-batch-retry]', card).forEach(button => button.onclick = async () => {
@@ -170,7 +174,8 @@
         await queueCall(ctx, { action: 'retry_failed', item_id: button.dataset.batchRetry });
         window.LovableDecrypterQueueExecutor?.start?.();
         await renderQueue(card, ctx, await loadQueue(ctx));
-        await refreshScopedCount();
+        lastRefreshAt = 0;
+        await refreshScopedCount(true);
       } catch (error) { toast(error?.message || String(error), true); button.disabled = false; }
     });
   }
@@ -192,8 +197,9 @@
     }
   }
 
-  async function refreshScopedCount() {
+  async function refreshScopedCount(force = false) {
     if (refreshing || document.visibilityState === 'hidden') return;
+    if (!force && Date.now() - lastRefreshAt < 2500) return;
     refreshing = true;
     try {
       const ctx = await context();
@@ -215,8 +221,17 @@
         const label = health.querySelector('small'); if (label) label.textContent = 'Batch';
         const value = health.querySelector('b'); if (value) value.textContent = pending ? `${pending} pendente(s)` : 'Pronto';
       }
+      lastRefreshAt = Date.now();
     } catch (_) {}
     finally { refreshing = false; }
+  }
+
+  function scheduleRefresh(delay = 250, force = false) {
+    if (refreshScheduled) return;
+    refreshScheduled = setTimeout(() => {
+      refreshScheduled = null;
+      refreshScopedCount(force);
+    }, delay);
   }
 
   function interceptQueueOpen(event) {
@@ -228,13 +243,16 @@
   }
 
   document.addEventListener('click', interceptQueueOpen, true);
-  window.addEventListener('ld2:queue-changed', () => setTimeout(refreshScopedCount, 120));
-  window.addEventListener('ld2:project', () => setTimeout(refreshScopedCount, 250));
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshScopedCount(); });
-  new MutationObserver(() => refreshScopedCount()).observe(document.documentElement, { childList: true, subtree: true });
-  refreshTimer = setInterval(refreshScopedCount, 5000);
-  addEventListener('beforeunload', () => clearInterval(refreshTimer), { once: true });
-  setTimeout(refreshScopedCount, 700);
+  window.addEventListener('ld2:queue-changed', () => { lastRefreshAt = 0; scheduleRefresh(120, true); });
+  window.addEventListener('ld2:project', () => { lastRefreshAt = 0; scheduleRefresh(250, true); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { lastRefreshAt = 0; scheduleRefresh(100, true); } });
+  new MutationObserver(() => scheduleRefresh(500, false)).observe(document.documentElement, { childList: true, subtree: true });
+  refreshTimer = setInterval(() => refreshScopedCount(false), 5000);
+  addEventListener('beforeunload', () => {
+    clearInterval(refreshTimer);
+    if (refreshScheduled) clearTimeout(refreshScheduled);
+  }, { once: true });
+  scheduleRefresh(700, true);
 
-  window.LovableDecrypterBatchMode = { open: openQueue, refresh: refreshScopedCount };
+  window.LovableDecrypterBatchMode = { open: openQueue, refresh: () => refreshScopedCount(true) };
 })();
