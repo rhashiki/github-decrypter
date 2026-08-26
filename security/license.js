@@ -1,4 +1,4 @@
-const PUBLIC_SPKI_B64 = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEp98fkRLasVVk4lZVbNVy8W3UaptsiAgvUVmFBV/2C5L0lZ5j56oEY1lEOgs0rSrX4jsPAf8F4qflUm2pOUoTQ==';
+const PUBLIC_SPKI_B64 = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==';
 const AUDIENCE = 'lovable-decrypter';
 
 function bytesFromB64url(value = '') {
@@ -48,5 +48,5 @@ export async function verifyLicenseKey(licenseKey = '') {
 }
 
 export function publicLicenseKeyFingerprint() {
-  return 'P256:LD2:2026-01';
+  return 'P256:LD2:2026-02';
 }
