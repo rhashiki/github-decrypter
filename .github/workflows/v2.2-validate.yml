@@ -151,7 +151,7 @@ jobs:
           const workflow = buildValidationWorkflow({ branch: 'ld-validation/test', targets });
           if (!workflow.includes('permissions:\n  contents: read')) throw new Error('Validation runner must be read-only');
           if (!workflow.includes('persist-credentials: false')) throw new Error('Validation runner must not persist checkout credentials');
-          if (!workflow.includes('npm run "lint"') || !workflow.includes('npm run "build"')) throw new Error('Validation runner omitted detected scripts');
+          if (!workflow.includes('lint · package.json') || !workflow.includes('build · package.json')) throw new Error('Validation runner omitted detected script steps');
           console.log('Validation Gate behavior OK');
           NODE
 
