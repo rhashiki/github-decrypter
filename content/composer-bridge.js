@@ -7,6 +7,8 @@
   const MAX_ATTACHMENTS = 8;
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
   const MAX_TOTAL_BYTES = 40 * 1024 * 1024;
+  const LICENSE_CACHE_MS = 2200;
+  const LICENSE_TIMEOUT_MS = 6000;
   const ACCEPT = 'image/*,audio/*,video/*,.pdf,.txt,.md,.json,.csv,.tsv,.rtf,.doc,.docx,.xls,.xlsx,.ods,.ppt,.pptx,.html,.css,.js,.jsx,.ts,.tsx,.xml,.sql';
 
   const state = {
@@ -18,12 +20,41 @@
     requestId: '',
     attachments: [],
     planBundle: null,
-    settings: null
+    settings: null,
+    licensed: false,
+    lastLicenseCheck: 0,
+    licenseCheckPromise: null
   };
 
   const api = () => window.LovableDecrypterV2;
   const runtime = message => api()?.runtime?.(message);
   const projectId = () => api()?.getProjectId?.() || '';
+
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+  }
+
+  async function authorized(force = false) {
+    const now = Date.now();
+    if (!force && now - state.lastLicenseCheck < LICENSE_CACHE_MS) return state.licensed;
+    if (state.licenseCheckPromise) return state.licenseCheckPromise;
+    state.licenseCheckPromise = (async () => {
+      try {
+        const status = await withTimeout(runtime({ type: 'LD2_LICENSE_STATUS' }), LICENSE_TIMEOUT_MS);
+        state.licensed = !!status?.valid;
+      } catch (_) {
+        state.licensed = false;
+      } finally {
+        state.lastLicenseCheck = Date.now();
+        state.licenseCheckPromise = null;
+      }
+      return state.licensed;
+    })();
+    return state.licenseCheckPromise;
+  }
 
   function visible(el) {
     if (!el || !el.isConnected || el.closest('#ld2-root')) return false;
@@ -115,15 +146,23 @@
   function setBusy(busy) {
     state.busy = busy;
     state.bar?.classList.toggle('busy', busy);
+    state.host?.classList.toggle('ld2-composer-busy', busy);
     state.bar?.querySelectorAll('button').forEach(btn => {
       if (!btn.matches('[data-ld2-plan-approve],[data-ld2-plan-close]')) btn.disabled = busy;
     });
   }
 
+  function cleanupBridge() {
+    state.host?.classList.remove('ld2-composer-highlight', 'ld2-composer-busy');
+    state.bar?.remove();
+    state.input = null;
+    state.host = null;
+    state.bar = null;
+  }
+
   function renderPlan(bundle) {
     state.planBundle = bundle;
-    const old = state.bar?.querySelector('.ld2-bridge-plan');
-    old?.remove();
+    state.bar?.querySelector('.ld2-bridge-plan')?.remove();
     const plan = bundle?.plan || {};
     const box = document.createElement('div');
     box.className = 'ld2-bridge-plan';
@@ -144,14 +183,14 @@
 
   async function execute() {
     if (state.busy || !state.input) return;
+    if (!(await authorized(true))) return setStatus('Ative o Lovable Decrypter com uma KEY válida.', 'error');
     const command = readInput(state.input).trim();
     if (!command) return setStatus('Digite um comando no composer do Lovable.', 'error');
-    if (!runtime) return setStatus('Bridge indisponível.', 'error');
 
     state.requestId = crypto.randomUUID();
     const attachments = state.attachments.map(x => ({ ...x }));
     setBusy(true);
-    setStatus(state.mode === 'plan' ? 'Planejando…' : 'Construindo…', 'active');
+    setStatus(state.mode === 'plan' ? 'Planejando o projeto…' : 'Preparando a construção…', 'active');
     try {
       if (state.mode === 'plan') {
         const bundle = await runtime({ type: 'LD2_PLAN_ONLY', command, attachments, projectId: projectId(), requestId: state.requestId });
@@ -175,7 +214,9 @@
 
   async function approvePlan(box) {
     if (state.busy || !state.planBundle) return;
+    if (!(await authorized(true))) return setStatus('Sua KEY precisa ser validada novamente.', 'error');
     const bundle = state.planBundle;
+    state.requestId = crypto.randomUUID();
     setBusy(true);
     setStatus('Executando plano aprovado…', 'active');
     try {
@@ -185,7 +226,7 @@
         approvedPlan: bundle.plan,
         attachments: state.attachments.map(x => ({ ...x })),
         projectId: projectId(),
-        requestId: crypto.randomUUID()
+        requestId: state.requestId
       });
       state.attachments = [];
       state.planBundle = null;
@@ -200,7 +241,7 @@
     }
   }
 
-  async function openSettings() {
+  function openSettings() {
     document.querySelector('#ld2-root [data-settings]')?.click();
   }
 
@@ -211,33 +252,37 @@
   function refreshBar() {
     if (!state.bar) return;
     state.bar.querySelectorAll('[data-ld2-mode]').forEach(btn => btn.classList.toggle('active', btn.dataset.ld2Mode === state.mode));
-    const attach = state.bar.querySelector('[data-ld2-attach]');
-    if (attach) attach.textContent = state.attachments.length ? `📎 ${state.attachments.length}` : '📎';
+    const attachCount = state.bar.querySelector('[data-ld2-attach-count]');
+    if (attachCount) attachCount.textContent = state.attachments.length ? `${state.attachments.length} anexo(s)` : 'Anexar';
     const model = state.bar.querySelector('[data-ld2-model]');
     if (model) {
       const name = String(state.settings?.gemini?.model || 'Gemini').replace(/^models\//, '');
-      model.textContent = name.length > 20 ? `${name.slice(0, 18)}…` : name;
+      model.textContent = name.length > 24 ? `${name.slice(0, 22)}…` : name;
       model.title = `Modelo: ${name}. Clique para configurar.`;
     }
   }
 
   async function createBar(input, host) {
+    state.host?.classList.remove('ld2-composer-highlight', 'ld2-composer-busy');
     state.bar?.remove();
+
     const bar = document.createElement('div');
     bar.className = 'ld2-native-bridge';
     bar.innerHTML = `
-      <div class="ld2-bridge-main">
-        <span class="ld2-bridge-brand"><i></i>DECRYPTER</span>
-        <div class="ld2-bridge-mode"><button type="button" data-ld2-mode="plan">Plan</button><button type="button" data-ld2-mode="build">Build</button></div>
-        <button type="button" class="ld2-bridge-chip" data-ld2-attach title="Anexar ao comando do Decrypter">📎</button>
+      <div class="ld2-bridge-row ld2-bridge-top">
+        <span class="ld2-bridge-brand"><i></i><span><b>Lovable Decrypter</b><small>COMPOSER CONTROL</small></span></span>
+        <div class="ld2-bridge-mode" aria-label="Modo do Decrypter"><button type="button" data-ld2-mode="plan">Planejar</button><button type="button" data-ld2-mode="build">Construir</button></div>
         <button type="button" class="ld2-bridge-chip model" data-ld2-model>Gemini</button>
-        <span class="ld2-bridge-spacer"></span>
-        <span class="ld2-bridge-status" data-ld2-bridge-status>Pronto</span>
-        <button type="button" class="ld2-bridge-run" data-ld2-run>Executar</button>
+      </div>
+      <div class="ld2-bridge-row ld2-bridge-bottom">
+        <button type="button" class="ld2-bridge-chip attach" data-ld2-attach title="Anexar ao comando do Decrypter"><span>📎</span><span data-ld2-attach-count>Anexar</span></button>
+        <span class="ld2-bridge-status" data-ld2-bridge-status>Pronto para executar</span>
+        <button type="button" class="ld2-bridge-run" data-ld2-run><span>▶</span>Executar</button>
       </div>
       <input type="file" data-ld2-file-input multiple hidden accept="${ACCEPT}">`;
 
     host.parentElement?.insertBefore(bar, host);
+    host.classList.add('ld2-composer-highlight');
     state.input = input;
     state.host = host;
     state.bar = bar;
@@ -256,7 +301,7 @@
     bar.querySelector('[data-ld2-model]').onclick = openSettings;
     bar.querySelector('[data-ld2-attach]').onclick = () => bar.querySelector('[data-ld2-file-input]').click();
     bar.querySelector('[data-ld2-file-input]').onchange = async e => {
-      try { await addFiles([...(e.target.files || [])]); setStatus('Anexos adicionados.', 'success'); }
+      try { await addFiles([...(e.target.files || [])]); setStatus('Anexos adicionados ao comando.', 'success'); }
       catch (error) { setStatus(error?.message || String(error), 'error'); }
       e.target.value = '';
     };
@@ -271,23 +316,27 @@
   }
 
   let scheduled = false;
-  function reconcile() {
+  async function reconcile() {
     scheduled = false;
-    const input = findComposerInput();
-    if (!input) {
-      if (state.input && !state.input.isConnected) { state.bar?.remove(); state.input = state.host = state.bar = null; }
+    if (!(await authorized())) {
+      cleanupBridge();
       return;
     }
-    if (input === state.input && state.bar?.isConnected) return;
+    const input = findComposerInput();
+    if (!input) {
+      if (state.input && !state.input.isConnected) cleanupBridge();
+      return;
+    }
+    if (input === state.input && state.bar?.isConnected && state.host?.isConnected) return;
     const host = findHost(input);
     if (!host?.parentElement) return;
-    createBar(input, host).catch(() => {});
+    await createBar(input, host);
   }
 
   function schedule() {
     if (scheduled) return;
     scheduled = true;
-    setTimeout(reconcile, 120);
+    setTimeout(() => reconcile().catch(() => { scheduled = false; }), 120);
   }
 
   chrome.runtime.onMessage.addListener(message => {
