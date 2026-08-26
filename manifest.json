@@ -39,6 +39,18 @@
         "https://*.lovable.dev/*"
       ],
       "js": [
+        "content/route-probe.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://lovable.dev/*",
+        "https://*.lovable.dev/*"
+      ],
+      "js": [
         "content/content.js",
         "ui/ui.js",
         "ui/control-center.js"
@@ -63,7 +75,8 @@
         "content/cloud-ui.js",
         "content/queue-project-context.js",
         "content/queue-executor.js",
-        "content/monitor.js"
+        "content/monitor.js",
+        "content/dom-guardian.js"
       ],
       "css": [
         "ui/composer-bridge.css",
