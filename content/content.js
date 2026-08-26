@@ -22,9 +22,11 @@
     window.dispatchEvent(new CustomEvent('ld2:project', { detail: { ...state } }));
   }
 
-  function runtime(message) {
+  async function runtime(message) {
+    const guard = window.LovableDecrypterCredentialGuard;
+    const prepared = guard?.prepareMessage ? await guard.prepareMessage(message) : message;
     return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(message, res => {
+      chrome.runtime.sendMessage(prepared, res => {
         if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
         if (!res?.ok) return reject(new Error(res?.error || 'Falha na extensão.'));
         resolve(res.data);
