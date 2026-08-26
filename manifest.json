@@ -56,6 +56,8 @@
         "https://*.lovable.dev/*"
       ],
       "js": [
+        "content/skill-router.js",
+        "content/cloud-runtime.js",
         "content/composer-bridge.js",
         "content/cloud-ui.js",
         "content/queue-project-context.js",
@@ -63,7 +65,8 @@
       ],
       "css": [
         "ui/composer-bridge.css",
-        "ui/cloud-ui.css"
+        "ui/cloud-ui.css",
+        "ui/cloud-runtime.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
