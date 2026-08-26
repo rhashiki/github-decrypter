@@ -4,32 +4,6 @@
   window.__LOVABLE_DECRYPTER_CREDENTIAL_UI_GUARD__ = true;
 
   const SENTINEL = '__LD2_SAVED_CREDENTIAL__';
-  const PASSWORD_VALUE_RE = /(<input\b(?=[^>]*\btype=(?:"password"|'password'))[^>]*?\bvalue=)(["'])([^"']+)(\2)/gi;
-
-  function sanitizeHtml(value) {
-    if (typeof value !== 'string' || !/type=(?:"password"|'password')/i.test(value)) return value;
-    return value.replace(PASSWORD_VALUE_RE, (match, prefix, quote, current) => {
-      if (!current || current === SENTINEL) return match;
-      return `${prefix}${quote}${SENTINEL}${quote}`;
-    });
-  }
-
-  const inner = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-  if (inner?.get && inner?.set) {
-    Object.defineProperty(Element.prototype, 'innerHTML', {
-      configurable: inner.configurable,
-      enumerable: inner.enumerable,
-      get() { return inner.get.call(this); },
-      set(value) { return inner.set.call(this, sanitizeHtml(value)); }
-    });
-  }
-
-  const nativeInsertAdjacentHTML = Element.prototype.insertAdjacentHTML;
-  if (typeof nativeInsertAdjacentHTML === 'function') {
-    Element.prototype.insertAdjacentHTML = function(position, text) {
-      return nativeInsertAdjacentHTML.call(this, position, sanitizeHtml(text));
-    };
-  }
 
   function getCurrentSettings() {
     return new Promise((resolve, reject) => {
