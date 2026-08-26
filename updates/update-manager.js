@@ -1,6 +1,7 @@
 import { verifyLicenseKey } from '../security/license.js';
 
-const VERIFIED_RELEASES = new WeakSet();
+const VERIFIED_RELEASE_TOKENS = new Map();
+const VERIFIED_RELEASE_TTL_MS = 10 * 60 * 1000;
 
 function compareVersions(a = '0', b = '0') {
   const A = String(a).split('.').map(x => Number(x) || 0), B = String(b).split('.').map(x => Number(x) || 0);
@@ -19,6 +20,24 @@ function assertHttpsUrl(value = '', label = 'URL') {
   return url.toString();
 }
 
+function pruneVerificationTokens(now = Date.now()) {
+  for (const [token, entry] of VERIFIED_RELEASE_TOKENS.entries()) {
+    if (!entry || entry.expiresAt <= now) VERIFIED_RELEASE_TOKENS.delete(token);
+  }
+}
+
+function rememberVerifiedRelease(payload) {
+  pruneVerificationTokens();
+  const token = crypto.randomUUID();
+  const downloadUrl = assertHttpsUrl(payload.download_url, 'URL de download da release');
+  VERIFIED_RELEASE_TOKENS.set(token, {
+    version: String(payload.version || ''),
+    downloadUrl,
+    expiresAt: Date.now() + VERIFIED_RELEASE_TTL_MS
+  });
+  return { ...payload, download_url: downloadUrl, verification_token: token };
+}
+
 // A release feed is signed with the same owner signing key used for licenses.
 // Envelope: { payload: <base64url JSON>, signature: <base64url P1363> }
 async function verifyReleaseEnvelope(envelope) {
@@ -28,9 +47,7 @@ async function verifyReleaseEnvelope(envelope) {
   const auth = await verifyLicenseKey(`LD2.${envelope.payload}.${envelope.signature}`);
   const payload = auth.payload;
   if (payload.type !== 'release' || !payload.version || !payload.download_url) throw new Error('Manifesto de atualização assinado é inválido.');
-  payload.download_url = assertHttpsUrl(payload.download_url, 'URL de download da release');
-  VERIFIED_RELEASES.add(payload);
-  return payload;
+  return rememberVerifiedRelease(payload);
 }
 
 export const DEFAULT_UPDATE_FEED_URL = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-release-feed';
@@ -62,14 +79,19 @@ export async function checkUpdates({ currentVersion, updateFeedUrl = '' }) {
 }
 
 export async function downloadUpdate(release) {
-  if (!release || typeof release !== 'object' || !VERIFIED_RELEASES.has(release)) {
-    throw new Error('Release não verificada. Consulte novamente o feed OTA assinado antes de baixar.');
+  pruneVerificationTokens();
+  const token = String(release?.verification_token || '');
+  const verified = token ? VERIFIED_RELEASE_TOKENS.get(token) : null;
+  const version = String(release?.version || '');
+  const downloadUrl = assertHttpsUrl(release?.download_url || '', 'URL de download da release');
+  if (!verified || verified.version !== version || verified.downloadUrl !== downloadUrl) {
+    throw new Error('Release não verificada ou alterada. Consulte novamente o feed OTA assinado antes de baixar.');
   }
-  const downloadUrl = assertHttpsUrl(release.download_url, 'URL de download da release');
+  VERIFIED_RELEASE_TOKENS.delete(token);
   const id = await chrome.downloads.download({
     url: downloadUrl,
-    filename: `Lovable-Decrypter-v${release.version}.zip`,
+    filename: `Lovable-Decrypter-v${version}.zip`,
     saveAs: true
   });
-  return { downloadId: id, version: release.version };
+  return { downloadId: id, version };
 }
