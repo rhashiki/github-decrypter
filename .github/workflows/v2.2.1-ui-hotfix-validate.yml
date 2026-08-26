@@ -62,6 +62,21 @@ jobs:
             node --check "$file"
           done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
 
+      - name: Lovable boot isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          const early = (m.content_scripts || []).filter(x => x.run_at === 'document_start' || x.run_at === 'document_end');
+          if (early.length) throw new Error('Decrypter must not inject before document_idle on Lovable');
+          const guard = fs.readFileSync('content/credential-ui-guard.js', 'utf8');
+          if (/Element\.prototype/.test(guard)) throw new Error('Credential guard must not patch Element.prototype');
+          if (/Object\.defineProperty\s*\(\s*Element\.prototype/.test(guard)) throw new Error('Credential guard DOM monkeypatch reintroduced');
+          if (/Element\.prototype\.insertAdjacentHTML/.test(guard)) throw new Error('Credential guard must not replace insertAdjacentHTML');
+          NODE
+
       - name: Lovable navigation isolation
         shell: bash
         run: |
