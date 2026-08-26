@@ -1,0 +1,80 @@
+name: Validate v2.2 test build
+
+on:
+  push:
+    branches:
+      - control-center-v2.2.0
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest and referenced files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          if (manifest.manifest_version !== 3) throw new Error('manifest_version must be 3');
+          if (manifest.version !== '2.2.0') throw new Error(`Unexpected manifest version: ${manifest.version}`);
+          const refs = [];
+          for (const cs of manifest.content_scripts || []) {
+            for (const f of cs.js || []) refs.push(f);
+            for (const f of cs.css || []) refs.push(f);
+          }
+          if (manifest.background?.service_worker) refs.push(manifest.background.service_worker);
+          for (const group of manifest.web_accessible_resources || []) for (const f of group.resources || []) refs.push(f);
+          const missing = [...new Set(refs)].filter(f => !fs.existsSync(f));
+          if (missing.length) throw new Error(`Missing manifest files: ${missing.join(', ')}`);
+          const config = fs.readFileSync('settings/config.js', 'utf8');
+          if (!/VERSION\s*=\s*['"]2\.2\.0['"]/.test(config)) throw new Error('settings/config.js version mismatch');
+          console.log(`Manifest OK: ${new Set(refs).size} referenced files present`);
+          NODE
+
+      - name: JavaScript syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
+
+      - name: Safety invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -n -E 'LD_LICENSE_PRIVATE_JWK|MERCADOPAGO_ACCESS_TOKEN|MERCADOPAGO_WEBHOOK_SECRET|LD_OWNER_SECRET' \
+            --include='*.js' --include='*.json' --include='*.html' . \
+            --exclude-dir=.git --exclude-dir=.github
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          const main = (m.content_scripts || []).filter(x => x.world === 'MAIN');
+          if (main.length !== 1 || JSON.stringify(main[0].js) !== JSON.stringify(['content/route-probe.js'])) {
+            throw new Error('Only route-probe.js may execute in MAIN world');
+          }
+          NODE
+
+      - name: Package test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f Lovable-Decrypter-v2.2.0-test.zip
+          zip -qr Lovable-Decrypter-v2.2.0-test.zip . \
+            -x '.git/*' '.github/*' 'Lovable-Decrypter-v2.2.0-test.zip'
+          sha256sum Lovable-Decrypter-v2.2.0-test.zip | tee Lovable-Decrypter-v2.2.0-test.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.2.0-test
+          path: |
+            Lovable-Decrypter-v2.2.0-test.zip
+            Lovable-Decrypter-v2.2.0-test.sha256
+          if-no-files-found: error
