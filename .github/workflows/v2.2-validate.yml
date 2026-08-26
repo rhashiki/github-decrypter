@@ -31,6 +31,7 @@ jobs:
             for (const f of cs.css || []) refs.push(f);
           }
           if (manifest.background?.service_worker) refs.push(manifest.background.service_worker);
+          for (const f of manifest.background?.scripts || []) refs.push(f);
           for (const group of manifest.web_accessible_resources || []) for (const f of group.resources || []) refs.push(f);
           const missing = [...new Set(refs)].filter(f => !fs.existsSync(f));
           if (missing.length) throw new Error(`Missing manifest files: ${missing.join(', ')}`);
@@ -186,9 +187,9 @@ jobs:
           const fs = require('fs');
           const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
           const main = (m.content_scripts || []).filter(x => x.world === 'MAIN');
-          if (main.length !== 1 || JSON.stringify(main[0].js) !== JSON.stringify(['content/route-probe.js'])) {
-            throw new Error('Only route-probe.js may execute in MAIN world');
-          }
+          if (main.length !== 0) throw new Error('No content script may execute in MAIN world');
+          const scripts = (m.content_scripts || []).flatMap(x => x.js || []);
+          if (scripts.includes('content/route-probe.js') || fs.existsSync('content/route-probe.js')) throw new Error('Legacy route probe must remain removed');
           NODE
 
       - name: Package test ZIP
