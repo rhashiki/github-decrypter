@@ -63,7 +63,7 @@ jobs:
             'github_repo: ctx.github.repo',
             'github_branch: ctx.github.branch',
             'ld2_suggestions_dismissed_v1',
-            'Nenhuma chamada Gemini é feita para gerar esta lista.'
+            'sem chamada automática ao Gemini'
           ]) {
             if (!src.includes(required)) throw new Error(`Missing Automatic Suggestions invariant: ${required}`);
           }
