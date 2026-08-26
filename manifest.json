@@ -53,7 +53,8 @@
       "js": [
         "content/content.js",
         "ui/ui.js",
-        "ui/control-center.js"
+        "ui/control-center.js",
+        "content/checkpoint-ui.js"
       ],
       "css": [
         "ui/matrix.css",
