@@ -78,6 +78,7 @@
         "content/skill-router.js",
         "content/composer-pro.js",
         "content/cloud-runtime.js",
+        "content/preview-progress-overlay.js",
         "content/composer-bridge.js",
         "content/batch-mode.js",
         "content/automatic-suggestions.js",
@@ -90,6 +91,7 @@
       "css": [
         "ui/composer-bridge.css",
         "ui/composer-pro.css",
+        "ui/preview-progress-overlay.css",
         "ui/cloud-ui.css",
         "ui/cloud-runtime.css",
         "ui/monitor.css"
