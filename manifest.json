@@ -68,6 +68,7 @@
         "https://*.lovable.dev/*"
       ],
       "js": [
+        "content/project-intelligence.js",
         "content/skill-router.js",
         "content/composer-pro.js",
         "content/cloud-runtime.js",
