@@ -1,8 +1,9 @@
-export const VERSION = '2.1.1';
+export const VERSION = '2.2.0';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
 export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
+export const DEFAULT_UPDATE_FEED_URL = `${DEFAULT_BACKEND_BASE}/ld-release-feed`;
 export const STORE_URL = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-store';
 
 // Free Tier verificado na tabela oficial de preços da Gemini Developer API
@@ -49,7 +50,7 @@ export const DEFAULT_SETTINGS = {
     backendBase: DEFAULT_BACKEND_BASE,
     deviceId: '',
     vaultApiBase: DEFAULT_VAULT_API_BASE,
-    updateFeedUrl: 'https://raw.githubusercontent.com/rhashiki/lovable-decrypter-extension/main/updates/latest.json',
+    updateFeedUrl: DEFAULT_UPDATE_FEED_URL,
     lastVaultSyncAt: null
   },
   gemini: {
@@ -100,6 +101,11 @@ export function mergeSettings(saved = {}) {
     ui: { ...DEFAULT_SETTINGS.ui, ...(saved.ui || {}) },
     projectMappings: { ...(saved.projectMappings || {}) }
   };
+
+  // Migra automaticamente instalações antigas que ainda apontam para o feed legado do GitHub.
+  if (!merged.auth.updateFeedUrl || /raw\.githubusercontent\.com\/rhashiki\/lovable-decrypter-extension\/main\/updates\/latest\.json/i.test(String(merged.auth.updateFeedUrl))) {
+    merged.auth.updateFeedUrl = DEFAULT_UPDATE_FEED_URL;
+  }
 
   // Gratuito é o padrão. O modo pago só é habilitado por opt-in explícito e usa a API do próprio usuário.
   merged.gemini.billingMode = merged.gemini.billingMode === 'user_paid' ? 'user_paid' : 'free';
