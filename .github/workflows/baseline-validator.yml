@@ -1,6 +1,11 @@
 name: Validate v2.1.1 baseline PR
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/baseline-validator.yml
   pull_request:
     branches:
       - main
@@ -11,7 +16,7 @@ permissions:
 
 jobs:
   rebuild:
-    if: github.head_ref == 'baseline-v2.1.1'
+    if: github.event_name == 'push' || github.head_ref == 'baseline-v2.1.1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
