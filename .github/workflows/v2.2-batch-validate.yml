@@ -1,0 +1,105 @@
+name: Validate v2.2 Batch Mode
+
+on:
+  push:
+    branches:
+      - control-center-v2.2.0
+      - batch-mode-v2.2.0
+    paths:
+      - content/batch-mode.js
+      - content/queue-executor.js
+      - content/queue-project-context.js
+      - content/project-rules-cache.js
+      - content/skill-router.js
+      - manifest.json
+      - .github/workflows/v2.2-batch-validate.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check content/batch-mode.js
+          node --check content/queue-executor.js
+          node --check content/queue-project-context.js
+          node --check content/project-rules-cache.js
+          node --check content/skill-router.js
+
+      - name: Batch manifest order
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          const scripts = (manifest.content_scripts || []).flatMap(x => x.js || []);
+          const required = [
+            'content/project-intelligence.js',
+            'content/project-rules-cache.js',
+            'content/skill-router.js',
+            'content/batch-mode.js',
+            'content/cloud-ui.js',
+            'content/queue-project-context.js',
+            'content/queue-executor.js'
+          ];
+          for (const file of required) if (!scripts.includes(file)) throw new Error(`Missing Batch dependency: ${file}`);
+          const at = file => scripts.indexOf(file);
+          if (!(at('content/project-intelligence.js') < at('content/project-rules-cache.js') &&
+                at('content/project-rules-cache.js') < at('content/skill-router.js') &&
+                at('content/batch-mode.js') < at('content/cloud-ui.js') &&
+                at('content/cloud-ui.js') < at('content/queue-project-context.js') &&
+                at('content/queue-project-context.js') < at('content/queue-executor.js'))) {
+            throw new Error('Batch content-script order is unsafe');
+          }
+          console.log('Batch manifest order OK');
+          NODE
+
+      - name: Project-scoped Batch UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('content/batch-mode.js', 'utf8');
+          for (const marker of ['project_id: ctx.projectId','github_owner: ctx.github.owner','github_repo: ctx.github.repo','github_branch: ctx.github.branch']) {
+            if (!src.includes(marker)) throw new Error(`Batch request missing context marker: ${marker}`);
+          }
+          for (const action of ["action: 'list'","action: 'control'","action: 'cancel_item'","action: 'retry_failed'"]) {
+            if (!src.includes(action)) throw new Error(`Batch UI missing scoped action: ${action}`);
+          }
+          if (!src.includes("data-cloud-queue], #ld2-root [data-cc-future=\"queue\"]")) throw new Error('Batch UI does not intercept legacy queue entrypoints');
+          if (!src.includes('Date.now() - lastRefreshAt < 2500')) throw new Error('Batch status polling is not rate-limited');
+          console.log('Project-scoped Batch UI OK');
+          NODE
+
+      - name: Sequential executor safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const executor = fs.readFileSync('content/queue-executor.js', 'utf8');
+          const rules = fs.readFileSync('content/project-rules-cache.js', 'utf8');
+          const skills = fs.readFileSync('content/skill-router.js', 'utf8');
+          const enqueue = fs.readFileSync('content/queue-project-context.js', 'utf8');
+
+          if (!executor.includes("const runtime = message => window.LovableDecrypterV2?.runtime?.(message)")) throw new Error('Queue executor must resolve the wrapped runtime dynamically');
+          if (!executor.includes("type: 'LD2_BUILD_EXECUTE'")) throw new Error('Batch build items do not enter the normal Build pipeline');
+          if (!executor.includes('sameProject(item, ctx)')) throw new Error('Batch executor project guard missing');
+          if (!executor.includes("await finish(ctx, item, 'failed'")) throw new Error('Failed Batch item is not finalized as failed');
+          if (!rules.includes("EXECUTION_TYPES.has(String(message?.type || ''))")) throw new Error('Project Rules are not hydrated for execution messages');
+          if (!skills.includes("'LD2_BUILD_EXECUTE'")) throw new Error('Skill Router is not applied to Batch builds');
+          for (const marker of ['project_id: projectId','github_owner: String(github.owner','github_repo: String(github.repo','github_branch: String(github.branch']) {
+            if (!enqueue.includes(marker)) throw new Error(`Batch enqueue context missing: ${marker}`);
+          }
+          console.log('Sequential Batch executor safety OK');
+          NODE
