@@ -1,4 +1,4 @@
-export const VERSION = '2.2.0';
+export const VERSION = '2.2.1';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
