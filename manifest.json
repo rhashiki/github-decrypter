@@ -26,25 +26,28 @@
     "https://*.supabase.co/*"
   ],
   "background": {
+    "scripts": [
+      "background/service-worker-entry.js"
+    ],
     "service_worker": "background/service-worker-entry.js",
     "type": "module"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lovable-decrypter@rhashiki.dev",
+      "strict_min_version": "121.0",
+      "data_collection_permissions": {
+        "required": [
+          "authenticationInfo",
+          "websiteContent"
+        ]
+      }
+    }
   },
   "action": {
     "default_title": "Lovable Decrypter v2.2.0"
   },
   "content_scripts": [
-    {
-      "matches": [
-        "https://lovable.dev/*",
-        "https://*.lovable.dev/*"
-      ],
-      "js": [
-        "content/route-probe.js"
-      ],
-      "run_at": "document_start",
-      "world": "MAIN",
-      "all_frames": false
-    },
     {
       "matches": [
         "https://lovable.dev/*",
