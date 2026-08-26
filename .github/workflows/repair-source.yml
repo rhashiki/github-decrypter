@@ -1,0 +1,54 @@
+name: Repair extension source
+
+on:
+  push:
+    paths:
+      - 'repair/READY'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild source package
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(repair/source.part*.b64)
+          test ${#parts[@]} -gt 0 || { echo 'No repair parts found'; exit 1; }
+          cat "${parts[@]}" | tr -d '\n\r' | base64 -d > /tmp/repair-source.zip
+          echo '4a4b7bc1cb9cf8daff369d8d81efd009c9ab3da82228fa44b4ca01e3c0585a37  /tmp/repair-source.zip' | sha256sum -c -
+          rm -rf /tmp/repair-source
+          mkdir -p /tmp/repair-source
+          unzip -q /tmp/repair-source.zip -d /tmp/repair-source
+          test -f /tmp/repair-source/manifest.json
+          test -f /tmp/repair-source/background/service-worker.js
+          test -f /tmp/repair-source/ui/ui.js
+          test -f /tmp/repair-source/ui/matrix.css
+          test -f /tmp/repair-source/ai/gemini-agent.js
+          test -f /tmp/repair-source/assets/fab.png
+          node --check /tmp/repair-source/background/service-worker.js
+          node --check /tmp/repair-source/ui/ui.js
+          node --check /tmp/repair-source/ai/gemini-agent.js
+          python -m json.tool /tmp/repair-source/manifest.json >/dev/null
+
+      - name: Replace repository source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name repair -exec rm -rf {} +
+          rsync -a /tmp/repair-source/ ./
+          rm -rf repair
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore: restore complete Lovable Decrypter v2.0.10 source'
+          git push origin main
