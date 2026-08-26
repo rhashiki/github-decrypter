@@ -57,7 +57,9 @@
       ],
       "js": [
         "content/composer-bridge.js",
-        "content/cloud-ui.js"
+        "content/cloud-ui.js",
+        "content/queue-project-context.js",
+        "content/queue-executor.js"
       ],
       "css": [
         "ui/composer-bridge.css",
