@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Lovable Decrypter",
+  "version": "2.0.10",
+  "description": "AI GitHub agent for Lovable projects with Plan/Build, signed KEY login, encrypted remote vault readiness and compliant update checks.",
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "downloads",
+    "unlimitedStorage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://lovable.dev/*",
+    "https://*.lovable.dev/*",
+    "https://api.github.com/*",
+    "https://codeload.github.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.supabase.com/*",
+    "https://*.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Lovable Decrypter v2.0.10"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://lovable.dev/*",
+        "https://*.lovable.dev/*"
+      ],
+      "js": [
+        "content/content.js",
+        "ui/ui.js"
+      ],
+      "css": [
+        "ui/matrix.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/fab.png",
+        "assets/icon128.png"
+      ],
+      "matches": [
+        "https://lovable.dev/*",
+        "https://*.lovable.dev/*"
+      ]
+    }
+  ]
+}
