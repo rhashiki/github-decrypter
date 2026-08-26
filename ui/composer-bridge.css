@@ -1,30 +1,62 @@
-.ld2-native-bridge{position:relative;z-index:20;width:100%;box-sizing:border-box;margin:0 0 6px;padding:6px 8px;border:1px solid rgba(66,255,158,.18);border-radius:12px;background:linear-gradient(180deg,rgba(7,17,12,.94),rgba(5,12,9,.9));box-shadow:0 8px 22px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.025);font-family:Arial,sans-serif;color:#eafff2;backdrop-filter:blur(14px)}
+.ld2-native-bridge{position:relative;z-index:20;width:100%;box-sizing:border-box;margin:0 0 10px;padding:10px 12px;border:1px solid rgba(66,255,158,.48);border-radius:14px;background:linear-gradient(180deg,rgba(8,22,15,.97),rgba(4,13,9,.95));box-shadow:0 12px 30px rgba(0,0,0,.25),0 0 22px rgba(66,255,158,.08),inset 0 1px rgba(255,255,255,.035);font-family:Arial,sans-serif;color:#eafff2;backdrop-filter:blur(16px) saturate(120%)}
 .ld2-native-bridge *{box-sizing:border-box;font-family:Arial,sans-serif}
-.ld2-bridge-main{display:flex;align-items:center;gap:6px;min-height:32px}
-.ld2-bridge-brand{display:flex;align-items:center;gap:6px;padding:0 5px 0 2px;color:#8ea39a;font-size:9px;font-weight:800;letter-spacing:.09em;white-space:nowrap}
-.ld2-bridge-brand i{width:7px;height:7px;border-radius:50%;background:#42ff9e;box-shadow:0 0 10px rgba(66,255,158,.65)}
-.ld2-bridge-mode{display:flex;align-items:center;padding:2px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(0,0,0,.2)}
-.ld2-bridge-mode button{appearance:none;border:0;border-radius:7px;padding:5px 8px;background:transparent;color:#80958b;font-size:9px;font-weight:700;cursor:pointer;transition:.15s ease}
-.ld2-bridge-mode button.active{background:rgba(66,255,158,.12);color:#54ffa7;box-shadow:inset 0 0 0 1px rgba(66,255,158,.15)}
-.ld2-bridge-chip{appearance:none;height:27px;min-width:30px;padding:0 7px;border:1px solid rgba(255,255,255,.075);border-radius:8px;background:rgba(255,255,255,.025);color:#a8bbb2;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;max-width:145px;overflow:hidden;text-overflow:ellipsis}
-.ld2-bridge-chip:hover{border-color:rgba(66,255,158,.24);color:#dffff0;background:rgba(66,255,158,.04)}
-.ld2-bridge-chip.model{font-size:9px;color:#91a79d}
-.ld2-bridge-spacer{flex:1;min-width:4px}
-.ld2-bridge-status{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#82978e;font-size:9px;line-height:1.2;text-align:right}
-.ld2-bridge-status[data-kind="active"]{color:#d8c56b}
-.ld2-bridge-status[data-kind="success"]{color:#54ffa7}
-.ld2-bridge-status[data-kind="error"]{color:#ff7e89}
-.ld2-bridge-run{appearance:none;height:28px;padding:0 10px;border:1px solid #42ff9e;border-radius:8px;background:#42ff9e;color:#03130b;font-size:9px;font-weight:800;cursor:pointer;box-shadow:0 0 14px rgba(66,255,158,.12)}
-.ld2-bridge-run:hover{filter:brightness(1.08)}
-.ld2-native-bridge.busy .ld2-bridge-run{opacity:.6;cursor:wait}
-.ld2-native-bridge button:disabled{opacity:.48;cursor:wait}
-.ld2-bridge-plan{margin-top:7px;padding:10px;border:1px solid rgba(66,255,158,.17);border-radius:10px;background:rgba(1,8,5,.68);color:#dff8ea}
+.ld2-bridge-row{display:flex;align-items:center;width:100%;gap:10px}
+.ld2-bridge-top{min-height:38px;padding-bottom:9px;border-bottom:1px solid rgba(66,255,158,.17)}
+.ld2-bridge-bottom{min-height:40px;padding-top:9px}
+.ld2-bridge-brand{display:flex;align-items:center;gap:9px;min-width:0;margin-right:auto;color:#eafff2;white-space:nowrap}
+.ld2-bridge-brand>i{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#42ff9e;box-shadow:0 0 13px rgba(66,255,158,.8),0 0 0 4px rgba(66,255,158,.07)}
+.ld2-bridge-brand>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ld2-bridge-brand b{font-size:13px;line-height:1.15;color:#f1fff7;font-weight:800}
+.ld2-bridge-brand small{font-size:10px;line-height:1.15;letter-spacing:.1em;color:#7f998d;font-weight:800}
+.ld2-bridge-mode{display:flex;align-items:center;padding:3px;border:1px solid rgba(255,255,255,.11);border-radius:10px;background:rgba(0,0,0,.24)}
+.ld2-bridge-mode button{appearance:none;border:0;border-radius:8px;padding:7px 10px;background:transparent;color:#8da097;font-size:11.5px;font-weight:800;cursor:pointer;transition:.15s ease}
+.ld2-bridge-mode button.active{background:rgba(66,255,158,.15);color:#5effab;box-shadow:inset 0 0 0 1px rgba(66,255,158,.2),0 0 12px rgba(66,255,158,.04)}
+.ld2-bridge-chip{appearance:none;min-height:32px;padding:0 10px;border:1px solid rgba(255,255,255,.11);border-radius:9px;background:rgba(255,255,255,.035);color:#b5c8bf;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s ease}
+.ld2-bridge-chip:hover{border-color:rgba(66,255,158,.35);color:#ecfff4;background:rgba(66,255,158,.055)}
+.ld2-bridge-chip.model{max-width:180px;overflow:hidden;text-overflow:ellipsis;color:#9fb5aa}
+.ld2-bridge-chip.attach{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.ld2-bridge-chip.attach>span:first-child{font-size:14px}
+.ld2-bridge-status{flex:1;min-width:120px;color:#95aa9f;font-size:12px;line-height:1.35;text-align:left;white-space:normal;overflow-wrap:anywhere}
+.ld2-bridge-status[data-kind="active"]{color:#e8d779}
+.ld2-bridge-status[data-kind="success"]{color:#61ffae}
+.ld2-bridge-status[data-kind="error"]{color:#ff8c96}
+.ld2-bridge-run{appearance:none;display:flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:0 13px;border:1px solid #42ff9e;border-radius:9px;background:#42ff9e;color:#03130b;font-size:11.5px;font-weight:900;cursor:pointer;box-shadow:0 0 18px rgba(66,255,158,.17);transition:.15s ease}
+.ld2-bridge-run>span{font-size:10px}
+.ld2-bridge-run:hover{filter:brightness(1.08);box-shadow:0 0 24px rgba(66,255,158,.25)}
+.ld2-native-bridge.busy .ld2-bridge-run{opacity:.65;cursor:wait}
+.ld2-native-bridge button:disabled{opacity:.5;cursor:wait}
+
+.ld2-composer-highlight{outline:2px solid rgba(66,255,158,.72)!important;outline-offset:4px!important;border-radius:14px!important;box-shadow:0 0 0 1px rgba(66,255,158,.14),0 0 28px rgba(66,255,158,.16)!important;transition:outline-color .18s ease,box-shadow .18s ease!important}
+.ld2-composer-highlight:focus-within{outline-color:#42ff9e!important;box-shadow:0 0 0 1px rgba(66,255,158,.22),0 0 36px rgba(66,255,158,.24)!important}
+.ld2-composer-highlight.ld2-composer-busy{outline-color:rgba(255,209,102,.88)!important;box-shadow:0 0 0 1px rgba(255,209,102,.16),0 0 30px rgba(255,209,102,.18)!important}
+
+.ld2-bridge-plan{margin-top:10px;padding:13px;border:1px solid rgba(66,255,158,.25);border-radius:11px;background:rgba(1,8,5,.75);color:#dff8ea}
 .ld2-bridge-plan-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.ld2-bridge-plan-head b{font-size:11px;color:#eafff2}
-.ld2-bridge-plan-head span{font-size:8px;color:#42ff9e;border:1px solid rgba(66,255,158,.16);border-radius:999px;padding:3px 6px}
-.ld2-bridge-plan p{margin:7px 0;color:#9db1a8;font-size:10px;line-height:1.4}
-.ld2-bridge-plan ol{margin:6px 0 8px;padding-left:18px;color:#b9cbc2;font-size:9.5px;line-height:1.4}
-.ld2-bridge-plan-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
-.ld2-bridge-plan-actions button{appearance:none;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:rgba(255,255,255,.03);color:#a9bbb2;padding:6px 8px;font-size:9px;font-weight:700;cursor:pointer}
-.ld2-bridge-plan-actions button.primary{border-color:rgba(66,255,158,.4);background:rgba(66,255,158,.12);color:#5effab}
-@media(max-width:700px){.ld2-native-bridge{padding:5px 6px}.ld2-bridge-brand{display:none}.ld2-bridge-chip.model{display:none}.ld2-bridge-status{display:none}.ld2-bridge-main{gap:4px}.ld2-bridge-mode button{padding:5px 7px}.ld2-bridge-run{margin-left:auto}}
+.ld2-bridge-plan-head b{font-size:13px;color:#effff5}
+.ld2-bridge-plan-head span{font-size:10px;color:#55ffa8;border:1px solid rgba(66,255,158,.24);border-radius:999px;padding:4px 7px}
+.ld2-bridge-plan p{margin:8px 0;color:#a7bbb1;font-size:12px;line-height:1.5}
+.ld2-bridge-plan ol{margin:7px 0 9px;padding-left:20px;color:#c3d5cc;font-size:11.5px;line-height:1.5}
+.ld2-bridge-plan-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
+.ld2-bridge-plan-actions button{appearance:none;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:rgba(255,255,255,.04);color:#b6c8bf;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}
+.ld2-bridge-plan-actions button.primary{border-color:rgba(66,255,158,.45);background:rgba(66,255,158,.13);color:#61ffae}
+
+@media(max-width:700px){
+  .ld2-native-bridge{padding:9px 10px}
+  .ld2-bridge-top,.ld2-bridge-bottom{gap:7px}
+  .ld2-bridge-brand small{display:none}
+  .ld2-bridge-brand b{font-size:12px}
+  .ld2-bridge-mode button{padding:6px 8px;font-size:11px}
+  .ld2-bridge-chip.model{max-width:120px;font-size:10.5px}
+  .ld2-bridge-status{font-size:11px;min-width:0}
+  .ld2-bridge-run{padding:0 10px;font-size:11px}
+}
+
+@media(max-width:520px){
+  .ld2-bridge-top{flex-wrap:wrap}
+  .ld2-bridge-brand{width:100%;margin-right:0}
+  .ld2-bridge-mode{flex:1}
+  .ld2-bridge-mode button{flex:1}
+  .ld2-bridge-chip.model{max-width:135px}
+  .ld2-bridge-bottom{align-items:stretch;flex-wrap:wrap}
+  .ld2-bridge-status{order:3;width:100%;flex-basis:100%;padding-top:2px}
+}
