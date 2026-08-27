@@ -95,7 +95,8 @@ jobs:
           test -f content/lovable-project-creator.js
           test -f ui/supabase-project-manager.js
           grep -q "LD2_PLAN_ONLY" content/composer-bridge-v3.js
-          grep -q "LD2_BUILD_PREPARE" content/composer-bridge-v3.js
+          grep -q "Aplicar no GitHub" content/composer-bridge-v3.js
+          if grep -q "LD2_BUILD_EXECUTE" content/composer-bridge-v3.js; then exit 1; fi
 
       - name: Package Build 7 candidate
         run: |
