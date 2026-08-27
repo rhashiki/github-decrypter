@@ -27,7 +27,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.4 Build 7 · Cloud Migrator Complete" },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 8 · Skills Engine" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -37,7 +37,10 @@
         "content/lovable-project-creator.js",
         "content/cloud-migrator-runtime-v2.js",
         "content/content.js",
+        "content/skill-router.js",
+        "content/project-rules-cache.js",
         "ui/ui.js",
+        "ui/skills-engine.js",
         "ui/control-center.js",
         "ui/project-context.js",
         "ui/github-autosync.js",
@@ -58,7 +61,8 @@
         "ui/project-migration.css",
         "ui/project-creator.css",
         "ui/supabase-project-manager.css",
-        "ui/cloud-migrator-core.css"
+        "ui/cloud-migrator-core.css",
+        "ui/skills-engine.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
