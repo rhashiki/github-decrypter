@@ -7,6 +7,7 @@ import { installSupabaseOAuthRuntime } from './supabase-oauth-runtime.js';
 import { installProjectMigrationRuntime } from './project-migration-runtime.js';
 import { installLovableProjectRuntime } from './lovable-project-runtime.js';
 import { installCloudMigrationRuntime } from './cloud-migration-runtime.js';
+import { installCloudAssetsRuntime } from './cloud-assets-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -17,3 +18,4 @@ installSupabaseOAuthRuntime();
 installProjectMigrationRuntime();
 installLovableProjectRuntime();
 installCloudMigrationRuntime();
+installCloudAssetsRuntime();
