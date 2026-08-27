@@ -42,7 +42,7 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.3 Stage 4"
+    "default_title": "Lovable Decrypter v2.4 Build 1 · Project Runtime"
   },
   "content_scripts": [
     {
@@ -52,9 +52,11 @@
       ],
       "js": [
         "content/credential-ui-guard.js",
+        "content/lovable-project-runtime.js",
         "content/content.js",
         "ui/ui.js",
         "ui/control-center.js",
+        "ui/project-context.js",
         "ui/project-migration.js",
         "content/composer-bridge.js"
       ],
@@ -63,6 +65,7 @@
         "ui/control-center.css",
         "ui/composer-bridge.css",
         "ui/github-app.css",
+        "ui/project-context.css",
         "ui/project-migration.css"
       ],
       "run_at": "document_idle",
