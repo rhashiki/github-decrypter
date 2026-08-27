@@ -4,7 +4,7 @@ import { getSettings } from '../storage/settings-store.js';
 const PORT_NAME = 'ld2-github-app';
 const REQUEST_TIMEOUT_MS = 30000;
 
-async function requestBackend(action, payload = {}) {
+export async function requestGithubAppBackend(action, payload = {}) {
   const settings = await getSettings();
   const licenseKey = String(settings.auth?.licenseKey || '').trim();
   const deviceId = String(settings.auth?.deviceId || '').trim();
@@ -51,7 +51,7 @@ export function installGithubAppRuntime() {
       const action = String(message?.action || 'status');
       try {
         if (!['status', 'connect', 'disconnect'].includes(action)) throw new Error('Ação GitHub inválida.');
-        const data = await requestBackend(action, message?.payload || {});
+        const data = await requestGithubAppBackend(action, message?.payload || {});
         port.postMessage({ id, ok: true, data });
       } catch (error) {
         try { port.postMessage({ id, ok: false, error: error?.message || String(error) }); } catch (_) {}
