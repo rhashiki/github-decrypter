@@ -1,0 +1,131 @@
++  if (!data || data.consumed_at || Date.parse(data.expires_at) <= Date.now()) throw new Error("STATE_INVALID_OR_EXPIRED");
++  return data;
++}
++async function consumeState(sb: any, stateHash: string) {
++  const { error } = await sb.from("ld_supabase_oauth_states").update({ consumed_at: new Date().toISOString() })
++    .eq("state_hash", stateHash).is("consumed_at", null);
++  if (error) throw new Error("STATE_CONSUME_FAILED");
++}
++async function exchangeAuthorizationCode(sb: any, config: any, code: string, verifier: string) {
++  const secret = await clientSecret(sb);
++  const body = new URLSearchParams({
++    grant_type: "authorization_code",
++    code,
++    redirect_uri: String(config.redirect_uri),
++    code_verifier: verifier
++  });
++  const res = await fetch(`${API_BASE}/oauth/token`, {
++    method: "POST",
++    headers: {
++      Authorization: basicAuth(String(config.client_id), secret),
++      "Content-Type": "application/x-www-form-urlencoded",
++      Accept: "application/json"
++    },
++    body
++  });
++  const data = await res.json().catch(() => null);
++  if (!res.ok || !data?.access_token || !data?.refresh_token) throw new Error(`TOKEN_EXCHANGE_FAILED:${res.status}:${data?.message || data?.error || "invalid response"}`);
++  return data;
++}
++async function refreshAccessToken(sb: any, config: any, connection: any) {
++  const refresh = await getSecret(sb, String(connection.refresh_secret_name));
++  const secret = await clientSecret(sb);
++  const body = new URLSearchParams({ grant_type: "refresh_token", refresh_token: refresh });
++  const res = await fetch(`${API_BASE}/oauth/token`, {
++    method: "POST",
++    headers: {
++      Authorization: basicAuth(String(config.client_id), secret),
++      "Content-Type": "application/x-www-form-urlencoded",
++      Accept: "application/json"
++    },
++    body
++  });
++  const data = await res.json().catch(() => null);
++  if (!res.ok || !data?.access_token) throw new Error(`TOKEN_REFRESH_FAILED:${res.status}:${data?.message || data?.error || "invalid response"}`);
++  if (data.refresh_token && String(data.refresh_token) !== refresh) {
++    await storeSecret(sb, String(connection.refresh_secret_name), String(data.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
++  }
++  return { accessToken: String(data.access_token), scope: String(data.scope || connection.granted_scope || ""), tokenType: String(data.token_type || "Bearer") };
++}
++async function managementRequest(accessToken: string, path: string, options: RequestInit = {}) {
++  const controller = new AbortController();
++  const timer = setTimeout(() => controller.abort(), 45000);
++  try {
++    const res = await fetch(`${API_BASE}${path}`, {
++      ...options,
++      signal: controller.signal,
++      headers: {
++        Authorization: `Bearer ${accessToken}`,
++        Accept: "application/json",
++        ...(options.headers || {})
++      }
++    });
++    const data = await res.json().catch(() => null);
++    if (!res.ok) throw new Error(`SUPABASE_MANAGEMENT_HTTP_${res.status}:${data?.message || data?.error || "request failed"}`);
++    return data;
++  } catch (error) {
++    if ((error as Error)?.name === "AbortError") throw new Error("SUPABASE_MANAGEMENT_TIMEOUT");
++    throw error;
++  } finally { clearTimeout(timer); }
++}
++async function listProjects(accessToken: string) {
++  const data = await managementRequest(accessToken, "/projects");
++  if (!Array.isArray(data)) throw new Error("PROJECT_LIST_INVALID");
++  return data.map((project: any) => ({
++    id: String(project.id || project.ref || ""),
++    ref: String(project.ref || project.id || ""),
++    name: String(project.name || project.ref || "Supabase project"),
++    organization_id: String(project.organization_id || ""),
++    organization_slug: String(project.organization_slug || ""),
++    region: String(project.region || ""),
++    status: String(project.status || ""),
++    database_version: String(project.database?.version || ""),
++    url: project.ref ? `https://${project.ref}.supabase.co` : ""
++  })).filter((project: any) => /^[a-z0-9]{8,32}$/i.test(project.ref));
++}
++async function connectionRow(sb: any, licenseId: string, deviceHash: string) {
++  const { data, error } = await sb.from("ld_supabase_connections").select("*")
++    .eq("license_id", licenseId).eq("device_hash", deviceHash).maybeSingle();
++  if (error) throw new Error("CONNECTION_READ_FAILED");
++  return data || null;
++}
++async function activeSession(sb: any, config: any, licenseId: string, deviceHash: string) {
++  const connection = await connectionRow(sb, licenseId, deviceHash);
++  if (!connection) throw new Error("SUPABASE_NOT_CONNECTED");
++  const token = await refreshAccessToken(sb, config, connection);
++  return { connection, ...token };
++}
++async function verifyProject(accessToken: string, projectRef: string) {
++  if (!/^[a-z0-9]{8,32}$/i.test(projectRef)) throw new Error("PROJECT_REF_INVALID");
++  const projects = await listProjects(accessToken);
++  const project = projects.find((item: any) => item.ref === projectRef);
++  if (!project) throw new Error("PROJECT_NOT_AUTHORIZED");
++  return { project, projects };
++}
++function escapeHtml(value: string) {
++  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
++}
++function successPage(title: string, detail: string) {
++  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{margin:0;background:#050b08;color:#eafff2;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh}.card{max-width:520px;margin:24px;padding:28px;border:1px solid #3ecf8e77;border-radius:18px;background:#07140e;box-shadow:0 20px 70px #0008,0 0 30px #3ecf8e18}.ok{color:#3ecf8e;font-size:38px}.card h1{font-size:22px}.card p{color:#a9bdb3;line-height:1.5}.card small{color:#70877b}</style></head><body><div class="card"><div class="ok">✓</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p><small>Esta janela pode ser fechada.</small></div><script>try{window.opener&&window.opener.postMessage({type:'LD2_SUPABASE_CONNECTED'},'*')}catch(e){};setTimeout(()=>window.close(),1200)</script></body></html>`;
++}
++
++Deno.serve(async (req: Request) => {
++  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
++  const url = new URL(req.url);
++  const sb = supabaseAdmin();
++  try {
++    if (req.method === "GET" && url.searchParams.get("flow") === "callback") {
++      const code = url.searchParams.get("code") || "";
++      const rawState = url.searchParams.get("state") || "";
++      if (!code) throw new Error("AUTH_CODE_REQUIRED");
++      const state = await stateRow(sb, rawState);
++      const config = await getConfig(sb);
++      if (!config) throw new Error("SUPABASE_OAUTH_APP_NOT_CONFIGURED");
++      const token = await exchangeAuthorizationCode(sb, config, code, String(state.code_verifier));
++      const projects = await listProjects(String(token.access_token));
++      const secretName = refreshSecretName(String(state.license_id), String(state.device_hash));
++      await storeSecret(sb, secretName, String(token.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
++      const { error } = await sb.from("ld_supabase_connections").upsert({
++        license_id: state.license_id,
++        device_hash: state.device_hash,
++        refresh_secret_name: secretName,
