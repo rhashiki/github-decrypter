@@ -1,0 +1,44 @@
+name: Apply v2.4 Build 6 payload
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build6-cloud-migrator-core
+    paths:
+      - '.github/workflows/build6-apply.yml'
+      - '.build6_payload.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Apply Build 6 atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .build6_payload.b64 > /tmp/build6.tar.gz
+          mkdir -p /tmp/build6
+          tar -xzf /tmp/build6.tar.gz -C /tmp/build6
+          cp -a /tmp/build6/. .
+          node --check background/cloud-migration-runtime.js
+          node --check content/cloud-migrator-runtime.js
+          node --check ui/cloud-migrator-core.js
+          node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8'))"
+          grep -q "installCloudMigrationRuntime" background/service-worker-entry.js
+          grep -q 'content/cloud-migrator-runtime.js' manifest.json
+          grep -q 'ui/cloud-migrator-core.js' manifest.json
+          grep -q 'ui/cloud-migrator-core.css' manifest.json
+          test -f supabase/functions/ld-cloud-migrator-broker/index.ts
+          test -f supabase/migrations/20260827110225_cloud_migrator_core_build6.sql
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .build6_payload.b64 .github/workflows/build6-apply.yml
+          git add manifest.json background/service-worker-entry.js background/cloud-migration-runtime.js content/cloud-migrator-runtime.js ui/cloud-migrator-core.js ui/cloud-migrator-core.css supabase/functions/ld-cloud-migrator-broker/index.ts supabase/migrations/20260827110225_cloud_migrator_core_build6.sql .github/workflows/v2.4-build6-cloud-migrator-core.yml
+          git commit -m "feat: add resumable Lovable Cloud migrator core"
+          git push origin HEAD:rebuild-v2.4-build6-cloud-migrator-core
