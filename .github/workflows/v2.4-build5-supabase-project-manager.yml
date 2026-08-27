@@ -66,7 +66,11 @@ jobs:
           const fs=require('fs');
           const ui=fs.readFileSync('ui/supabase-project-manager.js','utf8');
           const bg=fs.readFileSync('background/supabase-oauth-runtime.js','utf8');
-          if(/service_role\s*[:=]|managementToken\s*[:=]|anonKey\s*[:=]|db_pass\s*[:=]/i.test(ui)) throw new Error('Administrative credential assignment leaked to UI');
+          const scrubbed=ui
+            .replace(/managementToken\s*:\s*''/g,'')
+            .replace(/anonKey\s*:\s*''/g,'');
+          if(/service_role\s*[:=]|managementToken\s*[:=]|anonKey\s*[:=]|db_pass\s*[:=]/i.test(scrubbed)) throw new Error('Administrative credential assignment leaked to UI');
+          if(!/managementToken\s*:\s*''/.test(ui) || !/anonKey\s*:\s*''/.test(ui)) throw new Error('Legacy administrative credentials must be explicitly cleared');
           if(/MutationObserver|window\.fetch\s*=|XMLHttpRequest\.prototype|history\.pushState\s*=|history\.replaceState\s*=/.test(ui)) throw new Error('Manager interferes with Lovable host');
           if(/chrome\.storage[\s\S]{0,120}(accessToken|refresh_token|client_secret)/i.test(bg)) throw new Error('OAuth secret persisted client-side');
           NODE
