@@ -18,6 +18,10 @@ Deno.serve(async(req:Request)=>{
       return json({ok:true,required_scopes:REST_SCOPES,scope_ok:true});
     }
     const j=await job(sb,String(body.job_id||""),auth);
+    if(action==="prepare_config"){
+      const updated=await save(sb,j,{progress:{...(j.progress||{}),config_expected:true,config_applied:false,strong_verification_ok:false}},"Configuração completa marcada para aplicação na fase CONFIG.");
+      return json({ok:true,job:safeJob(updated)});
+    }
     if(action==="record_expectations"){
       const names=[...new Set((Array.isArray(body.secret_names)?body.secret_names:[]).map((x:any)=>String(x)).filter((x:string)=>/^[A-Z][A-Z0-9_]{1,127}$/.test(x)))].sort();
       const updated=await save(sb,j,{inventory:{...(j.inventory||{}),secretNamesExpected:names}},`${names.length} Secret name(s) confirmado(s) para verificação.`);
