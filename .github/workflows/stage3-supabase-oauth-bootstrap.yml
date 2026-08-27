@@ -1,0 +1,59 @@
+name: Apply Stage 3 Supabase OAuth
+
+on:
+  push:
+    branches:
+      - rebuild-v2.3-stage3-supabase-oauth
+    paths:
+      - .github/workflows/stage3-supabase-oauth-bootstrap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild-v2.3-stage3-supabase-oauth
+          fetch-depth: 0
+
+      - name: Assemble and verify atomic patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/stage3-patch.part* > /tmp/stage3.patch
+          git apply --check /tmp/stage3.patch
+          git apply /tmp/stage3.patch
+
+      - name: Validate client syntax and invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check background/service-worker-entry.js
+          node --check background/service-worker.js
+          node --check background/supabase-oauth-runtime.js
+          node --check settings/config.js
+          node --check storage/settings-store.js
+          node --check tools/supabase-tools.js
+          node --check ui/control-center.js
+          node --check ui/ui.js
+          grep -q "installSupabaseOAuthRuntime" background/service-worker-entry.js
+          grep -q "ld2-supabase-oauth" background/supabase-oauth-runtime.js
+          grep -q "data-cc-supabase" ui/control-center.js
+          ! grep -q "data-sb-mgmt" ui/ui.js
+          ! grep -q "data-sb-anon" ui/ui.js
+
+      - name: Commit Stage 3 and remove bootstrap files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/stage3-patch.part*
+          rm -f .github/workflows/stage3-supabase-oauth-bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: add official Supabase OAuth integration"
+          git push origin HEAD:rebuild-v2.3-stage3-supabase-oauth
