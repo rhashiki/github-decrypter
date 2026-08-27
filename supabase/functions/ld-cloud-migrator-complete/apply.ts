@@ -31,9 +31,10 @@ export async function applyServiceConfig(sb:any,j:any,a:any,input:any,inputWarni
     }
   }
   return save(sb,j,{
-    status:"running",
+    status:"waiting",
+    phase:"verify",
     inventory:{...(j.inventory||{}),configExpected:applied,configSkipped:skipped},
-    progress:{...(j.progress||{}),config_expected:true,config_applied:true,config_sections:Object.keys(applied),current:"Configuração portátil aplicada"},
+    progress:{...(j.progress||{}),config_expected:true,config_applied:true,config_sections:Object.keys(applied),strong_verification_ok:false,current:"Aguardando verificação completa"},
     warnings:[...new Set(warnings)]
-  },`Configuração portátil aplicada: ${Object.keys(applied).join(", ")||"nenhuma"}.`);
+  },`Configuração portátil aplicada: ${Object.keys(applied).join(", ")||"nenhuma"}. Aguardando verificação forte.`);
 }
