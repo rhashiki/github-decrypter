@@ -1,0 +1,26 @@
+name: Cleanup Build 6 staging
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build6-cloud-migrator-core
+    paths:
+      - '.github/workflows/build6-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove temporary staging files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .build6_payload.b64 .build6_payload.part00 .build6_payload.part01 .build6_payload.part02 .build6_payload.part03 .build6_payload.part04 .build6_payload.part05 .build6_payload.part06 .build6_payload.part07 .build6_payload.part08 .build6_payload.part09 .github/workflows/build6-apply.yml .github/workflows/build6-cleanup.yml
+          git commit -m "chore: clean Build 6 staging artifacts"
+          git push origin HEAD:rebuild-v2.4-build6-cloud-migrator-core
