@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.2.1",
+  "version": "2.4.9",
+  "version_name": "2.4 Build 9",
   "description": "AI engineering layer for Lovable projects with signed licenses, GitHub App authorization, Supabase OAuth and Gemini Free/User-Paid modes.",
   "icons": {
     "16": "assets/icon16.png",
@@ -27,7 +28,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.4 Build 8 · Skills Engine" },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 9 · Core Reconciliation" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -37,11 +38,14 @@
         "content/lovable-project-creator.js",
         "content/cloud-migrator-runtime-v2.js",
         "content/content.js",
+        "content/project-intelligence.js",
         "content/skill-router.js",
         "content/project-rules-cache.js",
         "ui/ui.js",
         "ui/skills-engine.js",
         "ui/control-center.js",
+        "content/checkpoint-ui.js",
+        "content/build9-reconciliation.js",
         "ui/project-context.js",
         "ui/github-autosync.js",
         "ui/project-migration.js",
