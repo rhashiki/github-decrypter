@@ -1,3 +1,4 @@
+# Final Build 7 validation gate
 name: Validate v2.4 Build 7 Cloud Migrator Complete
 
 on:
@@ -76,8 +77,15 @@ jobs:
           const fs=require('fs');
           const broker=fs.readFileSync('supabase/functions/ld-cloud-migrator-assets/index.ts','utf8');
           const migration=fs.readFileSync('supabase/migrations/20260827124500_cloud_migrator_complete_build7.sql','utf8');
+          const manager=fs.readFileSync('supabase/functions/ld-supabase-manager/index.ts','utf8');
+          const oauth=fs.readFileSync('supabase/functions/ld-supabase-oauth/index.ts','utf8');
           for(const p of ['storage_buckets','storage_objects','storage_policies','realtime','edge_functions','secrets','config','verify']) if(!broker.includes(p)) throw new Error(`Missing phase ${p}`);
-          for(const s of ['auth:read','auth:write','edge_functions:read','edge_functions:write','secrets:read','secrets:write','storage:read']) if(!broker.includes(s)) throw new Error(`Missing OAuth scope ${s}`);
+          for(const s of ['auth:read','auth:write','edge_functions:read','edge_functions:write','secrets:read','secrets:write','storage:read']) {
+            if(!broker.includes(s)) throw new Error(`Missing broker OAuth scope ${s}`);
+            if(!manager.includes(s)) throw new Error(`Missing manager OAuth scope ${s}`);
+            if(!oauth.includes(s)) throw new Error(`Missing oauth status scope ${s}`);
+          }
+          if(!manager.includes('SCOPES DA BUILD 7')) throw new Error('Build 7 OAuth bootstrap label missing');
           if(!/BUILTIN_SECRETS/.test(broker)) throw new Error('Built-in secret filter missing');
           if(!/supabase_realtime/.test(broker)) throw new Error('Realtime publication migration missing');
           if(!/revoke all on table public\.ld_cloud_asset_jobs from public, anon, authenticated/i.test(migration)) throw new Error('Asset jobs grants not revoked');
