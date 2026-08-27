@@ -1,6 +1,7 @@
 import { DEFAULT_BACKEND_BASE } from '../settings/config.js';
 import { getSettings } from '../storage/settings-store.js';
 import { GitAdapter } from '../github/git-adapter.js';
+import { cloudCompleteBackend, sourceCompleteConfig } from './cloud-complete-runtime.js';
 
 const PORT_NAME = 'ld2-cloud-assets';
 const REQUEST_TIMEOUT_MS = 70000;
@@ -156,6 +157,24 @@ async function deployFunctions(projectId, jobId, onProgress) {
   }
   return { done, total:manifest.functions.length, secretNames:manifest.secretNames, config:manifest.config, warnings:manifest.warnings };
 }
+async function orchestrateRepoConfig(projectId, jobId) {
+  const [manifest, completeConfig, status] = await Promise.all([
+    sourceManifest(projectId), sourceCompleteConfig(projectId), assetBackend('status', { job_id: jobId })
+  ]);
+  const job = status?.job || {};
+  if (job.phase === 'verify' && job.status === 'waiting' && job.progress?.strong_verification_ok !== true) {
+    return cloudCompleteBackend('verify_complete', { job_id: jobId });
+  }
+  if (job.phase === 'config' || (job.phase === 'verify' && job.progress?.config_applied !== true)) {
+    return cloudCompleteBackend('apply_service_config', {
+      job_id: jobId,
+      config: completeConfig,
+      warnings: [...(manifest.warnings || []), ...(completeConfig.warnings || [])]
+    });
+  }
+  await cloudCompleteBackend('record_expectations', { job_id: jobId, secret_names: manifest.secretNames || [] });
+  return cloudCompleteBackend('prepare_config', { job_id: jobId });
+}
 export function installCloudAssetsRuntime() {
   if (globalThis.__LD2_CLOUD_ASSETS_RUNTIME__) return;
   globalThis.__LD2_CLOUD_ASSETS_RUNTIME__ = true;
@@ -164,14 +183,16 @@ export function installCloudAssetsRuntime() {
     const handler = async message => {
       const id = String(message?.id || ''), action = String(message?.action || 'status'), payload = message?.payload || {};
       try {
-        if (action === 'source_manifest') return port.postMessage({ id, ok:true, data:await sourceManifest(String(payload.projectId || '')) });
+        if (action === 'source_manifest') {
+          await cloudCompleteBackend('preflight');
+          return port.postMessage({ id, ok:true, data:await sourceManifest(String(payload.projectId || '')) });
+        }
         if (action === 'deploy_functions') {
           const data = await deployFunctions(String(payload.projectId || ''), String(payload.job_id || ''), progress => { try { port.postMessage({ id, progress }); } catch (_) {} });
           return port.postMessage({ id, ok:true, data });
         }
         if (action === 'apply_repo_config') {
-          const manifest = await sourceManifest(String(payload.projectId || ''));
-          const data = await assetBackend('apply_config', { job_id:String(payload.job_id || ''), config:manifest.config, warnings:manifest.warnings });
+          const data = await orchestrateRepoConfig(String(payload.projectId || ''), String(payload.job_id || ''));
           return port.postMessage({ id, ok:true, data });
         }
         if (!['prepare','active','status','inspect','run_next','cancel','functions_manifest','deploy_function','apply_config'].includes(action)) throw new Error('Ação de assets inválida.');
