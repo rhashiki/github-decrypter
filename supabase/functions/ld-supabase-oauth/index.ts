@@ -2,6 +2,22 @@ import { createClient } from "jsr:@supabase/supabase-js@2.112.4";
 
 const PUBLIC_SPKI_B64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==";
 const API_BASE = "https://api.supabase.com/v1";
+const REQUIRED_SCOPES = Object.freeze([
+  "organizations:read",
+  "projects:read",
+  "projects:write",
+  "database:read",
+  "database:write",
+  "auth:read",
+  "auth:write",
+  "edge_functions:read",
+  "edge_functions:write",
+  "secrets:read",
+  "secrets:write",
+  "storage:read",
+  "rest:read",
+  "rest:write"
+]);
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "content-type,x-license-key,x-device-id,authorization",
@@ -128,6 +144,10 @@ function basicAuth(clientId: string, secret: string) { return `Basic ${btoa(`${c
 function selfUrl(url: URL) { return `${url.origin}${url.pathname}`; }
 function refreshSecretName(licenseId: string, deviceHash: string) {
   return `LD_SUPABASE_REFRESH_${licenseId.replace(/-/g, "")}_${deviceHash.slice(0, 24)}`;
+}
+function missingScopes(scope: string) {
+  const granted = new Set(String(scope || "").split(/[\s,]+/).filter(Boolean));
+  return REQUIRED_SCOPES.filter(value => !granted.has(value));
 }
 async function createState(sb: any, licenseId: string, deviceHash: string) {
   await sb.from("ld_supabase_oauth_states").delete().lt("expires_at", new Date().toISOString());
@@ -298,19 +318,20 @@ Deno.serve(async (req: Request) => {
     const config = await getConfig(sb);
 
     if (action === "status") {
-      if (!config) return json({ ok: true, app_configured: false, connected: false, required_scopes: ["organizations:read", "projects:read", "projects:write", "database:read", "database:write", "auth:read", "auth:write", "edge_functions:read", "edge_functions:write", "secrets:read", "secrets:write", "storage:read"] });
+      if (!config) return json({ ok: true, app_configured: false, connected: false, required_scopes: REQUIRED_SCOPES });
       const connection = await connectionRow(sb, auth.license.id, auth.deviceHash);
-      if (!connection) return json({ ok: true, app_configured: true, connected: false, app: { name: config.app_name } });
+      if (!connection) return json({ ok: true, app_configured: true, connected: false, app: { name: config.app_name }, required_scopes: REQUIRED_SCOPES });
       try {
         const token = await refreshAccessToken(sb, config, connection);
         const projects = await listProjects(token.accessToken);
-        return json({ ok: true, app_configured: true, connected: true, app: { name: config.app_name }, scope: token.scope, projects });
+        const missing = missingScopes(token.scope);
+        return json({ ok: true, app_configured: true, connected: true, app: { name: config.app_name }, scope: token.scope, required_scopes: REQUIRED_SCOPES, missing_scopes: missing, reauthorize_required: missing.length > 0, projects });
       } catch (error) {
         const message = String((error as Error)?.message || error);
         if (/TOKEN_REFRESH_FAILED:400|TOKEN_REFRESH_FAILED:401/.test(message)) {
           try { await deleteSecret(sb, String(connection.refresh_secret_name)); } catch (_) {}
           await sb.from("ld_supabase_connections").delete().eq("license_id", auth.license.id).eq("device_hash", auth.deviceHash);
-          return json({ ok: true, app_configured: true, connected: false, stale_connection: true, app: { name: config.app_name } });
+          return json({ ok: true, app_configured: true, connected: false, stale_connection: true, app: { name: config.app_name }, required_scopes: REQUIRED_SCOPES });
         }
         throw error;
       }
@@ -328,7 +349,7 @@ Deno.serve(async (req: Request) => {
         code_challenge: state.challenge,
         code_challenge_method: "S256"
       });
-      return json({ ok: true, url: `${API_BASE}/oauth/authorize?${params.toString()}`, app: { name: config.app_name } });
+      return json({ ok: true, url: `${API_BASE}/oauth/authorize?${params.toString()}`, app: { name: config.app_name }, required_scopes: REQUIRED_SCOPES });
     }
 
     if (action === "disconnect") {
