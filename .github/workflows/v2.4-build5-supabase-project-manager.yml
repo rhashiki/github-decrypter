@@ -1,0 +1,104 @@
+name: Validate v2.4 Build 5 Supabase Project Manager
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build5-supabase-project-manager
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build 5 manifest isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const js=(m.content_scripts||[]).flatMap(x=>x.js||[]);
+          const css=(m.content_scripts||[]).flatMap(x=>x.css||[]);
+          for(const f of ['ui/supabase-project-manager.js','content/lovable-project-creator.js','content/composer-bridge-v3.js','ui/github-autosync.js','content/lovable-project-runtime.js']){
+            if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          }
+          if(!css.includes('ui/supabase-project-manager.css')) throw new Error('Manager CSS missing');
+          if((m.content_scripts||[]).some(x=>x.run_at!=='document_idle'||x.all_frames!==false||x.world==='MAIN')) throw new Error('Content script isolation regressed');
+          NODE
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check background/supabase-oauth-runtime.js
+          node --check ui/supabase-project-manager.js
+          node --check content/composer-bridge-v3.js
+          node --check content/lovable-project-creator.js
+
+      - name: Supabase manager contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const bg=fs.readFileSync('background/supabase-oauth-runtime.js','utf8');
+          const ui=fs.readFileSync('ui/supabase-project-manager.js','utf8');
+          const fn=fs.readFileSync('supabase/functions/ld-supabase-manager/index.ts','utf8');
+          for(const n of [
+            "'manager_status'","'bootstrap_start'","'organizations'","'regions'","'create_project'","'project_status'","'project_test'",
+            "organization_slug","region_selection","db_pass","LD_SUPABASE_DBPASS_","projects:write","organizations:read",
+            "database_password_stored","owner_unlimited","purpose: \"bootstrap\""
+          ]) if(!(bg+ui+fn).includes(n)) throw new Error(`Missing invariant: ${n}`);
+          if(!fn.includes('/projects/available-regions?organization_slug=')) throw new Error('Available regions endpoint missing');
+          if(!fn.includes('await storeSecret(sb, dbPassSecret(ref), password')) throw new Error('DB password must be Vault-backed');
+          NODE
+
+      - name: Credential and host safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const ui=fs.readFileSync('ui/supabase-project-manager.js','utf8');
+          const bg=fs.readFileSync('background/supabase-oauth-runtime.js','utf8');
+          if(/service_role\s*[:=]|managementToken\s*[:=]|anonKey\s*[:=]|db_pass\s*[:=]/i.test(ui)) throw new Error('Administrative credential assignment leaked to UI');
+          if(/MutationObserver|window\.fetch\s*=|XMLHttpRequest\.prototype|history\.pushState\s*=|history\.replaceState\s*=/.test(ui)) throw new Error('Manager interferes with Lovable host');
+          if(/chrome\.storage[\s\S]{0,120}(accessToken|refresh_token|client_secret)/i.test(bg)) throw new Error('OAuth secret persisted client-side');
+          NODE
+
+      - name: Preserve Builds 1 to 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "type: 'LD2_PLAN_ONLY'" content/composer-bridge-v3.js
+          grep -q "type: 'LD2_PLAN_PREPARE'" content/composer-bridge-v3.js
+          grep -q "type: 'LD2_PLAN_APPLY'" content/composer-bridge-v3.js
+          ! grep -q "type: 'LD2_BUILD_EXECUTE'" content/composer-bridge-v3.js
+          grep -q "LovableDecrypterProjectCreator" content/lovable-project-creator.js
+          grep -q "billingMode: 'free'" settings/config.js
+          grep -q "zeroCost: true" settings/config.js
+
+      - name: Package Build 5 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP=Lovable-Decrypter-v2.4-BUILD5-SUPABASE-PROJECT-MANAGER.zip
+          rm -f "$ZIP" "${ZIP%.zip}.sha256"
+          zip -qr "$ZIP" . -x '.git/*' '.github/*' 'supabase/*' "$ZIP"
+          unzip -l "$ZIP" | grep -q ' manifest.json$'
+          unzip -l "$ZIP" | grep -q ' ui/supabase-project-manager.js$'
+          ! unzip -l "$ZIP" | grep -q ' supabase/'
+          sha256sum "$ZIP" | tee "${ZIP%.zip}.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD5-SUPABASE-PROJECT-MANAGER
+          path: |
+            Lovable-Decrypter-v2.4-BUILD5-SUPABASE-PROJECT-MANAGER.zip
+            Lovable-Decrypter-v2.4-BUILD5-SUPABASE-PROJECT-MANAGER.sha256
+          if-no-files-found: error

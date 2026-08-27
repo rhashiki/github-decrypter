@@ -2,7 +2,17 @@ import { DEFAULT_BACKEND_BASE } from '../settings/config.js';
 import { getSettings } from '../storage/settings-store.js';
 
 const PORT_NAME = 'ld2-supabase-oauth';
-const REQUEST_TIMEOUT_MS = 35000;
+const REQUEST_TIMEOUT_MS = 50000;
+const OAUTH_ACTIONS = new Set(['status', 'connect', 'disconnect']);
+const MANAGER_ACTIONS = new Set([
+  'manager_status',
+  'bootstrap_start',
+  'organizations',
+  'regions',
+  'create_project',
+  'project_status',
+  'project_test'
+]);
 
 async function requestBackend(action, payload = {}) {
   const settings = await getSettings();
@@ -11,11 +21,22 @@ async function requestBackend(action, payload = {}) {
   if (!licenseKey) throw new Error('Faça login com sua KEY antes de conectar o Supabase.');
   if (!deviceId) throw new Error('Dispositivo não vinculado. Faça login novamente.');
 
+  let endpoint = '';
+  let backendAction = action;
+  if (OAUTH_ACTIONS.has(action)) {
+    endpoint = 'ld-supabase-oauth';
+  } else if (MANAGER_ACTIONS.has(action)) {
+    endpoint = 'ld-supabase-manager';
+    if (action === 'manager_status') backendAction = 'status';
+  } else {
+    throw new Error('Ação Supabase inválida.');
+  }
+
   const base = String(settings.auth?.backendBase || DEFAULT_BACKEND_BASE).replace(/\/+$/, '');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch(`${base}/ld-supabase-oauth`, {
+    const response = await fetch(`${base}/${endpoint}`, {
       method: 'POST',
       signal: controller.signal,
       headers: {
@@ -23,12 +44,15 @@ async function requestBackend(action, payload = {}) {
         'x-license-key': licenseKey,
         'x-device-id': deviceId
       },
-      body: JSON.stringify({ action, ...payload })
+      body: JSON.stringify({ action: backendAction, ...payload })
     });
     const body = await response.json().catch(() => null);
     if (!response.ok || !body?.ok) {
       const code = body?.code || `HTTP_${response.status}`;
-      throw new Error(`Supabase OAuth: ${code}`);
+      const error = new Error(`Supabase: ${code}`);
+      error.code = code;
+      error.details = body || null;
+      throw error;
     }
     return body;
   } catch (error) {
@@ -48,13 +72,20 @@ export function installSupabaseOAuthRuntime() {
 
     const handler = async message => {
       const id = String(message?.id || '');
-      const action = String(message?.action || 'status');
+      const action = String(message?.action || 'manager_status');
       try {
-        if (!['status', 'connect', 'disconnect'].includes(action)) throw new Error('Ação Supabase inválida.');
         const data = await requestBackend(action, message?.payload || {});
         port.postMessage({ id, ok: true, data });
       } catch (error) {
-        try { port.postMessage({ id, ok: false, error: error?.message || String(error) }); } catch (_) {}
+        try {
+          port.postMessage({
+            id,
+            ok: false,
+            error: error?.message || String(error),
+            code: error?.code || '',
+            details: error?.details || null
+          });
+        } catch (_) {}
       }
     };
 
