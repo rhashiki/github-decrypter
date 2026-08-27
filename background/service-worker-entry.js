@@ -6,6 +6,7 @@ import { installGithubAutoSyncRuntime } from './github-autosync-runtime.js';
 import { installSupabaseOAuthRuntime } from './supabase-oauth-runtime.js';
 import { installProjectMigrationRuntime } from './project-migration-runtime.js';
 import { installLovableProjectRuntime } from './lovable-project-runtime.js';
+import { installCloudMigrationRuntime } from './cloud-migration-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -15,3 +16,4 @@ installGithubAutoSyncRuntime();
 installSupabaseOAuthRuntime();
 installProjectMigrationRuntime();
 installLovableProjectRuntime();
+installCloudMigrationRuntime();
