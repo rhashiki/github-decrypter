@@ -1,0 +1,150 @@
+name: Validate v2.3 Stage 4 Supabase Migration
+
+on:
+  push:
+    branches:
+      - rebuild-v2.3-stage4-supabase-migration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Safe core plus isolated migration UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if (m.manifest_version !== 3) throw new Error('MV3 required');
+          const scripts = (m.content_scripts || []).flatMap(x => x.js || []);
+          const expected = [
+            'content/credential-ui-guard.js',
+            'content/content.js',
+            'ui/ui.js',
+            'ui/control-center.js',
+            'ui/project-migration.js',
+            'content/composer-bridge.js'
+          ];
+          if (JSON.stringify(scripts) !== JSON.stringify(expected)) throw new Error(`Unexpected content scripts: ${scripts.join(', ')}`);
+          if ((m.content_scripts || []).some(x => x.run_at !== 'document_idle')) throw new Error('All content scripts must remain document_idle');
+          if ((m.content_scripts || []).some(x => x.world === 'MAIN')) throw new Error('MAIN-world injection forbidden');
+          NODE
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
+
+      - name: Preserve fail-closed Lovable routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const js = fs.readFileSync('content/composer-bridge.js','utf8');
+          for (const needle of ["const ROUTING_KEY = 'ld2_native_routing_enabled'","document.addEventListener('click', interceptNativeClick, true)","execute('lovable-enter')",'validCommitSha(commitSha)',"type: 'LD2_BUILD_EXECUTE'"]) {
+            if (!js.includes(needle)) throw new Error(`Routing invariant missing: ${needle}`);
+          }
+          if (/window\.fetch\s*=/.test(js) || /XMLHttpRequest\.prototype/.test(js)) throw new Error('Lovable networking monkeypatch forbidden');
+          NODE
+
+      - name: Preserve GitHub App and Supabase OAuth
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = fs.readFileSync('background/service-worker-entry.js','utf8');
+          const gh = fs.readFileSync('background/github-app-runtime.js','utf8');
+          const sb = fs.readFileSync('background/supabase-oauth-runtime.js','utf8');
+          if (!entry.includes('installGithubAppRuntime')) throw new Error('GitHub App runtime removed');
+          if (!entry.includes('installSupabaseOAuthRuntime')) throw new Error('Supabase OAuth runtime removed');
+          if (!gh.includes("ld2-github-app")) throw new Error('GitHub App port removed');
+          if (!sb.includes("ld2-supabase-oauth")) throw new Error('Supabase OAuth port removed');
+          NODE
+
+      - name: Reviewed migration invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const runtime = fs.readFileSync('background/project-migration-runtime.js','utf8');
+          const ui = fs.readFileSync('ui/project-migration.js','utf8');
+          const entry = fs.readFileSync('background/service-worker-entry.js','utf8');
+          for (const needle of [
+            'installProjectMigrationRuntime',
+            "const PORT_NAME = 'ld2-project-migration'",
+            'await testSupabase({ projectId, projectRef })',
+            "adapter.getRef(github.branch)",
+            'currentHead !== plan.headSha',
+            'await runSupabaseSql({',
+            "phase: 'applying'",
+            "phase: 'failed'",
+            'chrome.storage.session'
+          ]) {
+            if (!(entry + runtime).includes(needle)) throw new Error(`Migration runtime invariant missing: ${needle}`);
+          }
+          for (const needle of [
+            'Revisei o destino, a ordem e o SQL',
+            'Aplicar migrations no Supabase',
+            'A branch GitHub mudou desde a análise',
+            'Edge Functions detectadas',
+            "#ld2-root [data-cc-action=\"migrate\"]"
+          ]) if (!ui.includes(needle) && !runtime.includes(needle)) throw new Error(`Migration UI invariant missing: ${needle}`);
+          if (/MutationObserver/.test(ui)) throw new Error('Migration UI must not observe Lovable DOM');
+          if (/window\.fetch\s*=|XMLHttpRequest\.prototype/.test(ui)) throw new Error('Migration UI must not monkeypatch networking');
+          NODE
+
+      - name: Do not silently migrate seed or functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const runtime = fs.readFileSync('background/project-migration-runtime.js','utf8');
+          const ui = fs.readFileSync('ui/project-migration.js','utf8');
+          if (runtime.includes("runSupabaseSql({ projectRef") && runtime.includes('seed.sql')) throw new Error('seed.sql must never be auto-applied');
+          if (/functions\/deploy|deploy_function/.test(runtime)) throw new Error('Edge Functions must not be deployed silently in Stage 4');
+          if (!ui.includes('Não é executado automaticamente nesta etapa')) throw new Error('UI must disclose seed exclusion');
+          NODE
+
+      - name: Preserve free Gemini default
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "billingMode: 'free'" settings/config.js
+          grep -q 'zeroCost: true' settings/config.js
+
+      - name: Secret leakage gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -E --exclude-dir=.git --exclude-dir=supabase --exclude='*.md' 'sb_secret_[A-Za-z0-9_-]{20,}|service_role[^A-Za-z0-9]{0,4}[A-Za-z0-9._-]{30,}' background content core github security settings storage tools ui manifest.json
+
+      - name: Package Stage 4 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.sha256
+          zip -qr Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip . \
+            -x '.git/*' '.github/*' 'supabase/*' 'Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip'
+          unzip -l Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip | grep -q ' manifest.json$'
+          ! unzip -l Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip | grep -q ' supabase/'
+          sha256sum Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip | tee Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION
+          path: |
+            Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.zip
+            Lovable-Decrypter-v2.3-STAGE4-SUPABASE-MIGRATION.sha256
+          if-no-files-found: error
