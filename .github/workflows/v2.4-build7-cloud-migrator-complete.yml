@@ -86,14 +86,22 @@ jobs:
           const oauth=fs.readFileSync('supabase/functions/ld-supabase-oauth/index.ts','utf8');
           const assetsRuntime=fs.readFileSync('background/cloud-assets-runtime.js','utf8');
           const completeRuntime=fs.readFileSync('background/cloud-complete-runtime.js','utf8');
+          const ui=fs.readFileSync('ui/cloud-migrator-complete.js','utf8');
 
           for(const p of ['storage_buckets','storage_objects','storage_policies','realtime','edge_functions','secrets','config','verify']) if(!broker.includes(p)) throw new Error(`Missing phase ${p}`);
-          for(const s of ['auth:read','auth:write','edge_functions:read','edge_functions:write','secrets:read','secrets:write','storage:read']) {
-            if(!broker.includes(s)) throw new Error(`Missing broker OAuth scope ${s}`);
-            if(!manager.includes(s)) throw new Error(`Missing manager OAuth scope ${s}`);
-            if(!oauth.includes(s)) throw new Error(`Missing oauth status scope ${s}`);
+          for(const s of ['auth:read','auth:write','edge_functions:read','edge_functions:write','secrets:read','secrets:write','storage:read','rest:read','rest:write']) {
+            if(['rest:read','rest:write'].includes(s)) {
+              if(!manager.includes(s)) throw new Error(`Missing manager OAuth scope ${s}`);
+              if(!oauth.includes(s)) throw new Error(`Missing oauth status scope ${s}`);
+              if(!complete.includes(s)) throw new Error(`Missing complete OAuth scope ${s}`);
+            } else {
+              if(!broker.includes(s)) throw new Error(`Missing broker OAuth scope ${s}`);
+              if(!manager.includes(s)) throw new Error(`Missing manager OAuth scope ${s}`);
+              if(!oauth.includes(s)) throw new Error(`Missing oauth status scope ${s}`);
+            }
           }
-          for(const s of ['rest:read','rest:write']) if(!complete.includes(s)) throw new Error(`Missing complete OAuth scope ${s}`);
+          if(!manager.includes('reauthorize_required')) throw new Error('Manager reauthorization status missing');
+          if(!oauth.includes('reauthorize_required')) throw new Error('OAuth reauthorization status missing');
           if(!complete.includes('SUPABASE_REAUTH_REQUIRED')) throw new Error('Rest reauthorization gate missing');
           if(!complete.includes('/postgrest')) throw new Error('PostgREST config migration missing');
           if(!complete.includes('/config/storage')) throw new Error('Storage global config migration missing');
@@ -107,6 +115,8 @@ jobs:
           if(!assetsRuntime.includes("cloudCompleteBackend('verify_complete'")) throw new Error('Strong verification orchestration missing');
           if(!completeRuntime.includes("section === 'storage'") && !completeRuntime.includes("sec==='storage'")) throw new Error('Storage TOML parser missing');
           if(!completeRuntime.includes("sec==='api'")) throw new Error('PostgREST TOML parser missing');
+          if(!ui.includes('resolveConfigWait')) throw new Error('Config/verify checkpoint resolver missing');
+          if(ui.indexOf("if(current?.status==='waiting'&&['config','verify']")>ui.indexOf("current=(await assets('run_next'")) throw new Error('Strong verification must run before legacy completion');
 
           if(!entry.includes("startsWith('sb_secret_')")) throw new Error('Modern destination secret key preference missing');
           if(!entry.includes("await import('./legacy.ts')")) throw new Error('Assets broker wrapper does not load preserved implementation');
