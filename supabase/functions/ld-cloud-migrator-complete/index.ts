@@ -24,7 +24,9 @@ Deno.serve(async(req:Request)=>{
     }
     if(action==="record_expectations"){
       const names=[...new Set((Array.isArray(body.secret_names)?body.secret_names:[]).map((x:any)=>String(x)).filter((x:string)=>/^[A-Z][A-Z0-9_]{1,127}$/.test(x)))].sort();
-      const updated=await save(sb,j,{inventory:{...(j.inventory||{}),secretNamesExpected:names}},`${names.length} Secret name(s) confirmado(s) para verificação.`);
+      const copied=Math.max(0,Number(j.progress?.secrets_done||0)),detected=names.length,warnings=Array.isArray(j.warnings)?[...j.warnings]:[];
+      if(detected>copied)warnings.push(`${detected-copied} Secret(s) detectado(s) no código não possuem valor no ambiente de origem e serão ignorados na verificação nominal.`);
+      const updated=await save(sb,j,{inventory:{...(j.inventory||{}),secretNamesExpected:names},warnings:[...new Set(warnings)]},`${detected} Secret name(s) detectado(s); ${copied} valor(es) efetivamente copiado(s).`);
       return json({ok:true,job:safeJob(updated)});
     }
     if(action==="apply_service_config"){
