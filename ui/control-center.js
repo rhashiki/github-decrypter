@@ -7,10 +7,16 @@
   const ROOT_ID = 'ld2-root';
   const MOUNT_ATTR = 'data-ld2-control-center';
   const LICENSE_TIMEOUT_MS = 8000;
+  const GITHUB_POLL_MS = 1500;
+  const GITHUB_POLL_LIMIT = 60;
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const runtime = message => window.LovableDecrypterV2?.runtime?.(message);
+
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  }
 
   function triggerLegacyAction(root, action) {
     const target = $(`.ld2-nav [data-action="${action}"]`, root);
@@ -38,6 +44,36 @@
     ]);
   }
 
+  function githubRuntime(action, payload = {}) {
+    return new Promise((resolve, reject) => {
+      const port = chrome.runtime.connect({ name: 'ld2-github-app' });
+      const id = crypto.randomUUID();
+      const timer = setTimeout(() => {
+        try { port.disconnect(); } catch (_) {}
+        reject(new Error('A integração GitHub não respondeu dentro do tempo limite.'));
+      }, 35000);
+
+      const finish = fn => value => {
+        clearTimeout(timer);
+        try { port.disconnect(); } catch (_) {}
+        fn(value);
+      };
+
+      port.onMessage.addListener(message => {
+        if (message?.id !== id) return;
+        if (message.ok) finish(resolve)(message.data);
+        else finish(reject)(new Error(message.error || 'Falha na integração GitHub.'));
+      });
+      port.onDisconnect.addListener(() => {
+        if (chrome.runtime.lastError) {
+          clearTimeout(timer);
+          reject(new Error(chrome.runtime.lastError.message));
+        }
+      });
+      port.postMessage({ id, action, payload });
+    });
+  }
+
   function setLicenseHealth(root, valid) {
     const label = $('[data-cc-license-state]', root);
     const dot = $('[data-cc-license-dot]', root);
@@ -50,8 +86,6 @@
     const status = $('[data-license-status]', root);
     if (!gate || !runtime) return false;
 
-    // Fail closed: enquanto a validação não termina, a extensão pede a KEY
-    // e nenhuma UI operacional deve aparecer por cima do Lovable.
     gate.hidden = false;
     if (status) status.textContent = 'Validando ativação e dispositivo…';
     setLicenseHealth(root, false);
@@ -77,11 +111,277 @@
     }
   }
 
+  function openModal(root, html) {
+    const modal = $('.ld2-modal', root);
+    const card = $('.ld2-card', root);
+    if (!modal || !card) return null;
+    card.innerHTML = html;
+    modal.classList.add('open');
+    return { modal, card };
+  }
+
+  function closeModal(root) {
+    $('.ld2-modal', root)?.classList.remove('open');
+  }
+
+  function githubModalShell(inner) {
+    return `
+      <div class="ld2-gh-modal">
+        <div class="ld2-gh-head">
+          <div><span class="ld2-gh-mark">GH</span><div><small>INTEGRAÇÃO OFICIAL</small><h2>GitHub</h2></div></div>
+          <button type="button" class="ld2-gh-close" data-gh-close aria-label="Fechar">×</button>
+        </div>
+        <div class="ld2-gh-body">${inner}</div>
+      </div>`;
+  }
+
+  function githubLoading(root, text = 'Consultando autorização no GitHub…') {
+    const view = openModal(root, githubModalShell(`
+      <div class="ld2-gh-loading"><span></span><b>${esc(text)}</b><small>Nenhum token pessoal é necessário.</small></div>`));
+    view?.card.querySelector('[data-gh-close]')?.addEventListener('click', () => closeModal(root));
+    return view;
+  }
+
+  function repositoryOption(repo, selectedFullName) {
+    const selected = repo.full_name === selectedFullName ? ' selected' : '';
+    const privacy = repo.private ? ' · privado' : ' · público';
+    return `<option value="${esc(repo.full_name)}"${selected}>${esc(repo.full_name)}${privacy}</option>`;
+  }
+
+  async function saveSelectedRepository(root, status, repository) {
+    if (!repository || !status?.installation?.id) throw new Error('Selecione um repositório autorizado.');
+    const current = await runtime({ type: 'LD2_SETTINGS_GET' });
+    const projectId = window.LovableDecrypterV2?.getProjectId?.() || '';
+    const github = {
+      ...(current.github || {}),
+      authMode: 'github_app',
+      installationId: Number(status.installation.id),
+      accountLogin: String(status.installation.account_login || ''),
+      appSlug: String(status.app?.slug || ''),
+      token: '',
+      owner: String(repository.owner || repository.full_name.split('/')[0] || ''),
+      repo: String(repository.name || repository.full_name.split('/')[1] || ''),
+      branch: String(repository.default_branch || 'main'),
+      createBranch: false,
+      createPr: false
+    };
+    const patch = { github };
+    if (projectId) {
+      patch.projectMappings = {
+        [projectId]: {
+          owner: github.owner,
+          repo: github.repo,
+          branch: github.branch
+        }
+      };
+    }
+    await runtime({ type: 'LD2_SETTINGS_PATCH', patch });
+    toast(root, `${repository.full_name} conectado ao projeto atual.`);
+  }
+
+  function trustedGithubFlowUrl(value) {
+    let url;
+    try { url = new URL(String(value || '')); } catch { return false; }
+    return url.protocol === 'https:' && (
+      url.hostname === 'github.com' ||
+      url.hostname === 'kkzxxnfxgrouhkzyszxs.supabase.co'
+    );
+  }
+
+  async function beginGithubAuthorization(root) {
+    const popup = window.open('about:blank', 'ld2-github-auth', 'popup,width=1080,height=800,resizable=yes,scrollbars=yes');
+    if (!popup) {
+      toast(root, 'O navegador bloqueou o pop-up do GitHub. Permita pop-ups para lovable.dev e tente novamente.', true);
+      return;
+    }
+    try {
+      popup.document.title = 'Conectando ao GitHub…';
+      popup.document.body.innerHTML = '<p style="font-family:Arial,sans-serif;padding:24px">Abrindo autorização oficial do GitHub…</p>';
+    } catch (_) {}
+
+    try {
+      const flow = await githubRuntime('connect');
+      if (!trustedGithubFlowUrl(flow?.url)) throw new Error('O backend retornou uma URL de autorização não confiável.');
+      popup.location.href = flow.url;
+      pollGithubConnection(root, popup);
+    } catch (error) {
+      try { popup.close(); } catch (_) {}
+      toast(root, error?.message || String(error), true);
+      await renderGithubModal(root).catch(() => {});
+    }
+  }
+
+  async function pollGithubConnection(root, popup) {
+    for (let attempt = 0; attempt < GITHUB_POLL_LIMIT; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, GITHUB_POLL_MS));
+      const modal = $('.ld2-modal', root);
+      if (!modal?.classList.contains('open')) return;
+      try {
+        const status = await githubRuntime('status');
+        if (status?.connected) {
+          try { if (popup && !popup.closed) popup.close(); } catch (_) {}
+          await renderGithubModal(root, status);
+          toast(root, 'GitHub autorizado. Agora selecione o repositório deste projeto.');
+          return;
+        }
+      } catch (_) {}
+      try {
+        if (popup?.closed && attempt > 2) {
+          await renderGithubModal(root);
+          return;
+        }
+      } catch (_) {}
+    }
+    await renderGithubModal(root).catch(() => {});
+  }
+
+  async function disconnectGithub(root) {
+    try {
+      await githubRuntime('disconnect');
+      const current = await runtime({ type: 'LD2_SETTINGS_GET' });
+      await runtime({
+        type: 'LD2_SETTINGS_PATCH',
+        patch: {
+          github: {
+            ...(current.github || {}),
+            authMode: 'github_app',
+            installationId: null,
+            accountLogin: '',
+            appSlug: '',
+            token: '',
+            owner: '',
+            repo: '',
+            branch: 'main',
+            createBranch: false,
+            createPr: false
+          }
+        }
+      });
+      toast(root, 'GitHub desconectado do Lovable Decrypter.');
+      await renderGithubModal(root);
+    } catch (error) {
+      toast(root, error?.message || String(error), true);
+    }
+  }
+
+  async function renderGithubModal(root, suppliedStatus = null) {
+    githubLoading(root);
+    let status;
+    try {
+      status = suppliedStatus || await githubRuntime('status');
+    } catch (error) {
+      const view = openModal(root, githubModalShell(`
+        <div class="ld2-gh-error"><b>Não foi possível consultar o GitHub</b><p>${esc(error?.message || String(error))}</p><button type="button" class="primary" data-gh-retry>Tentar novamente</button></div>`));
+      view?.card.querySelector('[data-gh-close]')?.addEventListener('click', () => closeModal(root));
+      view?.card.querySelector('[data-gh-retry]')?.addEventListener('click', () => renderGithubModal(root));
+      return;
+    }
+
+    if (!status.app_configured) {
+      const canBootstrap = !!status.can_bootstrap;
+      const view = openModal(root, githubModalShell(`
+        <div class="ld2-gh-state">
+          <span class="ld2-gh-state-icon">${canBootstrap ? '↗' : '!'}</span>
+          <h3>${canBootstrap ? 'Criar integração GitHub' : 'GitHub App ainda não configurado'}</h3>
+          <p>${canBootstrap
+            ? 'Na primeira configuração, o GitHub abrirá sua página oficial para criar o GitHub App do Lovable Decrypter. Em seguida você escolherá quais repositórios podem ser acessados.'
+            : 'A integração precisa ser criada pelo proprietário do Lovable Decrypter antes que esta licença possa autorizar repositórios.'}</p>
+          ${canBootstrap ? '<button type="button" class="primary" data-gh-connect>Criar GitHub App no GitHub</button>' : ''}
+        </div>`));
+      view?.card.querySelector('[data-gh-close]')?.addEventListener('click', () => closeModal(root));
+      view?.card.querySelector('[data-gh-connect]')?.addEventListener('click', () => beginGithubAuthorization(root));
+      return;
+    }
+
+    if (!status.connected) {
+      const view = openModal(root, githubModalShell(`
+        <div class="ld2-gh-state">
+          <span class="ld2-gh-state-icon">GH</span>
+          <h3>Autorize seus repositórios</h3>
+          <p>O GitHub abrirá a instalação oficial do <b>${esc(status.app?.name || 'Lovable Decrypter')}</b>. Lá você escolhe <b>Todos os repositórios</b> ou <b>Somente repositórios selecionados</b>.</p>
+          ${status.stale_installation ? '<div class="ld2-gh-warning">A instalação anterior não existe mais no GitHub. Autorize novamente.</div>' : ''}
+          <button type="button" class="primary" data-gh-connect>Autorizar no GitHub</button>
+        </div>`));
+      view?.card.querySelector('[data-gh-close]')?.addEventListener('click', () => closeModal(root));
+      view?.card.querySelector('[data-gh-connect]')?.addEventListener('click', () => beginGithubAuthorization(root));
+      return;
+    }
+
+    const repositories = Array.isArray(status.repositories) ? status.repositories : [];
+    const settings = await runtime({ type: 'LD2_SETTINGS_GET' }).catch(() => ({}));
+    const selectedFullName = settings.github?.owner && settings.github?.repo
+      ? `${settings.github.owner}/${settings.github.repo}`
+      : '';
+    const account = status.installation?.account_login || 'GitHub';
+    const selection = status.installation?.repository_selection === 'all' ? 'Todos os repositórios' : 'Repositórios selecionados';
+
+    const view = openModal(root, githubModalShell(`
+      <div class="ld2-gh-connected">
+        <div class="ld2-gh-account"><span class="ready"></span><div><small>CONECTADO</small><b>${esc(account)}</b><p>${esc(selection)} · ${repositories.length} disponível(is)</p></div></div>
+        <label class="ld2-gh-field"><span>Repositório deste projeto</span>
+          <select data-gh-repository ${repositories.length ? '' : 'disabled'}>
+            ${repositories.length ? repositories.map(repo => repositoryOption(repo, selectedFullName)).join('') : '<option>Nenhum repositório autorizado</option>'}
+          </select>
+        </label>
+        <div class="ld2-gh-repo-detail" data-gh-repo-detail></div>
+        <div class="ld2-gh-actions">
+          <button type="button" class="primary" data-gh-use-repo ${repositories.length ? '' : 'disabled'}>Usar neste projeto</button>
+          <button type="button" data-gh-manage>Gerenciar repositórios no GitHub</button>
+          <button type="button" class="danger" data-gh-disconnect>Desconectar</button>
+        </div>
+        <small class="ld2-gh-foot">A extensão usa token temporário da instalação. Nenhum PAT é armazenado no fluxo normal.</small>
+      </div>`));
+
+    const card = view?.card;
+    card?.querySelector('[data-gh-close]')?.addEventListener('click', () => closeModal(root));
+    const select = card?.querySelector('[data-gh-repository]');
+    const detail = card?.querySelector('[data-gh-repo-detail]');
+
+    const updateDetail = () => {
+      const repo = repositories.find(item => item.full_name === select?.value) || repositories[0];
+      if (!detail) return;
+      detail.innerHTML = repo
+        ? `<b>${esc(repo.full_name)}</b><span>${repo.private ? 'Privado' : 'Público'} · branch padrão: ${esc(repo.default_branch || 'main')}</span>`
+        : 'Nenhum repositório disponível.';
+    };
+    select?.addEventListener('change', updateDetail);
+    updateDetail();
+
+    card?.querySelector('[data-gh-use-repo]')?.addEventListener('click', async buttonEvent => {
+      const button = buttonEvent.currentTarget;
+      const repo = repositories.find(item => item.full_name === select?.value) || repositories[0];
+      if (!repo) return;
+      button.disabled = true;
+      button.textContent = 'Validando acesso…';
+      try {
+        await saveSelectedRepository(root, status, repo);
+        const verified = await runtime({ type: 'LD2_GITHUB_TEST', projectId: window.LovableDecrypterV2?.getProjectId?.() || '' });
+        toast(root, `GitHub pronto: ${verified?.name || repo.full_name}`);
+        button.textContent = 'Repositório conectado ✓';
+        setTimeout(() => closeModal(root), 900);
+      } catch (error) {
+        toast(root, error?.message || String(error), true);
+        button.disabled = false;
+        button.textContent = 'Usar neste projeto';
+      }
+    });
+
+    card?.querySelector('[data-gh-manage]')?.addEventListener('click', () => {
+      const manageUrl = String(status.installation?.manage_url || '');
+      let parsed;
+      try { parsed = new URL(manageUrl); } catch { parsed = null; }
+      if (!parsed || parsed.protocol !== 'https:' || parsed.hostname !== 'github.com') {
+        return toast(root, 'URL de gerenciamento do GitHub inválida.', true);
+      }
+      window.open(parsed.toString(), '_blank', 'noopener,noreferrer');
+    });
+
+    card?.querySelector('[data-gh-disconnect]')?.addEventListener('click', () => disconnectGithub(root));
+  }
+
   function render(root) {
     if (!root) return;
 
-    // O gate deve aparecer imediatamente. O ui.js antigo o criava escondido e
-    // aguardava a rede antes de mostrá-lo, deixando o launcher exposto sem ativação.
     const gate = $('[data-license-gate]', root);
     if (gate && !root.hasAttribute('data-ld2-license-checked')) gate.hidden = false;
 
@@ -99,8 +399,6 @@
     if (brand) brand.textContent = 'LOVABLE DECRYPTER';
     if (versionLabel) versionLabel.textContent = `CONTROL CENTER · v${VERSION}`;
 
-    // Mantemos os controles legados no DOM apenas como adaptadores para os modais
-    // existentes. Eles deixam de fazer parte da interface visível.
     legacyWorkspace.classList.add('ld2-legacy-hooks');
     const workspace = document.createElement('main');
     workspace.className = 'ld2-control-center';
@@ -133,7 +431,7 @@
       <section class="ld2-cc-section">
         <div class="ld2-cc-section-head"><div><small>PROJETO</small><h3>Integrações e ferramentas</h3></div></div>
         <div class="ld2-cc-grid">
-          <button class="ld2-cc-card" type="button" data-cc-action="github"><span>GH</span><div><b>GitHub</b><small>Repositório, branch e sincronização</small></div></button>
+          <button class="ld2-cc-card accent" type="button" data-cc-github><span>GH</span><div><b>GitHub</b><small>Autorização oficial e repositórios permitidos</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="migrate"><span>⇄</span><div><b>Migrations</b><small>Aplicar migrations existentes com controle</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="zip"><span>⇩</span><div><b>Exportar ZIP</b><small>Gerar uma cópia do projeto atual</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="notes"><span>▤</span><div><b>Notas</b><small>Anotações persistentes do projeto</small></div></button>
@@ -144,14 +442,14 @@
         <div class="ld2-cc-section-head"><div><small>SISTEMA</small><h3>Controle e segurança</h3></div></div>
         <div class="ld2-cc-grid">
           <button class="ld2-cc-card" type="button" data-cc-action="diag"><span>◇</span><div><b>Diagnóstico</b><small>Verificar integrações e ambiente</small></div></button>
-          <button class="ld2-cc-card" type="button" data-cc-settings><span>⚙</span><div><b>Configurações</b><small>Gemini, GitHub, Supabase e preferências</small></div></button>
+          <button class="ld2-cc-card" type="button" data-cc-settings><span>⚙</span><div><b>Configurações</b><small>Gemini, Supabase e preferências</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="license"><span>◉</span><div><b>Licença</b><small>KEY, dispositivo, plano e créditos</small></div></button>
           <button class="ld2-cc-card accent" type="button" data-cc-action="update"><span>↻</span><div><b>Atualizar</b><small>Verificar e aplicar OTA assinado</small></div></button>
         </div>
       </section>
 
       <section class="ld2-cc-native-chat">
-        <div><span>⌘</span><div><b>Composer do Lovable integrado</b><small>Plan/Build, anexos, Gemini, progresso real, validação, checkpoint e rollback trabalham sobre o chat nativo.</small></div></div>
+        <div><span>⌘</span><div><b>Composer do Lovable integrado</b><small>Plan/Build, anexos e progresso trabalham sobre o composer nativo sem enviar o prompt ao Lovable enquanto o Decrypter está ativo.</small></div></div>
         <span class="ld2-cc-status">PRONTO</span>
       </section>`;
     body.appendChild(workspace);
@@ -159,9 +457,10 @@
     $$('[data-cc-action]', workspace).forEach(button => {
       button.addEventListener('click', () => triggerLegacyAction(root, button.dataset.ccAction));
     });
+    $('[data-cc-github]', workspace)?.addEventListener('click', () => renderGithubModal(root));
     $('[data-cc-settings]', workspace)?.addEventListener('click', () => triggerSettings(root));
     $('[data-cc-batch]', workspace)?.addEventListener('click', () => {
-      toast(root, 'A fila executa os comandos em sequência pelo composer do Lovable, um item por vez.');
+      toast(root, 'A fila avançada continua desativada nesta build segura e será reativada em etapa própria.');
     });
 
     const login = $('[data-license-login]', root);
