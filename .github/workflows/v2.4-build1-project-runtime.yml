@@ -91,7 +91,13 @@ jobs:
           if (/chrome\.storage\.(local|sync|session).*token/i.test(runtime)) throw new Error('Content runtime persists Lovable token');
           if (/Authorization[^\n]+chrome\.storage/i.test(runtime)) throw new Error('Authorization token must stay in memory');
           if (/accessToken|stsTokenManager|Authorization:\s*`Bearer/.test(bg)) throw new Error('Background snapshot runtime must never receive Lovable auth token');
-          if (!bg.includes("/token|secret|password|service_role|db_url/i")) throw new Error('Snapshot sanitizer missing sensitive-key guard');
+          const forbiddenSnapshotFields = ['accessToken','access_token','refreshToken','refresh_token','service_role','db_url','password','secret'];
+          for (const field of forbiddenSnapshotFields) {
+            if (new RegExp(`\\b${field}\\b`, 'i').test(bg)) throw new Error(`Background snapshot exposes forbidden field: ${field}`);
+          }
+          for (const required of ['projectId','workspace','gitSync','backend','preview','diagnostics']) {
+            if (!bg.includes(required)) throw new Error(`Snapshot whitelist missing ${required}`);
+          }
           NODE
 
       - name: Preserve fail-closed composer routing
