@@ -33,7 +33,7 @@ async function neutralizeMapping(projectId, detected = {}, state = 'blocked') {
   if (!projectId) return;
   const settings = await getSettings();
   const current = settings.projectMappings?.[projectId] || {};
-  const alreadyNeutral = !current.owner && !current.repo && current.source === 'lovable_gitsync_blocked' && current.detectedFullName === clean(detected.fullName);
+  const alreadyNeutral = !current.owner && !current.repo && current.source === 'lovable_gitsync_blocked' && current.detectedFullName === clean(detected.fullName) && current.blockReason === state;
   if (alreadyNeutral) return;
   await updateSettings({
     projectMappings: {
@@ -97,7 +97,7 @@ export async function reconcileGithubAutoSync(context = {}) {
   }
 
   const branch = clean(git.branch) || clean(repository.default_branch) || 'main';
-  const owner = clean(repository.owner || repository.full_name?.split('/')?.[0] || git.owner);
+  const owner = clean(repository.owner?.login || repository.owner || repository.full_name?.split('/')?.[0] || git.owner);
   const repo = clean(repository.name || repository.full_name?.split('/')?.[1] || git.repo);
   if (!owner || !repo) throw new Error('GitSync autorizado sem owner/repo válido.');
 
