@@ -116,7 +116,7 @@
     const workspace = $('.ld2-control-center', root);
     if (!workspace || workspace.querySelector('[data-cc-checkpoints]')) return;
     const sections = $$('.ld2-cc-section', workspace);
-    const projectSection = sections.find(section => $('h3', section)?.textContent?.trim() === 'Ferramentas') || sections[0];
+    const projectSection = sections.find(section => /ferramentas/i.test($('h3', section)?.textContent || '')) || sections[0];
     const grid = projectSection ? $('.ld2-cc-grid', projectSection) : null;
     if (!grid) return;
     const button = document.createElement('button');
@@ -127,6 +127,8 @@
     button.onclick = () => open(root);
     grid.appendChild(button);
   }
+
+  window.LovableDecrypterCheckpointUI = Object.freeze({ open, build: 9 });
 
   function watch() {
     const run = () => {
