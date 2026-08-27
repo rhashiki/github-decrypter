@@ -15,7 +15,9 @@ const REQUIRED_SCOPES = Object.freeze([
   "edge_functions:write",
   "secrets:read",
   "secrets:write",
-  "storage:read"
+  "storage:read",
+  "rest:read",
+  "rest:write"
 ]);
 const cors = {
   "Access-Control-Allow-Origin": "*",
