@@ -1,0 +1,136 @@
+name: Validate v2.4 Build 8 Skills Engine
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build8-skills-engine
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 8 manifest and routing order
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const cs=m.content_scripts?.[0];
+          if(!/Build 8/.test(m.action?.default_title||'')) throw new Error('Build 8 title missing');
+          if(cs.run_at!=='document_idle' || cs.all_frames!==false) throw new Error('Unsafe content script timing/frame scope');
+          const js=cs.js||[];
+          const required=['content/content.js','content/skill-router.js','content/project-rules-cache.js','ui/ui.js','ui/skills-engine.js'];
+          for(const f of required) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          const content=js.indexOf('content/content.js');
+          const router=js.indexOf('content/skill-router.js');
+          const rules=js.indexOf('content/project-rules-cache.js');
+          const ui=js.indexOf('ui/skills-engine.js');
+          if(!(content < router && router < rules && rules < ui)) throw new Error('Expected runtime order: content -> skill router -> Project Rules outer wrapper -> Skills UI');
+          if(!(cs.css||[]).includes('ui/skills-engine.css')) throw new Error('Skills CSS missing');
+          NODE
+
+      - name: JavaScript syntax
+        run: |
+          node --check content/skill-router.js
+          node --check content/project-rules-cache.js
+          node --check ui/skills-engine.js
+          node --check content/content.js
+          node --check ui/ui.js
+          node --check background/cloud-migration-runtime.js
+          node --check background/cloud-assets-runtime.js
+          node --check background/cloud-complete-runtime.js
+          node --check ui/cloud-migrator-complete.js
+
+      - name: Skills Engine safety contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const router=fs.readFileSync('content/skill-router.js','utf8');
+          const ui=fs.readFileSync('ui/skills-engine.js','utf8');
+          const migration=fs.readFileSync('supabase/migrations/20260827150000_build8_custom_skills.sql','utf8');
+          const backend=fs.readFileSync('supabase/functions/ld-custom-skills/index.ts','utf8');
+
+          for(const marker of ['ld-skills','ld-custom-skills','get_many','setOfficialPreference','createCustom','updateCustom','deleteCustom']) if(!router.includes(marker)) throw new Error(`Router contract missing ${marker}`);
+          if(!router.includes("SKILL_ATTACHMENT_NAME")) throw new Error('Skills must travel as separate internal context');
+          if(!router.includes("mimeType: 'text/markdown'")) throw new Error('Skill context attachment missing');
+          if(/command:\s*`\$\{command\}.*SKILL STACK/s.test(router)) throw new Error('Skill content must not be appended to original user command');
+          if(!router.includes('Project Rules cache is intentionally loaded after this file')) throw new Error('Project Rules ordering rationale missing');
+          if(!router.includes("EXECUTION_TYPES")) throw new Error('Execution routing gate missing');
+          if(!router.includes("skill-context-skipped-attachment-limit")) throw new Error('Eight-attachment safety fallback missing');
+
+          for(const marker of ['Instalar Skill personalizada','Use when','Avoid when','Auto Skill','setOfficialPreference','createCustom']) if(!ui.includes(marker)) throw new Error(`Skills UI missing ${marker}`);
+          if(!ui.includes("e.stopImmediatePropagation()")) throw new Error('Legacy prompt-snippet modal is not superseded safely');
+
+          if(!/enable row level security/i.test(migration)) throw new Error('Custom Skills RLS missing');
+          if(!/revoke all on table public\.ld_custom_skills from public, anon, authenticated/i.test(migration)) throw new Error('Custom Skills public grants not revoked');
+          if(!/to service_role/i.test(migration)) throw new Error('Custom Skills backend grant missing');
+          if(!/license_id uuid not null references public\.ld_license_keys/i.test(migration)) throw new Error('Custom Skills license ownership missing');
+
+          for(const marker of ['KEY_INVALID_SIGNATURE','DEVICE_NOT_BOUND','ENTITLEMENT_EXHAUSTED','license_id',"action === \"route\"","action === \"create\"","action === \"update\"","action === \"delete\""]) if(!backend.includes(marker)) throw new Error(`Custom Skills backend missing ${marker}`);
+          if(!backend.includes('SUPABASE_SECRET_KEYS')) throw new Error('Modern Supabase secret keys support missing');
+          if(!backend.includes(".eq(\"license_id\", license.id)")) throw new Error('License scoping missing from custom Skills queries');
+          NODE
+
+      - name: Preserve Build 6 and Build 7 cores
+        run: |
+          BASE=5d0378ac9ee9ededb0176242b74f42f450663356
+          for path in \
+            background/service-worker.js \
+            background/cloud-migration-runtime.js \
+            background/cloud-assets-runtime.js \
+            background/cloud-complete-runtime.js \
+            supabase/functions/ld-cloud-migrator-broker/index.ts \
+            supabase/functions/ld-cloud-migrator-assets/index.ts \
+            supabase/functions/ld-cloud-migrator-assets/legacy.ts \
+            supabase/functions/ld-cloud-migrator-complete/index.ts \
+            ui/cloud-migrator-complete.js \
+            ui/ui.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected Build 8 modification: $path"
+              exit 1
+            fi
+          done
+          test -f content/lovable-project-runtime.js
+          test -f content/composer-bridge-v3.js
+          test -f ui/supabase-project-manager.js
+
+      - name: No final launcher rebuild in Build 8
+        run: |
+          BASE=5d0378ac9ee9ededb0176242b74f42f450663356
+          git diff --quiet "$BASE" -- ui/ui.js ui/matrix.css assets/fab.png
+
+      - name: Package Build 8 candidate
+        run: |
+          rm -rf /tmp/ld-build8 && mkdir -p /tmp/ld-build8
+          rsync -a ./ /tmp/ld-build8/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='*.zip' \
+            --exclude='*.sha256' \
+            --exclude='.build*_payload*'
+          test -f /tmp/ld-build8/manifest.json
+          test -f /tmp/ld-build8/content/skill-router.js
+          test -f /tmp/ld-build8/ui/skills-engine.js
+          test -f /tmp/ld-build8/ui/skills-engine.css
+          test ! -d /tmp/ld-build8/supabase
+          cd /tmp/ld-build8
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.zip > Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.zip | grep -q ' manifest.json$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.zip | grep -q ' supabase/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE
+          path: |
+            Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.zip
+            Lovable-Decrypter-v2.4-BUILD8-SKILLS-ENGINE.sha256
+          if-no-files-found: error
