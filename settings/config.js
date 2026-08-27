@@ -74,12 +74,16 @@ export const DEFAULT_SETTINGS = {
     createPr: false
   },
   supabase: {
+    authMode: 'oauth',
+    projectRef: '',
+    projectName: '',
+    organizationSlug: '',
     url: '',
     anonKey: '',
-    projectRef: '',
     managementToken: ''
   },
   projectMappings: {},
+  supabaseMappings: {},
   agent: {
     maxFiles: 18,
     maxContextBytes: 500000,
@@ -102,7 +106,8 @@ export function mergeSettings(saved = {}) {
     supabase: { ...DEFAULT_SETTINGS.supabase, ...(saved.supabase || {}) },
     agent: { ...DEFAULT_SETTINGS.agent, ...(saved.agent || {}) },
     ui: { ...DEFAULT_SETTINGS.ui, ...(saved.ui || {}) },
-    projectMappings: { ...(saved.projectMappings || {}) }
+    projectMappings: { ...(saved.projectMappings || {}) },
+    supabaseMappings: { ...(saved.supabaseMappings || {}) }
   };
 
   if (!merged.auth.updateFeedUrl || /raw\.githubusercontent\.com\/rhashiki\/lovable-decrypter-extension\/main\/updates\/latest\.json/i.test(String(merged.auth.updateFeedUrl))) {
@@ -123,6 +128,11 @@ export function mergeSettings(saved = {}) {
     ? Number(merged.github.installationId)
     : null;
   if (merged.github.authMode !== 'legacy_token') merged.github.token = '';
+
+  // Supabase usa OAuth oficial pelo backend. Credenciais administrativas legadas nunca permanecem no cliente.
+  merged.supabase.authMode = 'oauth';
+  merged.supabase.anonKey = '';
+  merged.supabase.managementToken = '';
 
   // Um novo commit por comando na branch selecionada, sem branch/PR automático.
   merged.github.createBranch = false;

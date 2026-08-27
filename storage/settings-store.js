@@ -21,7 +21,8 @@ export async function updateSettings(patch) {
     supabase: { ...current.supabase, ...(patch?.supabase || {}) },
     agent: { ...current.agent, ...(patch?.agent || {}) },
     ui: { ...current.ui, ...(patch?.ui || {}) },
-    projectMappings: { ...current.projectMappings, ...(patch?.projectMappings || {}) }
+    projectMappings: { ...current.projectMappings, ...(patch?.projectMappings || {}) },
+    supabaseMappings: { ...current.supabaseMappings, ...(patch?.supabaseMappings || {}) }
   });
   await chrome.storage.local.set({ [STORAGE_KEY]: next });
   return next;

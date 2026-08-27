@@ -639,15 +639,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           return response(true, { bytes: await new GitAdapter(github).fetchZipBytes(github.branch), repo: github.repo, branch: github.branch });
         }
         case 'LD2_SUPABASE_TEST': {
-          const settings = await getSettings();
-          const cfg = { ...settings.supabase, ...(msg.config || {}) };
-          await updateSettings({ supabase: cfg });
-          return response(true, await testSupabase(cfg));
+          return response(true, await testSupabase({
+            projectId: msg.projectId || '',
+            projectRef: msg.projectRef || msg.config?.projectRef || ''
+          }));
         }
         case 'LD2_MIGRATION_SQL': return response(true, await migrationSql(msg));
         case 'LD2_SUPABASE_SQL': {
-          const settings = await getSettings();
-          return response(true, await runSupabaseSql({ ...settings.supabase, sql: msg.sql || '' }));
+          return response(true, await runSupabaseSql({
+            projectId: msg.projectId || '',
+            projectRef: msg.projectRef || '',
+            sql: msg.sql || ''
+          }));
         }
         default: throw new Error(`Mensagem desconhecida: ${type}`);
       }

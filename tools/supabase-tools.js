@@ -1,40 +1,55 @@
-function normalizeSupabaseProjectUrl(value = '') {
-  const raw = String(value || '').trim().replace(/\/+$/, '');
-  let url;
-  try { url = new URL(raw); }
-  catch { throw new Error('Project URL do Supabase inválida.'); }
-  if (url.protocol !== 'https:' || !url.hostname.endsWith('.supabase.co')) {
-    throw new Error('Project URL deve usar HTTPS em um domínio *.supabase.co.');
+import { DEFAULT_BACKEND_BASE } from '../settings/config.js';
+import { getSettings } from '../storage/settings-store.js';
+
+const REQUEST_TIMEOUT_MS = 50000;
+
+async function backendRequest(action, payload = {}) {
+  const settings = await getSettings();
+  const licenseKey = String(settings.auth?.licenseKey || '').trim();
+  const deviceId = String(settings.auth?.deviceId || '').trim();
+  if (!licenseKey || !deviceId) throw new Error('Faça login com sua KEY antes de usar o Supabase.');
+  const base = String(settings.auth?.backendBase || DEFAULT_BACKEND_BASE).replace(/\/+$/, '');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/ld-supabase-oauth`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-license-key': licenseKey,
+        'x-device-id': deviceId
+      },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body?.ok) throw new Error(body?.code || `Supabase HTTP ${res.status}`);
+    return body;
+  } catch (error) {
+    if (error?.name === 'AbortError') throw new Error('O backend do Supabase não respondeu dentro do tempo limite.');
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  url.hash = '';
-  url.search = '';
-  return url.toString().replace(/\/+$/, '');
+}
+
+function selectedProject(settings, projectId = '', overrideRef = '') {
+  const mapped = projectId && settings.supabaseMappings?.[projectId];
+  const projectRef = String(overrideRef || mapped?.projectRef || settings.supabase?.projectRef || '').trim();
+  if (!/^[a-z0-9]{8,32}$/i.test(projectRef)) throw new Error('Selecione um projeto Supabase no Control Center primeiro.');
+  return projectRef;
 }
 
 export async function testSupabase(config = {}) {
-  const url = normalizeSupabaseProjectUrl(config.url || '');
-  const anonKey = config.anonKey || '';
-  if (!anonKey) throw new Error('Informe URL e anon key do Supabase.');
-  const res = await fetch(`${url}/rest/v1/`, {
-    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }
-  });
-  if (!res.ok && res.status !== 404) throw new Error(`Supabase respondeu ${res.status}.`);
-  return { ok: true, status: res.status };
+  const settings = await getSettings();
+  const projectRef = selectedProject(settings, config.projectId || '', config.projectRef || '');
+  return backendRequest('project_test', { project_ref: projectRef });
 }
 
-export async function runSupabaseSql({ projectRef, managementToken, sql }) {
-  const safeRef = String(projectRef || '').trim();
-  if (!/^[a-z0-9]{8,32}$/i.test(safeRef) || !managementToken) throw new Error('Configure Project Ref e Management Token do Supabase.');
+export async function runSupabaseSql({ projectRef = '', projectId = '', sql = '' } = {}) {
   if (!String(sql || '').trim()) throw new Error('SQL vazio.');
-  const res = await fetch(`https://api.supabase.com/v1/projects/${encodeURIComponent(safeRef)}/database/query`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${managementToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ query: sql })
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.message || data?.error || `Supabase Management HTTP ${res.status}`);
-  return data;
+  const settings = await getSettings();
+  const activeRef = selectedProject(settings, projectId, projectRef);
+  const body = await backendRequest('query', { project_ref: activeRef, sql: String(sql) });
+  return body.result;
 }

@@ -9,6 +9,8 @@
   const LICENSE_TIMEOUT_MS = 8000;
   const GITHUB_POLL_MS = 1500;
   const GITHUB_POLL_LIMIT = 60;
+  const SUPABASE_POLL_MS = 1500;
+  const SUPABASE_POLL_LIMIT = 60;
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -63,6 +65,35 @@
         if (message?.id !== id) return;
         if (message.ok) finish(resolve)(message.data);
         else finish(reject)(new Error(message.error || 'Falha na integração GitHub.'));
+      });
+      port.onDisconnect.addListener(() => {
+        if (chrome.runtime.lastError) {
+          clearTimeout(timer);
+          reject(new Error(chrome.runtime.lastError.message));
+        }
+      });
+      port.postMessage({ id, action, payload });
+    });
+  }
+
+
+  function supabaseRuntime(action, payload = {}) {
+    return new Promise((resolve, reject) => {
+      const port = chrome.runtime.connect({ name: 'ld2-supabase-oauth' });
+      const id = crypto.randomUUID();
+      const timer = setTimeout(() => {
+        try { port.disconnect(); } catch (_) {}
+        reject(new Error('A integração Supabase não respondeu dentro do tempo limite.'));
+      }, 40000);
+      const finish = fn => value => {
+        clearTimeout(timer);
+        try { port.disconnect(); } catch (_) {}
+        fn(value);
+      };
+      port.onMessage.addListener(message => {
+        if (message?.id !== id) return;
+        if (message.ok) finish(resolve)(message.data);
+        else finish(reject)(new Error(message.error || 'Falha na integração Supabase.'));
       });
       port.onDisconnect.addListener(() => {
         if (chrome.runtime.lastError) {
@@ -379,6 +410,217 @@
     card?.querySelector('[data-gh-disconnect]')?.addEventListener('click', () => disconnectGithub(root));
   }
 
+
+  function supabaseModalShell(inner) {
+    return `
+      <div class="ld2-gh-modal ld2-sb-modal">
+        <div class="ld2-gh-head">
+          <div><span class="ld2-gh-mark">SB</span><div><small>INTEGRAÇÃO OFICIAL</small><h2>Supabase</h2></div></div>
+          <button type="button" class="ld2-gh-close" data-sb-close aria-label="Fechar">×</button>
+        </div>
+        <div class="ld2-gh-body">${inner}</div>
+      </div>`;
+  }
+
+  function supabaseLoading(root, text = 'Consultando autorização no Supabase…') {
+    const view = openModal(root, supabaseModalShell(`
+      <div class="ld2-gh-loading"><span></span><b>${esc(text)}</b><small>Tokens OAuth ficam somente no backend do Decrypter.</small></div>`));
+    view?.card.querySelector('[data-sb-close]')?.addEventListener('click', () => closeModal(root));
+    return view;
+  }
+
+  function trustedSupabaseFlowUrl(value) {
+    let url;
+    try { url = new URL(String(value || '')); } catch { return false; }
+    return url.protocol === 'https:' && url.hostname === 'api.supabase.com' && url.pathname.startsWith('/v1/oauth/authorize');
+  }
+
+  async function beginSupabaseAuthorization(root) {
+    const popup = window.open('about:blank', 'ld2-supabase-auth', 'popup,width=1080,height=800,resizable=yes,scrollbars=yes');
+    if (!popup) return toast(root, 'O navegador bloqueou o pop-up do Supabase. Permita pop-ups para lovable.dev e tente novamente.', true);
+    try {
+      popup.document.title = 'Conectando ao Supabase…';
+      popup.document.body.innerHTML = '<p style="font-family:Arial,sans-serif;padding:24px">Abrindo autorização oficial do Supabase…</p>';
+    } catch (_) {}
+    try {
+      const flow = await supabaseRuntime('connect');
+      if (!trustedSupabaseFlowUrl(flow?.url)) throw new Error('O backend retornou uma URL de autorização Supabase não confiável.');
+      popup.location.href = flow.url;
+      pollSupabaseConnection(root, popup);
+    } catch (error) {
+      try { popup.close(); } catch (_) {}
+      toast(root, error?.message || String(error), true);
+      await renderSupabaseModal(root).catch(() => {});
+    }
+  }
+
+  async function pollSupabaseConnection(root, popup) {
+    for (let attempt = 0; attempt < SUPABASE_POLL_LIMIT; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, SUPABASE_POLL_MS));
+      const modal = $('.ld2-modal', root);
+      if (!modal?.classList.contains('open')) return;
+      try {
+        const status = await supabaseRuntime('status');
+        if (status?.connected) {
+          try { if (popup && !popup.closed) popup.close(); } catch (_) {}
+          await renderSupabaseModal(root, status);
+          toast(root, 'Supabase autorizado. Agora selecione o projeto deste Lovable.');
+          return;
+        }
+      } catch (_) {}
+      try {
+        if (popup?.closed && attempt > 2) {
+          await renderSupabaseModal(root);
+          return;
+        }
+      } catch (_) {}
+    }
+    await renderSupabaseModal(root).catch(() => {});
+  }
+
+  async function saveSelectedSupabaseProject(root, project) {
+    if (!project?.ref) throw new Error('Selecione um projeto Supabase autorizado.');
+    const pid = window.LovableDecrypterV2?.getProjectId?.() || '';
+    await runtime({ type: 'LD2_SUPABASE_TEST', projectRef: project.ref, projectId: pid });
+    const current = await runtime({ type: 'LD2_SETTINGS_GET' });
+    const supabase = {
+      ...(current.supabase || {}),
+      authMode: 'oauth',
+      projectRef: String(project.ref),
+      projectName: String(project.name || project.ref),
+      organizationSlug: String(project.organization_slug || ''),
+      url: String(project.url || `https://${project.ref}.supabase.co`),
+      anonKey: '',
+      managementToken: ''
+    };
+    const patch = { supabase };
+    if (pid) {
+      patch.supabaseMappings = {
+        [pid]: {
+          projectRef: supabase.projectRef,
+          projectName: supabase.projectName,
+          organizationSlug: supabase.organizationSlug,
+          url: supabase.url
+        }
+      };
+    }
+    await runtime({ type: 'LD2_SETTINGS_PATCH', patch });
+    toast(root, `${supabase.projectName} conectado ao projeto Lovable atual.`);
+  }
+
+  async function disconnectSupabase(root) {
+    try {
+      await supabaseRuntime('disconnect');
+      const current = await runtime({ type: 'LD2_SETTINGS_GET' });
+      const pid = window.LovableDecrypterV2?.getProjectId?.() || '';
+      const patch = {
+        supabase: {
+          ...(current.supabase || {}),
+          authMode: 'oauth', projectRef: '', projectName: '', organizationSlug: '', url: '', anonKey: '', managementToken: ''
+        }
+      };
+      if (pid) patch.supabaseMappings = { [pid]: { projectRef: '', projectName: '', organizationSlug: '', url: '' } };
+      await runtime({ type: 'LD2_SETTINGS_PATCH', patch });
+      toast(root, 'Supabase desconectado do Lovable Decrypter.');
+      await renderSupabaseModal(root);
+    } catch (error) {
+      toast(root, error?.message || String(error), true);
+    }
+  }
+
+  async function renderSupabaseModal(root, suppliedStatus = null) {
+    supabaseLoading(root);
+    let status;
+    try {
+      status = suppliedStatus || await supabaseRuntime('status');
+    } catch (error) {
+      const view = openModal(root, supabaseModalShell(`
+        <div class="ld2-gh-error"><b>Não foi possível consultar o Supabase</b><p>${esc(error?.message || String(error))}</p><button type="button" class="primary" data-sb-retry>Tentar novamente</button></div>`));
+      view?.card.querySelector('[data-sb-close]')?.addEventListener('click', () => closeModal(root));
+      view?.card.querySelector('[data-sb-retry]')?.addEventListener('click', () => renderSupabaseModal(root));
+      return;
+    }
+
+    if (!status.app_configured) {
+      const scopes = Array.isArray(status.required_scopes) ? status.required_scopes.join(' · ') : 'projects:read · database:read · database:write';
+      const view = openModal(root, supabaseModalShell(`
+        <div class="ld2-gh-state">
+          <span class="ld2-gh-state-icon">SB</span>
+          <h3>OAuth App do Supabase ainda não configurado</h3>
+          <p>O Supabase exige que o proprietário cadastre o OAuth App uma única vez no Dashboard da organização. Depois disso, os usuários conectam apenas pelo pop-up oficial.</p>
+          <div class="ld2-gh-warning">Escopos necessários: ${esc(scopes)}</div>
+          <small class="ld2-gh-foot">Nenhum Management Token, anon key ou service_role será solicitado pela extensão.</small>
+        </div>`));
+      view?.card.querySelector('[data-sb-close]')?.addEventListener('click', () => closeModal(root));
+      return;
+    }
+
+    if (!status.connected) {
+      const view = openModal(root, supabaseModalShell(`
+        <div class="ld2-gh-state">
+          <span class="ld2-gh-state-icon">SB</span>
+          <h3>Autorize sua conta Supabase</h3>
+          <p>O Supabase abrirá a página oficial de consentimento do <b>${esc(status.app?.name || 'Lovable Decrypter')}</b>. Depois você escolhe neste painel qual projeto pertence ao Lovable atual.</p>
+          ${status.stale_connection ? '<div class="ld2-gh-warning">A autorização anterior expirou ou foi revogada. Autorize novamente.</div>' : ''}
+          <button type="button" class="primary" data-sb-connect>Autorizar no Supabase</button>
+        </div>`));
+      view?.card.querySelector('[data-sb-close]')?.addEventListener('click', () => closeModal(root));
+      view?.card.querySelector('[data-sb-connect]')?.addEventListener('click', () => beginSupabaseAuthorization(root));
+      return;
+    }
+
+    const projects = Array.isArray(status.projects) ? status.projects : [];
+    const settings = await runtime({ type: 'LD2_SETTINGS_GET' }).catch(() => ({}));
+    const pid = window.LovableDecrypterV2?.getProjectId?.() || '';
+    const mappedRef = pid && settings.supabaseMappings?.[pid]?.projectRef;
+    const selectedRef = mappedRef || settings.supabase?.projectRef || '';
+    const options = projects.map(project => `<option value="${esc(project.ref)}"${project.ref === selectedRef ? ' selected' : ''}>${esc(project.name)} · ${esc(project.ref)}</option>`).join('');
+
+    const view = openModal(root, supabaseModalShell(`
+      <div class="ld2-gh-connected">
+        <div class="ld2-gh-account"><span class="ready"></span><div><small>CONECTADO</small><b>Supabase</b><p>${projects.length} projeto(s) disponível(is)</p></div></div>
+        <label class="ld2-gh-field"><span>Projeto Supabase deste Lovable</span>
+          <select data-sb-project ${projects.length ? '' : 'disabled'}>${projects.length ? options : '<option>Nenhum projeto autorizado</option>'}</select>
+        </label>
+        <div class="ld2-gh-repo-detail" data-sb-project-detail></div>
+        <div class="ld2-gh-actions">
+          <button type="button" class="primary" data-sb-use ${projects.length ? '' : 'disabled'}>Usar neste projeto</button>
+          <button type="button" class="danger" data-sb-disconnect>Desconectar</button>
+        </div>
+        <small class="ld2-gh-foot">Tokens OAuth e refresh tokens permanecem somente no backend/Vault do Decrypter.</small>
+      </div>`));
+    const card = view?.card;
+    card?.querySelector('[data-sb-close]')?.addEventListener('click', () => closeModal(root));
+    const select = card?.querySelector('[data-sb-project]');
+    const detail = card?.querySelector('[data-sb-project-detail]');
+    const updateDetail = () => {
+      const project = projects.find(item => item.ref === select?.value) || projects[0];
+      if (!detail) return;
+      detail.innerHTML = project
+        ? `<b>${esc(project.name)}</b><span>${esc(project.ref)} · ${esc(project.region || 'região não informada')} · ${esc(project.status || '')}</span>`
+        : 'Nenhum projeto disponível.';
+    };
+    select?.addEventListener('change', updateDetail);
+    updateDetail();
+    card?.querySelector('[data-sb-use]')?.addEventListener('click', async event => {
+      const button = event.currentTarget;
+      const project = projects.find(item => item.ref === select?.value) || projects[0];
+      if (!project) return;
+      button.disabled = true;
+      button.textContent = 'Validando banco…';
+      try {
+        await saveSelectedSupabaseProject(root, project);
+        button.textContent = 'Projeto conectado ✓';
+        setTimeout(() => closeModal(root), 900);
+      } catch (error) {
+        toast(root, error?.message || String(error), true);
+        button.disabled = false;
+        button.textContent = 'Usar neste projeto';
+      }
+    });
+    card?.querySelector('[data-sb-disconnect]')?.addEventListener('click', () => disconnectSupabase(root));
+  }
+
   function render(root) {
     if (!root) return;
 
@@ -432,6 +674,7 @@
         <div class="ld2-cc-section-head"><div><small>PROJETO</small><h3>Integrações e ferramentas</h3></div></div>
         <div class="ld2-cc-grid">
           <button class="ld2-cc-card accent" type="button" data-cc-github><span>GH</span><div><b>GitHub</b><small>Autorização oficial e repositórios permitidos</small></div></button>
+          <button class="ld2-cc-card accent" type="button" data-cc-supabase><span>SB</span><div><b>Supabase</b><small>OAuth oficial e projeto autorizado</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="migrate"><span>⇄</span><div><b>Migrations</b><small>Aplicar migrations existentes com controle</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="zip"><span>⇩</span><div><b>Exportar ZIP</b><small>Gerar uma cópia do projeto atual</small></div></button>
           <button class="ld2-cc-card" type="button" data-cc-action="notes"><span>▤</span><div><b>Notas</b><small>Anotações persistentes do projeto</small></div></button>
@@ -458,6 +701,7 @@
       button.addEventListener('click', () => triggerLegacyAction(root, button.dataset.ccAction));
     });
     $('[data-cc-github]', workspace)?.addEventListener('click', () => renderGithubModal(root));
+    $('[data-cc-supabase]', workspace)?.addEventListener('click', () => renderSupabaseModal(root));
     $('[data-cc-settings]', workspace)?.addEventListener('click', () => triggerSettings(root));
     $('[data-cc-batch]', workspace)?.addEventListener('click', () => {
       toast(root, 'A fila avançada continua desativada nesta build segura e será reativada em etapa própria.');

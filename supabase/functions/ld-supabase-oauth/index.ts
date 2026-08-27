@@ -1,0 +1,388 @@
+import { createClient } from "jsr:@supabase/supabase-js@2.112.4";
+
+const PUBLIC_SPKI_B64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==";
+const API_BASE = "https://api.supabase.com/v1";
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "content-type,x-license-key,x-device-id,authorization",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+};
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" }
+  });
+}
+function html(body: string, status = 200) {
+  return new Response(body, {
+    status,
+    headers: { ...cors, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+  });
+}
+function b64url(bytes: Uint8Array) {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+function unb64url(value: string) {
+  const s = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+}
+function randomValue(size = 48) { return b64url(crypto.getRandomValues(new Uint8Array(size))); }
+async function shaHex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", enc.encode(value));
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function pkceChallenge(verifier: string) {
+  const digest = await crypto.subtle.digest("SHA-256", enc.encode(verifier));
+  return b64url(new Uint8Array(digest));
+}
+function serviceKey() {
+  const current = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (current) {
+    try {
+      const parsed = JSON.parse(current);
+      if (parsed?.default) return String(parsed.default);
+      const first = Object.values(parsed || {})[0];
+      if (first) return String(first);
+    } catch (_) {}
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+}
+function supabaseAdmin() {
+  const url = Deno.env.get("SUPABASE_URL") || "";
+  const key = serviceKey();
+  if (!url || !key) throw new Error("BACKEND_NOT_CONFIGURED");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+async function publicKey() {
+  const der = Uint8Array.from(atob(PUBLIC_SPKI_B64), c => c.charCodeAt(0));
+  return crypto.subtle.importKey("spki", der, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+}
+async function verifyLicenseToken(token: string) {
+  const [prefix, payloadPart, sigPart] = token.trim().split(".");
+  if (prefix !== "LD2" || !payloadPart || !sigPart) throw new Error("KEY_INVALID_FORMAT");
+  const ok = await crypto.subtle.verify(
+    { name: "ECDSA", hash: "SHA-256" },
+    await publicKey(),
+    unb64url(sigPart),
+    enc.encode(payloadPart)
+  );
+  if (!ok) throw new Error("KEY_INVALID_SIGNATURE");
+  const payload = JSON.parse(dec.decode(unb64url(payloadPart)));
+  if (payload?.aud !== "lovable-decrypter" || Number(payload?.v) !== 1 || !payload?.license_id) throw new Error("KEY_INVALID_PAYLOAD");
+  return payload;
+}
+async function authorize(req: Request, sb: any) {
+  const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const token = String(req.headers.get("x-license-key") || bearer || "").trim();
+  const deviceId = String(req.headers.get("x-device-id") || "").trim();
+  if (!token) throw new Error("KEY_REQUIRED");
+  if (!deviceId) throw new Error("DEVICE_REQUIRED");
+  const signed = await verifyLicenseToken(token);
+  const { data: license, error } = await sb.from("ld_license_keys")
+    .select("id,status,expires_at,credit_balance,credit_debt,metadata")
+    .eq("id", String(signed.license_id))
+    .eq("key_hash", await shaHex(token))
+    .maybeSingle();
+  if (error) throw new Error("DB_ERROR");
+  if (!license) throw new Error("KEY_NOT_REGISTERED");
+  if (license.status !== "active") throw new Error(`KEY_${String(license.status).toUpperCase()}`);
+  const timeActive = Boolean(license.expires_at && Date.parse(license.expires_at) > Date.now());
+  const creditActive = !timeActive && Number(license.credit_debt || 0) === 0 && Number(license.credit_balance || 0) > 0;
+  if (!timeActive && !creditActive) throw new Error("ENTITLEMENT_EXHAUSTED");
+  const deviceHash = await shaHex(deviceId);
+  const { data: device, error: de } = await sb.from("ld_license_devices")
+    .select("id,revoked_at")
+    .eq("license_id", license.id)
+    .eq("device_hash", deviceHash)
+    .maybeSingle();
+  if (de) throw new Error("DB_ERROR");
+  if (!device) throw new Error("DEVICE_NOT_BOUND");
+  if (device.revoked_at) throw new Error("DEVICE_REVOKED");
+  return { license, deviceHash };
+}
+async function getConfig(sb: any) {
+  const { data, error } = await sb.from("ld_supabase_oauth_config").select("*").eq("singleton", true).maybeSingle();
+  if (error) throw new Error("OAUTH_CONFIG_READ_FAILED");
+  return data || null;
+}
+async function getSecret(sb: any, name: string) {
+  const { data, error } = await sb.rpc("ld_backend_secret", { p_name: name });
+  if (error || !data) throw new Error(`SECRET_MISSING:${name}`);
+  return String(data);
+}
+async function storeSecret(sb: any, name: string, value: string, description: string) {
+  const { error } = await sb.rpc("ld_backend_secret_set", { p_name: name, p_value: value, p_description: description });
+  if (error) throw new Error(`SECRET_STORE_FAILED:${name}`);
+}
+async function deleteSecret(sb: any, name: string) {
+  const { error } = await sb.rpc("ld_backend_secret_delete", { p_name: name });
+  if (error) throw new Error(`SECRET_DELETE_FAILED:${name}`);
+}
+async function clientSecret(sb: any) { return getSecret(sb, "LD_SUPABASE_OAUTH_CLIENT_SECRET"); }
+function basicAuth(clientId: string, secret: string) { return `Basic ${btoa(`${clientId}:${secret}`)}`; }
+function selfUrl(url: URL) { return `${url.origin}${url.pathname}`; }
+function refreshSecretName(licenseId: string, deviceHash: string) {
+  return `LD_SUPABASE_REFRESH_${licenseId.replace(/-/g, "")}_${deviceHash.slice(0, 24)}`;
+}
+async function createState(sb: any, licenseId: string, deviceHash: string) {
+  await sb.from("ld_supabase_oauth_states").delete().lt("expires_at", new Date().toISOString());
+  const state = randomValue(32);
+  const verifier = randomValue(64);
+  const row = {
+    state_hash: await shaHex(state),
+    license_id: licenseId,
+    device_hash: deviceHash,
+    code_verifier: verifier,
+    expires_at: new Date(Date.now() + 20 * 60 * 1000).toISOString()
+  };
+  const { error } = await sb.from("ld_supabase_oauth_states").insert(row);
+  if (error) throw new Error("STATE_CREATE_FAILED");
+  return { state, challenge: await pkceChallenge(verifier) };
+}
+async function stateRow(sb: any, raw: string) {
+  if (!raw) throw new Error("STATE_REQUIRED");
+  const { data, error } = await sb.from("ld_supabase_oauth_states")
+    .select("state_hash,license_id,device_hash,code_verifier,expires_at,consumed_at")
+    .eq("state_hash", await shaHex(raw)).maybeSingle();
+  if (error) throw new Error("STATE_READ_FAILED");
+  if (!data || data.consumed_at || Date.parse(data.expires_at) <= Date.now()) throw new Error("STATE_INVALID_OR_EXPIRED");
+  return data;
+}
+async function consumeState(sb: any, stateHash: string) {
+  const { error } = await sb.from("ld_supabase_oauth_states").update({ consumed_at: new Date().toISOString() })
+    .eq("state_hash", stateHash).is("consumed_at", null);
+  if (error) throw new Error("STATE_CONSUME_FAILED");
+}
+async function exchangeAuthorizationCode(sb: any, config: any, code: string, verifier: string) {
+  const secret = await clientSecret(sb);
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: String(config.redirect_uri),
+    code_verifier: verifier
+  });
+  const res = await fetch(`${API_BASE}/oauth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: basicAuth(String(config.client_id), secret),
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json"
+    },
+    body
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.access_token || !data?.refresh_token) throw new Error(`TOKEN_EXCHANGE_FAILED:${res.status}:${data?.message || data?.error || "invalid response"}`);
+  return data;
+}
+async function refreshAccessToken(sb: any, config: any, connection: any) {
+  const refresh = await getSecret(sb, String(connection.refresh_secret_name));
+  const secret = await clientSecret(sb);
+  const body = new URLSearchParams({ grant_type: "refresh_token", refresh_token: refresh });
+  const res = await fetch(`${API_BASE}/oauth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: basicAuth(String(config.client_id), secret),
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json"
+    },
+    body
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.access_token) throw new Error(`TOKEN_REFRESH_FAILED:${res.status}:${data?.message || data?.error || "invalid response"}`);
+  if (data.refresh_token && String(data.refresh_token) !== refresh) {
+    await storeSecret(sb, String(connection.refresh_secret_name), String(data.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
+  }
+  return { accessToken: String(data.access_token), scope: String(data.scope || connection.granted_scope || ""), tokenType: String(data.token_type || "Bearer") };
+}
+async function managementRequest(accessToken: string, path: string, options: RequestInit = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        ...(options.headers || {})
+      }
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(`SUPABASE_MANAGEMENT_HTTP_${res.status}:${data?.message || data?.error || "request failed"}`);
+    return data;
+  } catch (error) {
+    if ((error as Error)?.name === "AbortError") throw new Error("SUPABASE_MANAGEMENT_TIMEOUT");
+    throw error;
+  } finally { clearTimeout(timer); }
+}
+async function listProjects(accessToken: string) {
+  const data = await managementRequest(accessToken, "/projects");
+  if (!Array.isArray(data)) throw new Error("PROJECT_LIST_INVALID");
+  return data.map((project: any) => ({
+    id: String(project.id || project.ref || ""),
+    ref: String(project.ref || project.id || ""),
+    name: String(project.name || project.ref || "Supabase project"),
+    organization_id: String(project.organization_id || ""),
+    organization_slug: String(project.organization_slug || ""),
+    region: String(project.region || ""),
+    status: String(project.status || ""),
+    database_version: String(project.database?.version || ""),
+    url: project.ref ? `https://${project.ref}.supabase.co` : ""
+  })).filter((project: any) => /^[a-z0-9]{8,32}$/i.test(project.ref));
+}
+async function connectionRow(sb: any, licenseId: string, deviceHash: string) {
+  const { data, error } = await sb.from("ld_supabase_connections").select("*")
+    .eq("license_id", licenseId).eq("device_hash", deviceHash).maybeSingle();
+  if (error) throw new Error("CONNECTION_READ_FAILED");
+  return data || null;
+}
+async function activeSession(sb: any, config: any, licenseId: string, deviceHash: string) {
+  const connection = await connectionRow(sb, licenseId, deviceHash);
+  if (!connection) throw new Error("SUPABASE_NOT_CONNECTED");
+  const token = await refreshAccessToken(sb, config, connection);
+  return { connection, ...token };
+}
+async function verifyProject(accessToken: string, projectRef: string) {
+  if (!/^[a-z0-9]{8,32}$/i.test(projectRef)) throw new Error("PROJECT_REF_INVALID");
+  const projects = await listProjects(accessToken);
+  const project = projects.find((item: any) => item.ref === projectRef);
+  if (!project) throw new Error("PROJECT_NOT_AUTHORIZED");
+  return { project, projects };
+}
+function escapeHtml(value: string) {
+  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function successPage(title: string, detail: string) {
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{margin:0;background:#050b08;color:#eafff2;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh}.card{max-width:520px;margin:24px;padding:28px;border:1px solid #3ecf8e77;border-radius:18px;background:#07140e;box-shadow:0 20px 70px #0008,0 0 30px #3ecf8e18}.ok{color:#3ecf8e;font-size:38px}.card h1{font-size:22px}.card p{color:#a9bdb3;line-height:1.5}.card small{color:#70877b}</style></head><body><div class="card"><div class="ok">✓</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p><small>Esta janela pode ser fechada.</small></div><script>try{window.opener&&window.opener.postMessage({type:'LD2_SUPABASE_CONNECTED'},'*')}catch(e){};setTimeout(()=>window.close(),1200)</script></body></html>`;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  const url = new URL(req.url);
+  const sb = supabaseAdmin();
+  try {
+    if (req.method === "GET" && url.searchParams.get("flow") === "callback") {
+      const code = url.searchParams.get("code") || "";
+      const rawState = url.searchParams.get("state") || "";
+      if (!code) throw new Error("AUTH_CODE_REQUIRED");
+      const state = await stateRow(sb, rawState);
+      const config = await getConfig(sb);
+      if (!config) throw new Error("SUPABASE_OAUTH_APP_NOT_CONFIGURED");
+      const token = await exchangeAuthorizationCode(sb, config, code, String(state.code_verifier));
+      const projects = await listProjects(String(token.access_token));
+      const secretName = refreshSecretName(String(state.license_id), String(state.device_hash));
+      await storeSecret(sb, secretName, String(token.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
+      const { error } = await sb.from("ld_supabase_connections").upsert({
+        license_id: state.license_id,
+        device_hash: state.device_hash,
+        refresh_secret_name: secretName,
+        granted_scope: String(token.scope || ""),
+        token_type: String(token.token_type || "Bearer"),
+        connected_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: "license_id,device_hash" });
+      if (error) throw new Error("CONNECTION_STORE_FAILED");
+      await consumeState(sb, state.state_hash);
+      return html(successPage("Supabase conectado", `${projects.length} projeto(s) autorizado(s). Volte ao Lovable Decrypter para escolher o projeto.`));
+    }
+    if (req.method !== "POST") return json({ ok: false, code: "METHOD_NOT_ALLOWED" }, 405);
+
+    const auth = await authorize(req, sb);
+    const body = await req.json().catch(() => ({}));
+    const action = String(body.action || "status");
+    const config = await getConfig(sb);
+
+    if (action === "status") {
+      if (!config) return json({ ok: true, app_configured: false, connected: false, required_scopes: ["projects:read", "database:read", "database:write"] });
+      const connection = await connectionRow(sb, auth.license.id, auth.deviceHash);
+      if (!connection) return json({ ok: true, app_configured: true, connected: false, app: { name: config.app_name } });
+      try {
+        const token = await refreshAccessToken(sb, config, connection);
+        const projects = await listProjects(token.accessToken);
+        return json({ ok: true, app_configured: true, connected: true, app: { name: config.app_name }, scope: token.scope, projects });
+      } catch (error) {
+        const message = String((error as Error)?.message || error);
+        if (/TOKEN_REFRESH_FAILED:400|TOKEN_REFRESH_FAILED:401/.test(message)) {
+          try { await deleteSecret(sb, String(connection.refresh_secret_name)); } catch (_) {}
+          await sb.from("ld_supabase_connections").delete().eq("license_id", auth.license.id).eq("device_hash", auth.deviceHash);
+          return json({ ok: true, app_configured: true, connected: false, stale_connection: true, app: { name: config.app_name } });
+        }
+        throw error;
+      }
+    }
+
+    if (action === "connect") {
+      if (!config) return json({ ok: false, code: "SUPABASE_OAUTH_APP_NOT_CONFIGURED" }, 409);
+      const state = await createState(sb, auth.license.id, auth.deviceHash);
+      const redirectUri = String(config.redirect_uri || `${selfUrl(url)}?flow=callback`);
+      const params = new URLSearchParams({
+        client_id: String(config.client_id),
+        response_type: "code",
+        redirect_uri: redirectUri,
+        state: state.state,
+        code_challenge: state.challenge,
+        code_challenge_method: "S256"
+      });
+      return json({ ok: true, url: `${API_BASE}/oauth/authorize?${params.toString()}`, app: { name: config.app_name } });
+    }
+
+    if (action === "disconnect") {
+      const connection = await connectionRow(sb, auth.license.id, auth.deviceHash);
+      if (connection && config) {
+        try {
+          const refresh = await getSecret(sb, String(connection.refresh_secret_name));
+          const secret = await clientSecret(sb);
+          await fetch(`${API_BASE}/oauth/revoke`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ client_id: String(config.client_id), client_secret: secret, refresh_token: refresh })
+          });
+        } catch (_) {}
+        try { await deleteSecret(sb, String(connection.refresh_secret_name)); } catch (_) {}
+      }
+      await sb.from("ld_supabase_connections").delete().eq("license_id", auth.license.id).eq("device_hash", auth.deviceHash);
+      return json({ ok: true, disconnected: true });
+    }
+
+    if (!config) return json({ ok: false, code: "SUPABASE_OAUTH_APP_NOT_CONFIGURED" }, 409);
+    const session = await activeSession(sb, config, auth.license.id, auth.deviceHash);
+
+    if (action === "project_test") {
+      const projectRef = String(body.project_ref || "").trim();
+      const verified = await verifyProject(session.accessToken, projectRef);
+      await managementRequest(session.accessToken, `/projects/${encodeURIComponent(projectRef)}/database/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: "select 1 as lovable_decrypter_ok" })
+      });
+      return json({ ok: true, project: verified.project, database_access: true });
+    }
+
+    if (action === "query") {
+      const projectRef = String(body.project_ref || "").trim();
+      const sql = String(body.sql || "");
+      if (!sql.trim()) return json({ ok: false, code: "SQL_EMPTY" }, 400);
+      if (enc.encode(sql).byteLength > 2_000_000) return json({ ok: false, code: "SQL_TOO_LARGE" }, 413);
+      await verifyProject(session.accessToken, projectRef);
+      const result = await managementRequest(session.accessToken, `/projects/${encodeURIComponent(projectRef)}/database/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: sql })
+      });
+      return json({ ok: true, result });
+    }
+
+    return json({ ok: false, code: "UNKNOWN_ACTION" }, 400);
+  } catch (error) {
+    console.error("ld-supabase-oauth", error);
+    const code = String((error as Error)?.message || "INTERNAL_ERROR");
+    if (req.method === "GET") return html(successPage("Falha ao conectar Supabase", code), 400);
+    const status = /KEY_|DEVICE_|ENTITLEMENT/.test(code) ? 403 : 500;
+    return json({ ok: false, code }, status);
+  }
+});
