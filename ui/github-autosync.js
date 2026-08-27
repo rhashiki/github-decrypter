@@ -4,7 +4,7 @@
   window.__LD2_GITHUB_AUTOSYNC_UI__ = true;
 
   const PORT_NAME = 'ld2-github-autosync';
-  const MIN_RECHECK_MS = 60000;
+  const MIN_RECHECK_MS = 20000;
   let lastSignature = '';
   let lastCheckAt = 0;
   let activePromise = null;
