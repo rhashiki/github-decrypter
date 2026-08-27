@@ -35,7 +35,6 @@ export function isSpecializedGeminiModel(value = '') {
 export function isVerifiedFreeModel(value = '') {
   const id = normalizeGeminiModelId(value);
   if (VERIFIED_FREE_MODEL_IDS.includes(id)) return true;
-  // aliases/versionados seguros das mesmas famílias; especializados são barrados antes.
   if (isSpecializedGeminiModel(id)) return false;
   return VERIFIED_FREE_MODEL_IDS.some(base => id === `${base}-latest` || id === `${base}-001`);
 }
@@ -63,6 +62,10 @@ export const DEFAULT_SETTINGS = {
     dynamicModels: true
   },
   github: {
+    authMode: 'github_app',
+    installationId: null,
+    accountLogin: '',
+    appSlug: '',
     token: '',
     owner: '',
     repo: '',
@@ -102,7 +105,6 @@ export function mergeSettings(saved = {}) {
     projectMappings: { ...(saved.projectMappings || {}) }
   };
 
-  // Migra automaticamente instalações antigas que ainda apontam para o feed legado do GitHub.
   if (!merged.auth.updateFeedUrl || /raw\.githubusercontent\.com\/rhashiki\/lovable-decrypter-extension\/main\/updates\/latest\.json/i.test(String(merged.auth.updateFeedUrl))) {
     merged.auth.updateFeedUrl = DEFAULT_UPDATE_FEED_URL;
   }
@@ -114,7 +116,15 @@ export function mergeSettings(saved = {}) {
     if (!isVerifiedFreeModel(merged.gemini.model)) merged.gemini.model = DEFAULT_FREE_MODEL;
     if (!isVerifiedFreeModel(merged.gemini.advancedModel)) merged.gemini.advancedModel = DEFAULT_FREE_ADVANCED_MODEL;
   }
-  // A branch de trabalho é persistente: um novo commit por comando, sem branch/PR por solicitação.
+
+  // GitHub App é o caminho normal. PAT só sobrevive quando explicitamente marcado como legado.
+  merged.github.authMode = merged.github.authMode === 'legacy_token' ? 'legacy_token' : 'github_app';
+  merged.github.installationId = Number.isInteger(Number(merged.github.installationId)) && Number(merged.github.installationId) > 0
+    ? Number(merged.github.installationId)
+    : null;
+  if (merged.github.authMode !== 'legacy_token') merged.github.token = '';
+
+  // Um novo commit por comando na branch selecionada, sem branch/PR automático.
   merged.github.createBranch = false;
   merged.github.createPr = false;
   return merged;
