@@ -4,6 +4,7 @@ import { installSuggestionsRuntime } from './suggestions-runtime.js';
 import { installGithubAppRuntime } from './github-app-runtime.js';
 import { installSupabaseOAuthRuntime } from './supabase-oauth-runtime.js';
 import { installProjectMigrationRuntime } from './project-migration-runtime.js';
+import { installLovableProjectRuntime } from './lovable-project-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -11,3 +12,4 @@ installSuggestionsRuntime();
 installGithubAppRuntime();
 installSupabaseOAuthRuntime();
 installProjectMigrationRuntime();
+installLovableProjectRuntime();
