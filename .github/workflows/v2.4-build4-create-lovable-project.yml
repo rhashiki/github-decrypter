@@ -1,0 +1,148 @@
+name: Validate v2.4 Build 4 Lovable Project Creator
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build4-create-lovable-project
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build 4 content isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const scripts = (m.content_scripts || []).flatMap(x => x.js || []);
+          const css = (m.content_scripts || []).flatMap(x => x.css || []);
+          for (const required of ['content/lovable-project-creator.js','ui/project-creator.js','content/composer-bridge-v3.js','ui/github-autosync.js','content/lovable-project-runtime.js']) {
+            if (!scripts.includes(required)) throw new Error(`Missing ${required}`);
+          }
+          if (!css.includes('ui/project-creator.css')) throw new Error('Project Creator CSS missing');
+          if ((m.content_scripts || []).some(x => x.run_at !== 'document_idle')) throw new Error('All content scripts must remain document_idle');
+          if ((m.content_scripts || []).some(x => x.world === 'MAIN')) throw new Error('MAIN world forbidden');
+          if ((m.content_scripts || []).some(x => x.all_frames !== false)) throw new Error('Top frame only required');
+          NODE
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
+
+      - name: Lovable Project Creator contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const runtime = fs.readFileSync('content/lovable-project-creator.js','utf8');
+          const ui = fs.readFileSync('ui/project-creator.js','utf8');
+          for (const needle of [
+            "request('/user/workspaces', token)",
+            "`/workspaces/${encodeURIComponent(item.id)}/credit-balance`",
+            "`/v1/workspaces/${encodeURIComponent(id)}/projects`",
+            "method: 'POST'",
+            "tech_stack: 'modern'",
+            "visibility: 'private'",
+            "project?.id || project?.project_id",
+            "LovableDecrypterProjectCreator",
+            "data.ccNewProject = '1'",
+            'Revisar criação',
+            'Criar no Lovable',
+            'Nenhum prompt será enviado ao agente do Lovable.'
+          ]) {
+            if (!(runtime + ui).includes(needle)) throw new Error(`Creator invariant missing: ${needle}`);
+          }
+          NODE
+
+      - name: No automatic Lovable prompt or hidden generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const runtime = fs.readFileSync('content/lovable-project-creator.js','utf8');
+          const ui = fs.readFileSync('ui/project-creator.js','utf8');
+          const joined = runtime + '\n' + ui;
+          if (/\/projects\/[^'"`]*\/chat|initial_message|LD2_BUILD_EXECUTE|LD2_PLAN_PREPARE|sendMessage|submitPrompt/i.test(joined)) {
+            throw new Error('Project creation must not send or generate a Lovable prompt automatically');
+          }
+          if (!ui.includes("[data-pcreate-confirm]")) throw new Error('Explicit confirmation button required');
+          if (!ui.includes("[data-pcreate-open]")) throw new Error('Opening the created project must remain a separate user action');
+          NODE
+
+      - name: Lovable credentials remain memory only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const runtime = fs.readFileSync('content/lovable-project-creator.js','utf8');
+          if (/chrome\.storage|sessionStorage\.setItem|localStorage\.setItem/.test(runtime)) throw new Error('Project Creator must not persist Lovable credentials or state');
+          if (/window\.fetch\s*=|XMLHttpRequest\.prototype|history\.pushState\s*=|history\.replaceState\s*=|MutationObserver/.test(runtime)) throw new Error('Project Creator must not monkeypatch host APIs or observe the host DOM');
+          const ui = fs.readFileSync('ui/project-creator.js','utf8');
+          if (/MutationObserver|window\.fetch\s*=|XMLHttpRequest\.prototype/.test(ui)) throw new Error('Project Creator UI must not interfere with Lovable runtime');
+          NODE
+
+      - name: Preserve Build 1 Build 2 Build 3 semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const scripts = (m.content_scripts || []).flatMap(x => x.js || []);
+          for (const required of ['content/lovable-project-runtime.js','ui/github-autosync.js','content/lovable-sync-verifier.js','content/composer-bridge-v3.js']) {
+            if (!scripts.includes(required)) throw new Error(`Previous build missing ${required}`);
+          }
+          const editor = fs.readFileSync('content/composer-bridge-v3.js','utf8');
+          if (!editor.includes("type: 'LD2_PLAN_ONLY'")) throw new Error('Plan mode missing');
+          if (!editor.includes("type: 'LD2_PLAN_PREPARE'")) throw new Error('Shadow build missing');
+          if (!editor.includes("type: 'LD2_PLAN_APPLY'")) throw new Error('Explicit apply missing');
+          if (editor.includes("type: 'LD2_BUILD_EXECUTE'")) throw new Error('Direct commit path returned to Editor v3');
+          NODE
+
+      - name: Preserve integrations and free Gemini
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "billingMode: 'free'" settings/config.js
+          grep -q 'zeroCost: true' settings/config.js
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = fs.readFileSync('background/service-worker-entry.js','utf8');
+          for (const needle of ['installGithubAppRuntime','installGithubAutoSyncRuntime','installSupabaseOAuthRuntime','installProjectMigrationRuntime','installLovableProjectRuntime']) {
+            if (!entry.includes(needle)) throw new Error(`${needle} missing`);
+          }
+          NODE
+
+      - name: Package Build 4 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.sha256
+          zip -qr Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip . \
+            -x '.git/*' '.github/*' 'supabase/*' 'Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip'
+          unzip -l Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip | grep -q ' manifest.json$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip | grep -q ' content/lovable-project-creator.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip | grep -q ' ui/project-creator.js$'
+          ! unzip -l Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip | grep -q ' supabase/'
+          sha256sum Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip | tee Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT
+          path: |
+            Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.zip
+            Lovable-Decrypter-v2.4-BUILD4-CREATE-LOVABLE-PROJECT.sha256
+          if-no-files-found: error
