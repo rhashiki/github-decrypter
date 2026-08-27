@@ -56,7 +56,7 @@ jobs:
             "visibility: 'private'",
             "project?.id || project?.project_id",
             "LovableDecrypterProjectCreator",
-            "data.ccNewProject = '1'",
+            "button.dataset.ccNewProject = '1'",
             'Revisar criação',
             'Criar no Lovable',
             'Nenhum prompt será enviado ao agente do Lovable.'
