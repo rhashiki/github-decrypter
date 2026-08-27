@@ -1,0 +1,133 @@
+name: Validate v2.3 Stage 3 Supabase OAuth
+
+on:
+  push:
+    branches:
+      - rebuild-v2.3-stage3-supabase-oauth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Safe core manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if (m.manifest_version !== 3) throw new Error('MV3 required');
+          const scripts = (m.content_scripts || []).flatMap(x => x.js || []);
+          const expected = ['content/credential-ui-guard.js','content/content.js','ui/ui.js','ui/control-center.js','content/composer-bridge.js'];
+          if (JSON.stringify(scripts) !== JSON.stringify(expected)) throw new Error(`SAFE CORE changed: ${scripts.join(', ')}`);
+          if ((m.content_scripts || []).some(x => x.run_at !== 'document_idle')) throw new Error('All content scripts must remain document_idle');
+          if ((m.content_scripts || []).some(x => x.world === 'MAIN')) throw new Error('MAIN-world injection is forbidden');
+          NODE
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -type f -name '*.js' ! -path './.git/*' -print0)
+
+      - name: Preserve Stage 1 fail-closed routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const js = fs.readFileSync('content/composer-bridge.js','utf8');
+          for (const needle of ["const ROUTING_KEY = 'ld2_native_routing_enabled'","document.addEventListener('click', interceptNativeClick, true)","document.addEventListener('submit', interceptNativeSubmit, true)","execute('lovable-enter')","execute('lovable-send-button')",'validCommitSha(commitSha)',"type: 'LD2_BUILD_EXECUTE'"]) {
+            if (!js.includes(needle)) throw new Error(`Stage 1 invariant missing: ${needle}`);
+          }
+          if (js.includes('data-ld2-run')) throw new Error('Duplicate Decrypter Execute button returned');
+          if (/window\.fetch\s*=/.test(js) || /XMLHttpRequest\.prototype/.test(js)) throw new Error('Lovable network monkeypatch forbidden');
+          NODE
+
+      - name: Preserve Stage 2 GitHub App
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = fs.readFileSync('background/service-worker-entry.js','utf8');
+          const gh = fs.readFileSync('background/github-app-runtime.js','utf8');
+          const cc = fs.readFileSync('ui/control-center.js','utf8');
+          if (!entry.includes('installGithubAppRuntime')) throw new Error('GitHub App runtime removed');
+          if (!gh.includes("ld2-github-app")) throw new Error('GitHub App port removed');
+          if (!cc.includes('data-cc-github')) throw new Error('GitHub Control Center card removed');
+          NODE
+
+      - name: Supabase OAuth invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const entry = fs.readFileSync('background/service-worker-entry.js','utf8');
+          const runtime = fs.readFileSync('background/supabase-oauth-runtime.js','utf8');
+          const tools = fs.readFileSync('tools/supabase-tools.js','utf8');
+          const cc = fs.readFileSync('ui/control-center.js','utf8');
+          const ui = fs.readFileSync('ui/ui.js','utf8');
+          const config = fs.readFileSync('settings/config.js','utf8');
+          const edge = fs.readFileSync('supabase/functions/ld-supabase-oauth/index.ts','utf8');
+          const migration = fs.readFileSync('supabase/migrations/20260827010000_stage3_supabase_oauth.sql','utf8');
+          for (const needle of ['installSupabaseOAuthRuntime','supabase-oauth-runtime.js']) if (!entry.includes(needle)) throw new Error(`Missing entry invariant: ${needle}`);
+          if (!runtime.includes("const PORT_NAME = 'ld2-supabase-oauth'")) throw new Error('Supabase isolated port missing');
+          if (!runtime.includes('/ld-supabase-oauth')) throw new Error('Supabase backend endpoint missing');
+          if (!tools.includes("backendRequest('query'")) throw new Error('SQL must route through backend');
+          if (!cc.includes('data-cc-supabase') || !cc.includes('Autorizar no Supabase')) throw new Error('Supabase dedicated Control Center UI missing');
+          if (!cc.includes("url.hostname === 'api.supabase.com'")) throw new Error('Supabase authorize URL trust gate missing');
+          if (ui.includes('data-sb-mgmt') || ui.includes('data-sb-anon') || ui.includes('data-test-sb')) throw new Error('Legacy manual Supabase credentials returned');
+          if (!config.includes("merged.supabase.authMode = 'oauth'")) throw new Error('Supabase OAuth default missing');
+          if (!config.includes("merged.supabase.anonKey = ''") || !config.includes("merged.supabase.managementToken = ''")) throw new Error('Legacy Supabase secrets must be purged');
+          for (const needle of ['code_challenge_method: "S256"','LD_SUPABASE_OAUTH_CLIENT_SECRET','refresh_secret_name','verifyProject(session.accessToken, projectRef)','/oauth/token']) if (!edge.includes(needle)) throw new Error(`Backend OAuth invariant missing: ${needle}`);
+          if (!migration.includes('enable row level security') || !migration.includes('revoke all on table public.ld_supabase_connections from public, anon, authenticated')) throw new Error('Backend RLS/grants missing');
+          NODE
+
+      - name: Secret leakage gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -E --exclude-dir=.git --exclude-dir=supabase --exclude='*.md' 'sb_secret_[A-Za-z0-9_-]{20,}|service_role[^A-Za-z0-9]{0,4}[A-Za-z0-9._-]{30,}' background content core github security settings storage tools ui manifest.json
+          ! grep -R -E --exclude-dir=.git --exclude-dir=supabase 'LD_SUPABASE_OAUTH_CLIENT_SECRET|LD_SUPABASE_REFRESH_' background content core github security settings storage tools ui manifest.json
+
+      - name: GitHub commit integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'await adapter.atomicCommit({' background/service-worker.js
+          grep -q 'await this.updateBranch(targetBranch, commit.sha)' github/git-adapter.js
+          grep -q 'commitSha: commit.sha' github/git-adapter.js
+
+      - name: Preserve free Gemini default
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "billingMode: 'free'" settings/config.js
+          grep -q 'zeroCost: true' settings/config.js
+
+      - name: Package Stage 3 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.sha256
+          zip -qr Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip . \
+            -x '.git/*' '.github/*' 'supabase/*' 'Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip'
+          unzip -l Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip | grep -q ' manifest.json$'
+          ! unzip -l Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip | grep -q ' supabase/'
+          sha256sum Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip | tee Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH
+          path: |
+            Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.zip
+            Lovable-Decrypter-v2.3-STAGE3-SUPABASE-OAUTH.sha256
+          if-no-files-found: error
