@@ -42,7 +42,7 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.4 Build 1 · Project Runtime"
+    "default_title": "Lovable Decrypter v2.4 Build 2 · GitHub AutoSync"
   },
   "content_scripts": [
     {
@@ -57,6 +57,7 @@
         "ui/ui.js",
         "ui/control-center.js",
         "ui/project-context.js",
+        "ui/github-autosync.js",
         "ui/project-migration.js",
         "content/composer-bridge.js"
       ],
