@@ -112,11 +112,19 @@
 
   api.runtime = async message => {
     const type = String(message?.type || '');
+
+    // Build 9 reconciliation rule: Project Intelligence observes the existing
+    // execution contract; it must never rewrite BUILD_EXECUTE into a different
+    // sequence or bypass the outer Project Rules / Skill Router wrappers.
+    if (type === 'LD2_PLAN_PREPARE') {
+      const out = await baseRuntime(message);
+      await recordImpact(message, out?.plan || {}, 'build', out?.baseHeadSha || '');
+      return out;
+    }
     if (type === 'LD2_BUILD_EXECUTE') {
-      const prepared = await baseRuntime({ ...message, type: 'LD2_PLAN_PREPARE' });
-      await recordImpact(message, prepared?.plan || {}, 'build', prepared?.baseHeadSha || '');
-      const result = await baseRuntime({ type: 'LD2_PLAN_APPLY', id: prepared.id, requestId: message?.requestId });
-      return { mode: 'build', bundle: prepared, result };
+      const out = await baseRuntime(message);
+      await recordImpact(message, out?.bundle?.plan || {}, 'build', out?.bundle?.baseHeadSha || '');
+      return out;
     }
     if (type === 'LD2_PLAN_APPROVE') {
       await recordImpact(message, message?.approvedPlan || {}, 'build', '');
@@ -247,7 +255,7 @@
     addIntelCard(grid, 'rules', '≡', 'Project Rules', 'Regras permanentes do projeto');
     addIntelCard(grid, 'explain', '?', 'Explain Project', 'Arquitetura, regras e riscos');
     const copy = root?.querySelector('.ld2-cc-native-chat small');
-    if (copy) copy.textContent = 'O chat nativo do Lovable incorpora Plan/Build, Auto Skill, Queue, Think, Rewrite, Visual, Voice, histórico Cloud, Project Brain, Impact Map e Project Rules.';
+    if (copy) copy.textContent = 'O composer nativo integra Plan/Build, Auto Skill, Project Brain, Project Rules, Impact Map, Explain Project, Histórico e Checkpoints. Fila avançada permanece reservada para a Build 10.';
   }
 
   document.addEventListener('click', e => {
@@ -260,6 +268,15 @@
     const explain = e.target.closest?.('#ld2-root [data-cc-intel="explain"]');
     if (explain) { e.preventDefault(); e.stopImmediatePropagation(); openExplain(); }
   }, true);
+  window.LovableDecrypterProjectIntelligence = Object.freeze({
+    syncBrain,
+    openBrain,
+    openImpacts,
+    openRules,
+    openExplain,
+    build: 9
+  });
+
   window.addEventListener('ld2:project', () => { syncBrain(); reconcileControlCenter(); });
   window.addEventListener('ld2:dom-reconcile', reconcileControlCenter);
   new MutationObserver(reconcileControlCenter).observe(document.documentElement, { childList: true, subtree: true });
