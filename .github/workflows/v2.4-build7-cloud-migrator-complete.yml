@@ -64,8 +64,10 @@ jobs:
           const ui=fs.readFileSync('ui/cloud-migrator-complete.js','utf8');
           const content=fs.readFileSync('content/cloud-migrator-runtime-v2.js','utf8');
           if(/chrome\.storage[\s\S]{0,180}(source_key|service_role|SUPABASE_DB_URL|DATABASE_URL)/i.test(bg+ui+content)) throw new Error('Source/admin credential persisted client-side');
-          if(/return\s+out\(\{[^}]*?(source_key|db_url|service_role)/is.test(content)) throw new Error('Helper returns credential to browser');
-          if(!/await post\(ASSETS\.url/.test(content) || !/source_key:sourceKey/.test(content)) throw new Error('Server-to-server asset handoff missing');
+          if(!content.includes('return out({ok:true,core:!!CORE,assets:!!ASSETS})')) throw new Error('Expected safe helper handoff response missing');
+          if(!content.includes('return out({ok:true,count:Object.keys(secrets).length,expected:names.length})')) throw new Error('Expected safe secret handoff response missing');
+          if(/out\(\{\s*ok\s*:\s*true\s*,\s*(?:db_url|source_key|service_role)\s*:/i.test(content)) throw new Error('Helper exposes credential in successful response');
+          if(!/await post\(ASSETS\.url/.test(content) || !/source_key:sourceKey/.test(content) || !/db_url:db/.test(content)) throw new Error('Server-to-server asset handoff missing');
           NODE
 
       - name: Complete asset migration contract
