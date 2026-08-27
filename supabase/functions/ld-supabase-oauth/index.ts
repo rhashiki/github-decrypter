@@ -298,7 +298,7 @@ Deno.serve(async (req: Request) => {
     const config = await getConfig(sb);
 
     if (action === "status") {
-      if (!config) return json({ ok: true, app_configured: false, connected: false, required_scopes: ["projects:read", "database:read", "database:write"] });
+      if (!config) return json({ ok: true, app_configured: false, connected: false, required_scopes: ["organizations:read", "projects:read", "projects:write", "database:read", "database:write", "auth:read", "auth:write", "edge_functions:read", "edge_functions:write", "secrets:read", "secrets:write", "storage:read"] });
       const connection = await connectionRow(sb, auth.license.id, auth.deviceHash);
       if (!connection) return json({ ok: true, app_configured: true, connected: false, app: { name: config.app_name } });
       try {
