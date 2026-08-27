@@ -1,7 +1,11 @@
 import { assertSafeRepoPath, decodeBase64Utf8, encodeBase64Utf8, slugify } from '../core/utils.js';
+import { getSettings } from '../storage/settings-store.js';
+import { DEFAULT_BACKEND_BASE } from '../settings/config.js';
 
 const API_VERSION = '2026-03-10';
 const REQUEST_TIMEOUT_MS = 45000;
+const TOKEN_SKEW_MS = 120000;
+const installationTokenCache = new Map();
 
 function trustedGitHubDownloadUrl(value = '') {
   let url;
@@ -31,26 +35,71 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_M
   }
 }
 
+async function installationAccessToken(installationId) {
+  const id = Number(installationId || 0);
+  if (!Number.isInteger(id) || id <= 0) throw new Error('Conecte o GitHub pelo botão GitHub do Lovable Decrypter antes de executar comandos.');
+
+  const cached = installationTokenCache.get(id);
+  if (cached?.token && Number(cached.expiresAt || 0) - TOKEN_SKEW_MS > Date.now()) return cached.token;
+
+  const settings = await getSettings();
+  const licenseKey = String(settings.auth?.licenseKey || '').trim();
+  const deviceId = String(settings.auth?.deviceId || '').trim();
+  if (!licenseKey || !deviceId) throw new Error('Faça login com uma KEY válida antes de conectar o GitHub.');
+
+  const backendBase = String(settings.auth?.backendBase || DEFAULT_BACKEND_BASE).replace(/\/+$/, '');
+  const res = await fetchWithTimeout(`${backendBase}/ld-github-app`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-license-key': licenseKey,
+      'x-device-id': deviceId
+    },
+    body: JSON.stringify({ action: 'token' })
+  }, 30000);
+  const body = await res.json().catch(() => null);
+  if (!res.ok || !body?.ok || !body?.token) {
+    const code = body?.code || `HTTP_${res.status}`;
+    throw new Error(`GitHub App indisponível: ${code}. Abra GitHub no Control Center e reconecte.`);
+  }
+  if (Number(body.installation_id || 0) !== id) throw new Error('A instalação GitHub ativa não corresponde ao projeto configurado. Reconecte o GitHub.');
+
+  const expiresAt = Date.parse(body.expires_at || '') || (Date.now() + 45 * 60 * 1000);
+  installationTokenCache.set(id, { token: String(body.token), expiresAt });
+  return String(body.token);
+}
+
 export class GitAdapter {
   constructor(config = {}) {
     this.owner = config.owner || '';
     this.repo = config.repo || '';
     this.branch = config.branch || 'main';
-    this.token = config.token || '';
+    this.authMode = config.authMode === 'legacy_token' ? 'legacy_token' : 'github_app';
+    this.installationId = Number(config.installationId || 0) || null;
+    this.token = this.authMode === 'legacy_token' ? String(config.token || '') : '';
   }
 
   ensureRepo() {
-    if (!this.owner || !this.repo) throw new Error('Configure o repositório GitHub primeiro.');
+    if (!this.owner || !this.repo) throw new Error('Selecione um repositório GitHub para este projeto primeiro.');
+  }
+
+  async resolveToken() {
+    if (this.authMode === 'legacy_token') {
+      if (!this.token) throw new Error('Token legado ausente. Reconecte usando GitHub App.');
+      return this.token;
+    }
+    return installationAccessToken(this.installationId);
   }
 
   async request(path, options = {}) {
     this.ensureRepo();
+    const token = await this.resolveToken();
     const headers = {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': API_VERSION,
+      Authorization: `Bearer ${token}`,
       ...(options.headers || {})
     };
-    if (this.token) headers.Authorization = `Bearer ${this.token}`;
     const res = await fetchWithTimeout(`https://api.github.com${path}`, { ...options, headers });
     const ct = res.headers.get('content-type') || '';
     let body = null;
@@ -58,6 +107,7 @@ export class GitAdapter {
     else body = await res.text().catch(() => '');
     if (!res.ok) {
       const msg = body?.message || body?.error || body || `GitHub HTTP ${res.status}`;
+      if (res.status === 401 || res.status === 403) installationTokenCache.delete(Number(this.installationId || 0));
       throw new Error(String(msg));
     }
     return body;
@@ -95,8 +145,8 @@ export class GitAdapter {
     if (data.encoding === 'base64' && typeof data.content === 'string') return { ...data, text: decodeBase64Utf8(data.content) };
     if (data.download_url) {
       const downloadUrl = trustedGitHubDownloadUrl(data.download_url);
-      const headers = this.token ? { Authorization: `Bearer ${this.token}` } : {};
-      const res = await fetchWithTimeout(downloadUrl, { headers });
+      const token = await this.resolveToken();
+      const res = await fetchWithTimeout(downloadUrl, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error(`Falha ao ler ${safe}.`);
       return { ...data, text: await res.text() };
     }
@@ -198,7 +248,7 @@ export class GitAdapter {
     if (createPr && createBranch) {
       pr = await this.createPullRequest({
         title: message || 'Lovable Decrypter changes',
-        body: 'Alterações geradas pelo Lovable Decrypter v2.0 e aprovadas pelo usuário após revisão do diff.',
+        body: 'Alterações geradas pelo Lovable Decrypter e aprovadas pelo usuário após revisão do diff.',
         head: targetBranch,
         base: baseBranch
       });
@@ -214,8 +264,8 @@ export class GitAdapter {
 
   async fetchZipBytes(branch = this.branch) {
     this.ensureRepo();
-    const headers = { Accept: 'application/vnd.github+json' };
-    if (this.token) headers.Authorization = `Bearer ${this.token}`;
+    const token = await this.resolveToken();
+    const headers = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}` };
     const res = await fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/zipball/${encodeURIComponent(branch)}`, { headers, redirect: 'follow' }, 120000);
     if (!res.ok) throw new Error(`Falha ao baixar ZIP (${res.status}).`);
     return Array.from(new Uint8Array(await res.arrayBuffer()));
