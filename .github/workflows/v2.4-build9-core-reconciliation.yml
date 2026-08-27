@@ -1,0 +1,133 @@
+name: Validate v2.4 Build 9 Core Reconciliation
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build9-core-reconciliation
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 9 manifest reconciliation
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const cs=m.content_scripts?.[0];
+          if(m.version!=='2.4.9') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 9') throw new Error('version_name not reconciled');
+          if(!/Build 9/.test(m.action?.default_title||'')) throw new Error('Build 9 title missing');
+          if(cs.run_at!=='document_idle' || cs.all_frames!==false) throw new Error('Unsafe content script timing/frame scope');
+          const js=cs.js||[];
+          for(const f of ['content/content.js','content/project-intelligence.js','content/skill-router.js','content/project-rules-cache.js','ui/control-center.js','content/checkpoint-ui.js','content/build9-reconciliation.js','content/composer-bridge-v3.js']) if(!js.includes(f)) throw new Error(`Missing active module ${f}`);
+          const core=js.indexOf('content/content.js'), intel=js.indexOf('content/project-intelligence.js'), skills=js.indexOf('content/skill-router.js'), rules=js.indexOf('content/project-rules-cache.js');
+          if(!(core<intel && intel<skills && skills<rules)) throw new Error('Expected wrapper load order: core -> intelligence -> skills -> rules');
+          const deferred=['content/batch-mode.js','content/queue-executor.js','content/queue-project-context.js','content/automatic-suggestions.js','content/composer-pro.js','content/preview-progress-overlay.js','content/dom-guardian.js','content/monitor.js'];
+          for(const f of deferred) if(js.includes(f)) throw new Error(`Deferred module booted too early: ${f}`);
+          NODE
+
+      - name: JavaScript syntax
+        run: |
+          node --check content/project-intelligence.js
+          node --check content/project-rules-cache.js
+          node --check content/skill-router.js
+          node --check content/checkpoint-ui.js
+          node --check content/build9-reconciliation.js
+          node --check content/composer-bridge-v3.js
+          node --check ui/ui.js
+          node --check ui/control-center.js
+          node --check background/service-worker.js
+          node --check background/checkpoint-runtime.js
+
+      - name: Project Intelligence contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('content/project-intelligence.js','utf8');
+          for(const marker of ["type === 'LD2_PLAN_PREPARE'","type === 'LD2_BUILD_EXECUTE'","type === 'LD2_PLAN_ONLY'","recordImpact","explain_project","list_impacts","list_rules","LovableDecrypterProjectIntelligence"]) if(!src.includes(marker)) throw new Error(`Project Intelligence missing ${marker}`);
+          if(src.includes("const prepared = await baseRuntime({ ...message, type: 'LD2_PLAN_PREPARE' })")) throw new Error('Legacy BUILD_EXECUTE semantic rewrite reintroduced');
+          if(!src.includes('Project Intelligence observes the existing')) throw new Error('Reconciliation invariant missing');
+          NODE
+
+      - name: Checkpoint and truth-in-UI contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const checkpoint=fs.readFileSync('content/checkpoint-ui.js','utf8');
+          const reconciliation=fs.readFileSync('content/build9-reconciliation.js','utf8');
+          const entry=fs.readFileSync('background/service-worker-entry.js','utf8');
+          const guarded=fs.readFileSync('core/guarded-commit.js','utf8');
+          if(!entry.includes('installCheckpointRuntime')) throw new Error('Checkpoint background runtime not installed');
+          if(!guarded.includes('createCheckpoint')) throw new Error('Guarded commit no longer creates checkpoints');
+          if(!checkpoint.includes('Rollback seguro') || !checkpoint.includes('LovableDecrypterCheckpointUI')) throw new Error('Checkpoint UI contract missing');
+          for(const marker of ['BUILD 10','Fila avançada','Project Intelligence','Project Rules','Skills Engine','Checkpoints']) if(!reconciliation.includes(marker)) throw new Error(`Reconciliation UI missing ${marker}`);
+          NODE
+
+      - name: Preserve Build 7 and Build 8 protected cores
+        run: |
+          BASE=fe82bee8afe76d1fa7661a2ea24f4906b80201ce
+          for path in \
+            background/service-worker.js \
+            background/cloud-migration-runtime.js \
+            background/cloud-assets-runtime.js \
+            background/cloud-complete-runtime.js \
+            supabase/functions/ld-cloud-migrator-broker/index.ts \
+            supabase/functions/ld-cloud-migrator-assets/index.ts \
+            supabase/functions/ld-cloud-migrator-assets/legacy.ts \
+            supabase/functions/ld-cloud-migrator-complete/index.ts \
+            content/skill-router.js \
+            ui/skills-engine.js \
+            ui/skills-engine.css \
+            supabase/functions/ld-custom-skills/index.ts \
+            supabase/migrations/20260827150000_build8_custom_skills.sql \
+            content/composer-bridge-v3.js \
+            ui/cloud-migrator-complete.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-core modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Reconciliation inventory exists
+        run: |
+          test -f docs/BUILD9_RECONCILIATION.md
+          grep -q 'Explicitly deferred' docs/BUILD9_RECONCILIATION.md
+          grep -q 'Truth-in-UI rule' docs/BUILD9_RECONCILIATION.md
+
+      - name: Package Build 9 candidate
+        run: |
+          rm -rf /tmp/ld-build9 && mkdir -p /tmp/ld-build9
+          rsync -a ./ /tmp/ld-build9/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='*.zip' \
+            --exclude='*.sha256' \
+            --exclude='.build*_payload*'
+          test -f /tmp/ld-build9/manifest.json
+          test -f /tmp/ld-build9/content/project-intelligence.js
+          test -f /tmp/ld-build9/content/checkpoint-ui.js
+          test -f /tmp/ld-build9/content/build9-reconciliation.js
+          test ! -d /tmp/ld-build9/supabase
+          cd /tmp/ld-build9
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip > Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' manifest.json$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' supabase/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION
+          path: |
+            Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip
+            Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.sha256
+          if-no-files-found: error
