@@ -1,0 +1,165 @@
+name: Validate v2.4 Build 20 Decrypter-Coder
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build20-decrypter-coder
+  pull_request:
+    branches:
+      - main
+      - rebuild-v2.4-build20-decrypter-coder
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and validated boot remain intact
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.20') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 20') throw new Error('Build 20 version_name missing');
+          if(!/Build 20 · Decrypter-Coder/.test(m.action?.default_title||'')) throw new Error('Build 20 title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          if(!js.includes('content/build18-reconciliation.js')) throw new Error('Build 18 runtime reconciliation missing');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.20'" settings/config.js
+
+      - name: Build 20 source syntax
+        run: |
+          node --check training/decrypter-coder/lib/curriculum.mjs
+          node --check training/decrypter-coder/lib/quality-gates.mjs
+          node --check training/decrypter-coder/prepare-dataset.mjs
+          node --check training/decrypter-coder/compare-reports.mjs
+          node --check tests/build20-decrypter-coder-sim.mjs
+          python3 -m py_compile training/decrypter-coder/train.py
+
+      - name: Decrypter-Coder executable simulations
+        run: node tests/build20-decrypter-coder-sim.mjs
+
+      - name: Generate synthetic curriculum and validate dry-run
+        run: |
+          rm -rf /tmp/decrypter-coder-dataset /tmp/decrypter-coder-output
+          node training/decrypter-coder/prepare-dataset.mjs --out=/tmp/decrypter-coder-dataset > /tmp/decrypter-coder-dataset-log.json
+          python3 training/decrypter-coder/train.py \
+            --dataset-dir=/tmp/decrypter-coder-dataset \
+            --output-dir=/tmp/decrypter-coder-output > /tmp/decrypter-coder-plan.json
+          node <<'NODE'
+          const fs=require('fs');
+          const manifest=JSON.parse(fs.readFileSync('/tmp/decrypter-coder-dataset/manifest.json','utf8'));
+          if(manifest.total_examples!==2400||manifest.train_examples!==2160||manifest.validation_examples!==240) throw new Error('Dataset split invalid');
+          if(manifest.synthetic_only!==true||manifest.private_customer_code_training!==false||manifest.decrypterbench_holdout!==true) throw new Error('Dataset privacy contract invalid');
+          if(!(manifest.max_benchmark_prompt_similarity<0.82)) throw new Error('Benchmark leakage threshold failed');
+          const plan=JSON.parse(fs.readFileSync('/tmp/decrypter-coder-plan.json','utf8'));
+          if(plan.mode!=='dry-run'||plan.automatic_training!==false||plan.private_customer_code_training!==false) throw new Error('Training must remain explicit');
+          if(fs.existsSync('/tmp/decrypter-coder-output')) throw new Error('Dry-run unexpectedly wrote model output');
+          NODE
+
+      - name: QLoRA and model contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const c=JSON.parse(fs.readFileSync('training/decrypter-coder/config/decrypter-coder-30b-qlora.json','utf8'));
+          if(c.schema!=='ld-decrypter-coder-config/1') throw new Error('Config schema invalid');
+          if(c.base_model!=='Qwen/Qwen3-Coder-30B-A3B-Instruct') throw new Error('Unexpected base model');
+          if(c.base_license!=='Apache-2.0'||c.method!=='qlora') throw new Error('Model license/method invalid');
+          if(c.quantization?.load_in_4bit!==true||c.quantization?.bnb_4bit_quant_type!=='nf4') throw new Error('QLoRA 4-bit contract missing');
+          if(c.lora?.target_modules!=='all-linear') throw new Error('LoRA target contract missing');
+          if(c.dataset?.synthetic_only!==true||c.dataset?.private_customer_code_training!==false||c.dataset?.decrypterbench_holdout!==true) throw new Error('Training privacy config invalid');
+          NODE
+          grep -q -- '--execute-training' training/decrypter-coder/train.py
+          grep -q 'CUDA_GPU_REQUIRED' training/decrypter-coder/train.py
+          grep -q 'MODEL_OUTPUT_INSIDE_REPOSITORY_FORBIDDEN' training/decrypter-coder/train.py
+
+      - name: No benchmark training contamination or private ingestion
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const curriculum=fs.readFileSync('training/decrypter-coder/lib/curriculum.mjs','utf8');
+          const builder=fs.readFileSync('training/decrypter-coder/prepare-dataset.mjs','utf8');
+          if(!curriculum.includes('benchmark_holdout: true')) throw new Error('Holdout marker missing');
+          if(!curriculum.includes('private_customer_code: false')) throw new Error('Private-code prohibition missing');
+          if(/process\.env\.[A-Z_]*REPO|git clone|fetch\s*\(/i.test(builder)) throw new Error('Dataset builder gained external ingestion');
+          if(/--input=|input-dir|repository-path/i.test(builder)) throw new Error('External dataset ingestion mode forbidden in Build 20');
+          NODE
+
+      - name: No model weights or generated training data tracked
+        run: |
+          if git ls-files | grep -Ei '(\.safetensors$|\.ckpt$|\.pth$|\.pt$|adapter_model\.bin$|pytorch_model\.bin$|training/decrypter-coder/(data|output|checkpoints)/)'; then
+            echo 'Model weights or generated training output are tracked'
+            exit 1
+          fi
+          grep -q 'training/decrypter-coder/output/' .gitignore
+          grep -q '\*\*/\*.safetensors' .gitignore
+
+      - name: No invasive observers or transport monkeypatches
+        run: |
+          BASE=455c19efc0e96b3e4b41d0e7ed5d01ad91c85c8c
+          ADDED="$(git diff -U0 "$BASE"...HEAD | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+            echo 'Forbidden invasive observer/transport patch detected in Build 20 diff'
+            exit 1
+          fi
+
+      - name: Build 20 scope lock
+        run: |
+          BASE=455c19efc0e96b3e4b41d0e7ed5d01ad91c85c8c
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build20-decrypter-coder.yml|.gitignore|manifest.json|settings/config.js|training/decrypter-coder/*|docs/BUILD20_DECRYPTER_CODER.md|tests/build20-decrypter-coder-sim.mjs) ;;
+              *) echo "Unexpected Build 20 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          test -f training/decrypter-coder/README.md
+          test -f docs/BUILD20_DECRYPTER_CODER.md
+          grep -q '2,400' training/decrypter-coder/README.md
+          grep -q 'DecrypterBench remains an untouched holdout' training/decrypter-coder/README.md
+          grep -q 'private_customer_code_training=false' docs/BUILD20_DECRYPTER_CODER.md
+          grep -q 'does not claim that model weights were trained' docs/BUILD20_DECRYPTER_CODER.md
+
+      - name: Package Build 20 candidate
+        run: |
+          rm -rf /tmp/ld-build20 && mkdir -p /tmp/ld-build20
+          rsync -a ./ /tmp/ld-build20/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='runtime' \
+            --exclude='docs' \
+            --exclude='tests' \
+            --exclude='benchmark' \
+            --exclude='training' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build20/manifest.json
+          test -f /tmp/ld-build20/content/build18-reconciliation.js
+          cd /tmp/ld-build20
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.zip > Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.sha256
+          if unzip -l Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.zip | grep -qE ' (supabase|runtime|docs|tests|benchmark|training)/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER
+          path: |
+            Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.zip
+            Lovable-Decrypter-v2.4-BUILD20-DECRYPTER-CODER.sha256
+          if-no-files-found: error
