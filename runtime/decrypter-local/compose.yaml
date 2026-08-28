@@ -26,8 +26,30 @@ services:
       - ${GPU_MEMORY_UTILIZATION:-0.92}
       - --enable-prefix-caching
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/v1/models',headers={'Authorization':'Bearer ${RUNTIME_TOKEN}'}); urllib.request.urlopen(r,timeout=5).read()\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/health',headers={'Authorization':'Bearer ${RUNTIME_TOKEN}'}); urllib.request.urlopen(r,timeout=5).read()\""]
       interval: 30s
       timeout: 8s
       retries: 5
       start_period: 180s
+
+  decrypter-worker-agent:
+    image: python:3.12-slim
+    restart: unless-stopped
+    depends_on:
+      decrypter-local:
+        condition: service_healthy
+    volumes:
+      - ./worker-agent.py:/opt/decrypter/worker-agent.py:ro
+    environment:
+      DECRYPTER_CONTROL_URL: ${DECRYPTER_CONTROL_URL}
+      DECRYPTER_WORKER_SECRET: ${DECRYPTER_WORKER_SECRET}
+      DECRYPTER_WORKER_ENDPOINT: ${DECRYPTER_WORKER_ENDPOINT}
+      DECRYPTER_WORKER_INSTANCE_KEY: ${DECRYPTER_WORKER_INSTANCE_KEY:-}
+      DECRYPTER_WORKER_ZONE: ${DECRYPTER_WORKER_ZONE:-}
+      DECRYPTER_WORKER_MAX_INFLIGHT: ${DECRYPTER_WORKER_MAX_INFLIGHT:-4}
+      DECRYPTER_HEARTBEAT_SECONDS: ${DECRYPTER_HEARTBEAT_SECONDS:-15}
+      DECRYPTER_POOL_CODE: ${DECRYPTER_POOL_CODE:-decrypter-local-primary}
+      DECRYPTER_RUNTIME_URL: http://decrypter-local:8000
+      RUNTIME_TOKEN: ${RUNTIME_TOKEN}
+      SERVED_MODEL_NAME: ${SERVED_MODEL_NAME:-decrypter-local}
+    command: ["python", "/opt/decrypter/worker-agent.py"]
