@@ -88,4 +88,4 @@ O actuator externo é quem provisiona/encerra GPUs. Sem actuator configurado, a 
 
 ## Release
 
-A Build 23 gera apenas um artifact candidato. Não publica OTA/release oficial automaticamente.
+A Build 23 gera apenas um artifact candidato e não publica OTA/release oficial automaticamente.
