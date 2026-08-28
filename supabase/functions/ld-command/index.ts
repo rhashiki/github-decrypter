@@ -4,7 +4,7 @@ const PUBLIC_SPKI_B64="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5
 const FREE_MODELS=["gemini-3.6-flash","gemini-3.5-flash-lite","gemini-2.5-pro","gemini-2.5-flash","gemini-2.5-flash-lite"];
 const LOCAL_PROVIDER="decrypter-local";
 const LOCAL_DEFAULT_MODEL="decrypter-local";
-const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type,x-license-key,x-device-id,x-gemini-key,x-decrypter-gateway,x-decrypter-gateway-signature,authorization","Access-Control-Allow-Methods":"POST,OPTIONS"};
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type,x-license-key,x-device-id,x-gemini-key,x-decrypter-gateway,x-decrypter-gateway-signature,x-decrypter-trust,x-decrypter-client-version,authorization","Access-Control-Allow-Methods":"POST,OPTIONS"};
 const json=(b:unknown,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...cors,"Content-Type":"application/json","Cache-Control":"no-store"}});
 const enc=new TextEncoder();
 
@@ -47,6 +47,7 @@ Deno.serve(async req=>{
       if(!await internalAllowed(req,service,commandId))return json({ok:false,code:"INTERNAL_SIGNATURE_REQUIRED"},403);
       return json({ok:true,provider:LOCAL_PROVIDER,runtime:await localHealth(),schema:"ld-local-runtime/1"});
     }
+    if(!await internalAllowed(req,service,commandId))return json({ok:false,code:"MODEL_GATEWAY_REQUIRED"},403);
 
     const bearer=(req.headers.get("authorization")||"").replace(/^Bearer\s+/i,"").trim();
     const token=String(req.headers.get("x-license-key")||body.license_key||bearer||"").trim();
