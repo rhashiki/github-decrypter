@@ -36,7 +36,6 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
   }
 
   GeminiAgent.prototype.backendCommand = async function gatewayBackendCommand(mode, command, context, agentRules = '', attachments = [], approvedPlan = null) {
-    this.ensureKey();
     if (!this.backendBase) throw new Error('Model Gateway do Lovable Decrypter não configurado.');
     if (!this.licenseKey) throw new Error('Faça login com uma KEY válida.');
     if (!this.deviceId) throw new Error('Dispositivo ainda não foi vinculado à licença.');
@@ -45,14 +44,15 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     const gatewayMode = ['auto', 'fast', 'deep'].includes(String(settings?.gateway?.mode || '').toLowerCase())
       ? String(settings.gateway.mode).toLowerCase()
       : 'auto';
+    const headers = {
+      'content-type': 'application/json',
+      'x-license-key': this.licenseKey,
+      'x-device-id': this.deviceId
+    };
+    if (this.apiKey) headers['x-gemini-key'] = this.apiKey;
     const res = await fetch(`${String(this.backendBase).replace(/\/+$/, '')}/ld-model-gateway`, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-license-key': this.licenseKey,
-        'x-device-id': this.deviceId,
-        'x-gemini-key': this.apiKey
-      },
+      headers,
       body: JSON.stringify({
         action: 'execute',
         mode,
@@ -105,11 +105,12 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
   };
 
   globalThis.LovableDecrypterModelGatewayRuntime = Object.freeze({
-    build: 17,
+    build: 18,
     schema: 'ld-model-gateway/1',
     active: true,
     authority: 'server',
     endpoint: 'ld-model-gateway',
+    localProvider: 'health-gated',
     crossProviderFallback: false,
     async status() { return getModelGatewayStatus(await getSettings()); }
   });
