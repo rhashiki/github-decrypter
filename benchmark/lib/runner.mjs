@@ -1,0 +1,92 @@
+import { benchmarkManifest, buildTaskCatalog, validateCatalog } from './catalog.mjs';
+import { REPORT_SCHEMA, evaluateTask, summarizeEvaluations } from './evaluator.mjs';
+
+function nowIso() { return new Date().toISOString(); }
+
+function sanitizeTelemetry(telemetry) {
+  if (!telemetry || typeof telemetry !== 'object') return { reported: false, prompt_tokens: null, completion_tokens: null, total_tokens: null, cost: null };
+  const numeric = key => Number.isFinite(Number(telemetry[key])) ? Number(telemetry[key]) : null;
+  return {
+    reported: telemetry.reported === true,
+    prompt_tokens: numeric('prompt_tokens'),
+    completion_tokens: numeric('completion_tokens'),
+    total_tokens: numeric('total_tokens'),
+    cost: Number.isFinite(Number(telemetry.cost)) ? Number(telemetry.cost) : null
+  };
+}
+
+export async function runBenchmark({ provider, tasks = buildTaskCatalog(), metadata = {}, onTask } = {}) {
+  if (!provider || typeof provider.runTask !== 'function') throw new Error('Provider adapter must expose runTask(task, context)');
+  const validation = validateCatalog(tasks);
+  if (!validation.ok) throw new Error(`Invalid benchmark catalog:\n${validation.errors.join('\n')}`);
+  const manifest = benchmarkManifest();
+  const startedAt = nowIso();
+  const evaluations = [];
+  const results = [];
+  let reportedPrompt = 0;
+  let reportedCompletion = 0;
+  let reportedTotal = 0;
+  let anyUsage = false;
+  let reportedCost = 0;
+  let anyCost = false;
+
+  for (const task of tasks) {
+    let result;
+    let error = null;
+    const taskStartedAt = nowIso();
+    try {
+      result = await provider.runTask(task, { benchmark: manifest, metadata });
+    } catch (cause) {
+      error = cause instanceof Error ? cause.message : String(cause);
+      result = { schema: 'ld-decrypterbench-result/1', answer: '', changed_files: [], commands: [], error };
+    }
+    const evaluation = evaluateTask(task, result);
+    const telemetry = sanitizeTelemetry(result?.telemetry);
+    if (telemetry.reported) {
+      anyUsage = true;
+      reportedPrompt += telemetry.prompt_tokens || 0;
+      reportedCompletion += telemetry.completion_tokens || 0;
+      reportedTotal += telemetry.total_tokens || 0;
+    }
+    if (telemetry.cost !== null) {
+      anyCost = true;
+      reportedCost += telemetry.cost;
+    }
+    const record = {
+      task_id: task.id,
+      task_hash: task.task_hash,
+      category: task.category,
+      provider: provider.id || 'unknown',
+      model: provider.model || null,
+      started_at: taskStartedAt,
+      error,
+      telemetry,
+      evaluation
+    };
+    evaluations.push(evaluation);
+    results.push(record);
+    if (onTask) await onTask(record, task);
+  }
+
+  return {
+    schema: REPORT_SCHEMA,
+    benchmark: manifest,
+    provider: {
+      id: provider.id || 'unknown',
+      model: provider.model || null,
+      provider_independent_protocol: true
+    },
+    metadata,
+    started_at: startedAt,
+    completed_at: nowIso(),
+    summary: summarizeEvaluations(evaluations),
+    telemetry: {
+      reported: anyUsage,
+      prompt_tokens: anyUsage ? reportedPrompt : null,
+      completion_tokens: anyUsage ? reportedCompletion : null,
+      total_tokens: anyUsage ? reportedTotal : null,
+      cost: anyCost ? Math.round(reportedCost * 1e8) / 1e8 : null
+    },
+    results
+  };
+}
