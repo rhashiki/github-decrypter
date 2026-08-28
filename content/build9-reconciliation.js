@@ -38,12 +38,13 @@
     const queue = $('[data-cc-batch]', root);
     if (queue) {
       const small = $('small', queue), badge = $('em', queue);
-      if (small) small.textContent = 'Execution Engine será reativado na Build 10';
-      if (badge) badge.textContent = 'BUILD 10';
+      if (small && small.textContent !== 'Execution Engine será reativado na Build 10') small.textContent = 'Execution Engine será reativado na Build 10';
+      if (badge && badge.textContent !== 'BUILD 10') badge.textContent = 'BUILD 10';
       queue.dataset.ld2Reconciled = 'deferred';
     }
     const copy = $('.ld2-cc-native-chat small', root);
-    if (copy) copy.textContent = 'Plan/Build, Auto Skill, Project Brain, Project Rules, Impact Map, Explain Project, Histórico e Checkpoints estão reconciliados. Fila avançada permanece reservada para a Build 10.';
+    const copyText = 'Plan/Build, Auto Skill, Project Brain, Project Rules, Impact Map, Explain Project, Histórico e Checkpoints estão reconciliados. Fila avançada permanece reservada para a Build 10.';
+    if (copy && copy.textContent !== copyText) copy.textContent = copyText;
   }
 
   async function openDiagnostics(root) {
@@ -101,6 +102,12 @@
   }, true);
 
   window.LovableDecrypterBuild9 = Object.freeze({ status, reconcile: reconcileLabels });
-  new MutationObserver(reconcileLabels).observe(document.documentElement, { childList: true, subtree: true });
-  reconcileLabels();
+  window.addEventListener('ld2:control-center-ready', reconcileLabels);
+  window.addEventListener('ld2:project', reconcileLabels);
+  let reconcileAttempts = 0;
+  const reconcileBounded = () => {
+    reconcileLabels();
+    if (!document.getElementById(ROOT_ID) && ++reconcileAttempts < 24) setTimeout(reconcileBounded, 100 + reconcileAttempts * 25);
+  };
+  reconcileBounded();
 })();
