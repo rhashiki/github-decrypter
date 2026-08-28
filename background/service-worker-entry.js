@@ -1,4 +1,5 @@
 import './guarded-commit-bootstrap.js';
+import './model-gateway-bootstrap.js';
 import './intelligence-bootstrap.js';
 import { installCheckpointRuntime } from './checkpoint-runtime.js';
 import { installSuggestionsRuntime } from './suggestions-runtime.js';
