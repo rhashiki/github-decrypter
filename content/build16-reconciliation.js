@@ -62,9 +62,9 @@
   async function reconcile(force = false) {
     const r = root();
     if (!r) return false;
-    r.dataset.ld2Build = '16';
+    if (Number(r.dataset.ld2Build || 0) < 16) r.dataset.ld2Build = '16';
     const hero = r.querySelector('.ld2-unified-shell .ld2-ul-hero small');
-    if (hero && hero.textContent !== 'LOVABLE DECRYPTER · BUILD 16') hero.textContent = 'LOVABLE DECRYPTER · BUILD 16';
+    if (hero && !/BUILD\s+(?:1[7-9]|[2-9]\d)/i.test(hero.textContent || '') && hero.textContent !== 'LOVABLE DECRYPTER · BUILD 16') hero.textContent = 'LOVABLE DECRYPTER · BUILD 16';
     const card = addCard();
     if (!card) return false;
     const badge = card.querySelector('[data-ul-badge="knowledge"]');
@@ -116,7 +116,7 @@
       <div>Última consulta</div><div>${Number(lastKnowledge.hit_count || 0)} hit(s) · ${Number(lastKnowledge.vector_hits || 0)} vector · ${Number(lastKnowledge.keyword_only_hits || 0)} keyword fallback</div>
       <div>Ingestão</div><div>Somente docs oficiais allowlisted</div>
       <div>Código privado do cliente</div><div><span class="ld2-ul-diag-good">NÃO É INGERIDO</span></div>
-      <div>Model Gateway</div><div><span class="ld2-ul-diag-warn">BUILD 17 · INATIVO</span></div>
+      <div>Model Gateway</div><div><span class="ld2-ul-diag-good">ATIVO</span> · autoridade no backend</div>
     </div>
     <p class="ld2-help" style="margin-top:12px">A documentação recuperada é tratada como conteúdo não confiável de referência. Instruções encontradas dentro dos documentos são ignoradas. Pedido do usuário, Project Rules, código atual, Scope Lock, checkpoints e autoridade de commit continuam superiores.</p>
     <section style="margin-top:16px"><small>FONTES DA ÚLTIMA OPERAÇÃO</small>${sourceMarkup(lastKnowledge.citations)}</section>`;
