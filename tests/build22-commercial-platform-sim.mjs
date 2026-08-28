@@ -16,9 +16,16 @@ assert.match(migration,/subscription_annual/);
 assert.match(migration,/p\.code='time_30d'/);
 assert.match(migration,/p\.code='time_365d'/);
 assert.match(commercial,/https:\/\/api\.mercadopago\.com\/preapproval/);
+assert.match(commercial,/payment_authoritative_entitlement:true/);
+assert.match(commercial,/access_pending_payment:true/);
+assert.match(commercial,/if\(!deviceId\)throw new Error\('DEVICE_REQUIRED'\)/);
+assert.doesNotMatch(commercial,/if\(status==='authorized'&&periodEnd\).*ld_license_keys/s);
 assert.match(webhook,/subscription_preapproval/);
 assert.match(webhook,/subscription_authorized_payment/);
 assert.match(webhook,/authorized_payments/);
+assert.match(webhook,/paymentStatus==='approved'/);
+assert.match(webhook,/payment_authoritative_entitlement:true/);
+assert.match(webhook,/access_changed:false/);
 assert.match(webhook,/ld_reverse_order_entitlement/);
 assert.match(runtime,/TRIAL 4H/);
 assert.match(runtime,/subscription_create/);
@@ -41,4 +48,8 @@ assert.equal(expiry - start, 14_400_000);
 assert.ok(Date.parse('2026-08-28T15:59:59.999Z') < expiry);
 assert.ok(Date.parse('2026-08-28T16:00:00.000Z') >= expiry);
 
-console.log(JSON.stringify({ok:true,cases:24,trial_seconds:14400,recurring_plans:['subscription_monthly','subscription_annual'],webhooks:['subscription_preapproval','subscription_authorized_payment']},null,2));
+const existingExpiry = Date.parse('2026-12-31T00:00:00.000Z');
+const providerPeriod = Date.parse('2026-09-30T00:00:00.000Z');
+assert.equal(Math.max(existingExpiry, providerPeriod), existingExpiry, 'subscription payment must not shorten an existing entitlement');
+
+console.log(JSON.stringify({ok:true,cases:31,trial_seconds:14400,payment_authoritative_entitlement:true,recurring_plans:['subscription_monthly','subscription_annual'],webhooks:['subscription_preapproval','subscription_authorized_payment']},null,2));
