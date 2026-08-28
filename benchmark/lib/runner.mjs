@@ -3,15 +3,19 @@ import { REPORT_SCHEMA, evaluateTask, summarizeEvaluations } from './evaluator.m
 
 function nowIso() { return new Date().toISOString(); }
 
+function reportedNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  return Number.isFinite(Number(value)) ? Number(value) : null;
+}
+
 function sanitizeTelemetry(telemetry) {
   if (!telemetry || typeof telemetry !== 'object') return { reported: false, prompt_tokens: null, completion_tokens: null, total_tokens: null, cost: null };
-  const numeric = key => Number.isFinite(Number(telemetry[key])) ? Number(telemetry[key]) : null;
   return {
     reported: telemetry.reported === true,
-    prompt_tokens: numeric('prompt_tokens'),
-    completion_tokens: numeric('completion_tokens'),
-    total_tokens: numeric('total_tokens'),
-    cost: Number.isFinite(Number(telemetry.cost)) ? Number(telemetry.cost) : null
+    prompt_tokens: reportedNumber(telemetry.prompt_tokens),
+    completion_tokens: reportedNumber(telemetry.completion_tokens),
+    total_tokens: reportedNumber(telemetry.total_tokens),
+    cost: reportedNumber(telemetry.cost)
   };
 }
 
