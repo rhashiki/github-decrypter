@@ -14,7 +14,7 @@ import urllib.request
 CONTROL_URL = os.environ.get("DECRYPTER_CONTROL_URL", "").rstrip("/")
 WORKER_SECRET = os.environ.get("DECRYPTER_WORKER_SECRET", "")
 PUBLIC_ENDPOINT = os.environ.get("DECRYPTER_WORKER_ENDPOINT", "").rstrip("/")
-INSTANCE_KEY = os.environ.get("DECRYPTER_WORKER_INSTANCE_KEY", socket.gethostname())
+INSTANCE_KEY = os.environ.get("DECRYPTER_WORKER_INSTANCE_KEY") or socket.gethostname()
 POOL_CODE = os.environ.get("DECRYPTER_POOL_CODE", "decrypter-local-primary")
 ZONE = os.environ.get("DECRYPTER_WORKER_ZONE", "")
 RUNTIME_URL = os.environ.get("DECRYPTER_RUNTIME_URL", "http://decrypter-local:8000").rstrip("/")
