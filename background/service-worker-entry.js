@@ -9,6 +9,7 @@ import { installLovableProjectRuntime } from './lovable-project-runtime.js';
 import { installCloudMigrationRuntime } from './cloud-migration-runtime.js';
 import { installCloudAssetsRuntime } from './cloud-assets-runtime.js';
 import { installCloudCompleteRuntime } from './cloud-complete-runtime.js';
+import { installUpdateRecoveryRuntime } from './update-recovery-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -21,3 +22,4 @@ installLovableProjectRuntime();
 installCloudMigrationRuntime();
 installCloudAssetsRuntime();
 installCloudCompleteRuntime();
+installUpdateRecoveryRuntime();
