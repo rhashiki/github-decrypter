@@ -15,10 +15,26 @@ function sanitizeTelemetry(telemetry) {
   };
 }
 
+function validateSelection(tasks) {
+  const canonical = buildTaskCatalog();
+  const validation = validateCatalog(canonical);
+  if (!validation.ok) throw new Error(`Invalid benchmark catalog:\n${validation.errors.join('\n')}`);
+  const byId = new Map(canonical.map(task => [task.id, task]));
+  const seen = new Set();
+  for (const task of tasks) {
+    const official = byId.get(task?.id);
+    if (!official) throw new Error(`Unknown benchmark task: ${task?.id || '<missing-id>'}`);
+    if (seen.has(task.id)) throw new Error(`Duplicate selected task: ${task.id}`);
+    if (official.task_hash !== task.task_hash) throw new Error(`Task hash mismatch: ${task.id}`);
+    seen.add(task.id);
+  }
+  return validation;
+}
+
 export async function runBenchmark({ provider, tasks = buildTaskCatalog(), metadata = {}, onTask } = {}) {
   if (!provider || typeof provider.runTask !== 'function') throw new Error('Provider adapter must expose runTask(task, context)');
-  const validation = validateCatalog(tasks);
-  if (!validation.ok) throw new Error(`Invalid benchmark catalog:\n${validation.errors.join('\n')}`);
+  if (!Array.isArray(tasks) || tasks.length < 1) throw new Error('At least one benchmark task is required');
+  validateSelection(tasks);
   const manifest = benchmarkManifest();
   const startedAt = nowIso();
   const evaluations = [];
@@ -71,6 +87,10 @@ export async function runBenchmark({ provider, tasks = buildTaskCatalog(), metad
   return {
     schema: REPORT_SCHEMA,
     benchmark: manifest,
+    selection: {
+      task_count: tasks.length,
+      task_ids: tasks.map(task => task.id)
+    },
     provider: {
       id: provider.id || 'unknown',
       model: provider.model || null,
