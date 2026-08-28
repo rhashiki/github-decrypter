@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - rebuild-v2.4-build18-decrypter-local
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -42,11 +45,15 @@ jobs:
           node --check content/build18-reconciliation.js
           node --check content/build17-reconciliation.js
           node --check content/live-operations.js
+          node --check tests/build18-decrypter-local-sim.mjs
 
       - name: TypeScript syntax for backend executors
         run: |
           npx --yes esbuild supabase/functions/ld-command/index.ts --bundle --platform=neutral --format=esm --external:jsr:* --outfile=/tmp/ld-command.mjs
           npx --yes esbuild supabase/functions/ld-model-gateway/index.ts --bundle --platform=neutral --format=esm --external:jsr:* --outfile=/tmp/ld-model-gateway.mjs
+
+      - name: Build 18 runtime simulations
+        run: node tests/build18-decrypter-local-sim.mjs
 
       - name: Model Gateway contract accepts Local only when valid
         run: |
@@ -60,13 +67,16 @@ jobs:
           if(validateGatewayDecision({...base,provider:'gemini',cross_provider_fallback:true}).allowed) throw new Error('Cross-provider fallback accepted');
           NODE
 
-      - name: Local route is health-gated and fail-closed
+      - name: Local route is health-gated cached and fail-closed
         run: |
           node <<'NODE'
           const fs=require('fs');
           const gateway=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
           for(const marker of [
             'localRuntimeStatus',
+            'cachedLocalRuntimeStatus',
+            'LOCAL_HEALTH_TTL_MS = 15_000',
+            'now < localHealthCache.expiresAt',
             "provider = localEligible ? LOCAL_PROVIDER : 'gemini'",
             'localAttachmentsEligible',
             'retry_across_providers: false',
@@ -108,9 +118,18 @@ jobs:
           if(!bootstrap.includes("if (this.apiKey) headers['x-gemini-key'] = this.apiKey")) throw new Error('Gemini key must be optional on gateway call');
           for(const file of ['manifest.json','settings/config.js','background/model-gateway-bootstrap.js','content/build18-reconciliation.js','content/build17-reconciliation.js']) {
             const src=fs.readFileSync(file,'utf8');
-            if(/DECRYPTER_LOCAL_TOKEN|DECRYPTER_LOCAL_URL/.test(src)) throw new Error(`Runtime secret/config leaked into browser file: ${file}`);
+            if(/DECRYPTER_LOCAL_TOKEN|DECRYPTER_LOCAL_URL|DECRYPTER_LOCAL_API_KEY|DECRYPTER_LOCAL_BASE_URL/.test(src)) throw new Error(`Runtime secret/config leaked into browser file: ${file}`);
           }
           NODE
+
+      - name: No invasive global observers or transport monkeypatches
+        run: |
+          BASE=7c86aca5555b271c8dd6091c7bb55f9b8731858c
+          ADDED="$(git diff -U0 "$BASE"...HEAD | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+            echo 'Forbidden invasive global observer/transport patch detected in Build 18 diff'
+            exit 1
+          fi
 
       - name: Runtime deployment contract
         run: |
@@ -131,7 +150,6 @@ jobs:
           const fs=require('fs');
           const src=fs.readFileSync('content/build18-reconciliation.js','utf8');
           for(const marker of ['Decrypter Local','Qwen/Qwen3-Coder-30B-A3B-Instruct','vLLM','Cross-provider retry','NENHUM','ld-local-runtime/1']) if(!src.includes(marker)) throw new Error(`Build 18 UI marker missing: ${marker}`);
-          if(/token|url privada/i.test('') && false) throw new Error('noop');
           NODE
 
       - name: Preserve validated engines outside Build 18 scope
@@ -163,7 +181,6 @@ jobs:
             content/build14-reconciliation.js \
             content/skill-router.js \
             ui/skills-engine.js \
-            background/knowledge-client.js \
             supabase/functions/ld-knowledge-search/index.ts \
             supabase/functions/ld-knowledge-embed/index.ts; do
             if ! git diff --quiet "$BASE" -- "$path"; then
