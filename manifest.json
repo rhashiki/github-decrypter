@@ -49,6 +49,7 @@
         "content/checkpoint-ui.js",
         "content/batch-mode.js",
         "content/queue-project-context.js",
+        "content/queue-atomic-skip.js",
         "content/queue-executor.js",
         "content/build10-reconciliation.js",
         "ui/project-context.js",
