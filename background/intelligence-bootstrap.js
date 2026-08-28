@@ -11,6 +11,7 @@ import {
 
 const LAST_KEY = 'ld2_intelligence_last_v1';
 const HISTORY_KEY = 'ld2_intelligence_history_v1';
+const GATEWAY_KEY = 'ld2_gateway_last_v1';
 const MAX_HISTORY = 60;
 
 if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
@@ -108,9 +109,8 @@ if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
       attachments,
       approvedPlan: null
     });
-    let result;
     try {
-      result = await originalPlan.call(this, command, context, directive, attachments);
+      const result = await originalPlan.call(this, command, context, directive, attachments);
       const validation = assertProviderResult(result, brief);
       const summary = publicIntelligenceSummary(brief, validation);
       await persist(summary, 'validated');
@@ -130,9 +130,8 @@ if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
       attachments,
       approvedPlan
     });
-    let result;
     try {
-      result = await originalBuild.call(this, command, context, directive, attachments, approvedPlan);
+      const result = await originalBuild.call(this, command, context, directive, attachments, approvedPlan);
       const validation = assertProviderResult(result, brief);
       const summary = publicIntelligenceSummary(brief, validation);
       await persist(summary, 'validated');
@@ -148,7 +147,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
     (async () => {
       try {
         const [stored, settings] = await Promise.all([
-          chrome.storage.local.get([LAST_KEY, HISTORY_KEY]),
+          chrome.storage.local.get([LAST_KEY, HISTORY_KEY, GATEWAY_KEY]),
           getSettings()
         ]);
         const knowledge = await knowledgeStatus({
@@ -158,10 +157,12 @@ if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
         });
         sendResponse({
           ok: true,
-          build: 16,
+          build: 17,
           schema: 'ld-intelligence/1',
           provider_role: 'executor_only',
-          model_gateway_active: false,
+          model_gateway_active: true,
+          model_gateway_schema: 'ld-model-gateway/1',
+          model_gateway_last: stored[GATEWAY_KEY] || null,
           last: stored[LAST_KEY] || null,
           history_count: Array.isArray(stored[HISTORY_KEY]) ? stored[HISTORY_KEY].length : 0,
           knowledge
@@ -174,11 +175,12 @@ if (!globalThis.__LOVABLE_DECRYPTER_INTELLIGENCE_BOOTSTRAP__) {
   });
 
   globalThis.LovableDecrypterIntelligenceRuntime = Object.freeze({
-    build: 16,
+    build: 17,
     schema: 'ld-intelligence/1',
     providerRole: 'executor_only',
     knowledgeActive: true,
     knowledgeSchema: 'ld-knowledge/1',
-    modelGatewayActive: false
+    modelGatewayActive: true,
+    modelGatewaySchema: 'ld-model-gateway/1'
   });
 }
