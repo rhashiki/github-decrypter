@@ -7,3 +7,11 @@
 !.env.example
 node_modules/
 .DS_Store
+
+# Build 20 training artifacts must never be committed.
+training/decrypter-coder/data/
+training/decrypter-coder/output/
+training/decrypter-coder/checkpoints/
+training/decrypter-coder/**/*.safetensors
+training/decrypter-coder/**/adapter_model.bin
+training/decrypter-coder/**/pytorch_model.bin
