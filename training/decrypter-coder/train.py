@@ -81,7 +81,7 @@ def validate_dataset(dataset_dir: Path, config: dict[str, Any]) -> dict[str, Any
     if split_counts["validation"] != int(manifest["validation_examples"]):
         raise RuntimeError("VALIDATION_LINE_COUNT_MISMATCH")
 
-    calculated_hash = hashlib.sha256(compact_json(hashes).encode("utf-8")).hexdigest()
+    calculated_hash = hashlib.sha256(compact_json(sorted(hashes)).encode("utf-8")).hexdigest()
     if calculated_hash != manifest.get("dataset_hash"):
         raise RuntimeError("DATASET_HASH_MISMATCH")
     return manifest
