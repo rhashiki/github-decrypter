@@ -82,7 +82,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const ui=fs.readFileSync('content/build15-reconciliation.js','utf8');
-          for(const marker of ['Decrypter Intelligence','Intent, estratégia, tools e validação','BUILD 16 · INATIVO','BUILD 17 · INATIVO','executor técnico','root.dataset.ld2Build = \'15\'']) if(!ui.includes(marker)) throw new Error(`Build 15 UI marker missing: ${marker}`);
+          for(const marker of ['Decrypter Intelligence','Intent, estratégia, tools e validação','BUILD 16 · INATIVO','BUILD 17 · INATIVO','executor técnico',"r.dataset.ld2Build = '15'"]) if(!ui.includes(marker)) throw new Error(`Build 15 UI marker missing: ${marker}`);
           if(/MutationObserver/.test(ui)) throw new Error('Build 15 reconciliation must not globally observe Lovable DOM');
           NODE
 
