@@ -20,13 +20,15 @@ function extractBetween(source, start, end) {
   return source.slice(from, to).trim();
 }
 
-function stripPrimitiveTypeAnnotations(source) {
-  return String(source).replace(/([A-Za-z_$][\w$]*)\s*:\s*(?:string|number|boolean|any|unknown)(?=\s*[,)=])/g, '$1');
+function stripTypeScriptForVm(source) {
+  return String(source)
+    .replace(/([A-Za-z_$][\w$]*)\s*:\s*(?:string|number|boolean|any|unknown)(?=\s*[,)=])/g, '$1')
+    .replace(/\b(Map|Set|Array|Promise)<[^>]+>/g, '$1');
 }
 
 function loadFunction(source, name, nextMarker, extras = '') {
   const extracted = extractBetween(source, `function ${name}`, nextMarker);
-  const code = `${stripPrimitiveTypeAnnotations(extras)}\n${stripPrimitiveTypeAnnotations(extracted)}\nthis.__fn=${name};`;
+  const code = `${stripTypeScriptForVm(extras)}\n${stripTypeScriptForVm(extracted)}\nthis.__fn=${name};`;
   const context = {};
   vm.runInNewContext(code, context);
   return context.__fn;
