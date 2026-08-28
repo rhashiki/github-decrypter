@@ -93,16 +93,16 @@ function inferRisk(intent, context = {}, approvedPlan = null) {
   return { level, score, categories };
 }
 
-function toolRoute(intent, context = {}) {
+function toolRoute(intent) {
   const recommended = ['github_repository'];
   if (['database', 'auth', 'security'].includes(intent.primary)) recommended.push('supabase');
   if (intent.primary === 'migration') recommended.push('cloud_migrator');
   if (intent.primary === 'github') recommended.push('github_workflow');
   return {
-    policy: 'advisory-only-build15',
+    policy: 'advisory-only',
     recommended: unique(recommended),
     auto_invocation: false,
-    note: 'Build 15 decides the tool route, but does not add new privileged auto-invocation. Existing authoritative runtimes remain in control.'
+    note: 'Decrypter Intelligence recommends tools; existing authoritative runtimes retain privileged invocation authority.'
   };
 }
 
@@ -137,7 +137,7 @@ export function createExecutionBrief({ mode = 'build', command = '', context = {
     intent,
     risk,
     strategy: executionStrategy(mode, risk, approvedPlan),
-    tool_route: toolRoute(intent, context),
+    tool_route: toolRoute(intent),
     scope: {
       approved_plan: Boolean(approvedPlan),
       approved_paths: approvedPaths,
@@ -154,7 +154,14 @@ export function createExecutionBrief({ mode = 'build', command = '', context = {
     },
     skills: { slugs: skillSlugs, count: skillSlugs.length },
     knowledge: { active: false, build: 16, label: 'Decrypter Knowledge / RAG' },
-    provider: { role: 'executor_only', gateway_active: false, gateway_build: 17 },
+    provider: {
+      role: 'executor_only',
+      gateway_active: true,
+      gateway_build: 17,
+      gateway_schema: 'ld-model-gateway/1',
+      gateway_authority: 'server',
+      cross_provider_fallback: false
+    },
     validation: {
       provider_result_required: true,
       scope_lock_required: mode !== 'plan',
@@ -174,6 +181,7 @@ export function serializeExecutionBrief(brief) {
     'You are the execution provider, not the product brain.',
     'The Decrypter Intelligence Execution Brief below is authoritative for goal, scope, risk, tool policy and validation.',
     'Execute only the requested mode. Never broaden scope or invent additional work.',
+    'The Model Gateway chooses the executor/model independently; do not reinterpret or override that routing decision.',
     'The existing runtime will independently enforce Scope Lock, minimal patches, checkpoints and commit authority.',
     '<DECRYPTER_EXECUTION_BRIEF>',
     payload,
@@ -233,7 +241,7 @@ export function publicIntelligenceSummary(brief, validation = null) {
     tool_route: brief?.tool_route || { recommended: ['github_repository'], auto_invocation: false },
     skills: brief?.skills || { slugs: [], count: 0 },
     knowledge: brief?.knowledge || { active: false, build: 16 },
-    provider: brief?.provider || { role: 'executor_only', gateway_active: false, gateway_build: 17 },
+    provider: brief?.provider || { role: 'executor_only', gateway_active: true, gateway_build: 17, gateway_schema: 'ld-model-gateway/1', gateway_authority: 'server', cross_provider_fallback: false },
     validation: validation ? { allowed: validation.allowed, warnings: validation.warnings || [] } : null,
     created_at: brief?.created_at || new Date().toISOString()
   });
