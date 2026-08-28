@@ -23,7 +23,7 @@
     if (!pid) throw new Error('Projeto Lovable não identificado.');
     const mapping = settings?.projectMappings?.[pid] || {};
     const github = { ...(settings?.github || {}), ...mapping };
-    if (!github.owner || !github.repo) throw new Error('Configure o GitHub deste projeto antes de usar o Batch.');
+    if (!github.owner || !github.repo) throw new Error('Configure o GitHub deste projeto antes de usar a fila.');
     const backendBase = String(settings?.auth?.backendBase || '').replace(/\/+$/, '');
     const licenseKey = String(settings?.auth?.licenseKey || '');
     const deviceId = String(settings?.auth?.deviceId || '');
@@ -63,8 +63,9 @@
     return queueCall(ctx, { action: 'list', limit: 150 });
   }
 
-  function statusLabel(status) {
-    return ({ queued:'Aguardando', running:'Executando', paused:'Pausado', blocked:'Bloqueado', completed:'Concluído', failed:'Falhou', cancelled:'Cancelado' })[status] || status || '—';
+  function statusLabel(item) {
+    if (item?.status === 'cancelled' && item?.error_code === 'SKIPPED_BY_USER') return 'Ignorado';
+    return ({ queued:'Aguardando', running:'Executando', paused:'Pausado', blocked:'Bloqueado', completed:'Concluído', failed:'Falhou', cancelled:'Cancelado' })[item?.status] || item?.status || '—';
   }
 
   function toast(message, error = false) {
@@ -79,11 +80,11 @@
   }
 
   function batchStatus(batch, items) {
-    if (batch?.status) return statusLabel(batch.status);
     if (items.some(x => x.status === 'failed' || x.status === 'blocked')) return 'Falhou';
     if (items.some(x => x.status === 'running')) return 'Executando';
     if (items.some(x => x.status === 'paused')) return 'Pausado';
-    if (items.every(x => x.status === 'completed')) return 'Concluído';
+    if (items.every(x => ['completed','cancelled'].includes(x.status))) return items.some(x => x.status === 'cancelled') ? 'Parcial' : 'Concluído';
+    if (batch?.status) return String(batch.status);
     return 'Aguardando';
   }
 
@@ -93,15 +94,15 @@
     return `<article class="ld2-queue-row status-${esc(item.status)}">
       <div class="ld2-queue-pos">${Number(item.batch_position || item.queue_position || 0)}</div>
       <div class="ld2-queue-copy">
-        <div><b>${esc(statusLabel(item.status))}</b><em>${esc(item.mode || 'build')}</em></div>
+        <div><b>${esc(statusLabel(item))}</b><em>${esc(item.mode || 'build')}</em></div>
         <p>${esc(item.command_text || '')}</p>
-        ${Array.isArray(item.skill_slugs) && item.skill_slugs.length ? `<small>Skills: ${esc(item.skill_slugs.join(', '))}</small>` : ''}
+        ${Array.isArray(item.skill_slugs) && item.skill_slugs.length ? `<small>Hints no enqueue: ${esc(item.skill_slugs.join(', '))} · Skills serão recalculadas na execução.</small>` : '<small>Skills serão calculadas no momento da execução.</small>'}
         ${item.result_summary ? `<small>${esc(item.result_summary)}</small>` : ''}
         ${item.error_code ? `<small class="error">${esc(item.error_code)}</small>` : ''}
       </div>
       <div class="ld2-queue-actions">
-        ${cancellable ? `<button type="button" data-batch-cancel="${esc(item.id)}" title="Cancelar">×</button>` : ''}
-        ${retryable ? `<button type="button" data-batch-retry="${esc(item.id)}" title="Tentar novamente">↻</button>` : ''}
+        ${cancellable ? `<button type="button" data-batch-cancel="${esc(item.id)}" title="Cancelar este item">×</button>` : ''}
+        ${retryable ? `<button type="button" data-batch-retry="${esc(item.id)}" title="Tentar novamente">↻</button><button type="button" data-batch-skip="${esc(item.id)}" title="Ignorar e continuar">→</button>` : ''}
       </div>
     </article>`;
   }
@@ -118,17 +119,26 @@
     return [...grouped.entries()].map(([id, batchItems]) => ({ id, batch: batches.get(id) || null, items: batchItems }));
   }
 
+  async function skipFailed(ctx, itemId) {
+    // The v6 backend already gives us two safe primitives. We compose them without
+    // starting the executor between calls: failed -> queued/resume, then queued -> cancelled.
+    await queueCall(ctx, { action: 'retry_failed', item_id: itemId });
+    await queueCall(ctx, { action: 'cancel_item', item_id: itemId });
+    return { ok: true };
+  }
+
   async function renderQueue(card, ctx, out) {
     const counts = out?.counts || {};
     const groups = batchGroups(out);
     const pending = Number(counts.queued || 0) + Number(counts.running || 0) + Number(counts.paused || 0);
+    const failures = Number(counts.failed || 0) + Number(counts.blocked || 0);
     card.innerHTML = `
-      <div class="ld2-cloud-head"><div><small>BATCH MODE · ${esc(ctx.projectId)}</small><h2>Fila do projeto</h2><p>${esc(ctx.github.owner)}/${esc(ctx.github.repo)} · ${esc(ctx.github.branch)}</p></div><button type="button" data-batch-close>×</button></div>
+      <div class="ld2-cloud-head"><div><small>EXECUTION ENGINE · ${esc(ctx.projectId)}</small><h2>Fila do projeto</h2><p>${esc(ctx.github.owner)}/${esc(ctx.github.repo)} · ${esc(ctx.github.branch)}</p></div><button type="button" data-batch-close>×</button></div>
       <div class="ld2-queue-counts">
         <span><b>${Number(counts.running || 0)}</b> executando</span>
         <span><b>${Number(counts.queued || 0)}</b> aguardando</span>
         <span><b>${Number(counts.paused || 0)}</b> pausados</span>
-        <span><b>${Number(counts.failed || 0) + Number(counts.blocked || 0)}</b> falhas</span>
+        <span><b>${failures}</b> falhas</span>
       </div>
       <div class="ld2-queue-controls">
         <button type="button" data-batch-control="pause">Pausar</button>
@@ -136,21 +146,24 @@
         <button type="button" class="danger" data-batch-control="cancel_pending">Cancelar pendentes</button>
         <button type="button" data-batch-refresh>Atualizar</button>
       </div>
-      <p class="ld2-help">Execução estritamente sequencial. Cada Build passa novamente por Project Rules, Skill Router, Scope Lock, Shadow Build, Regression Sentinel, Validation Gate e Checkpoint. Uma falha pausa os itens seguintes deste projeto.</p>
+      <p class="ld2-help">Execução estritamente sequencial. Antes de cada item o Decrypter recarrega Project Brain/Rules, roteia Skills novamente e o core recalcula HEAD + Scope Lock. Falhas pausam o projeto; Retry repete o item e Ignorar o descarta antes de continuar. Reloads são reconciliados pelo journal local para evitar execução duplicada.</p>
       <div class="ld2-queue-list">${groups.length ? groups.map(group => `
         <section class="ld2-list-item" data-batch-id="${esc(group.id)}">
           <div><b>Batch ${esc(group.id.slice(0,8))}</b> <small>${esc(batchStatus(group.batch, group.items))} · ${group.items.length} item(ns)</small></div>
           <div class="ld2-queue-list">${group.items.map(queueRow).join('')}</div>
         </section>`).join('') : '<div class="ld2-cloud-empty">Nenhum comando deste projeto está na fila.</div>'}</div>
-      <div class="ld2-help">${pending ? `${pending} item(ns) ainda exigem processamento.` : 'Fila deste projeto concluída ou vazia.'}</div>`;
+      <div class="ld2-help">${pending ? `${pending} item(ns) aguardam processamento.` : failures ? 'A fila está pausada aguardando decisão sobre uma falha.' : 'Fila deste projeto concluída ou vazia.'}</div>`;
 
     card.querySelector('[data-batch-close]').onclick = () => card.closest('.ld2-modal')?.classList.remove('open');
     card.querySelector('[data-batch-refresh]').onclick = async () => renderQueue(card, ctx, await loadQueue(ctx));
+
     $$('[data-batch-control]', card).forEach(button => button.onclick = async () => {
       button.disabled = true;
       try {
-        await queueCall(ctx, { action: 'control', operation: button.dataset.batchControl });
-        if (button.dataset.batchControl === 'resume') window.LovableDecrypterQueueExecutor?.start?.();
+        const op = button.dataset.batchControl;
+        await queueCall(ctx, { action: 'control', operation: op });
+        if (op === 'pause') window.LovableDecrypterQueueExecutor?.stop?.();
+        if (op === 'resume') window.LovableDecrypterQueueExecutor?.start?.();
         await renderQueue(card, ctx, await loadQueue(ctx));
         lastRefreshAt = 0;
         await refreshScopedCount(true);
@@ -159,6 +172,7 @@
         button.disabled = false;
       }
     });
+
     $$('[data-batch-cancel]', card).forEach(button => button.onclick = async () => {
       button.disabled = true;
       try {
@@ -166,8 +180,12 @@
         await renderQueue(card, ctx, await loadQueue(ctx));
         lastRefreshAt = 0;
         await refreshScopedCount(true);
-      } catch (error) { toast(error?.message || String(error), true); button.disabled = false; }
+      } catch (error) {
+        toast(error?.message || String(error), true);
+        button.disabled = false;
+      }
     });
+
     $$('[data-batch-retry]', card).forEach(button => button.onclick = async () => {
       button.disabled = true;
       try {
@@ -176,7 +194,25 @@
         await renderQueue(card, ctx, await loadQueue(ctx));
         lastRefreshAt = 0;
         await refreshScopedCount(true);
-      } catch (error) { toast(error?.message || String(error), true); button.disabled = false; }
+      } catch (error) {
+        toast(error?.message || String(error), true);
+        button.disabled = false;
+      }
+    });
+
+    $$('[data-batch-skip]', card).forEach(button => button.onclick = async () => {
+      button.disabled = true;
+      try {
+        await skipFailed(ctx, button.dataset.batchSkip);
+        toast('Item ignorado. A fila continuará no próximo comando.');
+        window.LovableDecrypterQueueExecutor?.start?.();
+        await renderQueue(card, ctx, await loadQueue(ctx));
+        lastRefreshAt = 0;
+        await refreshScopedCount(true);
+      } catch (error) {
+        toast(error?.message || String(error), true);
+        button.disabled = false;
+      }
     });
   }
 
@@ -186,41 +222,52 @@
     const card = modal?.querySelector('.ld2-card');
     if (!modal || !card) throw new Error('Control Center ainda não está pronto.');
     card.className = 'ld2-card ld2-cloud-card queue';
-    card.innerHTML = '<div class="ld2-cloud-loading">Carregando Batch do projeto…</div>';
+    card.innerHTML = '<div class="ld2-cloud-loading">Carregando Execution Engine…</div>';
     modal.classList.add('open');
     try {
       const ctx = await context();
       await renderQueue(card, ctx, await loadQueue(ctx));
     } catch (error) {
-      card.innerHTML = `<div class="ld2-cloud-head"><div><small>BATCH MODE</small><h2>Fila indisponível</h2><p>${esc(error?.message || String(error))}</p></div><button type="button" data-batch-close>×</button></div>`;
+      card.innerHTML = `<div class="ld2-cloud-head"><div><small>EXECUTION ENGINE</small><h2>Fila indisponível</h2><p>${esc(error?.message || String(error))}</p></div><button type="button" data-batch-close>×</button></div>`;
       card.querySelector('[data-batch-close]').onclick = () => modal.classList.remove('open');
     }
   }
 
+  function setQueueCard(root, pending, failures, running) {
+    const queueCard = root?.querySelector('[data-cc-batch]');
+    if (!queueCard) return;
+    const title = queueCard.querySelector('b');
+    const small = queueCard.querySelector('small');
+    const badge = queueCard.querySelector('em');
+    if (title) title.textContent = 'Fila de comandos';
+    if (small) {
+      small.textContent = running
+        ? 'Execução em andamento'
+        : failures
+          ? `${failures} falha(s) aguardando decisão`
+          : pending
+            ? `${pending} pendente(s) neste projeto`
+            : 'Execução sequencial com recovery';
+    }
+    if (badge) badge.textContent = running ? 'EXECUTANDO' : failures ? 'PAUSADA' : 'ATIVA';
+    queueCard.dataset.ld2QueueState = running ? 'running' : failures ? 'paused' : 'ready';
+  }
+
   async function refreshScopedCount(force = false) {
     if (refreshing || document.visibilityState === 'hidden') return;
-    if (!force && Date.now() - lastRefreshAt < 2500) return;
+    if (!force && Date.now() - lastRefreshAt < 5000) return;
     refreshing = true;
     try {
       const ctx = await context();
       const out = await loadQueue(ctx);
       const counts = out?.counts || {};
-      const pending = Number(counts.queued || 0) + Number(counts.running || 0) + Number(counts.paused || 0) + Number(counts.failed || 0) + Number(counts.blocked || 0);
-      $$('.ld2-native-bridge [data-cloud-queue]').forEach(button => { button.textContent = pending ? `☷ Batch ${pending}` : '☷ Batch'; });
-      const root = document.getElementById(ROOT_ID);
-      const queueCard = root?.querySelector('[data-cc-future="queue"]');
-      if (queueCard) {
-        queueCard.classList.remove('future');
-        queueCard.querySelector('em')?.remove();
-        const title = queueCard.querySelector('b'); if (title) title.textContent = 'Batch';
-        const small = queueCard.querySelector('small'); if (small) small.textContent = pending ? `${pending} pendente(s) neste projeto` : 'Fila sequencial do projeto';
-      }
-      const health = root?.querySelector('.ld2-cc-health>div:nth-child(3)');
-      if (health) {
-        health.querySelector('.ld2-cc-dot')?.classList.add('ready');
-        const label = health.querySelector('small'); if (label) label.textContent = 'Batch';
-        const value = health.querySelector('b'); if (value) value.textContent = pending ? `${pending} pendente(s)` : 'Pronto';
-      }
+      const pending = Number(counts.queued || 0) + Number(counts.running || 0) + Number(counts.paused || 0);
+      const failures = Number(counts.failed || 0) + Number(counts.blocked || 0);
+      const running = Number(counts.running || 0);
+      $$('.ld2-native-bridge [data-cloud-queue]').forEach(button => {
+        button.textContent = pending || failures ? `☷ Fila ${pending + failures}` : '☷ Fila';
+      });
+      setQueueCard(document.getElementById(ROOT_ID), pending, failures, running);
       lastRefreshAt = Date.now();
     } catch (_) {}
     finally { refreshing = false; }
@@ -235,7 +282,7 @@
   }
 
   function interceptQueueOpen(event) {
-    const target = event.target.closest?.('#ld2-root [data-cloud-queue], #ld2-root [data-cc-future="queue"]');
+    const target = event.target.closest?.('#ld2-root [data-cloud-queue], #ld2-root [data-cc-batch], #ld2-root [data-cc-future="queue"]');
     if (!target) return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -245,14 +292,35 @@
   document.addEventListener('click', interceptQueueOpen, true);
   window.addEventListener('ld2:queue-changed', () => { lastRefreshAt = 0; scheduleRefresh(120, true); });
   window.addEventListener('ld2:project', () => { lastRefreshAt = 0; scheduleRefresh(250, true); });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { lastRefreshAt = 0; scheduleRefresh(100, true); } });
-  new MutationObserver(() => scheduleRefresh(500, false)).observe(document.documentElement, { childList: true, subtree: true });
-  refreshTimer = setInterval(() => refreshScopedCount(false), 5000);
+  window.addEventListener('ld2:ui-mounted', () => scheduleRefresh(250, true));
+  window.addEventListener('ld2:control-center-ready', () => scheduleRefresh(120, true));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      lastRefreshAt = 0;
+      scheduleRefresh(100, true);
+    }
+  });
+
+  refreshTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') refreshScopedCount(false);
+  }, 15_000);
   addEventListener('beforeunload', () => {
     clearInterval(refreshTimer);
     if (refreshScheduled) clearTimeout(refreshScheduled);
   }, { once: true });
-  scheduleRefresh(700, true);
 
-  window.LovableDecrypterBatchMode = { open: openQueue, refresh: () => refreshScopedCount(true) };
+  scheduleRefresh(700, true);
+  setTimeout(() => scheduleRefresh(1400, true), 1400);
+  setTimeout(() => scheduleRefresh(2800, true), 2800);
+
+  window.LovableDecrypterBatchMode = {
+    open: openQueue,
+    refresh: () => refreshScopedCount(true),
+    skip: async itemId => {
+      const ctx = await context();
+      await skipFailed(ctx, itemId);
+      window.LovableDecrypterQueueExecutor?.start?.();
+      return refreshScopedCount(true);
+    }
+  };
 })();
