@@ -5,6 +5,7 @@ const SCHEMA = 'ld-model-gateway/1';
 const PUBLIC_SPKI_B64 = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==';
 const DEFAULT_FAST = 'gemini-3.6-flash';
 const DEFAULT_DEEP = 'gemini-2.5-pro';
+const LOCAL_PROVIDER = 'decrypter-local';
 const FREE_MODELS = new Set(['gemini-3.6-flash','gemini-3.5-flash-lite','gemini-2.5-pro','gemini-2.5-flash','gemini-2.5-flash-lite']);
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -21,6 +22,11 @@ function b64u(value: string) {
 async function sha(value: string) {
   const digest = await crypto.subtle.digest('SHA-256', enc.encode(value));
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function hmacHex(secret: string, value: string) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(value));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 async function verifyToken(token: string) {
   const [prefix, payloadPart, signaturePart] = token.trim().split('.');
@@ -79,7 +85,7 @@ function autoProfile(brief: any, commandMode: string) {
   if (commandMode === 'build' && ['security','database','auth','migration'].includes(intent) && risk === 'medium') return 'deep';
   return 'fast';
 }
-function resolveModel(preferred: string, fallback: string, billingMode: string) {
+function resolveGeminiModel(preferred: string, fallback: string, billingMode: string) {
   const wanted = normalizeModel(preferred);
   if (wanted && supportedTextModel(wanted) && (billingMode === 'user_paid' || freeModel(wanted))) {
     return { model: wanted, fallback: { applied: false, from: '', to: '', reason: '' } };
@@ -94,10 +100,29 @@ function resolveModel(preferred: string, fallback: string, billingMode: string) 
     }
   };
 }
-function registry() {
+function localAttachmentsEligible(items: any[]) {
+  return (Array.isArray(items) ? items : []).every(item => /^(text\/|application\/(json|xml|javascript|typescript|x-javascript))/i.test(String(item?.mime_type || item?.mimeType || '')));
+}
+async function internalCommand(url: string, serviceRole: string, body: any, headers: Record<string,string> = {}) {
+  const commandId = String(body.command_id || crypto.randomUUID());
+  const signature = await hmacHex(serviceRole, `ld-gateway:${commandId}`);
+  return fetch(`${url}/functions/v1/ld-command`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-decrypter-gateway': 'build18', 'x-decrypter-gateway-signature': signature, ...headers },
+    body: JSON.stringify({ ...body, command_id: commandId })
+  });
+}
+async function localRuntimeStatus(url: string, serviceRole: string) {
+  const commandId = crypto.randomUUID();
+  const response = await internalCommand(url, serviceRole, { action: 'provider_status', command_id: commandId });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body?.ok === false) return { configured: false, healthy: false, code: body?.code || `LOCAL_STATUS_HTTP_${response.status}`, served_model: 'decrypter-local', model_label: 'Qwen/Qwen3-Coder-30B-A3B-Instruct' };
+  return body?.runtime || { configured: false, healthy: false, code: 'LOCAL_STATUS_INVALID' };
+}
+function registry(local: any) {
   return [
     { id: 'gemini', label: 'Gemini', active: true, role: 'executor', credential: 'user-key', capabilities: ['structured-output','multimodal','coding'] },
-    { id: 'decrypter-local', label: 'Decrypter Local', active: false, deferred_build: 18, capabilities: ['coding'] },
+    { id: LOCAL_PROVIDER, label: 'Decrypter Local', active: local?.healthy === true, configured: local?.configured === true, health: local?.code || 'UNKNOWN', served_model: local?.served_model || 'decrypter-local', model_label: local?.model_label || 'Qwen/Qwen3-Coder-30B-A3B-Instruct', latency_ms: local?.latency_ms ?? null, role: 'executor', credential: 'backend-only', capabilities: ['structured-output','coding'] },
     { id: 'premium', label: 'Premium Provider', active: false, deferred: true, capabilities: ['coding'] }
   ];
 }
@@ -113,6 +138,7 @@ Deno.serve(async req => {
     const body = await req.json().catch(() => ({}));
     const auth = await authorize(req, body, sb);
     const action = String(body.action || 'execute');
+    const local = await localRuntimeStatus(url, service).catch(() => ({ configured: false, healthy: false, code: 'LOCAL_STATUS_FAILED', served_model: 'decrypter-local', model_label: 'Qwen/Qwen3-Coder-30B-A3B-Instruct' }));
 
     if (action === 'status') {
       return json({
@@ -122,9 +148,9 @@ Deno.serve(async req => {
         authority: 'server',
         modes: ['auto','fast','deep'],
         default_mode: 'auto',
-        providers: registry(),
-        policy: { cross_provider_fallback: false, zero_cost_revalidated_server_side: true },
-        defaults: { fast: DEFAULT_FAST, deep: DEFAULT_DEEP }
+        providers: registry(local),
+        policy: { cross_provider_fallback: false, zero_cost_revalidated_server_side: true, local_health_gated: true, retry_across_providers: false },
+        defaults: { fast: DEFAULT_FAST, deep: DEFAULT_DEEP, local: local?.model_label || 'Qwen/Qwen3-Coder-30B-A3B-Instruct' }
       });
     }
     if (action !== 'execute') return json({ ok: false, code: 'UNKNOWN_ACTION' }, 400);
@@ -133,51 +159,57 @@ Deno.serve(async req => {
     const commandMode = body.mode === 'plan' ? 'plan' : 'build';
     const brief = executionBrief(body.agent_rules);
     const profile = requestedMode === 'auto' ? autoProfile(brief, commandMode) : requestedMode;
+    const attachmentsEligible = localAttachmentsEligible(body.attachments || []);
+    const localEligible = local?.healthy === true && attachmentsEligible;
+    const provider = localEligible ? LOCAL_PROVIDER : 'gemini';
     const billingMode = body.gemini_billing_mode === 'user_paid' ? 'user_paid' : 'free';
     const preferred = profile === 'deep' ? String(body.preferred_deep_model || '') : String(body.preferred_fast_model || '');
-    const resolved = resolveModel(preferred, profile === 'deep' ? DEFAULT_DEEP : DEFAULT_FAST, billingMode);
-    const reason = requestedMode === 'auto'
+    const resolved = provider === 'gemini'
+      ? resolveGeminiModel(preferred, profile === 'deep' ? DEFAULT_DEEP : DEFAULT_FAST, billingMode)
+      : { model: String(local?.served_model || 'decrypter-local'), fallback: { applied: false, from: '', to: '', reason: '' } };
+    const reasonBase = requestedMode === 'auto'
       ? `auto:${String(brief?.intent?.primary || 'general')}:${String(brief?.risk?.level || 'unknown')}`
       : `explicit:${requestedMode}`;
+    const providerReason = provider === LOCAL_PROVIDER
+      ? 'provider:decrypter-local:healthy'
+      : local?.healthy !== true ? `provider:gemini:local-${String(local?.code || 'unavailable').toLowerCase()}` : 'provider:gemini:attachments-not-local-compatible';
     const gateway = {
       schema: SCHEMA,
       requested_mode: requestedMode,
       profile,
-      provider: 'gemini',
-      model: resolved.model,
-      reason,
+      provider,
+      model: provider === LOCAL_PROVIDER ? String(local?.model_label || resolved.model) : resolved.model,
+      executor_model: resolved.model,
+      reason: `${reasonBase}:${providerReason}`,
       fallback: resolved.fallback,
       authoritative: true,
       cross_provider_fallback: false,
+      local_runtime: provider === LOCAL_PROVIDER ? { served_model: resolved.model, health: local?.code || 'OK', latency_ms: local?.latency_ms ?? null } : null,
       resolved_at: new Date().toISOString()
     };
 
     const geminiKey = String(req.headers.get('x-gemini-key') || body.gemini_api_key || '').trim();
-    if (!geminiKey) return json({ ok: false, code: 'GEMINI_KEY_REQUIRED', gateway }, 400);
-    const downstream = await fetch(`${url}/functions/v1/ld-command`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-license-key': auth.token,
-        'x-device-id': auth.deviceId,
-        'x-gemini-key': geminiKey,
-        'x-decrypter-gateway': 'build17'
-      },
-      body: JSON.stringify({
-        ...body,
-        action: undefined,
-        model: resolved.model,
-        gemini_billing_mode: billingMode,
-        gateway_mode: undefined,
-        preferred_fast_model: undefined,
-        preferred_deep_model: undefined
-      })
-    });
+    if (provider === 'gemini' && !geminiKey) return json({ ok: false, code: 'GEMINI_KEY_REQUIRED', gateway }, 400);
+    const headers: Record<string,string> = { 'x-license-key': auth.token, 'x-device-id': auth.deviceId };
+    if (geminiKey) headers['x-gemini-key'] = geminiKey;
+    const downstream = await internalCommand(url, service, {
+      ...body,
+      action: undefined,
+      provider,
+      model: resolved.model,
+      gemini_billing_mode: billingMode,
+      gateway_mode: undefined,
+      preferred_fast_model: undefined,
+      preferred_deep_model: undefined,
+      max_output_tokens: provider === LOCAL_PROVIDER
+        ? Math.min(Number(body.max_output_tokens || 16384), profile === 'fast' ? 16384 : 32768)
+        : body.max_output_tokens
+    }, headers);
     const result = await downstream.json().catch(() => ({}));
     if (!downstream.ok || result?.ok === false) {
-      return json({ ...result, ok: false, gateway, code: result?.code || `EXECUTOR_HTTP_${downstream.status}` }, downstream.status);
+      return json({ ...result, ok: false, gateway, code: result?.code || `EXECUTOR_HTTP_${downstream.status}`, cross_provider_retry_attempted: false }, downstream.status);
     }
-    return json({ ...result, ok: true, gateway, provider: 'gemini', model: resolved.model });
+    return json({ ...result, ok: true, gateway, provider, model: gateway.model });
   } catch (error) {
     const code = String((error as Error)?.message || 'INTERNAL_ERROR');
     const authish = /^(KEY_|DEVICE_|ENTITLEMENT_)/.test(code);
