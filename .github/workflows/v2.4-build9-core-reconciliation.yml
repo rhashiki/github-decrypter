@@ -22,22 +22,23 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
           const cs=m.content_scripts?.[0];
-          if(m.version!=='2.4.9.2') throw new Error(`Unexpected version ${m.version}`);
-          if(m.version_name!=='2.4 Build 9 Hotfix 2') throw new Error('version_name not reconciled');
-          if(!/Build 9 Hotfix 2/.test(m.action?.default_title||'')) throw new Error('Build 9 hotfix title missing');
+          if(m.version!=='2.4.9.3') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 9 Hotfix 3') throw new Error('version_name not reconciled');
+          if(!/Build 9 Hotfix 3/.test(m.action?.default_title||'')) throw new Error('Build 9 hotfix title missing');
           if(cs.run_at!=='document_idle' || cs.all_frames!==false) throw new Error('Unsafe content script timing/frame scope');
           const js=cs.js||[];
-          for(const f of ['content/content.js','content/project-intelligence.js','content/skill-router.js','content/project-rules-cache.js','content/ui-mount-guardian.js','ui/ui.js','ui/control-center.js','content/checkpoint-ui.js','content/build9-reconciliation.js','content/composer-bridge-v3.js']) if(!js.includes(f)) throw new Error(`Missing active module ${f}`);
-          const core=js.indexOf('content/content.js'), intel=js.indexOf('content/project-intelligence.js'), skills=js.indexOf('content/skill-router.js'), rules=js.indexOf('content/project-rules-cache.js');
-          if(!(core<intel && intel<skills && skills<rules)) throw new Error('Expected wrapper load order: core -> intelligence -> skills -> rules');
-          const guardian=js.indexOf('content/ui-mount-guardian.js'), ui=js.indexOf('ui/ui.js'), cc=js.indexOf('ui/control-center.js');
-          if(!(guardian < ui && ui < cc)) throw new Error('Expected UI boot order: mount guardian -> ui -> control center');
+          for(const f of ['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js','content/project-intelligence.js','content/skill-router.js','content/project-rules-cache.js','ui/control-center.js','content/checkpoint-ui.js','content/build9-reconciliation.js','content/composer-bridge-v3.js']) if(!js.includes(f)) throw new Error(`Missing active module ${f}`);
+          const bootstrap=js.indexOf('content/ui-shell-bootstrap.js'), core=js.indexOf('content/content.js'), guardian=js.indexOf('content/ui-mount-guardian.js'), ui=js.indexOf('ui/ui.js');
+          if(!(bootstrap===0 && bootstrap<core && core<guardian && guardian<ui)) throw new Error('Launcher must boot before feature modules');
+          const intel=js.indexOf('content/project-intelligence.js'), skills=js.indexOf('content/skill-router.js'), rules=js.indexOf('content/project-rules-cache.js');
+          if(!(ui<intel && intel<skills && skills<rules)) throw new Error('Expected post-UI wrapper order: intelligence -> skills -> rules');
           const deferred=['content/batch-mode.js','content/queue-executor.js','content/queue-project-context.js','content/automatic-suggestions.js','content/composer-pro.js','content/preview-progress-overlay.js','content/dom-guardian.js','content/monitor.js'];
           for(const f of deferred) if(js.includes(f)) throw new Error(`Deferred module booted too early: ${f}`);
           NODE
 
       - name: JavaScript syntax
         run: |
+          node --check content/ui-shell-bootstrap.js
           node --check content/ui-mount-guardian.js
           node --check content/project-intelligence.js
           node --check content/project-rules-cache.js
@@ -54,6 +55,7 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs');
+          const bootstrap=fs.readFileSync('content/ui-shell-bootstrap.js','utf8');
           const reconciliation=fs.readFileSync('content/build9-reconciliation.js','utf8');
           const intelligence=fs.readFileSync('content/project-intelligence.js','utf8');
           const guardian=fs.readFileSync('content/ui-mount-guardian.js','utf8');
@@ -61,6 +63,8 @@ jobs:
             if (/MutationObserver/.test(src)) throw new Error(`${name} must not observe the Lovable DOM globally`);
             if (!/reconcileAttempts/.test(src) || !/setTimeout\(reconcileBounded/.test(src)) throw new Error(`${name} must use bounded reconciliation attempts`);
           }
+          for(const marker of ['data-ld2-bootstrap-fab','fullFabReady','MAX_BODY_ATTEMPTS','MAX_PROMOTION_CHECKS']) if(!bootstrap.includes(marker)) throw new Error(`UI bootstrap missing ${marker}`);
+          if(/MutationObserver/.test(bootstrap)) throw new Error('Fallback bootstrap must not observe Lovable DOM');
           for(const marker of ["htmlObserver.observe(document.documentElement, { childList: true })","bodyObserver.observe(document.body, { childList: true })","document.body.appendChild(root)","ld2:ui-mounted","ld2:dom-reconcile"]) if(!guardian.includes(marker)) throw new Error(`UI mount guardian missing ${marker}`);
           if(/subtree\s*:\s*true/.test(guardian)) throw new Error('UI mount guardian must never observe Lovable subtree');
           if(/characterData\s*:\s*true/.test(guardian)) throw new Error('UI mount guardian must never observe character data');
@@ -122,8 +126,10 @@ jobs:
       - name: Reconciliation inventory exists
         run: |
           test -f docs/BUILD9_RECONCILIATION.md
+          test -f docs/BUILD9_UI_FAULT_ISOLATION.md
           grep -q 'Explicitly deferred' docs/BUILD9_RECONCILIATION.md
           grep -q 'Truth-in-UI rule' docs/BUILD9_RECONCILIATION.md
+          grep -q 'launcher shell must boot before feature modules' docs/BUILD9_UI_FAULT_ISOLATION.md
 
       - name: Package Build 9 candidate
         run: |
@@ -134,8 +140,10 @@ jobs:
             --exclude='supabase' \
             --exclude='*.zip' \
             --exclude='*.sha256' \
+            --exclude='manifest.hotfix3.*' \
             --exclude='.build*_payload*'
           test -f /tmp/ld-build9/manifest.json
+          test -f /tmp/ld-build9/content/ui-shell-bootstrap.js
           test -f /tmp/ld-build9/content/ui-mount-guardian.js
           test -f /tmp/ld-build9/content/project-intelligence.js
           test -f /tmp/ld-build9/content/checkpoint-ui.js
@@ -146,6 +154,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           sha256sum Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip > Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.sha256
           unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' manifest.json$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' content/ui-shell-bootstrap.js$'
           unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' content/ui-mount-guardian.js$'
           if unzip -l Lovable-Decrypter-v2.4-BUILD9-CORE-RECONCILIATION.zip | grep -q ' supabase/'; then exit 1; fi
 
