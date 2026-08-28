@@ -1,0 +1,163 @@
+name: Validate v2.4 Build 21 Trust IP Protection
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build21-trust-ip-protection
+  pull_request:
+    branches:
+      - main
+      - rebuild-v2.4-build21-trust-ip-protection
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and validated boot remain intact
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.21') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 21') throw new Error('Build 21 version_name missing');
+          if(!/Build 21 · Trust & IP Protection/.test(m.action?.default_title||'')) throw new Error('Build 21 title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          if(!js.includes('content/build18-reconciliation.js')) throw new Error('Build 18 runtime reconciliation missing');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.21'" settings/config.js
+
+      - name: Build 21 source syntax
+        run: |
+          node --check security/trust.js
+          node --check background/model-gateway-client.js
+          node --check background/model-gateway-bootstrap.js
+          node --check tests/build21-trust-sim.mjs
+          npx --yes esbuild supabase/functions/ld-trust-attest/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-trust-attest.js
+          npx --yes esbuild supabase/functions/ld-model-gateway/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-model-gateway.js
+          npx --yes esbuild supabase/functions/ld-command/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-command.js
+
+      - name: Trust executable simulations
+        run: node tests/build21-trust-sim.mjs
+
+      - name: Trust authority contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const a=fs.readFileSync('supabase/functions/ld-trust-attest/index.ts','utf8');
+          const g=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
+          const c=fs.readFileSync('supabase/functions/ld-command/index.ts','utf8');
+          if(!a.includes("EXPECTED_VERSION='2.4.21'")||!a.includes('TRUST_TTL_SECONDS=600')) throw new Error('Attestation policy missing');
+          if(!a.includes('TRUST_NONCE_REPLAY')||!a.includes("aud:'lovable-decrypter-trust'")) throw new Error('Replay/signature contract missing');
+          if(!g.includes('TRUST_REQUIRED')||!g.includes('TRUST_SESSION_NOT_FOUND')||!g.includes('trust_attestation_required:true')) throw new Error('Gateway trust enforcement missing');
+          const gate=c.indexOf('MODEL_GATEWAY_REQUIRED');
+          const auth=c.indexOf('const bearer=');
+          if(gate<0||auth<0||gate>auth) throw new Error('Executor internal gate must precede user credential execution');
+          if(!c.includes('provider_status')||!c.includes('INTERNAL_SIGNATURE_REQUIRED')) throw new Error('Internal health gate missing');
+          NODE
+
+      - name: Database trust contract
+        run: |
+          grep -q 'create table if not exists public.ld_trust_sessions' supabase/migrations/20260828224500_build21_trust_sessions.sql
+          grep -q 'nonce_hash text not null unique' supabase/migrations/20260828224500_build21_trust_sessions.sql
+          grep -q 'alter table public.ld_trust_sessions enable row level security' supabase/migrations/20260828224500_build21_trust_sessions.sql
+          grep -q 'revoke all on table public.ld_trust_sessions from anon, authenticated' supabase/migrations/20260828224500_build21_trust_sessions.sql
+          grep -q 'alter table public.ld_trust_events enable row level security' supabase/migrations/20260828224500_build21_trust_sessions.sql
+
+      - name: Browser secret and bearer boundary
+        run: |
+          if grep -R -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN' security background core content ui settings --include='*.js'; then
+            echo 'Backend secret identifier leaked into browser-facing code'
+            exit 1
+          fi
+          grep -q 'chrome.storage.session' security/trust.js
+          if grep -q 'chrome.storage.local' security/trust.js; then
+            echo 'Trust bearer must not use persistent local storage'
+            exit 1
+          fi
+          node <<'NODE'
+          const fs=require('fs');
+          const t=fs.readFileSync('security/trust.js','utf8');
+          const start=t.indexOf('export async function trustPublicSummary');
+          const tail=t.slice(start);
+          if(/token\s*:/.test(tail)) throw new Error('Public trust summary exposes bearer');
+          NODE
+
+      - name: Preserve provider and execution guarantees
+        run: |
+          grep -q 'cross_provider_fallback:false' supabase/functions/ld-model-gateway/index.ts
+          grep -q 'LOCAL_HEALTH_TTL_MS=15_000' supabase/functions/ld-model-gateway/index.ts
+          grep -q 'ld_reserve_command' supabase/functions/ld-command/index.ts
+          grep -q 'ld_complete_command' supabase/functions/ld-command/index.ts
+          grep -q 'validateBuild' supabase/functions/ld-command/index.ts
+          grep -q 'cost:null' supabase/functions/ld-command/index.ts
+
+      - name: No invasive observers or transport monkeypatches
+        run: |
+          BASE=cab10f708d972305c6ce9506edc41f0821666903
+          ADDED="$(git diff -U0 "$BASE"...HEAD | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+            echo 'Forbidden invasive observer/transport patch detected in Build 21 diff'
+            exit 1
+          fi
+
+      - name: Build 21 scope lock
+        run: |
+          BASE=cab10f708d972305c6ce9506edc41f0821666903
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build21-trust-ip-protection.yml|manifest.json|settings/config.js|security/trust.js|background/model-gateway-client.js|background/model-gateway-bootstrap.js|supabase/functions/ld-trust-attest/index.ts|supabase/functions/ld-model-gateway/index.ts|supabase/functions/ld-command/index.ts|supabase/migrations/20260828224500_build21_trust_sessions.sql|docs/BUILD21_TRUST_IP_PROTECTION.md|tests/build21-trust-sim.mjs) ;;
+              *) echo "Unexpected Build 21 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          test -f docs/BUILD21_TRUST_IP_PROTECTION.md
+          grep -q '10 minutos' docs/BUILD21_TRUST_IP_PROTECTION.md
+          grep -q 'sinal de risco' docs/BUILD21_TRUST_IP_PROTECTION.md
+          grep -q 'ld-command.*rejeita execução direta' docs/BUILD21_TRUST_IP_PROTECTION.md
+          grep -q 'BOOTSTRAP_DISABLED' docs/BUILD21_TRUST_IP_PROTECTION.md
+
+      - name: Package Build 21 candidate
+        run: |
+          rm -rf /tmp/ld-build21 && mkdir -p /tmp/ld-build21
+          rsync -a ./ /tmp/ld-build21/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='runtime' \
+            --exclude='docs' \
+            --exclude='tests' \
+            --exclude='benchmark' \
+            --exclude='training' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build21/manifest.json
+          test -f /tmp/ld-build21/security/trust.js
+          test -f /tmp/ld-build21/content/build18-reconciliation.js
+          cd /tmp/ld-build21
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.zip > Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.sha256
+          if unzip -l Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.zip | grep -qE ' (supabase|runtime|docs|tests|benchmark|training)/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION
+          path: |
+            Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.zip
+            Lovable-Decrypter-v2.4-BUILD21-TRUST-IP-PROTECTION.sha256
+          if-no-files-found: error
