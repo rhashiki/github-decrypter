@@ -20,7 +20,6 @@
   let persistTimer = 0;
 
   const now = () => Date.now();
-  const iso = value => new Date(value || Date.now()).toISOString();
   const unique = values => [...new Set((values || []).map(value => String(value || '').trim()).filter(Boolean))];
   const cleanText = (value, max = 2000) => String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 
@@ -128,7 +127,7 @@
       stages: [],
       commit: null,
       telemetry: { reported: false, inputTokens: null, outputTokens: null, totalTokens: null, cost: null, currency: null },
-      rag: { active: false, consulted: false, sourceCount: 0, note: 'Decrypter Knowledge/RAG entra na Build 16.' },
+      rag: { active: true, consulted: false, status: 'pending', hitCount: 0, vectorHits: 0, keywordOnlyHits: 0, sourceCount: 0, citations: [], retrieval: 'hybrid-vector-keyword', embeddingModel: 'gte-small', note: 'Aguardando consulta ao Decrypter Knowledge.' },
       status: 'running',
       startedAt,
       updatedAt: startedAt,
@@ -201,6 +200,37 @@
     return null;
   }
 
+  function ragFrom(value) {
+    const candidates = [
+      value?.intelligence?.knowledge,
+      value?.plan?.intelligence?.knowledge,
+      value?.bundle?.plan?.intelligence?.knowledge,
+      value?.result?.intelligence?.knowledge,
+      value?.result?.plan?.intelligence?.knowledge
+    ].filter(Boolean);
+    const knowledge = candidates[0];
+    if (!knowledge || typeof knowledge !== 'object') return null;
+    const citations = (Array.isArray(knowledge.citations) ? knowledge.citations : []).slice(0, 8).map(item => ({
+      title: cleanText(item?.title || '', 240),
+      url: String(item?.url || '').slice(0, 1000),
+      category: cleanText(item?.category || '', 60)
+    })).filter(item => item.url);
+    const hitCount = Math.max(0, Number(knowledge.hit_count || 0));
+    return {
+      active: knowledge.active === true,
+      consulted: Number(knowledge.build || 16) === 16,
+      status: cleanText(knowledge.status || (knowledge.active ? (hitCount ? 'ready' : 'empty') : 'degraded'), 40),
+      hitCount,
+      vectorHits: Math.max(0, Number(knowledge.vector_hits || 0)),
+      keywordOnlyHits: Math.max(0, Number(knowledge.keyword_only_hits || 0)),
+      sourceCount: new Set(citations.map(item => item.url)).size,
+      citations,
+      retrieval: cleanText(knowledge.retrieval || 'hybrid-vector-keyword', 80),
+      embeddingModel: cleanText(knowledge.embedding_model || 'gte-small', 80),
+      note: knowledge.active === false ? 'Knowledge consultado em modo degradado; a operação prosseguiu sem tornar o RAG uma autoridade.' : ''
+    };
+  }
+
   function resultPatch(output) {
     const bundle = output?.bundle || (output?.id && output?.plan ? output : null);
     const plan = bundle?.plan || (output?.plan && !Array.isArray(output.plan) ? output.plan : null);
@@ -219,13 +249,15 @@
       url: String(result?.commitUrl || output?.commitUrl || '')
     } : null;
     const telemetry = telemetryFrom(output);
+    const rag = ragFrom(output);
     return {
       ...(bundle?.id ? { bundleId: String(bundle.id) } : {}),
       ...(files.length ? { files } : {}),
       ...(warnings.length ? { warnings } : {}),
       ...(dependencies.length ? { dependencies } : {}),
       ...(commit ? { commit } : {}),
-      ...(telemetry ? { telemetry } : {})
+      ...(telemetry ? { telemetry } : {}),
+      ...(rag ? { rag } : {})
     };
   }
 
@@ -334,7 +366,7 @@
       history: all,
       count: all.length,
       storageKey: STORAGE_KEY,
-      ragActive: false
+      ragActive: true
     });
   }
 
@@ -354,6 +386,6 @@
     list: async () => { await load(); return snapshot().history; },
     get: id => operationById(id),
     clearCompleted,
-    build: 13
+    build: 16
   });
 })();
