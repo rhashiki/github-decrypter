@@ -1,0 +1,208 @@
+name: Validate v2.4 Build 17 Model Gateway
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build17-model-gateway
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and boot order
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.17') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 17') throw new Error('Build 17 version_name missing');
+          if(!/Build 17 · Model Gateway/.test(m.action?.default_title||'')) throw new Error('Build 17 action title missing');
+          const cs=m.content_scripts?.[0]||{}, js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated UI boot order changed at ${i}: ${js[i]}`)});
+          for(const f of ['content/build15-reconciliation.js','content/build16-reconciliation.js','content/build17-reconciliation.js']) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          if(!(js.indexOf('content/build16-reconciliation.js')<js.indexOf('content/build17-reconciliation.js'))) throw new Error('Build 17 reconciliation must load after Build 16');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          const entry=fs.readFileSync('background/service-worker-entry.js','utf8');
+          const gw=entry.indexOf("import './model-gateway-bootstrap.js'");
+          const intel=entry.indexOf("import './intelligence-bootstrap.js'");
+          if(gw<0||intel<0||gw>intel) throw new Error('Model Gateway must boot before Intelligence');
+          NODE
+          grep -q "export const VERSION = '2.4.17'" settings/config.js
+
+      - name: JavaScript syntax
+        run: |
+          node --check core/model-gateway.js
+          node --check core/decrypter-intelligence.js
+          node --check background/model-gateway-client.js
+          node --check background/model-gateway-bootstrap.js
+          node --check background/intelligence-bootstrap.js
+          node --check content/build15-reconciliation.js
+          node --check content/build16-reconciliation.js
+          node --check content/build17-reconciliation.js
+
+      - name: Model Gateway contract behavior
+        run: |
+          node --input-type=module <<'NODE'
+          import { normalizeGatewayMode, validateGatewayDecision, assertGatewayDecision } from './core/model-gateway.js';
+          const good=(mode='auto',profile='fast')=>({schema:'ld-model-gateway/1',requested_mode:mode,profile,provider:'gemini',model:'gemini-3.6-flash',authoritative:true,cross_provider_fallback:false});
+          const cases=[
+            ['normalize-auto', normalizeGatewayMode('wat')==='auto'],
+            ['auto-fast', validateGatewayDecision(good('auto','fast')).allowed],
+            ['fast-fast', validateGatewayDecision(good('fast','fast')).allowed],
+            ['deep-deep', validateGatewayDecision({...good('deep','deep'),model:'gemini-2.5-pro'}).allowed],
+            ['wrong-schema', !validateGatewayDecision({...good(),schema:'x'}).allowed],
+            ['local-inactive', !validateGatewayDecision({...good(),provider:'decrypter-local'}).allowed],
+            ['missing-model', !validateGatewayDecision({...good(),model:''}).allowed],
+            ['cross-fallback', !validateGatewayDecision({...good(),cross_provider_fallback:true}).allowed],
+            ['not-authoritative', !validateGatewayDecision({...good(),authoritative:false}).allowed]
+          ];
+          for(const [name,ok] of cases) if(!ok) throw new Error(`Gateway case failed: ${name}`);
+          assertGatewayDecision(good());
+          let threw=false; try{assertGatewayDecision({...good(),provider:'premium'})}catch{threw=true}
+          if(!threw) throw new Error('Inactive provider was not blocked');
+          console.log(`Gateway contract cases: ${cases.length+2}`);
+          NODE
+
+      - name: Official Plan and Build route is Gateway only
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('background/model-gateway-bootstrap.js','utf8');
+          for(const marker of ['/ld-model-gateway','gateway_mode','preferred_fast_model','preferred_deep_model','assertGatewayDecision','authority: \'server\'','crossProviderFallback: false']) if(!src.includes(marker)) throw new Error(`Gateway bootstrap marker missing: ${marker}`);
+          if(src.includes('/ld-command')) throw new Error('Client bootstrap must not call ld-command directly');
+          if(/generativelanguage\.googleapis\.com/.test(src)) throw new Error('Gateway bootstrap must not call provider API directly');
+          if(!src.includes('GeminiAgent.prototype.backendCommand = async function gatewayBackendCommand')) throw new Error('backendCommand is not gatewayed');
+          NODE
+
+      - name: Backend routing policy and auth
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
+          for(const marker of ["const SCHEMA = 'ld-model-gateway/1'",'x-license-key','x-device-id','ld_license_devices',"action === 'status'","action !== 'execute'",'autoProfile','DEFAULT_FAST','DEFAULT_DEEP','FREE_MODELS','zero_cost_revalidated_server_side','cross_provider_fallback: false','decrypter-local','deferred_build: 18','/functions/v1/ld-command']) if(!src.includes(marker)) throw new Error(`Backend Gateway marker missing: ${marker}`);
+          if(/generativelanguage\.googleapis\.com/.test(src)) throw new Error('Gateway must delegate to provider adapter/executor, not call Gemini API itself');
+          if(!src.includes("risk === 'high' || risk === 'critical'")) throw new Error('High/critical auto→deep policy missing');
+          if(!src.includes("['security','database','auth','migration']")) throw new Error('Medium-risk sensitive intent policy missing');
+          if(!src.includes("provider: 'gemini'")) throw new Error('Active provider missing');
+          NODE
+
+      - name: Intelligence knows Gateway is active
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const core=fs.readFileSync('core/decrypter-intelligence.js','utf8');
+          for(const marker of ['gateway_active: true',"gateway_schema: 'ld-model-gateway/1'","gateway_authority: 'server'",'cross_provider_fallback: false']) if(!core.includes(marker)) throw new Error(`Execution Brief Gateway marker missing: ${marker}`);
+          if(core.includes('gateway_active: false')) throw new Error('Execution Brief still says Gateway inactive');
+          const runtime=fs.readFileSync('background/intelligence-bootstrap.js','utf8');
+          for(const marker of ['model_gateway_active: true',"model_gateway_schema: 'ld-model-gateway/1'",'modelGatewayActive: true']) if(!runtime.includes(marker)) throw new Error(`Intelligence status marker missing: ${marker}`);
+          NODE
+
+      - name: UI truth and operation telemetry
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('content/build17-reconciliation.js','utf8');
+          for(const marker of ['Decrypter AI','Model Gateway','AUTOMÁTICO','RÁPIDO','PROFUNDO','ld2_gateway_operation_routes_v1','data-b17-gateway-activity','Cross-provider fallback','DESATIVADO','LD2_SETTINGS_PATCH']) if(!src.includes(marker)) throw new Error(`Build 17 UI marker missing: ${marker}`);
+          if(/MutationObserver/.test(src)) throw new Error('Build 17 must not add a global DOM observer');
+          if(/XMLHttpRequest|sendBeacon/.test(src)) throw new Error('Build 17 must not monkeypatch network APIs');
+          const b15=fs.readFileSync('content/build15-reconciliation.js','utf8');
+          const b16=fs.readFileSync('content/build16-reconciliation.js','utf8');
+          if(b15.includes('BUILD 17 · INATIVO')||b16.includes('BUILD 17 · INATIVO')) throw new Error('Older modal still claims Build 17 is inactive');
+          if(!b16.includes("Number(r.dataset.ld2Build || 0) < 16")) throw new Error('Build 16 can overwrite newer build identity');
+          NODE
+
+      - name: Gateway settings and zero-cost policy
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const cfg=fs.readFileSync('settings/config.js','utf8');
+          for(const marker of ["gateway: {\n    mode: 'auto'","gateway: { ...DEFAULT_SETTINGS.gateway","['auto', 'fast', 'deep']","DEFAULT_FREE_MODEL = 'gemini-3.6-flash'","DEFAULT_FREE_ADVANCED_MODEL = 'gemini-2.5-pro'"]) if(!cfg.includes(marker)) throw new Error(`Gateway settings marker missing: ${marker}`);
+          const backend=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
+          for(const model of ['gemini-3.6-flash','gemini-2.5-pro','gemini-2.5-flash','gemini-2.5-flash-lite']) if(!backend.includes(model)) throw new Error(`Backend free allowlist missing ${model}`);
+          NODE
+
+      - name: Preserve validated engines outside Build 17 scope
+        run: |
+          BASE=677b9a57090e5ff4d5f322d44b1a51ba055aaf6f
+          for path in \
+            ai/gemini-agent.js \
+            background/service-worker.js \
+            background/knowledge-client.js \
+            core/scope-lock.js \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/queue-executor.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            ui/unified-launcher.js \
+            ui/unified-launcher.css \
+            content/live-operations.js \
+            content/activity-cloud-sync.js \
+            ui/activity-center.js \
+            ui/update-recovery.js \
+            ui/update-recovery.css \
+            background/update-recovery-runtime.js \
+            updates/update-manager.js \
+            content/build14-reconciliation.js \
+            content/skill-router.js \
+            ui/skills-engine.js \
+            ui/cloud-migrator-complete.js \
+            supabase/functions/ld-knowledge-search/index.ts \
+            supabase/functions/ld-knowledge-embed/index.ts; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 17 documentation
+        run: |
+          test -f docs/BUILD17_MODEL_GATEWAY.md
+          grep -q 'server' docs/BUILD17_MODEL_GATEWAY.md
+          grep -q 'cross_provider_fallback=false' docs/BUILD17_MODEL_GATEWAY.md
+          grep -q 'Build 18' docs/BUILD17_MODEL_GATEWAY.md
+          grep -q 'Decrypter AI' docs/BUILD17_MODEL_GATEWAY.md
+
+      - name: Package Build 17 candidate
+        run: |
+          rm -rf /tmp/ld-build17 && mkdir -p /tmp/ld-build17
+          rsync -a ./ /tmp/ld-build17/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build17/manifest.json
+          test -f /tmp/ld-build17/core/model-gateway.js
+          test -f /tmp/ld-build17/background/model-gateway-bootstrap.js
+          test -f /tmp/ld-build17/content/build17-reconciliation.js
+          cd /tmp/ld-build17
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip > Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip | grep -q ' core/model-gateway.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip | grep -q ' background/model-gateway-bootstrap.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip | grep -q ' content/build17-reconciliation.js$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip | grep -q ' supabase/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY
+          path: |
+            Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.zip
+            Lovable-Decrypter-v2.4-BUILD17-MODEL-GATEWAY.sha256
+          if-no-files-found: error
