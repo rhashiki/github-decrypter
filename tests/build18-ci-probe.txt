@@ -1,0 +1,1 @@
+Build 18 CI verification probe only. This file exists only on ci/build18-decrypter-local-verify and is excluded from the extension artifact.
