@@ -22,9 +22,9 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
           const cs=m.content_scripts?.[0];
-          if(m.version!=='2.4.9') throw new Error(`Unexpected version ${m.version}`);
-          if(m.version_name!=='2.4 Build 9') throw new Error('version_name not reconciled');
-          if(!/Build 9/.test(m.action?.default_title||'')) throw new Error('Build 9 title missing');
+          if(m.version!=='2.4.9.1') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 9 Hotfix 1') throw new Error('version_name not reconciled');
+          if(!/Build 9 Hotfix 1/.test(m.action?.default_title||'')) throw new Error('Build 9 hotfix title missing');
           if(cs.run_at!=='document_idle' || cs.all_frames!==false) throw new Error('Unsafe content script timing/frame scope');
           const js=cs.js||[];
           for(const f of ['content/content.js','content/project-intelligence.js','content/skill-router.js','content/project-rules-cache.js','ui/control-center.js','content/checkpoint-ui.js','content/build9-reconciliation.js','content/composer-bridge-v3.js']) if(!js.includes(f)) throw new Error(`Missing active module ${f}`);
@@ -46,6 +46,21 @@ jobs:
           node --check ui/control-center.js
           node --check background/service-worker.js
           node --check background/checkpoint-runtime.js
+
+      - name: Lovable boot-safety invariant
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const reconciliation=fs.readFileSync('content/build9-reconciliation.js','utf8');
+          const intelligence=fs.readFileSync('content/project-intelligence.js','utf8');
+          for (const [name,src] of [['build9-reconciliation',reconciliation],['project-intelligence',intelligence]]) {
+            if (/MutationObserver/.test(src)) throw new Error(`${name} must not observe the Lovable DOM globally`);
+            if (!/reconcileAttempts/.test(src) || !/setTimeout\(reconcileBounded/.test(src)) throw new Error(`${name} must use bounded reconciliation attempts`);
+          }
+          if (!reconciliation.includes("small.textContent !== 'Execution Engine será reativado na Build 10'")) throw new Error('Queue label write must be idempotent');
+          if (!reconciliation.includes('copy && copy.textContent !== copyText')) throw new Error('Build 9 copy write must be idempotent');
+          if (!intelligence.includes('copy && copy.textContent !== copyText')) throw new Error('Project Intelligence copy write must be idempotent');
+          NODE
 
       - name: Project Intelligence contract
         run: |
