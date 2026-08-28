@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.4.13",
-  "version_name": "2.4 Build 13",
+  "version": "2.4.14",
+  "version_name": "2.4 Build 14",
   "description": "AI engineering layer for Lovable projects with signed licenses, GitHub App authorization, Supabase OAuth and Gemini Free/User-Paid modes.",
   "icons": {
     "16": "assets/icon16.png",
@@ -28,7 +28,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.4 Build 13 · Live Operations" },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 14 · Update & Recovery" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -66,7 +66,9 @@
         "content/live-operations.js",
         "content/activity-cloud-sync.js",
         "ui/activity-center.js",
-        "content/build13-reconciliation.js"
+        "content/build13-reconciliation.js",
+        "ui/update-recovery.js",
+        "content/build14-reconciliation.js"
       ],
       "css": [
         "ui/matrix.css",
@@ -83,7 +85,8 @@
         "ui/skills-engine.css",
         "ui/unified-launcher.css",
         "ui/unified-launcher-status.css",
-        "ui/activity-center.css"
+        "ui/activity-center.css",
+        "ui/update-recovery.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
