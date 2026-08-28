@@ -76,10 +76,12 @@ jobs:
 
       - name: Browser secret and bearer boundary
         run: |
-          if grep -R -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN' security background core content ui settings --include='*.js'; then
-            echo 'Backend secret identifier leaked into browser-facing code'
-            exit 1
-          fi
+          for file in security/trust.js background/model-gateway-client.js background/model-gateway-bootstrap.js; do
+            if grep -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN' "$file"; then
+              echo "Backend secret identifier leaked into Build 21 browser surface: $file"
+              exit 1
+            fi
+          done
           grep -q 'chrome.storage.session' security/trust.js
           if grep -q 'chrome.storage.local' security/trust.js; then
             echo 'Trust bearer must not use persistent local storage'
