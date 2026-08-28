@@ -1,54 +1,52 @@
-# Decrypter Local Runtime — Build 18
+# Decrypter Local Runtime — Builds 18 + 23
 
-This directory defines the first self-hosted inference runtime for Lovable Decrypter.
+This directory defines the self-hosted inference runtime for Lovable Decrypter. Build 18 introduced one authenticated vLLM endpoint; Build 23 keeps the same OpenAI-compatible contract while allowing many GPU workers behind a provider-neutral router.
 
 ## Recommended model
 
 `Qwen/Qwen3-Coder-30B-A3B-Instruct`
 
-The runtime deliberately exposes the stable logical model name `decrypter-local` to the Decrypter backend. The concrete base model stays server-side and may be upgraded without changing the extension contract.
+Every worker exposes the stable logical served model `decrypter-local`. Concrete checkpoints and future Decrypter-Coder adapters remain server-side and never ship in the extension.
 
-## Runtime
+## Build 23 topology
 
-The reference deployment uses the OpenAI-compatible vLLM server. It is NOT bundled into the Chrome extension and model weights are never shipped to the browser.
+`ld-command -> ld-local-router -> worker pool -> vLLM`
 
-1. Copy `.env.example` to a private deployment environment.
-2. Generate a long random `RUNTIME_TOKEN`.
-3. Start the service with Docker Compose on a GPU host.
-4. Put the runtime behind private HTTPS/reverse proxy networking. Do not expose the raw vLLM port publicly without authentication and network controls.
-5. Configure the backend-only Edge Function secrets `DECRYPTER_LOCAL_URL`, `DECRYPTER_LOCAL_TOKEN`, `DECRYPTER_LOCAL_MODEL`, and `DECRYPTER_LOCAL_MODEL_LABEL`.
+The router is the only URL configured as `DECRYPTER_LOCAL_URL`. It leases the least-loaded healthy worker atomically, forwards the non-streaming OpenAI-compatible request, then releases the lease. Worker endpoints are never returned to the browser.
 
-The Supabase backend considers the provider active only after an authenticated `/v1/models` probe confirms the configured served model.
+A sidecar `worker-agent.py` runs beside each vLLM instance. It:
 
-## Contract
+- checks `/health`;
+- verifies `decrypter-local` through `/v1/models`;
+- reads `/metrics` for vLLM running/waiting requests and KV-cache usage;
+- registers the worker in `ld-local-control`;
+- sends a heartbeat every 15 seconds by default;
+- never reads, persists or uploads inference prompts.
 
-Health probe:
+The dispatch queue is metadata-only: request ID, timestamps, worker/lease and outcome. Project source code and prompts are not stored in the inference queue.
 
-- `GET /v1/models`
-- `Authorization: Bearer <runtime token>`
-- must list the configured served model, default `decrypter-local`
+## Continuous batching
 
-Inference:
+Build 23 deliberately does not combine different customer prompts into a homemade application-level batch. Each command remains isolated. Concurrency per worker lets vLLM perform its native continuous batching internally, which preserves request boundaries while using GPU capacity efficiently.
 
-- `POST /v1/chat/completions`
-- OpenAI-compatible messages
-- JSON Schema response format
-- non-streaming
-- temperature kept low for deterministic repository edits
+## Autoscaling
+
+The control plane calculates `desired_workers` from queued + in-flight demand, bounded by the pool's `min_workers` / `max_workers` and a scale-down cooldown. A health probe can request one warm worker when the pool is at zero, allowing scale-to-zero deployments to wake without changing the Model Gateway.
+
+Provisioning is provider-neutral. If backend-only `DECRYPTER_GPU_SCALER_URL` and `DECRYPTER_GPU_SCALER_TOKEN` are configured, the router/control plane sends an `ld-gpu-scale/1` request containing only aggregate capacity information. The scaler may be implemented with Kubernetes, RunPod, Modal, another GPU platform, or a custom controller. Without an actuator, decisions are recorded but no infrastructure is provisioned automatically.
+
+## Runtime setup
+
+1. Copy `.env.example` to the private GPU deployment environment.
+2. Generate a long random `RUNTIME_TOKEN` and a worker-control secret.
+3. Put each vLLM runtime behind authenticated HTTPS that the Supabase router can reach.
+4. Set a unique `DECRYPTER_WORKER_INSTANCE_KEY` and its `DECRYPTER_WORKER_ENDPOINT`.
+5. Start `docker compose up -d` on each GPU worker.
+6. Configure backend-only `DECRYPTER_LOCAL_URL` to the `ld-local-router` Edge Function and keep `DECRYPTER_LOCAL_TOKEN` private.
+7. Optionally connect a provider-specific autoscaler through the generic actuator contract.
 
 ## Provider policy
 
-Build 18 does not perform cross-provider retry. The Model Gateway chooses a provider before execution. If Decrypter Local is selected and fails after execution starts, the request fails closed instead of retrying Gemini.
+There is still no cross-provider retry after execution starts. The Model Gateway chooses a provider before execution. `/v1/models` reports Decrypter Local healthy only when the pool has a ready worker with an available lease slot. If the pool is unavailable before execution, routing may remain on Gemini; if a selected Local execution later fails, it fails closed instead of retrying another provider.
 
-The Local provider is eligible only when:
-
-- backend runtime secrets are configured;
-- `/v1/models` health passes;
-- the served model is present;
-- attachments are text-compatible for this text-only coder runtime.
-
-Multimodal/binary attachments keep the request on the Gemini executor until a multimodal Decrypter runtime exists.
-
-## Model upgrades
-
-The extension and Model Gateway depend on `provider=decrypter-local` and the logical served name, not directly on the Qwen checkpoint. Future Build 20 fine-tuning can replace the model behind the same private contract.
+Multimodal/binary attachments remain on Gemini until a multimodal Decrypter runtime exists.
