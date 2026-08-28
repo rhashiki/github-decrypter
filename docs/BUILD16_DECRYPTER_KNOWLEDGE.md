@@ -53,7 +53,7 @@ O token administrativo `LD_KNOWLEDGE_ADMIN_TOKEN` permanece apenas no backend e 
 - execução restrita a `service_role`.
 - busca pública da extensão ocorre exclusivamente por Edge Function autenticada por KEY LD2 + dispositivo vinculado.
 
-## Prompt injection / autoridade
+## prompt injection / autoridade
 
 O bloco `[DECRYPTER_KNOWLEDGE_V1]` é explicitamente marcado como evidência não confiável de referência.
 
