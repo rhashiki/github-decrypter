@@ -2,6 +2,8 @@ import { GeminiAgent } from '../ai/gemini-agent.js';
 import { getSettings } from '../storage/settings-store.js';
 import { getModelGatewayStatus } from './model-gateway-client.js';
 import { assertGatewayDecision, publicGatewaySummary } from '../core/model-gateway.js';
+import { VERSION } from '../settings/config.js';
+import { ensureTrustSession, trustPublicSummary } from '../security/trust.js';
 
 const LAST_KEY = 'ld2_gateway_last_v1';
 const HISTORY_KEY = 'ld2_gateway_history_v1';
@@ -41,13 +43,16 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     if (!this.deviceId) throw new Error('Dispositivo ainda não foi vinculado à licença.');
 
     const settings = await getSettings();
+    const trust = await ensureTrustSession(settings);
     const gatewayMode = ['auto', 'fast', 'deep'].includes(String(settings?.gateway?.mode || '').toLowerCase())
       ? String(settings.gateway.mode).toLowerCase()
       : 'auto';
     const headers = {
       'content-type': 'application/json',
       'x-license-key': this.licenseKey,
-      'x-device-id': this.deviceId
+      'x-device-id': this.deviceId,
+      'x-decrypter-trust': trust.token,
+      'x-decrypter-client-version': VERSION
     };
     if (this.apiKey) headers['x-gemini-key'] = this.apiKey;
     const res = await fetch(`${String(this.backendBase).replace(/\/+$/, '')}/ld-model-gateway`, {
@@ -105,13 +110,15 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
   };
 
   globalThis.LovableDecrypterModelGatewayRuntime = Object.freeze({
-    build: 18,
+    build: 21,
     schema: 'ld-model-gateway/1',
     active: true,
     authority: 'server',
     endpoint: 'ld-model-gateway',
     localProvider: 'health-gated',
     crossProviderFallback: false,
+    trustRequired: true,
+    async trust() { return trustPublicSummary(await getSettings()); },
     async status() { return getModelGatewayStatus(await getSettings()); }
   });
 }
