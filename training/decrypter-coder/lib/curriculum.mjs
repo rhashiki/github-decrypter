@@ -69,12 +69,12 @@ function tokenSet(value) {
   return new Set(normalize(value).split(' ').filter(Boolean));
 }
 
-function jaccard(a, b) {
-  const aa = tokenSet(a), bb = tokenSet(b);
-  if (!aa.size && !bb.size) return 1;
+function jaccardSets(a, b) {
+  if (!a.size && !b.size) return 1;
   let intersection = 0;
-  for (const token of aa) if (bb.has(token)) intersection += 1;
-  return intersection / (aa.size + bb.size - intersection);
+  const [small, large] = a.size <= b.size ? [a, b] : [b, a];
+  for (const token of small) if (large.has(token)) intersection += 1;
+  return intersection / (a.size + b.size - intersection);
 }
 
 function sourceFor(path, id) {
@@ -162,7 +162,8 @@ export function validateCurriculum(examples = buildCurriculum()) {
   const counts = Object.fromEntries(Object.keys(CURRICULUM_COUNTS).map(key => [key, 0]));
   const splits = { train: 0, validation: 0 };
   const benchmark = buildTaskCatalog();
-  const benchmarkPrompts = new Set(benchmark.map(task => normalize(task.prompt)));
+  const benchmarkRefs = benchmark.map(task => ({ normalized: normalize(task.prompt), tokens: tokenSet(task.prompt) }));
+  const benchmarkPrompts = new Set(benchmarkRefs.map(ref => ref.normalized));
   let maxBenchmarkSimilarity = 0;
 
   if (examples.length !== expectedTotal) errors.push(`expected ${expectedTotal} examples, got ${examples.length}`);
@@ -174,8 +175,10 @@ export function validateCurriculum(examples = buildCurriculum()) {
     ids.add(example.id); hashes.add(example.example_hash);
     if (!(example.category in counts)) errors.push(`${example.id}: unknown category`); else counts[example.category] += 1;
     if (!(example.split in splits)) errors.push(`${example.id}: invalid split`); else splits[example.split] += 1;
-    if (benchmarkPrompts.has(normalize(example.prompt))) errors.push(`${example.id}: benchmark prompt copied into training`);
-    for (const task of benchmark) maxBenchmarkSimilarity = Math.max(maxBenchmarkSimilarity, jaccard(example.prompt, task.prompt));
+    const normalizedPrompt = normalize(example.prompt);
+    if (benchmarkPrompts.has(normalizedPrompt)) errors.push(`${example.id}: benchmark prompt copied into training`);
+    const exampleTokens = tokenSet(example.prompt);
+    for (const ref of benchmarkRefs) maxBenchmarkSimilarity = Math.max(maxBenchmarkSimilarity, jaccardSets(exampleTokens, ref.tokens));
     if (!Array.isArray(example.messages) || example.messages.length !== 3) errors.push(`${example.id}: chat messages malformed`);
     const assistant = JSON.parse(example.messages?.[2]?.content || '{}');
     const files = Array.isArray(assistant.files) ? assistant.files : [];
@@ -198,8 +201,8 @@ export function validateCurriculum(examples = buildCurriculum()) {
   };
 }
 
-export function datasetManifest(examples = buildCurriculum()) {
-  const validation = validateCurriculum(examples);
+export function datasetManifest(examples = buildCurriculum(), prevalidated = null) {
+  const validation = prevalidated || validateCurriculum(examples);
   if (!validation.ok) throw new Error(validation.errors.join('\n'));
   return Object.freeze({
     schema: DATASET_SCHEMA,
