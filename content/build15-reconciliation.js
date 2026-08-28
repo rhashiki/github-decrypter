@@ -6,18 +6,20 @@
   const ROOT_ID = 'ld2-root';
   const LAST_KEY = 'ld2_intelligence_last_v1';
   const HISTORY_KEY = 'ld2_intelligence_history_v1';
+  const GATEWAY_KEY = 'ld2_gateway_last_v1';
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
   function root() { return document.getElementById(ROOT_ID); }
 
   async function state() {
-    const data = await chrome.storage.local.get([LAST_KEY, HISTORY_KEY]);
+    const data = await chrome.storage.local.get([LAST_KEY, HISTORY_KEY, GATEWAY_KEY]);
     const last = data[LAST_KEY] || null;
     const history = Array.isArray(data[HISTORY_KEY]) ? data[HISTORY_KEY] : [];
+    const gateway = data[GATEWAY_KEY] || null;
     let settings = {};
     try { settings = await window.LovableDecrypterV2?.runtime?.({ type: 'LD2_SETTINGS_GET' }) || {}; } catch (_) {}
-    return { last, history, settings };
+    return { last, history, gateway, settings };
   }
 
   function addCard() {
@@ -83,7 +85,8 @@
     try {
       const s = await state();
       const last = s.last || {};
-      const model = String(s.settings?.gemini?.model || '').replace(/^models\//, '') || 'provider atual';
+      const gateway = s.gateway || {};
+      const provider = gateway?.provider && gateway?.model ? `${gateway.provider} · ${gateway.model}` : 'aguardando primeira rota';
       const intent = String(last?.intent?.primary || 'nenhuma execução registrada').toUpperCase();
       const secondary = Array.isArray(last?.intent?.secondary) ? last.intent.secondary.join(', ') : '—';
       const risk = String(last?.risk?.level || '—').toUpperCase();
@@ -99,11 +102,11 @@
         <div>Tool route</div><div>${esc(tools)} · advisory</div>
         <div>Skills</div><div>${esc(skills)}</div>
         <div>Validação</div><div>${last?.validation?.allowed === false ? '<span class="ld2-ul-diag-bad">BLOQUEADA</span>' : '<span class="ld2-ul-diag-good">ATIVA</span>'}</div>
-        <div>Provider atual</div><div>${esc(model)} · executor técnico</div>
+        <div>Provider executor</div><div>${esc(provider)}</div>
         <div>Decrypter Knowledge / RAG</div><div>${knowledgeStatusMarkup(knowledge)}</div>
-        <div>Model Gateway</div><div><span class="ld2-ul-diag-warn">BUILD 17 · INATIVO</span></div>
+        <div>Model Gateway</div><div><span class="ld2-ul-diag-good">ATIVO</span> · ld-model-gateway/1</div>
         <div>Histórico local</div><div>${Number(s.history?.length || 0)} decisão(ões)</div>
-      </div><p class="ld2-help" style="margin-top:12px">O Execution Brief é criado antes da chamada do provider e define objetivo, intenção, risco, constraints, tool route e validações. O Knowledge é evidência somente-leitura e nunca substitui o pedido do usuário, Project Rules, Scope Lock, checkpoints, Queue ou autoridade de commit.</p>`;
+      </div><p class="ld2-help" style="margin-top:12px">O Execution Brief é criado antes da chamada do provider e define objetivo, intenção, risco, constraints, tool route e validações. O Knowledge é evidência somente-leitura; o Model Gateway resolve o executor/modelo no backend. Scope Lock, checkpoints, Queue e autoridade de commit continuam independentes.</p>`;
     } catch (error) {
       $('.ld2-modal-body', card).textContent = error?.message || String(error);
     }
@@ -118,7 +121,7 @@
   }, true);
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && (changes[LAST_KEY] || changes[HISTORY_KEY])) reconcile();
+    if (area === 'local' && (changes[LAST_KEY] || changes[HISTORY_KEY] || changes[GATEWAY_KEY])) reconcile();
   });
 
   window.LovableDecrypterBuild15 = Object.freeze({
