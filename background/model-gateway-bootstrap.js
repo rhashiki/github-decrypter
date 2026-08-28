@@ -1,4 +1,5 @@
 import { GeminiAgent } from '../ai/gemini-agent.js';
+import { getSettings } from '../storage/settings-store.js';
 import { assertGatewayDecision, publicGatewaySummary } from '../core/model-gateway.js';
 
 const LAST_KEY = 'ld2_gateway_last_v1';
@@ -22,6 +23,65 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     } catch (_) {}
     return item;
   }
+
+  function attachGateway(result, route) {
+    if (!result || typeof result !== 'object') return result;
+    try {
+      Object.defineProperty(result, 'gateway', { value: route, enumerable: true, configurable: true, writable: false });
+    } catch (_) {
+      result.gateway = route;
+    }
+    return result;
+  }
+
+  GeminiAgent.prototype.backendCommand = async function gatewayBackendCommand(mode, command, context, agentRules = '', attachments = [], approvedPlan = null) {
+    this.ensureKey();
+    if (!this.backendBase) throw new Error('Model Gateway do Lovable Decrypter não configurado.');
+    if (!this.licenseKey) throw new Error('Faça login com uma KEY válida.');
+    if (!this.deviceId) throw new Error('Dispositivo ainda não foi vinculado à licença.');
+
+    const settings = await getSettings();
+    const gatewayMode = ['auto', 'fast', 'deep'].includes(String(settings?.gateway?.mode || '').toLowerCase())
+      ? String(settings.gateway.mode).toLowerCase()
+      : 'auto';
+    const res = await fetch(`${String(this.backendBase).replace(/\/+$/, '')}/ld-model-gateway`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-license-key': this.licenseKey,
+        'x-device-id': this.deviceId,
+        'x-gemini-key': this.apiKey
+      },
+      body: JSON.stringify({
+        action: 'execute',
+        mode,
+        gateway_mode: gatewayMode,
+        preferred_fast_model: this.model,
+        preferred_deep_model: this.advancedModel,
+        max_output_tokens: this.maxOutputTokens,
+        gemini_billing_mode: this.billingMode,
+        command_id: crypto.randomUUID(),
+        command,
+        project_context: context,
+        agent_rules: agentRules || '',
+        approved_plan: approvedPlan || null,
+        attachments: (attachments || []).map(a => ({
+          name: a.name || 'anexo',
+          mime_type: a.mimeType || 'application/octet-stream',
+          size: Number(a.size || 0),
+          data: a.data || ''
+        }))
+      })
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body?.ok) {
+      const detail = body?.error || body?.message || body?.code || `HTTP ${res.status}`;
+      throw new Error(`Model Gateway: ${detail}`);
+    }
+    assertGatewayDecision(body.gateway);
+    if (!body.result || typeof body.result !== 'object') throw new Error('Model Gateway retornou resultado inválido.');
+    return attachGateway(body.result, body.gateway);
+  };
 
   async function inspect(result) {
     const route = result?.gateway || null;
@@ -48,6 +108,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     schema: 'ld-model-gateway/1',
     active: true,
     authority: 'server',
+    endpoint: 'ld-model-gateway',
     crossProviderFallback: false
   });
 }
