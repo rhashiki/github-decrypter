@@ -1,4 +1,4 @@
-export const VERSION = '2.4.17';
+export const VERSION = '2.4.18';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
@@ -21,6 +21,8 @@ export const VERIFIED_FREE_MODEL_IDS = Object.freeze([
 
 export const DEFAULT_FREE_MODEL = 'gemini-3.6-flash';
 export const DEFAULT_FREE_ADVANCED_MODEL = 'gemini-2.5-pro';
+export const DECRYPTER_LOCAL_PROVIDER_ID = 'decrypter-local';
+export const DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'Qwen/Qwen3-Coder-30B-A3B-Instruct';
 
 export function normalizeGeminiModelId(value = '') {
   return String(value || '').trim().replace(/^models\//, '');
@@ -122,6 +124,7 @@ export function mergeSettings(saved = {}) {
     : 'auto';
 
   // Gratuito é o padrão. O modo pago só é habilitado por opt-in explícito e usa a API do próprio usuário.
+  // Quando o Gateway escolhe Decrypter Local, nenhuma chave Gemini é necessária para aquela execução.
   merged.gemini.billingMode = merged.gemini.billingMode === 'user_paid' ? 'user_paid' : 'free';
   merged.gemini.zeroCost = merged.gemini.billingMode !== 'user_paid';
   if (merged.gemini.zeroCost) {
