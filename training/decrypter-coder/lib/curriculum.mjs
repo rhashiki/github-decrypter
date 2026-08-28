@@ -195,7 +195,7 @@ export function validateCurriculum(examples = buildCurriculum()) {
     counts,
     splits,
     total: examples.length,
-    dataset_hash: hash(examples.map(example => example.example_hash)),
+    dataset_hash: hash(examples.map(example => example.example_hash).sort()),
     benchmark_suite_hash: benchmarkManifest().suite_hash,
     max_benchmark_prompt_similarity: Math.round(maxBenchmarkSimilarity * 10000) / 10000
   };
