@@ -16,7 +16,7 @@ if (!validation.ok) {
   console.error(validation.errors.join('\n'));
   process.exit(1);
 }
-const manifest = datasetManifest(examples);
+const manifest = datasetManifest(examples, validation);
 if (!manifest.synthetic_only || manifest.private_customer_code_training !== false || !manifest.decrypterbench_holdout) {
   throw new Error('DATASET_PRIVACY_CONTRACT_FAILED');
 }
