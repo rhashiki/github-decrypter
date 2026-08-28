@@ -1,0 +1,33 @@
+services:
+  decrypter-local:
+    image: ${VLLM_IMAGE:-vllm/vllm-openai:latest}
+    restart: unless-stopped
+    ipc: host
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${PORT:-8000}:8000"
+    volumes:
+      - ${HF_CACHE_DIR:-./.cache/huggingface}:/root/.cache/huggingface
+    command:
+      - --model
+      - ${MODEL_ID:-Qwen/Qwen3-Coder-30B-A3B-Instruct}
+      - --served-model-name
+      - ${SERVED_MODEL_NAME:-decrypter-local}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --api-key
+      - ${RUNTIME_TOKEN}
+      - --max-model-len
+      - ${MAX_MODEL_LEN:-65536}
+      - --gpu-memory-utilization
+      - ${GPU_MEMORY_UTILIZATION:-0.92}
+      - --enable-prefix-caching
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/v1/models',headers={'Authorization':'Bearer ${RUNTIME_TOKEN}'}); urllib.request.urlopen(r,timeout=5).read()\""]
+      interval: 30s
+      timeout: 8s
+      retries: 5
+      start_period: 180s
