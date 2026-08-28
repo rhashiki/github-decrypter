@@ -6,6 +6,7 @@ const PUBLIC_SPKI_B64 = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCoo
 const DEFAULT_FAST = 'gemini-3.6-flash';
 const DEFAULT_DEEP = 'gemini-2.5-pro';
 const LOCAL_PROVIDER = 'decrypter-local';
+const LOCAL_HEALTH_TTL_MS = 15_000;
 const FREE_MODELS = new Set(['gemini-3.6-flash','gemini-3.5-flash-lite','gemini-2.5-pro','gemini-2.5-flash','gemini-2.5-flash-lite']);
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +15,7 @@ const cors = {
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 const enc = new TextEncoder();
+let localHealthCache: { checkedAt: number; expiresAt: number; value: any } | null = null;
 
 function b64u(value: string) {
   const s = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
@@ -119,10 +121,30 @@ async function localRuntimeStatus(url: string, serviceRole: string) {
   if (!response.ok || body?.ok === false) return { configured: false, healthy: false, code: body?.code || `LOCAL_STATUS_HTTP_${response.status}`, served_model: 'decrypter-local', model_label: 'Qwen/Qwen3-Coder-30B-A3B-Instruct' };
   return body?.runtime || { configured: false, healthy: false, code: 'LOCAL_STATUS_INVALID' };
 }
+async function cachedLocalRuntimeStatus(url: string, serviceRole: string) {
+  const now = Date.now();
+  if (localHealthCache && now < localHealthCache.expiresAt) {
+    return {
+      ...localHealthCache.value,
+      health_cached: true,
+      health_checked_at: new Date(localHealthCache.checkedAt).toISOString(),
+      health_cache_ttl_ms: LOCAL_HEALTH_TTL_MS
+    };
+  }
+  const value = await localRuntimeStatus(url, serviceRole);
+  const checkedAt = Date.now();
+  localHealthCache = { value, checkedAt, expiresAt: checkedAt + LOCAL_HEALTH_TTL_MS };
+  return {
+    ...value,
+    health_cached: false,
+    health_checked_at: new Date(checkedAt).toISOString(),
+    health_cache_ttl_ms: LOCAL_HEALTH_TTL_MS
+  };
+}
 function registry(local: any) {
   return [
     { id: 'gemini', label: 'Gemini', active: true, role: 'executor', credential: 'user-key', capabilities: ['structured-output','multimodal','coding'] },
-    { id: LOCAL_PROVIDER, label: 'Decrypter Local', active: local?.healthy === true, configured: local?.configured === true, health: local?.code || 'UNKNOWN', served_model: local?.served_model || 'decrypter-local', model_label: local?.model_label || 'Qwen/Qwen3-Coder-30B-A3B-Instruct', latency_ms: local?.latency_ms ?? null, role: 'executor', credential: 'backend-only', capabilities: ['structured-output','coding'] },
+    { id: LOCAL_PROVIDER, label: 'Decrypter Local', active: local?.healthy === true, configured: local?.configured === true, health: local?.code || 'UNKNOWN', served_model: local?.served_model || 'decrypter-local', model_label: local?.model_label || 'Qwen/Qwen3-Coder-30B-A3B-Instruct', latency_ms: local?.latency_ms ?? null, health_cached: local?.health_cached === true, health_checked_at: local?.health_checked_at || null, health_cache_ttl_ms: Number(local?.health_cache_ttl_ms || LOCAL_HEALTH_TTL_MS), role: 'executor', credential: 'backend-only', capabilities: ['structured-output','coding'] },
     { id: 'premium', label: 'Premium Provider', active: false, deferred: true, capabilities: ['coding'] }
   ];
 }
@@ -138,7 +160,7 @@ Deno.serve(async req => {
     const body = await req.json().catch(() => ({}));
     const auth = await authorize(req, body, sb);
     const action = String(body.action || 'execute');
-    const local = await localRuntimeStatus(url, service).catch(() => ({ configured: false, healthy: false, code: 'LOCAL_STATUS_FAILED', served_model: 'decrypter-local', model_label: 'Qwen/Qwen3-Coder-30B-A3B-Instruct' }));
+    const local = await cachedLocalRuntimeStatus(url, service).catch(() => ({ configured: false, healthy: false, code: 'LOCAL_STATUS_FAILED', served_model: 'decrypter-local', model_label: 'Qwen/Qwen3-Coder-30B-A3B-Instruct', health_cached: false, health_checked_at: new Date().toISOString(), health_cache_ttl_ms: LOCAL_HEALTH_TTL_MS }));
 
     if (action === 'status') {
       return json({
@@ -149,7 +171,7 @@ Deno.serve(async req => {
         modes: ['auto','fast','deep'],
         default_mode: 'auto',
         providers: registry(local),
-        policy: { cross_provider_fallback: false, zero_cost_revalidated_server_side: true, local_health_gated: true, retry_across_providers: false },
+        policy: { cross_provider_fallback: false, zero_cost_revalidated_server_side: true, local_health_gated: true, local_health_cache_ttl_ms: LOCAL_HEALTH_TTL_MS, retry_across_providers: false },
         defaults: { fast: DEFAULT_FAST, deep: DEFAULT_DEEP, local: local?.model_label || 'Qwen/Qwen3-Coder-30B-A3B-Instruct' }
       });
     }
@@ -184,7 +206,7 @@ Deno.serve(async req => {
       fallback: resolved.fallback,
       authoritative: true,
       cross_provider_fallback: false,
-      local_runtime: provider === LOCAL_PROVIDER ? { served_model: resolved.model, health: local?.code || 'OK', latency_ms: local?.latency_ms ?? null } : null,
+      local_runtime: provider === LOCAL_PROVIDER ? { served_model: resolved.model, health: local?.code || 'OK', latency_ms: local?.latency_ms ?? null, health_cached: local?.health_cached === true, health_checked_at: local?.health_checked_at || null } : null,
       resolved_at: new Date().toISOString()
     };
 
