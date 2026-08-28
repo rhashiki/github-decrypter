@@ -77,7 +77,8 @@
         "ui/supabase-project-manager.css",
         "ui/cloud-migrator-core.css",
         "ui/skills-engine.css",
-        "ui/unified-launcher.css"
+        "ui/unified-launcher.css",
+        "ui/unified-launcher-status.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
