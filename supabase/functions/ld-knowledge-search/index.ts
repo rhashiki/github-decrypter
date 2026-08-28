@@ -66,7 +66,8 @@ function contextMarkdown(rows: any[]) {
   const parts: string[] = [];
   for (const [index, row] of rows.entries()) {
     const heading = Array.isArray(row.heading_path) && row.heading_path.length ? row.heading_path.join(' > ') : row.title || 'Documentação';
-    const block = `\n## KNOWLEDGE ${index + 1}: ${row.title || row.source_key}\nFonte: ${row.canonical_url}\nSeção: ${heading}\nScore: ${Number(row.score || 0).toFixed(4)}\n\n${String(row.content || '').trim()}\n`;
+    const indexType = row.embedding_ready ? 'vector+keyword' : 'keyword fallback';
+    const block = `\n## KNOWLEDGE ${index + 1}: ${row.title || row.source_key}\nFonte: ${row.canonical_url}\nSeção: ${heading}\nÍndice: ${indexType}\nScore: ${Number(row.score || 0).toFixed(4)}\n\n${String(row.content || '').trim()}\n`;
     if (used + block.length > MAX_CONTEXT) {
       const room = MAX_CONTEXT - used;
       if (room > 500) parts.push(block.slice(0, room));
@@ -88,6 +89,35 @@ Deno.serve(async req => {
     const sb = createClient(url, service, { auth: { persistSession: false } });
     const body = await req.json().catch(() => ({}));
     await auth(req, body, sb);
+    const action = String(body.action || 'search').toLowerCase();
+
+    if (action === 'status') {
+      const [{ count: sources }, { count: total }, { count: ready }, { count: pending }, { count: failed }] = await Promise.all([
+        sb.from('ld_knowledge_sources').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        sb.from('ld_knowledge_chunks').select('*', { count: 'exact', head: true }),
+        sb.from('ld_knowledge_chunks').select('*', { count: 'exact', head: true }).eq('embedding_status', 'ready'),
+        sb.from('ld_knowledge_chunks').select('*', { count: 'exact', head: true }).in('embedding_status', ['pending', 'processing']),
+        sb.from('ld_knowledge_chunks').select('*', { count: 'exact', head: true }).eq('embedding_status', 'failed')
+      ]);
+      return json({
+        ok: true,
+        knowledge: {
+          active: true,
+          schema: 'ld-knowledge/1',
+          embedding_model: EMBEDDING_MODEL,
+          retrieval: 'hybrid-vector-keyword',
+          sources: sources || 0,
+          total_chunks: total || 0,
+          ready_chunks: ready || 0,
+          pending_chunks: pending || 0,
+          failed_chunks: failed || 0,
+          hit_count: 0,
+          citations: []
+        }
+      });
+    }
+    if (action !== 'search') return json({ ok: false, code: 'UNKNOWN_ACTION' }, 400);
+
     const query = String(body.query || '').trim().slice(0, MAX_QUERY);
     if (!query) return json({ ok: false, code: 'QUERY_REQUIRED' }, 400);
     const topK = Math.max(1, Math.min(12, Number(body.top_k || 8)));
@@ -115,11 +145,14 @@ Deno.serve(async req => {
       category: String(row.category || ''),
       heading_path: Array.isArray(row.heading_path) ? row.heading_path.map(String).slice(0, 8) : [],
       content: String(row.content || '').slice(0, 8000),
+      embedding_ready: row.embedding_ready === true,
       semantic_similarity: Number(row.semantic_similarity || 0),
       keyword_rank: Number(row.keyword_rank || 0),
       score: Number(row.score || 0)
     }));
     const citations = [...new Map(results.map((row: any) => [row.url, { title: row.title, url: row.url, category: row.category }])).values()].slice(0, 8);
+    const vectorHits = results.filter((row: any) => row.embedding_ready).length;
+    const keywordOnlyHits = Math.max(0, results.length - vectorHits);
     return json({
       ok: true,
       knowledge: {
@@ -128,6 +161,8 @@ Deno.serve(async req => {
         embedding_model: EMBEDDING_MODEL,
         retrieval: 'hybrid-vector-keyword',
         hit_count: results.length,
+        vector_hits: vectorHits,
+        keyword_only_hits: keywordOnlyHits,
         citations,
         context_md: contextMarkdown(results)
       }
