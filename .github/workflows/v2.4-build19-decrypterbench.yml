@@ -1,0 +1,164 @@
+name: Validate v2.4 Build 19 DecrypterBench
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build19-decrypterbench
+  pull_request:
+    branches:
+      - main
+      - rebuild-v2.4-build19-decrypterbench
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and validated boot remain intact
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.19') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 19') throw new Error('Build 19 version_name missing');
+          if(!/Build 19 · DecrypterBench/.test(m.action?.default_title||'')) throw new Error('Build 19 title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          if(!js.includes('content/build18-reconciliation.js')) throw new Error('Build 18 runtime reconciliation missing');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.19'" settings/config.js
+
+      - name: Benchmark JavaScript syntax
+        run: |
+          node --check benchmark/lib/catalog.mjs
+          node --check benchmark/lib/evaluator.mjs
+          node --check benchmark/lib/runner.mjs
+          node --check benchmark/providers/fixture.mjs
+          node --check benchmark/cli.mjs
+          node --check tests/build19-decrypterbench-sim.mjs
+
+      - name: DecrypterBench executable simulations
+        run: node tests/build19-decrypterbench-sim.mjs
+
+      - name: Validate exact 400-task catalog
+        run: |
+          node benchmark/cli.mjs validate > /tmp/decrypterbench-validation.json
+          node benchmark/cli.mjs manifest > /tmp/decrypterbench-manifest.json
+          node <<'NODE'
+          const fs=require('fs');
+          const v=JSON.parse(fs.readFileSync('/tmp/decrypterbench-validation.json','utf8'));
+          const m=JSON.parse(fs.readFileSync('/tmp/decrypterbench-manifest.json','utf8'));
+          const expected={lovable:100,supabase:100,github:50,react_ts:50,security:50,full_stack:50};
+          if(!v.ok||v.total!==400) throw new Error('Catalog validation failed');
+          if(JSON.stringify(v.counts)!==JSON.stringify(expected)) throw new Error(`Unexpected distribution ${JSON.stringify(v.counts)}`);
+          if(m.total_tasks!==400||m.synthetic_only!==true||m.private_customer_code_training!==false) throw new Error('Benchmark manifest provenance invalid');
+          if(!/^[a-f0-9]{64}$/.test(m.suite_hash)) throw new Error('Invalid suite hash');
+          NODE
+
+      - name: Run all 400 tasks through deterministic CI fixture
+        run: |
+          node benchmark/cli.mjs run --provider-module=fixture --output=/tmp/decrypterbench-fixture-report.json
+          node <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/decrypterbench-fixture-report.json','utf8'));
+          if(r.summary.tasks!==400||r.summary.passed!==400||r.summary.average_score!==100) throw new Error('Fixture benchmark mechanics failed');
+          if(r.provider.id!=='fixture'||r.provider.provider_independent_protocol!==true) throw new Error('Provider-independent fixture contract failed');
+          if(r.telemetry.reported!==false||r.telemetry.prompt_tokens!==null||r.telemetry.cost!==null) throw new Error('Benchmark invented telemetry');
+          if(r.selection.task_count!==400) throw new Error('Full-suite selection missing');
+          NODE
+
+      - name: Benchmark safety and privacy contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const catalog=fs.readFileSync('benchmark/lib/catalog.mjs','utf8');
+          const evaluator=fs.readFileSync('benchmark/lib/evaluator.mjs','utf8');
+          const runner=fs.readFileSync('benchmark/lib/runner.mjs','utf8');
+          for(const marker of ['synthetic: true','nunca contém código privado de cliente','private_customer_code_training: false']) {
+            if(!catalog.includes(marker)) throw new Error(`Missing synthetic-only marker: ${marker}`);
+          }
+          for(const marker of ['git\\s+push\\s+--force','forbidden_paths','secret_signal','outside_scope']) {
+            if(!evaluator.includes(marker)) throw new Error(`Missing evaluator safety gate: ${marker}`);
+          }
+          if(!runner.includes('official.task_hash !== task.task_hash')) throw new Error('Runner accepts tampered task definitions');
+          NODE
+
+      - name: Build 19 is provider-independent
+        run: |
+          if grep -R -nE 'generativelanguage\.googleapis\.com|DECRYPTER_LOCAL_URL|DECRYPTER_LOCAL_TOKEN|geminiApiKey|x-gemini-key' benchmark tests/build19-decrypterbench-sim.mjs; then
+            echo 'Provider-specific credential or endpoint leaked into DecrypterBench core'
+            exit 1
+          fi
+          grep -q 'Provider module must export' benchmark/cli.mjs
+          grep -q 'provider_independent_protocol: true' benchmark/lib/runner.mjs
+
+      - name: No invasive observers or transport monkeypatches
+        run: |
+          BASE=3f0d82c23840b9b063f7454cca10062756c4034f
+          ADDED="$(git diff -U0 "$BASE"...HEAD | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+            echo 'Forbidden invasive observer/transport patch detected in Build 19 diff'
+            exit 1
+          fi
+
+      - name: Build 19 scope lock preserves production engines
+        run: |
+          BASE=3f0d82c23840b9b063f7454cca10062756c4034f
+          bad=0
+          while IFS= read -r path; do
+            case "$path" in
+              manifest.json|settings/config.js|benchmark/*|tests/build19-decrypterbench-sim.mjs|docs/BUILD19_DECRYPTERBENCH.md|.github/workflows/v2.4-build19-decrypterbench.yml) ;;
+              *) echo "Unexpected Build 19 modification: $path"; bad=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$bad" -eq 0
+
+      - name: Documentation contract
+        run: |
+          test -f benchmark/README.md
+          test -f docs/BUILD19_DECRYPTERBENCH.md
+          grep -q '400 tarefas' docs/BUILD19_DECRYPTERBENCH.md
+          grep -q 'provider-independent' docs/BUILD19_DECRYPTERBENCH.md
+          grep -q 'não ingere código privado' docs/BUILD19_DECRYPTERBENCH.md
+          grep -q 'Tokens e custo permanecem `null`' docs/BUILD19_DECRYPTERBENCH.md
+
+      - name: Package Build 19 candidate
+        run: |
+          rm -rf /tmp/ld-build19 && mkdir -p /tmp/ld-build19
+          rsync -a ./ /tmp/ld-build19/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='runtime' \
+            --exclude='docs' \
+            --exclude='tests' \
+            --exclude='benchmark' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build19/manifest.json
+          cd /tmp/ld-build19
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.zip > Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.sha256
+          if unzip -l Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.zip | grep -qE ' (benchmark|tests|docs|supabase|runtime)/'; then exit 1; fi
+          cp /tmp/decrypterbench-manifest.json DecrypterBench-v1-manifest.json
+          cp /tmp/decrypterbench-fixture-report.json DecrypterBench-v1-ci-fixture-report.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH
+          path: |
+            Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.zip
+            Lovable-Decrypter-v2.4-BUILD19-DECRYPTERBENCH.sha256
+            DecrypterBench-v1-manifest.json
+            DecrypterBench-v1-ci-fixture-report.json
+          if-no-files-found: error
