@@ -1,0 +1,169 @@
+name: Validate v2.4 Build 13 Live Operations
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build13-live-operations
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and boot order
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if (m.version !== '2.4.13') throw new Error(`Unexpected version ${m.version}`);
+          if (m.version_name !== '2.4 Build 13') throw new Error('Build 13 version_name missing');
+          if (!/Build 13 · Live Operations/.test(m.action?.default_title || '')) throw new Error('Build 13 action title missing');
+          const js = m.content_scripts?.[0]?.js || [];
+          const css = m.content_scripts?.[0]?.css || [];
+          const first = ['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((file,index) => { if (js[index] !== file) throw new Error(`Validated UI boot order changed at ${index}: ${js[index]}`); });
+          for (const file of ['ui/unified-launcher.js','content/build12-reconciliation.js','content/live-operations.js','ui/activity-center.js','content/build13-reconciliation.js']) if (!js.includes(file)) throw new Error(`Missing ${file}`);
+          if (!(js.indexOf('content/build12-reconciliation.js') < js.indexOf('content/live-operations.js') && js.indexOf('content/live-operations.js') < js.indexOf('ui/activity-center.js') && js.indexOf('ui/activity-center.js') < js.indexOf('content/build13-reconciliation.js'))) throw new Error('Live Operations must wrap the final Build 12 runtime before Activity Center loads');
+          if (!css.includes('ui/activity-center.css')) throw new Error('Activity Center CSS missing');
+          if (m.content_scripts?.[0]?.run_at !== 'document_idle' || m.content_scripts?.[0]?.all_frames !== false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.13'" settings/config.js
+
+      - name: JavaScript syntax
+        run: |
+          node --check content/live-operations.js
+          node --check ui/activity-center.js
+          node --check content/build13-reconciliation.js
+          node --check ui/unified-launcher.js
+          node --check content/composer-guardian.js
+          node --check content/queue-executor.js
+
+      - name: Real progress only contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('content/live-operations.js','utf8');
+          for (const marker of ["message?.type !== 'LD2_PROGRESS'",'addStage(String(message.requestId), message)','elapsedMs','status: \'running\'']) if (!src.includes(marker)) throw new Error(`Real progress marker missing: ${marker}`);
+          if (/setInterval\s*\(/.test(src)) throw new Error('Live Operations must not manufacture progress with intervals');
+          if (/Math\.random\s*\(/.test(src)) throw new Error('Synthetic/random progress forbidden');
+          const ui = fs.readFileSync('ui/activity-center.js','utf8');
+          if (/progress\s*%|Math\.random|setInterval\s*\(/i.test(ui)) throw new Error('Activity Center contains synthetic progress behavior');
+          if (!ui.includes('Sem progresso fake')) throw new Error('Truth-in-UI copy missing');
+          NODE
+
+      - name: Execution correlation contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('content/live-operations.js','utf8');
+          for (const marker of [
+            "'LD2_PLAN_ONLY'",
+            "'LD2_BUILD_EXECUTE'",
+            "'LD2_PLAN_APPROVE'",
+            "'LD2_PLAN_PREPARE'",
+            "type === 'LD2_PLAN_APPLY'",
+            'bundleToOperation',
+            "status: 'prepared'",
+            "finalize(operationId, 'completed'"
+          ]) if (!src.includes(marker)) throw new Error(`Execution correlation marker missing: ${marker}`);
+          if (!src.includes("window.addEventListener('ld2:skills-routed'")) throw new Error('Real Skill Router telemetry missing');
+          if (!src.includes("window.addEventListener('ld2:project-rules-synced'")) throw new Error('Project Rules telemetry missing');
+          NODE
+
+      - name: Persistence and privacy contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('content/live-operations.js','utf8');
+          for (const marker of ["'ld2_activity_history_v1'",'const MAX_HISTORY = 200','slice(0, MAX_HISTORY)','item?.internal !== true','name: String(item?.name','mimeType: String(item?.mimeType','size: Number(item?.size']) if (!src.includes(marker)) throw new Error(`Persistence/privacy marker missing: ${marker}`);
+          if (/publicAttachments[\s\S]{0,800}\bdata\s*:\s*item\?*\.data/.test(src)) throw new Error('Attachment bytes must not be persisted in Activity history');
+          if (!src.includes("status: 'interrupted'")) throw new Error('Reload interruption truth handling missing');
+          NODE
+
+      - name: Telemetry and RAG truth contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('content/live-operations.js','utf8');
+          const ui = fs.readFileSync('ui/activity-center.js','utf8');
+          if (!src.includes('reported: false') || !src.includes('telemetryFrom')) throw new Error('Provider telemetry truth contract missing');
+          if (!ui.includes('Tokens/custo não foram reportados pelo provider') || !ui.includes('O Activity Center não estima valores')) throw new Error('No-estimation UI contract missing');
+          if (!src.includes("rag: { active: false, consulted: false") || !src.includes('Build 16')) throw new Error('RAG must remain explicitly inactive');
+          if (!ui.includes('RAG') || !ui.includes('BUILD 16 · INATIVO')) throw new Error('RAG future-state label missing');
+          NODE
+
+      - name: Activity Center information architecture
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ui = fs.readFileSync('ui/activity-center.js','utf8');
+          for (const marker of ['Activity Center','Todas','Ativas','Concluídas','Falhas','TIMELINE REAL','TELEMETRIA DO MODELO','PROJECT RULES','SKILLS SELECIONADAS','ARQUIVOS','COMMIT']) if (!ui.includes(marker)) throw new Error(`Activity Center UI missing ${marker}`);
+          const css = fs.readFileSync('ui/activity-center.css','utf8');
+          if (!css.includes('@media(max-width:760px)')) throw new Error('Mobile Activity Center layout missing');
+          if (!css.includes('font-family') && !css.includes('Arial')) throw new Error('Activity Center typography missing');
+          NODE
+
+      - name: Preserve validated engines and launcher
+        run: |
+          BASE=9ad6dd170a2c38277d3691191ca6b3db8f974ccd
+          for path in \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/queue-executor.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            ui/unified-launcher.js \
+            ui/unified-launcher.css \
+            content/build12-reconciliation.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 13 documentation
+        run: |
+          test -f docs/BUILD13_LIVE_OPERATIONS.md
+          grep -q 'Real signals only' docs/BUILD13_LIVE_OPERATIONS.md
+          grep -q 'Shadow Build correlation' docs/BUILD13_LIVE_OPERATIONS.md
+          grep -q 'Build 16' docs/BUILD13_LIVE_OPERATIONS.md
+
+      - name: Package Build 13 candidate
+        run: |
+          rm -rf /tmp/ld-build13 && mkdir -p /tmp/ld-build13
+          rsync -a ./ /tmp/ld-build13/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build13/manifest.json
+          test -f /tmp/ld-build13/content/live-operations.js
+          test -f /tmp/ld-build13/ui/activity-center.js
+          test -f /tmp/ld-build13/ui/activity-center.css
+          cd /tmp/ld-build13
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip > Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip | grep -q ' content/live-operations.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip | grep -q ' ui/activity-center.js$'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS
+          path: |
+            Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip
+            Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.sha256
+          if-no-files-found: error
