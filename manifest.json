@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.4.11",
-  "version_name": "2.4 Build 11",
+  "version": "2.4.12",
+  "version_name": "2.4 Build 12",
   "description": "AI engineering layer for Lovable projects with signed licenses, GitHub App authorization, Supabase OAuth and Gemini Free/User-Paid modes.",
   "icons": {
     "16": "assets/icon16.png",
@@ -28,7 +28,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.4 Build 11 · Composer Guardian" },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 12 · Unified Launcher" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -60,7 +60,9 @@
         "content/lovable-sync-verifier.js",
         "content/composer-bridge-v3.js",
         "content/composer-guardian.js",
-        "content/build11-reconciliation.js"
+        "content/build11-reconciliation.js",
+        "ui/unified-launcher.js",
+        "content/build12-reconciliation.js"
       ],
       "css": [
         "ui/matrix.css",
@@ -74,7 +76,8 @@
         "ui/project-creator.css",
         "ui/supabase-project-manager.css",
         "ui/cloud-migrator-core.css",
-        "ui/skills-engine.css"
+        "ui/skills-engine.css",
+        "ui/unified-launcher.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
