@@ -255,7 +255,8 @@
     addIntelCard(grid, 'rules', '≡', 'Project Rules', 'Regras permanentes do projeto');
     addIntelCard(grid, 'explain', '?', 'Explain Project', 'Arquitetura, regras e riscos');
     const copy = root?.querySelector('.ld2-cc-native-chat small');
-    if (copy) copy.textContent = 'O composer nativo integra Plan/Build, Auto Skill, Project Brain, Project Rules, Impact Map, Explain Project, Histórico e Checkpoints. Fila avançada permanece reservada para a Build 10.';
+    const copyText = 'O composer nativo integra Plan/Build, Auto Skill, Project Brain, Project Rules, Impact Map, Explain Project, Histórico e Checkpoints. Fila avançada permanece reservada para a Build 10.';
+    if (copy && copy.textContent !== copyText) copy.textContent = copyText;
   }
 
   document.addEventListener('click', e => {
@@ -279,7 +280,14 @@
 
   window.addEventListener('ld2:project', () => { syncBrain(); reconcileControlCenter(); });
   window.addEventListener('ld2:dom-reconcile', reconcileControlCenter);
-  new MutationObserver(reconcileControlCenter).observe(document.documentElement, { childList: true, subtree: true });
+  window.addEventListener('ld2:control-center-ready', reconcileControlCenter);
+  let reconcileAttempts = 0;
+  const reconcileBounded = () => {
+    reconcileControlCenter();
+    const root = $('#ld2-root');
+    const ready = !!root?.querySelector('.ld2-control-center');
+    if (!ready && ++reconcileAttempts < 24) setTimeout(reconcileBounded, 100 + reconcileAttempts * 25);
+  };
   syncBrain();
-  reconcileControlCenter();
+  reconcileBounded();
 })();
