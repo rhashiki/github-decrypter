@@ -30,6 +30,7 @@
 
   const blockedWords = /attach|upload|arquivo|file|image|imagem|voice|voz|microphone|microfone|mic|emoji|plus|adicionar|model|settings|config/i;
   const sendWords = /send|submit|enviar|mandar|arrow.?up|paper.?plane|prompt/i;
+  const composerWords = /message|mensagem|ask|prompt|describe|descreva|chat|lovable|what do you want|type|build|planejar|construir/i;
 
   function visible(el, minWidth = 20, minHeight = 20) {
     if (!el || !el.isConnected || el.closest?.('#ld2-root')) return false;
@@ -48,7 +49,7 @@
     if (el.getAttribute('contenteditable') === 'true' || el.getAttribute('role') === 'textbox') score += 3;
     if (rect.width >= 300) score += 3;
     if (rect.bottom >= innerHeight * 0.55) score += 3;
-    if (/message|mensagem|ask|prompt|describe|descreva|chat|lovable|what do you want|type/i.test(label)) score += 5;
+    if (composerWords.test(label)) score += 5;
     if (el.closest('form')) score += 2;
     return score;
   }
@@ -63,6 +64,31 @@
   function buttonLabel(btn) {
     return [btn?.getAttribute?.('aria-label'), btn?.getAttribute?.('title'), btn?.getAttribute?.('data-testid'), btn?.getAttribute?.('name'), btn?.textContent]
       .filter(Boolean).join(' ').trim().toLowerCase();
+  }
+
+  function hasSendSurface(form) {
+    if (!form) return false;
+    return [...form.querySelectorAll('button')].some(btn => {
+      if (!visible(btn)) return false;
+      const label = buttonLabel(btn);
+      if (blockedWords.test(label)) return false;
+      return String(btn.type || '').toLowerCase() === 'submit' || sendWords.test(label);
+    });
+  }
+
+  function looseComposerInput(target = null) {
+    const candidates = target?.closest?.('textarea,[contenteditable="true"],[role="textbox"]')
+      ? [target.closest('textarea,[contenteditable="true"],[role="textbox"]')]
+      : [...document.querySelectorAll('textarea,[contenteditable="true"],[role="textbox"]')];
+    return candidates
+      .filter(el => visible(el, 180, 24) && !el.disabled && !el.readOnly)
+      .filter(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.bottom < innerHeight * 0.52) return false;
+        const label = String(el.getAttribute('placeholder') || el.getAttribute('aria-label') || el.getAttribute('data-testid') || '').toLowerCase();
+        return composerWords.test(label) || hasSendSurface(el.closest('form'));
+      })
+      .sort((a, b) => b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom)[0] || null;
   }
 
   function findSendButton(input) {
@@ -178,9 +204,7 @@
     state.lastUpdatedAt = Date.now();
     renderState();
     if (changed || extra.force) {
-      window.dispatchEvent(new CustomEvent('ld2:composer-guardian-state', {
-        detail: snapshot()
-      }));
+      window.dispatchEvent(new CustomEvent('ld2:composer-guardian-state', { detail: snapshot() }));
     }
   }
 
@@ -320,18 +344,14 @@
       toast('Composer Guardian bloqueou o envio: o composer mudou antes do roteamento.', true);
       return false;
     }
-    const synthetic = new KeyboardEvent('keydown', {
-      key: 'Enter',
-      code: 'Enter',
-      bubbles: true,
-      cancelable: true
-    });
+    const synthetic = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true });
     input.dispatchEvent(synthetic);
     if (!synthetic.defaultPrevented) {
       state.dispatchVerifiedAt = 0;
       publish('INACTIVE', 'dispatch_not_intercepted', { force: true });
       restoreBridgeStatus('GUARD INACTIVE · envio bloqueado porque o Composer Bridge não confirmou a interceptação.', 'error');
       toast('Envio bloqueado por segurança: o Composer Bridge não confirmou a interceptação. Recarregue a página.', true);
+      scheduleScan(0, true);
       return false;
     }
     state.dispatchVerifiedAt = Date.now();
@@ -343,8 +363,9 @@
   function guardKeydown(event) {
     if (state.routingEnabled !== true || !event.isTrusted) return;
     if (event.isComposing || event.key !== 'Enter' || event.shiftKey || event.altKey) return;
-    const input = state.input?.isConnected ? state.input : findInput();
-    if (!targetInsideInput(event.target, input)) return;
+    const primary = state.input?.isConnected ? state.input : findInput();
+    const input = targetInsideInput(event.target, primary) ? primary : looseComposerInput(event.target);
+    if (!input || !targetInsideInput(event.target, input)) return;
     stopNative(event);
     dispatchThroughBridge(input, 'guardian-enter');
   }
@@ -352,17 +373,35 @@
   function guardClick(event) {
     if (state.routingEnabled !== true || !event.isTrusted) return;
     const button = event.target?.closest?.('button');
-    const input = state.input?.isConnected ? state.input : findInput();
-    if (!clickLooksLikeSend(button, input)) return;
+    if (!button || !visible(button)) return;
+    const primary = state.input?.isConnected ? state.input : findInput();
+    const input = primary || looseComposerInput();
+    let looksLikeSend = clickLooksLikeSend(button, input);
+    if (!looksLikeSend && window.LovableDecrypterV2?.getProjectId?.()) {
+      const label = buttonLabel(button);
+      const rect = button.getBoundingClientRect();
+      looksLikeSend = !blockedWords.test(label)
+        && (sendWords.test(label) || String(button.type || '').toLowerCase() === 'submit')
+        && rect.top > innerHeight * 0.40;
+    }
+    if (!looksLikeSend) return;
     stopNative(event);
+    if (!input) {
+      publish('INACTIVE', 'unknown_composer_send_blocked', { force: true });
+      toast('Composer Guardian bloqueou um envio não reconhecido. O Lovable não recebeu o prompt.', true);
+      scheduleScan(0, true);
+      return;
+    }
     dispatchThroughBridge(input, 'guardian-send-button');
   }
 
   function guardSubmit(event) {
     if (state.routingEnabled !== true || !event.isTrusted) return;
-    const input = state.input?.isConnected ? state.input : findInput();
-    const form = input?.closest('form');
-    if (!form || event.target !== form) return;
+    const form = event.target?.matches?.('form') ? event.target : null;
+    if (!form) return;
+    const primary = state.input?.isConnected ? state.input : findInput();
+    const input = form.contains(primary) ? primary : looseComposerInput(form.querySelector('textarea,[contenteditable="true"],[role="textbox"]'));
+    if (!input || !form.contains(input)) return;
     stopNative(event);
     dispatchThroughBridge(input, 'guardian-form-submit');
   }
@@ -403,11 +442,7 @@
     state.observer?.disconnect();
   }, { once: true });
 
-  window.LovableDecrypterComposerGuardian = Object.freeze({
-    snapshot,
-    rescan: () => scan(true),
-    build: 11
-  });
+  window.LovableDecrypterComposerGuardian = Object.freeze({ snapshot, rescan: () => scan(true), build: 11 });
 
   if (document.body) boot().catch(error => publish('INACTIVE', `boot_error:${String(error?.message || error).slice(0, 120)}`, { force: true }));
   else addEventListener('DOMContentLoaded', () => boot().catch(error => publish('INACTIVE', `boot_error:${String(error?.message || error).slice(0, 120)}`, { force: true })), { once: true });
