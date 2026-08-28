@@ -1,4 +1,4 @@
-export const VERSION = '2.4.16';
+export const VERSION = '2.4.17';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
@@ -6,9 +6,8 @@ export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
 export const DEFAULT_UPDATE_FEED_URL = `${DEFAULT_BACKEND_BASE}/ld-release-feed`;
 export const STORE_URL = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-store';
 
-// Free Tier verificado na tabela oficial de preços da Gemini Developer API
-// em 2026-08-25. Modelos não listados aqui continuam visíveis no catálogo
-// dinâmico, porém são bloqueados quando ZERO COST está ativo.
+// Free Tier verificado na documentação oficial da Gemini Developer API.
+// O Model Gateway ainda reaplica a allowlist no backend; esta lista cliente não é autoridade final.
 export const VERIFIED_FREE_MODEL_IDS = Object.freeze([
   'gemini-3.6-flash',
   'gemini-3.5-flash',
@@ -51,6 +50,9 @@ export const DEFAULT_SETTINGS = {
     vaultApiBase: DEFAULT_VAULT_API_BASE,
     updateFeedUrl: DEFAULT_UPDATE_FEED_URL,
     lastVaultSyncAt: null
+  },
+  gateway: {
+    mode: 'auto'
   },
   gemini: {
     apiKey: '',
@@ -101,6 +103,7 @@ export function mergeSettings(saved = {}) {
     ...DEFAULT_SETTINGS,
     ...saved,
     auth: { ...DEFAULT_SETTINGS.auth, ...(saved.auth || {}) },
+    gateway: { ...DEFAULT_SETTINGS.gateway, ...(saved.gateway || {}) },
     gemini: { ...DEFAULT_SETTINGS.gemini, ...(saved.gemini || {}) },
     github: { ...DEFAULT_SETTINGS.github, ...(saved.github || {}) },
     supabase: { ...DEFAULT_SETTINGS.supabase, ...(saved.supabase || {}) },
@@ -113,6 +116,10 @@ export function mergeSettings(saved = {}) {
   if (!merged.auth.updateFeedUrl || /raw\.githubusercontent\.com\/rhashiki\/lovable-decrypter-extension\/main\/updates\/latest\.json/i.test(String(merged.auth.updateFeedUrl))) {
     merged.auth.updateFeedUrl = DEFAULT_UPDATE_FEED_URL;
   }
+
+  merged.gateway.mode = ['auto', 'fast', 'deep'].includes(String(merged.gateway.mode || '').toLowerCase())
+    ? String(merged.gateway.mode).toLowerCase()
+    : 'auto';
 
   // Gratuito é o padrão. O modo pago só é habilitado por opt-in explícito e usa a API do próprio usuário.
   merged.gemini.billingMode = merged.gemini.billingMode === 'user_paid' ? 'user_paid' : 'free';
