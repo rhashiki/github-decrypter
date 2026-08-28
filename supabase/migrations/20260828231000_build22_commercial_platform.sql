@@ -3,7 +3,8 @@
 
 alter table public.ld_license_keys
   add column if not exists commercial_tier text not null default 'legacy',
-  add column if not exists byok_allowed boolean not null default false;
+  add column if not exists byok_allowed boolean not null default false,
+  add column if not exists byok_enabled boolean not null default false;
 
 alter table public.ld_license_keys
   drop constraint if exists ld_license_keys_commercial_tier_check;
@@ -113,7 +114,7 @@ security invoker
 set search_path = ''
 as $$
   with lic as (
-    select id,commercial_tier,byok_allowed,status,expires_at,credit_balance,credit_debt,command_remainder,commands_per_credit
+    select id,commercial_tier,byok_allowed,byok_enabled,status,expires_at,credit_balance,credit_debt,command_remainder,commands_per_credit
     from public.ld_license_keys where id=p_license_id
   ), sub as (
     select s.id,s.status,s.current_period_end,s.next_payment_at,s.cancel_at_period_end,p.code as plan_code,p.name as plan_name,p.price_cents,p.currency,p.byok_allowed as plan_byok
@@ -126,6 +127,7 @@ as $$
     'license_id',lic.id,
     'tier',lic.commercial_tier,
     'byok_allowed',lic.byok_allowed,
+    'byok_enabled',lic.byok_enabled,
     'license_status',lic.status,
     'expires_at',lic.expires_at,
     'credits',lic.credit_balance,
