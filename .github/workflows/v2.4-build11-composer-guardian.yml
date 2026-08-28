@@ -1,0 +1,147 @@
+name: Validate v2.4 Build 11 Composer Guardian
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build11-composer-guardian
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and runtime version
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const js=m.content_scripts?.[0]?.js||[];
+          const css=m.content_scripts?.[0]?.css||[];
+          if(m.version!=='2.4.11') throw new Error(`Unexpected manifest version ${m.version}`);
+          if(m.version_name!=='2.4 Build 11') throw new Error('version_name mismatch');
+          if(!/Build 11/.test(m.action?.default_title||'')) throw new Error('Build 11 action title missing');
+          const config=fs.readFileSync('settings/config.js','utf8');
+          if(!config.includes("export const VERSION = '2.4.11'")) throw new Error('Runtime version mismatch');
+          const required=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js','content/composer-bridge-v3.js','content/composer-guardian.js','content/build11-reconciliation.js'];
+          for(const file of required) if(!js.includes(file)) throw new Error(`Missing ${file}`);
+          if(js.includes('content/build10-reconciliation.js')) throw new Error('Build 10 reconciliation must not boot in Build 11');
+          if(js.indexOf('content/ui-shell-bootstrap.js')!==0) throw new Error('Fault-isolated UI shell must remain first');
+          if(!(js.indexOf('content/composer-bridge-v3.js') < js.indexOf('content/composer-guardian.js') && js.indexOf('content/composer-guardian.js') < js.indexOf('content/build11-reconciliation.js'))) throw new Error('Composer Bridge -> Guardian -> reconciliation order invalid');
+          if(!css.includes('ui/composer-guardian.css')) throw new Error('Guardian CSS missing');
+          if(m.content_scripts?.[0]?.run_at!=='document_idle' || m.content_scripts?.[0]?.all_frames!==false) throw new Error('Unsafe content-script timing/frame scope');
+          NODE
+
+      - name: JavaScript syntax
+        run: |
+          node --check content/composer-guardian.js
+          node --check content/build11-reconciliation.js
+          node --check content/composer-bridge-v3.js
+          node --check content/ui-shell-bootstrap.js
+          node --check content/ui-mount-guardian.js
+          node --check content/queue-executor.js
+          node --check content/batch-mode.js
+          node --check tests/build11-guardian-simulation.mjs
+
+      - name: Preserve Build 10 execution engine and validated UI boot
+        run: |
+          BASE=b0286947cb655d3980e99bffb279152e22527d5d
+          for path in \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/composer-bridge-v3.js \
+            content/queue-executor.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            supabase/functions/ld-queue-skip/index.ts \
+            supabase/migrations/20260828102757_build10_atomic_queue_skip.sql \
+            background/service-worker.js \
+            content/skill-router.js \
+            content/project-rules-cache.js \
+            content/project-intelligence.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected modification of protected Build 10 file: $path"
+              exit 1
+            fi
+          done
+
+      - name: Guardian fail-closed contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('content/composer-guardian.js','utf8');
+          for(const marker of [
+            "health: 'INACTIVE'",
+            "publish('DEGRADED'",
+            "publish('OK'",
+            "event.isTrusted",
+            "stopNative(event)",
+            "new KeyboardEvent('keydown'",
+            "synthetic.defaultPrevented",
+            "dispatch_not_intercepted",
+            "routing_off",
+            "compatibility_fingerprint_changed",
+            "crypto.subtle.digest('SHA-256'",
+            "new MutationObserver",
+            "observer.observe(document.body, { childList: true, subtree: true })",
+            "window.addEventListener('keydown', guardKeydown, true)",
+            "window.addEventListener('click', guardClick, true)",
+            "window.addEventListener('submit', guardSubmit, true)"
+          ]) if(!src.includes(marker)) throw new Error(`Guardian contract missing: ${marker}`);
+          if(/window\.fetch\s*=|XMLHttpRequest\.prototype|navigator\.sendBeacon\s*=|Proxy\s*\(\s*window\.fetch/.test(src)) throw new Error('Global network interception is forbidden in Build 11');
+          if(/characterData\s*:\s*true/.test(src)) throw new Error('Guardian must not observe character data');
+          if(/attributes\s*:\s*true/.test(src)) throw new Error('Guardian must not globally observe attributes');
+          if(!src.includes('mutations.some(relevantMutation)')) throw new Error('MutationObserver must filter relevant mutations before scan');
+          NODE
+
+      - name: Fingerprint and health UI contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const guardian=fs.readFileSync('content/composer-guardian.js','utf8');
+          const recon=fs.readFileSync('content/build11-reconciliation.js','utf8');
+          const css=fs.readFileSync('ui/composer-guardian.css','utf8');
+          for(const marker of ['FINGERPRINT_KEY','fingerprintShort','dispatchVerified','GUARD ${state.health}','ld2:composer-guardian-state','ld2:composer-dispatch-verified']) if(!guardian.includes(marker)) throw new Error(`Guardian status marker missing ${marker}`);
+          for(const marker of ['BUILD 11','Composer Guardian','Fingerprint','Dispatch verificado','Intercepção global de rede']) if(!recon.includes(marker)) throw new Error(`Build 11 diagnostics missing ${marker}`);
+          for(const state of ['data-state="ok"','data-state="degraded"','data-state="inactive"']) if(!css.includes(state)) throw new Error(`Guardian CSS missing ${state}`);
+          NODE
+
+      - name: Fail-closed dispatch simulation
+        run: node tests/build11-guardian-simulation.mjs
+
+      - name: Package Build 11 candidate
+        run: |
+          rm -rf /tmp/ld-build11 && mkdir -p /tmp/ld-build11
+          rsync -a ./ /tmp/ld-build11/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build11/manifest.json
+          test -f /tmp/ld-build11/content/composer-guardian.js
+          test -f /tmp/ld-build11/content/build11-reconciliation.js
+          test -f /tmp/ld-build11/ui/composer-guardian.css
+          cd /tmp/ld-build11
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip > Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip | grep -q ' content/composer-guardian.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip | grep -q ' content/build11-reconciliation.js$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip | grep -q ' supabase/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN
+          path: |
+            Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.zip
+            Lovable-Decrypter-v2.4-BUILD11-COMPOSER-GUARDIAN.sha256
+          if-no-files-found: error
