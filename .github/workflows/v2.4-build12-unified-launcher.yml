@@ -1,0 +1,154 @@
+name: Validate v2.4 Build 12 Unified Launcher
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build12-unified-launcher
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and runtime version
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.12') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 12') throw new Error('Build 12 version_name missing');
+          if(!/Unified Launcher/.test(m.action?.default_title||'')) throw new Error('Unified Launcher action title missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const css=m.content_scripts?.[0]?.css||[];
+          if(js[0]!=='content/ui-shell-bootstrap.js') throw new Error('Validated UI bootstrap must remain first');
+          for(const f of ['ui/unified-launcher.js','content/build12-reconciliation.js','content/composer-guardian.js','content/queue-executor.js']) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          if(js.indexOf('ui/unified-launcher.js') < js.indexOf('content/build11-reconciliation.js')) throw new Error('Unified Launcher must layer on top of Build 11');
+          if(js.indexOf('content/build12-reconciliation.js') < js.indexOf('ui/unified-launcher.js')) throw new Error('Build 12 reconciliation must load after launcher');
+          for(const f of ['ui/unified-launcher.css','ui/unified-launcher-status.css']) if(!css.includes(f)) throw new Error(`Missing ${f}`);
+          if(css.at(-1)!=='ui/unified-launcher-status.css') throw new Error('Unified health CSS must be last');
+          const cfg=fs.readFileSync('settings/config.js','utf8');
+          if(!cfg.includes("export const VERSION = '2.4.12';")) throw new Error('Internal runtime version mismatch');
+          NODE
+
+      - name: JavaScript syntax
+        run: |
+          node --check ui/unified-launcher.js
+          node --check content/build12-reconciliation.js
+          node --check content/composer-guardian.js
+          node --check content/composer-bridge-v3.js
+          node --check content/queue-executor.js
+          node --check ui/control-center.js
+          node --check ui/ui.js
+
+      - name: Unified launcher information architecture
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('ui/unified-launcher.js','utf8');
+          for(const status of ['license','ai','github','supabase','composer','project']) if(!src.includes(`statusTile('${status}'`)) throw new Error(`Missing status ${status}`);
+          for(const section of ['principal','project','intelligence','system']) if(!src.includes(`section('${section}'`)) throw new Error(`Missing section ${section}`);
+          for(const action of ['editor','brain','skills','queue','github','supabase','cloud','zip','project','rules','explain','impact','history','diagnosis','settings','update','repair']) if(!src.includes(`card('${action}'`)) throw new Error(`Missing launcher action ${action}`);
+          if(!src.includes("Repair Lovable está reservado para a Build 14")) throw new Error('Repair truth-in-UI missing');
+          if(!src.includes('LEGACY_ACTIONS')) throw new Error('Compatibility delegation layer missing');
+          if(!src.includes('ld2-unified-host')) throw new Error('Unified compatibility host missing');
+          NODE
+
+      - name: UI safety and fault isolation
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('ui/unified-launcher.js','utf8');
+          if(/new\s+MutationObserver/.test(src)) throw new Error('Unified Launcher must not add a global DOM observer');
+          if(/fetch\s*=|XMLHttpRequest\.prototype|sendBeacon\s*=/.test(src)) throw new Error('Unified Launcher must not monkeypatch global network APIs');
+          if(!src.includes('boundedInstall')) throw new Error('Bounded mounting missing');
+          if(!src.includes("setInterval(() => sync(false), 8000)")) throw new Error('Low-frequency status refresh contract missing');
+          if(!src.includes('if (!force && !panelOpen()) return;')) throw new Error('Status polling must sleep while launcher is closed');
+          NODE
+
+      - name: Visual system contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const css=fs.readFileSync('ui/unified-launcher.css','utf8');
+          const stateCss=fs.readFileSync('ui/unified-launcher-status.css','utf8');
+          for(const marker of ['Arial,sans-serif','backdrop-filter:blur(26px)','grid-template-columns:1fr 1fr','::-webkit-scrollbar','transition:transform .9s']) if(!css.includes(marker)) throw new Error(`Missing visual contract ${marker}`);
+          if(!css.includes('left:7px!important;top:7px!important;width:calc(100vw - 14px)!important;height:calc(100vh - 14px)!important')) throw new Error('Mobile near-fullscreen launcher missing');
+          for(const health of ['good','warn','bad']) if(!stateCss.includes(`data-ld2-unified-health=\"${health}\"`) && !stateCss.includes(`data-ld2-unified-health="${health}"`)) throw new Error(`FAB health ${health} missing`);
+          NODE
+
+      - name: Truth-in-UI and diagnostics
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('content/build12-reconciliation.js','utf8');
+          for(const marker of ['Unified Launcher','Composer Guardian','Execution Engine','Project Intelligence','Project Rules','Skills Engine','Cloud Migrator','Project Creator','BUILD 14 · AINDA NÃO ATIVO']) if(!src.includes(marker)) throw new Error(`Diagnostics missing ${marker}`);
+          if(!src.includes("repairLovable: false")) throw new Error('Repair must remain inactive in Build 12');
+          if(!src.includes('applyFabTruth')) throw new Error('FAB truth binding missing');
+          NODE
+
+      - name: Preserve Build 10 and Build 11 protected engines
+        run: |
+          BASE=26e50af1b7bf65123187448acc6278bd45e165d4
+          for path in \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            ui/control-center.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            content/batch-mode.js \
+            content/queue-executor.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/project-intelligence.js \
+            content/project-rules-cache.js \
+            content/skill-router.js \
+            ui/skills-engine.js \
+            ui/cloud-migrator-complete.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 12 documentation
+        run: |
+          test -f docs/BUILD12_UNIFIED_LAUNCHER.md
+          grep -q 'Compatibility strategy' docs/BUILD12_UNIFIED_LAUNCHER.md
+          grep -q 'Repair Lovable' docs/BUILD12_UNIFIED_LAUNCHER.md
+
+      - name: Package Build 12 candidate
+        run: |
+          rm -rf /tmp/ld-build12 && mkdir -p /tmp/ld-build12
+          rsync -a ./ /tmp/ld-build12/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build12/manifest.json
+          test -f /tmp/ld-build12/ui/unified-launcher.js
+          test -f /tmp/ld-build12/ui/unified-launcher.css
+          test -f /tmp/ld-build12/content/build12-reconciliation.js
+          cd /tmp/ld-build12
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.zip > Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.zip | grep -q ' ui/unified-launcher.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.zip | grep -q ' content/build12-reconciliation.js$'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER
+          path: |
+            Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.zip
+            Lovable-Decrypter-v2.4-BUILD12-UNIFIED-LAUNCHER.sha256
+          if-no-files-found: error
