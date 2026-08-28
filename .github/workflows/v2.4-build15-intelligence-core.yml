@@ -1,0 +1,158 @@
+name: Validate v2.4 Build 15 Decrypter Intelligence
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build15-intelligence-core
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and boot order
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.15') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 15') throw new Error('Build 15 version_name missing');
+          if(!/Build 15 · Decrypter Intelligence/.test(m.action?.default_title||'')) throw new Error('Build 15 action title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated UI boot order changed at ${i}: ${js[i]}`)});
+          for(const f of ['content/build14-reconciliation.js','content/build15-reconciliation.js']) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          if(js.indexOf('content/build15-reconciliation.js')<js.indexOf('content/build14-reconciliation.js')) throw new Error('Build 15 must load after Build 14 reconciliation');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.15'" settings/config.js
+
+      - name: JavaScript syntax
+        run: |
+          node --check core/decrypter-intelligence.js
+          node --check background/intelligence-bootstrap.js
+          node --check background/service-worker-entry.js
+          node --check content/build15-reconciliation.js
+
+      - name: Intelligence behavioral tests
+        run: node tests/build15-intelligence.test.mjs
+
+      - name: Provider-independent core contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('core/decrypter-intelligence.js','utf8');
+          for(const marker of ['ld-intelligence/1','Decrypter Intelligence','classifyIntent','createExecutionBrief','serializeExecutionBrief','assertProviderResult','executor_only','gateway_build: 17','build: 16']) if(!src.includes(marker)) throw new Error(`Intelligence marker missing: ${marker}`);
+          if(/Gemini|generativelanguage|x-goog-api-key/i.test(src)) throw new Error('Provider-specific implementation leaked into Intelligence core');
+          if(!src.includes('approved_plan_whitelist')||!src.includes('Secret file blocked')||!src.includes('Delete outside explicit user intent')) throw new Error('Intelligence validation guardrails missing');
+          NODE
+
+      - name: Provider adapter wrapping contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('background/intelligence-bootstrap.js','utf8');
+          for(const marker of ['GeminiAgent.prototype.planCommand','GeminiAgent.prototype.processCommand','createExecutionBrief','serializeExecutionBrief','assertProviderResult','publicIntelligenceSummary','ld2_intelligence_last_v1','ld2_intelligence_history_v1','MAX_HISTORY = 60']) if(!src.includes(marker)) throw new Error(`Bootstrap marker missing: ${marker}`);
+          const entry=fs.readFileSync('background/service-worker-entry.js','utf8');
+          const intelligence=entry.indexOf("import './intelligence-bootstrap.js'");
+          const worker=entry.indexOf("import './service-worker.js'");
+          if(!(intelligence>=0&&worker>intelligence)) throw new Error('Intelligence bootstrap must execute before command runtime');
+          NODE
+
+      - name: Persistence privacy contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const core=fs.readFileSync('core/decrypter-intelligence.js','utf8');
+          const bootstrap=fs.readFileSync('background/intelligence-bootstrap.js','utf8');
+          if(!core.includes('publicIntelligenceSummary')) throw new Error('Public summary missing');
+          if(/\[LAST_KEY\].*goal|\[HISTORY_KEY\].*goal/s.test(bootstrap)) throw new Error('Raw goal must not be intentionally persisted');
+          if(/attachment.*data.*persist/i.test(bootstrap)) throw new Error('Attachment bytes must not be persisted by Intelligence');
+          NODE
+
+      - name: Intelligence UI truth contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const ui=fs.readFileSync('content/build15-reconciliation.js','utf8');
+          for(const marker of ['Decrypter Intelligence','Intent, estratégia, tools e validação','BUILD 16 · INATIVO','BUILD 17 · INATIVO','executor técnico','root.dataset.ld2Build = \'15\'']) if(!ui.includes(marker)) throw new Error(`Build 15 UI marker missing: ${marker}`);
+          if(/MutationObserver/.test(ui)) throw new Error('Build 15 reconciliation must not globally observe Lovable DOM');
+          NODE
+
+      - name: Preserve validated engines
+        run: |
+          BASE=b99efe812d7c0e552edc7e82ee51392ab906009a
+          for path in \
+            ai/gemini-agent.js \
+            background/service-worker.js \
+            core/scope-lock.js \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/queue-executor.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            ui/unified-launcher.js \
+            ui/unified-launcher.css \
+            content/live-operations.js \
+            content/activity-cloud-sync.js \
+            ui/activity-center.js \
+            ui/activity-center.css \
+            ui/update-recovery.js \
+            ui/update-recovery.css \
+            background/update-recovery-runtime.js \
+            updates/update-manager.js \
+            content/build14-reconciliation.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 15 documentation
+        run: |
+          test -f docs/BUILD15_DECRYPTER_INTELLIGENCE.md
+          grep -q 'Execution Brief' docs/BUILD15_DECRYPTER_INTELLIGENCE.md
+          grep -q 'Provider independence' docs/BUILD15_DECRYPTER_INTELLIGENCE.md
+          grep -q 'Build 16' docs/BUILD15_DECRYPTER_INTELLIGENCE.md
+          grep -q 'Build 17' docs/BUILD15_DECRYPTER_INTELLIGENCE.md
+
+      - name: Package Build 15 candidate
+        run: |
+          rm -rf /tmp/ld-build15 && mkdir -p /tmp/ld-build15
+          rsync -a ./ /tmp/ld-build15/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build15/manifest.json
+          test -f /tmp/ld-build15/core/decrypter-intelligence.js
+          test -f /tmp/ld-build15/background/intelligence-bootstrap.js
+          test -f /tmp/ld-build15/content/build15-reconciliation.js
+          cd /tmp/ld-build15
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.zip > Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.zip | grep -q ' core/decrypter-intelligence.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.zip | grep -q ' background/intelligence-bootstrap.js$'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE
+          path: |
+            Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.zip
+            Lovable-Decrypter-v2.4-BUILD15-DECRYPTER-INTELLIGENCE.sha256
+          if-no-files-found: error
