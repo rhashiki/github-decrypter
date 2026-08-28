@@ -28,8 +28,9 @@ jobs:
           const css = m.content_scripts?.[0]?.css || [];
           const first = ['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
           first.forEach((file,index) => { if (js[index] !== file) throw new Error(`Validated UI boot order changed at ${index}: ${js[index]}`); });
-          for (const file of ['ui/unified-launcher.js','content/build12-reconciliation.js','content/live-operations.js','ui/activity-center.js','content/build13-reconciliation.js']) if (!js.includes(file)) throw new Error(`Missing ${file}`);
-          if (!(js.indexOf('content/build12-reconciliation.js') < js.indexOf('content/live-operations.js') && js.indexOf('content/live-operations.js') < js.indexOf('ui/activity-center.js') && js.indexOf('ui/activity-center.js') < js.indexOf('content/build13-reconciliation.js'))) throw new Error('Live Operations must wrap the final Build 12 runtime before Activity Center loads');
+          for (const file of ['ui/unified-launcher.js','content/build12-reconciliation.js','content/live-operations.js','content/activity-cloud-sync.js','ui/activity-center.js','content/build13-reconciliation.js']) if (!js.includes(file)) throw new Error(`Missing ${file}`);
+          const order = ['content/build12-reconciliation.js','content/live-operations.js','content/activity-cloud-sync.js','ui/activity-center.js','content/build13-reconciliation.js'].map(file => js.indexOf(file));
+          for (let i = 1; i < order.length; i++) if (!(order[i - 1] < order[i])) throw new Error('Build 13 boot order is invalid');
           if (!css.includes('ui/activity-center.css')) throw new Error('Activity Center CSS missing');
           if (m.content_scripts?.[0]?.run_at !== 'document_idle' || m.content_scripts?.[0]?.all_frames !== false) throw new Error('Unsafe content-script scope');
           NODE
@@ -38,6 +39,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check content/live-operations.js
+          node --check content/activity-cloud-sync.js
           node --check ui/activity-center.js
           node --check content/build13-reconciliation.js
           node --check ui/unified-launcher.js
@@ -84,6 +86,11 @@ jobs:
           for (const marker of ["'ld2_activity_history_v1'",'const MAX_HISTORY = 200','slice(0, MAX_HISTORY)','item?.internal !== true','name: String(item?.name','mimeType: String(item?.mimeType','size: Number(item?.size']) if (!src.includes(marker)) throw new Error(`Persistence/privacy marker missing: ${marker}`);
           if (/publicAttachments[\s\S]{0,800}\bdata\s*:\s*item\?*\.data/.test(src)) throw new Error('Attachment bytes must not be persisted in Activity history');
           if (!src.includes("status: 'interrupted'")) throw new Error('Reload interruption truth handling missing');
+          const cloud = fs.readFileSync('content/activity-cloud-sync.js','utf8');
+          if (!cloud.includes('/ld-history') || !cloud.includes("action: 'record'")) throw new Error('Server-side execution audit missing');
+          if (!cloud.includes("['completed', 'failed']")) throw new Error('Only final observed outcomes may be synced server-side');
+          if (cloud.includes("status: 'interrupted'")) throw new Error('Interrupted/unknown outcome must not be recorded as a server-side final result');
+          for (const forbidden of ['apiKey','licenseKey:', 'deviceId:', 'data: item.data']) if (cloud.includes(forbidden)) throw new Error(`Sensitive activity metadata marker found: ${forbidden}`);
           NODE
 
       - name: Telemetry and RAG truth contract
@@ -92,10 +99,12 @@ jobs:
           const fs = require('fs');
           const src = fs.readFileSync('content/live-operations.js','utf8');
           const ui = fs.readFileSync('ui/activity-center.js','utf8');
+          const cloud = fs.readFileSync('content/activity-cloud-sync.js','utf8');
           if (!src.includes('reported: false') || !src.includes('telemetryFrom')) throw new Error('Provider telemetry truth contract missing');
           if (!ui.includes('Tokens/custo não foram reportados pelo provider') || !ui.includes('O Activity Center não estima valores')) throw new Error('No-estimation UI contract missing');
           if (!src.includes("rag: { active: false, consulted: false") || !src.includes('Build 16')) throw new Error('RAG must remain explicitly inactive');
           if (!ui.includes('RAG') || !ui.includes('BUILD 16 · INATIVO')) throw new Error('RAG future-state label missing');
+          if (!cloud.includes("rag: { active: false, consulted: false, build: 16 }")) throw new Error('Server audit must not claim RAG activity early');
           NODE
 
       - name: Activity Center information architecture
@@ -106,7 +115,7 @@ jobs:
           for (const marker of ['Activity Center','Todas','Ativas','Concluídas','Falhas','TIMELINE REAL','TELEMETRIA DO MODELO','PROJECT RULES','SKILLS SELECIONADAS','ARQUIVOS','COMMIT']) if (!ui.includes(marker)) throw new Error(`Activity Center UI missing ${marker}`);
           const css = fs.readFileSync('ui/activity-center.css','utf8');
           if (!css.includes('@media(max-width:760px)')) throw new Error('Mobile Activity Center layout missing');
-          if (!css.includes('font-family') && !css.includes('Arial')) throw new Error('Activity Center typography missing');
+          if (!css.includes('Arial')) throw new Error('Activity Center typography missing');
           NODE
 
       - name: Preserve validated engines and launcher
@@ -137,6 +146,7 @@ jobs:
           test -f docs/BUILD13_LIVE_OPERATIONS.md
           grep -q 'Real signals only' docs/BUILD13_LIVE_OPERATIONS.md
           grep -q 'Shadow Build correlation' docs/BUILD13_LIVE_OPERATIONS.md
+          grep -q 'ld_execution_history' docs/BUILD13_LIVE_OPERATIONS.md
           grep -q 'Build 16' docs/BUILD13_LIVE_OPERATIONS.md
 
       - name: Package Build 13 candidate
@@ -151,6 +161,7 @@ jobs:
             --exclude='*.sha256'
           test -f /tmp/ld-build13/manifest.json
           test -f /tmp/ld-build13/content/live-operations.js
+          test -f /tmp/ld-build13/content/activity-cloud-sync.js
           test -f /tmp/ld-build13/ui/activity-center.js
           test -f /tmp/ld-build13/ui/activity-center.css
           cd /tmp/ld-build13
@@ -158,6 +169,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           sha256sum Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip > Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.sha256
           unzip -l Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip | grep -q ' content/live-operations.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip | grep -q ' content/activity-cloud-sync.js$'
           unzip -l Lovable-Decrypter-v2.4-BUILD13-LIVE-OPERATIONS.zip | grep -q ' ui/activity-center.js$'
 
       - uses: actions/upload-artifact@v4
