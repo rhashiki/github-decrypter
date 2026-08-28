@@ -1,0 +1,1 @@
+Hotfix 3 stages the launcher before feature modules so UI visibility is fault-isolated from optional feature initialization.
