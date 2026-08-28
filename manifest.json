@@ -64,6 +64,7 @@
         "ui/unified-launcher.js",
         "content/build12-reconciliation.js",
         "content/live-operations.js",
+        "content/activity-cloud-sync.js",
         "ui/activity-center.js",
         "content/build13-reconciliation.js"
       ],
