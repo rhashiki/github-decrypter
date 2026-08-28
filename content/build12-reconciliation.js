@@ -10,7 +10,7 @@
 
   function modules() {
     return Object.freeze({
-      build: 12,
+      build: window.__LOVABLE_DECRYPTER_BUILD14_RECONCILIATION__ ? 14 : 12,
       version: chrome.runtime.getManifest().version,
       unifiedLauncher: !!window.__LOVABLE_DECRYPTER_UNIFIED_LAUNCHER__,
       composerGuardian: !!window.__LOVABLE_DECRYPTER_COMPOSER_GUARDIAN__,
@@ -22,7 +22,8 @@
       checkpoints: !!window.__LD2_CHECKPOINT_UI__,
       cloudMigrator: !!window.__LD2_CLOUD_MIGRATOR_COMPLETE_UI__,
       projectCreator: !!window.__LD2_PROJECT_CREATOR_UI__,
-      repairLovable: false
+      updateRecovery: !!window.__LOVABLE_DECRYPTER_UPDATE_RECOVERY_UI__,
+      repairLovable: !!window.__LOVABLE_DECRYPTER_UPDATE_RECOVERY_UI__
     });
   }
 
@@ -53,7 +54,7 @@
     if (!modal || !card) return;
     modal.classList.add('open');
     card.className = 'ld2-card ld2-ul-diagnostics';
-    card.innerHTML = '<div class="ld2-modal-head"><div><small>BUILD 12 · UNIFIED LAUNCHER</small><h2>Diagnóstico</h2><p>Estado operacional real da extensão.</p></div><button class="ld2-close" type="button" data-b12-close>×</button></div><div class="ld2-modal-body"><p class="ld2-help">Verificando módulos…</p></div>';
+    card.innerHTML = '<div class="ld2-modal-head"><div><small>DIAGNÓSTICO RECONCILIADO</small><h2>Diagnóstico</h2><p>Estado operacional real da extensão.</p></div><button class="ld2-close" type="button" data-b12-close>×</button></div><div class="ld2-modal-body"><p class="ld2-help">Verificando módulos…</p></div>';
     $('[data-b12-close]', card).onclick = () => modal.classList.remove('open');
 
     try {
@@ -83,8 +84,9 @@
         <div>Checkpoints</div><div>${state(m.checkpoints)}</div>
         <div>Cloud Migrator</div><div>${state(m.cloudMigrator)}</div>
         <div>Project Creator</div><div>${state(m.projectCreator)}</div>
-        <div>Repair Lovable</div><div><span class="ld2-ul-diag-warn">BUILD 14 · AINDA NÃO ATIVO</span></div>
-      </div><p class="ld2-help" style="margin-top:12px">A Build 12 unifica a interface. Não habilita antecipadamente recursos das Builds futuras.</p>`;
+        <div>Update & Recovery</div><div>${state(m.updateRecovery)}</div>
+        <div>Repair Lovable</div><div>${state(m.repairLovable)}</div>
+      </div><p class="ld2-help" style="margin-top:12px">O diagnóstico exibe somente módulos realmente carregados nesta aba.</p>`;
     } catch (error) {
       $('.ld2-modal-body', card).textContent = error?.message || String(error);
     }
@@ -108,13 +110,20 @@
   function reconcile() {
     const root = document.getElementById(ROOT_ID);
     if (!root) return false;
-    root.dataset.ld2Build = '12';
+    const b14 = !!window.__LOVABLE_DECRYPTER_BUILD14_RECONCILIATION__;
+    root.dataset.ld2Build = b14 ? '14' : '12';
     applyFabTruth(root);
     const repair = root.querySelector('.ld2-unified-shell [data-ul-action="repair"]');
     if (repair) {
-      repair.dataset.ulFuture = '1';
       const badge = repair.querySelector('[data-ul-badge="repair"]');
-      if (badge && badge.textContent !== 'BUILD 14') badge.textContent = 'BUILD 14';
+      if (b14) {
+        repair.classList.remove('future');
+        repair.removeAttribute('data-ul-future');
+        if (badge) { badge.textContent = 'ATIVO'; badge.dataset.state = 'good'; }
+      } else {
+        repair.dataset.ulFuture = '1';
+        if (badge && badge.textContent !== 'BUILD 14') badge.textContent = 'BUILD 14';
+      }
     }
     return !!root.querySelector('.ld2-unified-shell');
   }
@@ -123,6 +132,7 @@
   window.addEventListener('ld2:unified-launcher-ready', reconcile);
   window.addEventListener('ld2:ui-mounted', reconcile);
   window.addEventListener('ld2:composer-guardian-state', reconcile);
+  window.addEventListener('ld2:build14-health-reported', reconcile);
   let attempts = 0;
   const bounded = () => {
     if (reconcile()) return;
