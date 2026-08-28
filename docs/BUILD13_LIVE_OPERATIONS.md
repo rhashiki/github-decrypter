@@ -33,9 +33,11 @@ Recorded metadata can include:
 - provider token/cost telemetry only when explicitly returned by the runtime/provider.
 
 ## Persistence
-Activity metadata is stored in `chrome.storage.local` under `ld2_activity_history_v1`, capped at 200 operations. File contents, API keys, attachment bytes and prompt-internal Skill contents are not stored in this history.
+Activity metadata is stored locally in `chrome.storage.local` under `ld2_activity_history_v1`, capped at 200 operations. File contents, API keys, attachment bytes and prompt-internal Skill contents are not stored in this history.
 
-A previously `running` operation found after extension/page restart is marked `interrupted`; the Activity Center never claims that an unobserved execution completed.
+Final `completed` and `failed` operations are also written asynchronously through the existing authenticated `ld-history` backend into `ld_execution_history`. The server record uses the same operation/event id when it is a UUID and stores only operational metadata plus the user command already covered by the execution-history backend contract.
+
+A previously `running` local operation found after extension/page restart is marked `interrupted`; the Activity Center never claims that an unobserved execution completed. Unknown/interrupted outcomes are not converted into server-side failures.
 
 ## Shadow Build correlation
 `LD2_PLAN_PREPARE` records the returned bundle id. A later `LD2_PLAN_APPLY` is correlated to the same activity entry, so preparation and Apply remain one audit trail.
@@ -43,6 +45,7 @@ A previously `running` operation found after extension/page restart is marked `i
 ## Truth in UI
 - RAG/Decrypter Knowledge is shown as **Build 16 · inactive**.
 - Token/cost fields show **not reported** unless the provider/runtime supplied real values.
+- The current `ld-command` gateway exposes model, duration and interaction id, but not Gemini raw `usage`; Build 13 therefore does not estimate token counts.
 - There is no synthetic progress bar.
 - Build 13 does not enable future model-gateway or Decrypter-Coder capabilities.
 
