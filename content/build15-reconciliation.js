@@ -34,11 +34,11 @@
   async function reconcile() {
     const r = root();
     if (!r) return false;
-    r.dataset.ld2Build = '15';
+    if (Number(r.dataset.ld2Build || 0) < 15) r.dataset.ld2Build = '15';
     addCard();
 
     const hero = r.querySelector('.ld2-unified-shell .ld2-ul-hero small');
-    if (hero && hero.textContent !== 'LOVABLE DECRYPTER · BUILD 15') hero.textContent = 'LOVABLE DECRYPTER · BUILD 15';
+    if (hero && !/BUILD\s+(?:1[6-9]|[2-9]\d)/i.test(hero.textContent || '') && hero.textContent !== 'LOVABLE DECRYPTER · BUILD 15') hero.textContent = 'LOVABLE DECRYPTER · BUILD 15';
 
     const tile = r.querySelector('.ld2-unified-shell [data-ul-status="ai"]');
     if (tile) {
@@ -59,6 +59,17 @@
     return !!r.querySelector('.ld2-unified-shell');
   }
 
+  function knowledgeStatusMarkup(knowledge = {}) {
+    const status = String(knowledge?.status || (knowledge?.active ? 'ready' : 'degraded')).toLowerCase();
+    const label = status === 'ready' ? 'READY' : status === 'empty' ? 'EMPTY' : status === 'degraded' ? 'DEGRADADO' : status.toUpperCase();
+    const cls = status === 'ready' || status === 'empty' ? 'ld2-ul-diag-good' : 'ld2-ul-diag-warn';
+    const hits = Math.max(0, Number(knowledge?.hit_count || 0));
+    const vector = Math.max(0, Number(knowledge?.vector_hits || 0));
+    const keyword = Math.max(0, Number(knowledge?.keyword_only_hits || 0));
+    const sources = Array.isArray(knowledge?.citations) ? knowledge.citations.length : 0;
+    return `<span class="${cls}">${esc(label)}</span> · ${hits} hit(s) · ${vector} vector · ${keyword} keyword · ${sources} fonte(s)`;
+  }
+
   async function openIntelligence() {
     const r = root();
     const modal = r?.querySelector('.ld2-modal');
@@ -66,7 +77,7 @@
     if (!modal || !card) return;
     modal.classList.add('open');
     card.className = 'ld2-card ld2-cloud-card';
-    card.innerHTML = '<div class="ld2-modal-head"><div><small>BUILD 15 · DECRYPTER INTELLIGENCE</small><h2>Intelligence Core</h2><p>O Decrypter decide; o provider executa.</p></div><button class="ld2-close" type="button" data-b15-close>×</button></div><div class="ld2-modal-body"><p class="ld2-help">Carregando decisão mais recente…</p></div>';
+    card.innerHTML = '<div class="ld2-modal-head"><div><small>DECRYPTER INTELLIGENCE</small><h2>Intelligence Core</h2><p>O Decrypter decide; o provider executa.</p></div><button class="ld2-close" type="button" data-b15-close>×</button></div><div class="ld2-modal-body"><p class="ld2-help">Carregando decisão mais recente…</p></div>';
     $('[data-b15-close]', card).onclick = () => modal.classList.remove('open');
 
     try {
@@ -78,6 +89,7 @@
       const risk = String(last?.risk?.level || '—').toUpperCase();
       const tools = Array.isArray(last?.tool_route?.recommended) ? last.tool_route.recommended.join(' · ') : 'github_repository';
       const skills = Array.isArray(last?.skills?.slugs) && last.skills.slugs.length ? last.skills.slugs.join(' · ') : 'nenhuma registrada';
+      const knowledge = last?.knowledge || { active: false, status: 'degraded', hit_count: 0, citations: [] };
       $('.ld2-modal-body', card).innerHTML = `<div class="ld2-kv">
         <div>Core</div><div><span class="ld2-ul-diag-good">ATIVA</span> · ld-intelligence/1</div>
         <div>Última intenção</div><div>${esc(intent)}</div>
@@ -88,10 +100,10 @@
         <div>Skills</div><div>${esc(skills)}</div>
         <div>Validação</div><div>${last?.validation?.allowed === false ? '<span class="ld2-ul-diag-bad">BLOQUEADA</span>' : '<span class="ld2-ul-diag-good">ATIVA</span>'}</div>
         <div>Provider atual</div><div>${esc(model)} · executor técnico</div>
-        <div>Decrypter Knowledge / RAG</div><div><span class="ld2-ul-diag-warn">BUILD 16 · INATIVO</span></div>
+        <div>Decrypter Knowledge / RAG</div><div>${knowledgeStatusMarkup(knowledge)}</div>
         <div>Model Gateway</div><div><span class="ld2-ul-diag-warn">BUILD 17 · INATIVO</span></div>
         <div>Histórico local</div><div>${Number(s.history?.length || 0)} decisão(ões)</div>
-      </div><p class="ld2-help" style="margin-top:12px">O Execution Brief é criado antes da chamada do provider e define objetivo, intenção, risco, constraints, tool route e validações. Scope Lock, checkpoints, Queue e autoridade de commit continuam independentes e obrigatórios.</p>`;
+      </div><p class="ld2-help" style="margin-top:12px">O Execution Brief é criado antes da chamada do provider e define objetivo, intenção, risco, constraints, tool route e validações. O Knowledge é evidência somente-leitura e nunca substitui o pedido do usuário, Project Rules, Scope Lock, checkpoints, Queue ou autoridade de commit.</p>`;
     } catch (error) {
       $('.ld2-modal-body', card).textContent = error?.message || String(error);
     }
