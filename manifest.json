@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.4.9.1",
-  "version_name": "2.4 Build 9 Hotfix 1",
+  "version": "2.4.9.2",
+  "version_name": "2.4 Build 9 Hotfix 2",
   "description": "AI engineering layer for Lovable projects with signed licenses, GitHub App authorization, Supabase OAuth and Gemini Free/User-Paid modes.",
   "icons": {
     "16": "assets/icon16.png",
@@ -28,7 +28,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.4 Build 9 Hotfix 1 · Boot Safety" },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 9 Hotfix 2 · UI Mount Safety" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -41,6 +41,7 @@
         "content/project-intelligence.js",
         "content/skill-router.js",
         "content/project-rules-cache.js",
+        "content/ui-mount-guardian.js",
         "ui/ui.js",
         "ui/skills-engine.js",
         "ui/control-center.js",
