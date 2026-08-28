@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - rebuild-v2.4-build18-decrypter-local
 
 permissions:
   contents: read
