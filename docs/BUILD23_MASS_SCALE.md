@@ -16,7 +16,7 @@ O Supabase passa a manter apenas estado operacional:
 
 - `ld_inference_pools` — política do pool;
 - `ld_inference_workers` — workers, heartbeat, capacidade e métricas;
-- `ld_inference_jobs` — fila de despacho **sem payload**;
+- `ld_inference_jobs` — fila de despacho sem payload;
 - `ld_inference_leases` — leases atômicos por request;
 - `ld_inference_rate_windows` — limite global por minuto;
 - `ld_inference_scale_decisions` — decisões de autoscaling.
