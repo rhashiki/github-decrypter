@@ -38,7 +38,7 @@
     const github = { ...(settings?.github || {}), ...mapping };
     const sbMapping = projectId ? settings?.supabaseMappings?.[projectId] || {} : {};
     const supabase = { ...(settings?.supabase || {}), ...sbMapping };
-    const guardian = window.LovableDecrypterComposerGuardian?.snapshot?.() || { health: 'INACTIVE', reason: 'guardian_unavailable' };
+    const guardian = window.LovableDecrypterComposerGuardian?.snapshot?.() || { health: 'INACTIVE', reason: 'guardian_unavailable', routingEnabled: false };
     return { settings, license, queueHealth, projectId, context, github, supabase, guardian, modules: modules() };
   }
 
@@ -72,6 +72,7 @@
         <div>GitHub</div><div>${esc(repo)} · ${esc(s.github?.branch || 'main')}</div>
         <div>Supabase</div><div>${esc(sb)}</div>
         <div>Composer Guardian</div><div><span class="${guardianClass}">${esc(guardianHealth)}</span> · ${esc(s.guardian?.reason || '—')}</div>
+        <div>Roteamento</div><div>${s.guardian?.routingEnabled ? '<span class="ld2-ul-diag-good">ON</span>' : '<span class="ld2-ul-diag-bad">OFF</span>'}</div>
         <div>Fingerprint</div><div>${esc(s.guardian?.fingerprintShort || '—')}</div>
         <div>Dispatch verificado</div><div>${s.guardian?.dispatchVerified ? '<span class="ld2-ul-diag-good">SIM</span>' : '<span class="ld2-ul-diag-warn">AINDA NÃO</span>'}</div>
         <div>Composer Bridge</div><div>${state(m.composerBridge)}</div>
@@ -97,10 +98,18 @@
     openDiagnostics();
   }, true);
 
+  function applyFabTruth(root) {
+    const guardian = window.LovableDecrypterComposerGuardian?.snapshot?.() || null;
+    const health = guardian?.routingEnabled === false ? 'bad' : guardian?.health === 'OK' ? 'good' : guardian?.health === 'DEGRADED' ? 'warn' : 'bad';
+    root.dataset.ld2UnifiedHealth = health;
+    root.dataset.ld2Routing = guardian?.routingEnabled === false ? 'off' : 'on';
+  }
+
   function reconcile() {
     const root = document.getElementById(ROOT_ID);
     if (!root) return false;
     root.dataset.ld2Build = '12';
+    applyFabTruth(root);
     const repair = root.querySelector('.ld2-unified-shell [data-ul-action="repair"]');
     if (repair) {
       repair.dataset.ulFuture = '1';
@@ -113,6 +122,7 @@
   window.LovableDecrypterBuild12 = Object.freeze({ modules, snapshot, diagnostics: openDiagnostics, reconcile, build: 12 });
   window.addEventListener('ld2:unified-launcher-ready', reconcile);
   window.addEventListener('ld2:ui-mounted', reconcile);
+  window.addEventListener('ld2:composer-guardian-state', reconcile);
   let attempts = 0;
   const bounded = () => {
     if (reconcile()) return;
