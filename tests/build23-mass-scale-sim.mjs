@@ -40,7 +40,7 @@ for(const metric of ['vllm:num_requests_running','vllm:num_requests_waiting','vl
 assert.match(agent,/\/health/);
 assert.match(agent,/\/v1\/models/);
 assert.match(agent,/\/metrics/);
-assert.doesNotMatch(agent,/requests|httpx|aiohttp/);
+assert.doesNotMatch(agent,/^\s*(?:import|from)\s+(?:requests|httpx|aiohttp)\b/m);
 assert.match(compose,/decrypter-worker-agent:/);
 assert.match(compose,/python:3\.12-slim/);
 
