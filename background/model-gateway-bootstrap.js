@@ -1,5 +1,6 @@
 import { GeminiAgent } from '../ai/gemini-agent.js';
 import { getSettings } from '../storage/settings-store.js';
+import { getModelGatewayStatus } from './model-gateway-client.js';
 import { assertGatewayDecision, publicGatewaySummary } from '../core/model-gateway.js';
 
 const LAST_KEY = 'ld2_gateway_last_v1';
@@ -109,6 +110,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     active: true,
     authority: 'server',
     endpoint: 'ld-model-gateway',
-    crossProviderFallback: false
+    crossProviderFallback: false,
+    async status() { return getModelGatewayStatus(await getSettings()); }
   });
 }
