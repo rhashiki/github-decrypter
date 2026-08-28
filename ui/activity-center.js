@@ -4,7 +4,6 @@
   window.__LOVABLE_DECRYPTER_ACTIVITY_CENTER__ = true;
 
   const ROOT_ID = 'ld2-root';
-  const $ = (selector, root = document) => root.querySelector(selector);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const fmtMs = value => {
     const ms = Math.max(0, Number(value || 0));
@@ -41,9 +40,12 @@
       button.type = 'button';
       button.className = 'ld2-ul-card ld2-activity-entry';
       button.dataset.activityOpen = '1';
-      button.innerHTML = '<span>◉</span><div><b>Activity Center</b><small>Operações, etapas, arquivos e commits reais</small></div><em data-activity-badge>0</em>';
+      button.innerHTML = '<span>◉</span><div><b>Activity Center</b><small>Operações, Knowledge, arquivos e commits reais</small></div><em data-activity-badge>0</em>';
       grid.appendChild(button);
       button.addEventListener('click', open);
+    } else {
+      const small = button.querySelector('small');
+      if (small && small.textContent !== 'Operações, Knowledge, arquivos e commits reais') small.textContent = 'Operações, Knowledge, arquivos e commits reais';
     }
     updateBadge();
     return true;
@@ -60,13 +62,7 @@
   }
 
   function statusLabel(status) {
-    return ({
-      running: 'EXECUTANDO',
-      prepared: 'AGUARDANDO APPLY',
-      completed: 'CONCLUÍDA',
-      failed: 'FALHOU',
-      interrupted: 'INTERROMPIDA'
-    })[status] || String(status || '—').toUpperCase();
+    return ({ running: 'EXECUTANDO', prepared: 'AGUARDANDO APPLY', completed: 'CONCLUÍDA', failed: 'FALHOU', interrupted: 'INTERROMPIDA' })[status] || String(status || '—').toUpperCase();
   }
 
   function statusClass(status) {
@@ -88,22 +84,20 @@
     return items.map(item => {
       const files = Array.isArray(item.files) ? item.files.length : 0;
       const skills = Array.isArray(item.skills) ? item.skills.length : 0;
+      const hits = Math.max(0, Number(item?.rag?.hitCount || 0));
+      const rag = item?.rag?.consulted ? ` · RAG ${hits}` : '';
       const commit = item.commit?.sha ? ` · ${esc(String(item.commit.sha).slice(0, 8))}` : '';
       return `<button type="button" class="ld2-activity-row ${selectedId === item.id ? 'selected' : ''}" data-activity-id="${esc(item.id)}">
         <div class="ld2-activity-row-top"><span class="ld2-activity-state ${statusClass(item.status)}">${statusLabel(item.status)}</span><time>${esc(fmtTime(item.startedAt))}</time></div>
         <b>${esc(item.command || `${item.mode || 'operação'} sem texto`)}</b>
-        <small>${esc(String(item.mode || 'operation').toUpperCase())} · ${esc(item.model || 'modelo não informado')} · ${files} arquivo(s) · ${skills} Skill(s) · ${esc(fmtMs(item.durationMs))}${commit}</small>
+        <small>${esc(String(item.mode || 'operation').toUpperCase())} · ${esc(item.model || 'modelo não informado')} · ${files} arquivo(s) · ${skills} Skill(s)${rag} · ${esc(fmtMs(item.durationMs))}${commit}</small>
       </button>`;
     }).join('');
   }
 
   function stageMarkup(stages = []) {
     if (!stages.length) return '<div class="ld2-activity-empty compact">Nenhuma etapa emitida pelo runtime.</div>';
-    return stages.map(stage => `<div class="ld2-activity-stage">
-      <i class="${stage.status === 'done' ? 'done' : 'active'}"></i>
-      <div><b>${esc(stage.label || stage.stage)}</b><small>${esc(stage.detail || '')}</small></div>
-      <time>${esc(fmtMs(stage.elapsedMs))}</time>
-    </div>`).join('');
+    return stages.map(stage => `<div class="ld2-activity-stage"><i class="${stage.status === 'done' ? 'done' : 'active'}"></i><div><b>${esc(stage.label || stage.stage)}</b><small>${esc(stage.detail || '')}</small></div><time>${esc(fmtMs(stage.elapsedMs))}</time></div>`).join('');
   }
 
   function fileMarkup(files = []) {
@@ -123,11 +117,29 @@
     return `<span>${esc(tokenBits || 'tokens reportados sem detalhamento')} · custo ${esc(cost)}</span>`;
   }
 
+  function ragLabel(rag = {}) {
+    if (!rag.consulted) return 'AGUARDANDO';
+    if (rag.active === false || String(rag.status) === 'degraded') return 'DEGRADADO';
+    const hits = Math.max(0, Number(rag.hitCount || 0));
+    const vector = Math.max(0, Number(rag.vectorHits || 0));
+    const keyword = Math.max(0, Number(rag.keywordOnlyHits || 0));
+    return `${hits} hits · ${vector} vector · ${keyword} keyword`;
+  }
+
+  function knowledgeMarkup(rag = {}) {
+    const citations = Array.isArray(rag.citations) ? rag.citations : [];
+    if (!rag.consulted) return '<span class="ld2-activity-muted">A consulta ao Decrypter Knowledge ainda não terminou.</span>';
+    const summary = `<p class="ld2-activity-warning">${esc(ragLabel(rag))} · ${esc(rag.embeddingModel || 'gte-small')} · ${esc(rag.retrieval || 'hybrid-vector-keyword')}</p>`;
+    if (!citations.length) return `${summary}<span class="ld2-activity-muted">Nenhuma fonte atingiu o limiar desta operação.</span>`;
+    return `${summary}<div class="ld2-activity-files">${citations.map((source, index) => `<span class="ld2-activity-file"><em>${esc(String(source.category || 'DOC').toUpperCase())}</em><b>${esc(source.title || `Fonte ${index + 1}`)}</b><button type="button" data-activity-open-source="${esc(source.url)}">Abrir fonte</button></span>`).join('')}</div>`;
+  }
+
   function detailMarkup(operation) {
     if (!operation) return '<div class="ld2-activity-detail-empty"><b>Selecione uma operação</b><span>O detalhe mostra somente eventos observados de verdade pelo runtime.</span></div>';
     const warnings = Array.isArray(operation.warnings) ? operation.warnings : [];
     const dependencies = Array.isArray(operation.dependencies) ? operation.dependencies : [];
     const skills = Array.isArray(operation.skills) ? operation.skills : [];
+    const rag = operation.rag || {};
     return `<div class="ld2-activity-detail-head">
       <div><span class="ld2-activity-state ${statusClass(operation.status)}">${statusLabel(operation.status)}</span><h3>${esc(operation.command || 'Operação')}</h3><p>${esc(operation.repo || 'repositório não identificado')} · ${esc(operation.branch || 'main')}</p></div>
       <strong>${esc(fmtMs(operation.durationMs))}</strong>
@@ -137,10 +149,11 @@
       <div><small>MODELO</small><b>${esc(operation.model || 'não informado')}</b></div>
       <div><small>PROJECT RULES</small><b>${operation.rulesCount == null ? 'não informado' : Number(operation.rulesCount)}</b></div>
       <div><small>SKILLS</small><b>${skills.length}</b></div>
-      <div><small>RAG</small><b>BUILD 16 · INATIVO</b></div>
+      <div><small>RAG</small><b>${esc(ragLabel(rag))}</b></div>
       <div><small>REQUEST ID</small><b title="${esc(operation.requestId || '')}">${esc(String(operation.requestId || '').slice(0, 12) || '—')}</b></div>
     </div>
     <section><small>SKILLS SELECIONADAS</small><div class="ld2-activity-tags">${skills.length ? skills.map(skill => `<span>${esc(skill)}</span>`).join('') : '<span class="muted">Nenhuma</span>'}</div>${operation.skillWarning ? `<p class="ld2-activity-warning">${esc(operation.skillWarning)}</p>` : ''}</section>
+    <section><small>DECRYPTER KNOWLEDGE / FONTES</small><div class="ld2-activity-telemetry">${knowledgeMarkup(rag)}</div></section>
     <section><small>ARQUIVOS</small><div class="ld2-activity-files">${fileMarkup(operation.files)}</div></section>
     <section><small>TIMELINE REAL</small><div class="ld2-activity-timeline">${stageMarkup(operation.stages)}</div></section>
     <section><small>TELEMETRIA DO MODELO</small><div class="ld2-activity-telemetry">${telemetryMarkup(operation)}</div></section>
@@ -161,7 +174,7 @@
     if (!modal || !card) return;
     modal.classList.add('open');
     card.className = 'ld2-card ld2-activity-card';
-    card.innerHTML = `<div class="ld2-activity-head"><div><small>BUILD 13 · LIVE OPERATIONS</small><h2>Activity Center</h2><p>Sem progresso fake: somente eventos emitidos pelo runtime e resultados confirmados.</p></div><button type="button" data-activity-close>×</button></div>
+    card.innerHTML = `<div class="ld2-activity-head"><div><small>BUILD 16 · LIVE OPERATIONS + KNOWLEDGE</small><h2>Activity Center</h2><p>Sem progresso fake: eventos reais, Knowledge consultado e resultados confirmados.</p></div><button type="button" data-activity-close>×</button></div>
       <div class="ld2-activity-toolbar"><div><button data-activity-filter="all">Todas</button><button data-activity-filter="active">Ativas</button><button data-activity-filter="completed">Concluídas</button><button data-activity-filter="failed">Falhas</button></div><button data-activity-clear>Limpar concluídas</button></div>
       <div class="ld2-activity-layout"><aside data-activity-list></aside><main data-activity-detail></main></div>`;
     card.querySelector('[data-activity-close]').onclick = () => modal.classList.remove('open');
@@ -175,6 +188,8 @@
     card.addEventListener('click', event => {
       const row = event.target.closest?.('[data-activity-id]');
       if (row) { selectedId = row.dataset.activityId; render(); return; }
+      const source = event.target.closest?.('[data-activity-open-source]');
+      if (source) { window.open(source.dataset.activityOpenSource, '_blank', 'noopener,noreferrer'); return; }
       const commit = event.target.closest?.('[data-activity-open-commit]');
       if (commit) window.open(commit.dataset.activityOpenCommit, '_blank', 'noopener,noreferrer');
     });
@@ -211,5 +226,5 @@
   };
   bounded();
 
-  window.LovableDecrypterActivityCenter = Object.freeze({ open, render, install: installCard, build: 13 });
+  window.LovableDecrypterActivityCenter = Object.freeze({ open, render, install: installCard, build: 16 });
 })();
