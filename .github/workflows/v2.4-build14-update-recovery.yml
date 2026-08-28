@@ -1,0 +1,176 @@
+name: Validate v2.4 Build 14 Update Recovery
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build14-update-recovery
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and runtime version
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.14') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 14') throw new Error('Build 14 version_name missing');
+          if(!/Build 14 · Update & Recovery/.test(m.action?.default_title||'')) throw new Error('Build 14 action title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[], css=cs.css||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          for(const f of ['content/build13-reconciliation.js','ui/update-recovery.js','content/build14-reconciliation.js']) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          if(!(js.indexOf('content/build13-reconciliation.js')<js.indexOf('ui/update-recovery.js')&&js.indexOf('ui/update-recovery.js')<js.indexOf('content/build14-reconciliation.js'))) throw new Error('Build 14 load order invalid');
+          if(!css.includes('ui/update-recovery.css')) throw new Error('Update Recovery CSS missing');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.14'" settings/config.js
+
+      - name: JavaScript syntax
+        run: |
+          node --check updates/update-manager.js
+          node --check background/update-recovery-runtime.js
+          node --check background/service-worker-entry.js
+          node --check ui/update-recovery.js
+          node --check content/build14-reconciliation.js
+          node --check content/build12-reconciliation.js
+
+      - name: Signed update integrity contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('updates/update-manager.js','utf8');
+          for(const marker of ['sha256Hex','expectedSha256','actualSha256 !== expectedSha256','fetchSignedRelease','signature_verified: true',"new Set(['stable', 'beta'])",'MAX_RELEASE_BYTES','data:application/zip;base64']) if(!src.includes(marker)) throw new Error(`Update integrity marker missing: ${marker}`);
+          if(!src.includes("throw new Error(`SHA-256 do pacote não confere")) throw new Error('Hash mismatch must fail closed');
+          const fetchAt=src.indexOf('const res = await fetch(downloadUrl');
+          const hashAt=src.indexOf('const actualSha256 = await sha256Hex(bytes)');
+          const downloadAt=src.indexOf('chrome.downloads.download');
+          if(!(fetchAt>=0&&hashAt>fetchAt&&downloadAt>hashAt)) throw new Error('Package must be fetched and hashed before download is exposed');
+          NODE
+
+      - name: Release feed channel and rollback contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('supabase/functions/ld-release-feed/index.ts','utf8');
+          for(const marker of ['CHANNELS=new Set(["stable","beta"])','searchParams.get("channel")','searchParams.get("version")','sha256:String(release.sha256).toLowerCase()','rollback-lookup','let release=await dbRelease']) if(!src.includes(marker)) throw new Error(`Release feed marker missing: ${marker}`);
+          if(src.indexOf('let release=await dbRelease')>src.indexOf('githubStableFallback();')) throw new Error('Database must be authoritative before GitHub fallback');
+          if(!src.includes('Cache-Control":"no-store')) throw new Error('Release feed must not serve stale signed manifests');
+          NODE
+
+      - name: Recovery snapshot and health contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('background/update-recovery-runtime.js','utf8');
+          for(const marker of ['previousVersion: VERSION','backupSettingsRemote','signedCurrentRelease','postUpdateHealth','content_health_report_timeout','delayInMinutes: 2','manual-reinstall-required','LD2_UPDATE_V2_ROLLBACK_DOWNLOAD']) if(!src.includes(marker)) throw new Error(`Recovery marker missing: ${marker}`);
+          if(src.includes('chrome.storage.local.clear(')) throw new Error('Recovery runtime must never wipe all extension storage');
+          for(const critical of ["'uiShell'","'unifiedLauncher'","'composerGuardian'","'executionEngine'"]) if(!src.includes(critical)) throw new Error(`Critical health check missing ${critical}`);
+          NODE
+
+      - name: Repair safety contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('ui/update-recovery.js','utf8');
+          for(const marker of ['deleteCacheStorage','unregisterServiceWorkers','clearIndexedDb','new URL(reg.scope).origin === location.origin',"confirm('Apagar o IndexedDB", "confirm('Desregistrar os Service Workers",'fullRepairArmedUntil = Date.now() + 10000','CONFIRMAR REPARO COMPLETO']) if(!src.includes(marker)) throw new Error(`Repair safety marker missing: ${marker}`);
+          if(/executeRepair\(['\"]full['\"]\)/.test(src.split('document.addEventListener')[0])) throw new Error('Full repair must not execute during module boot');
+          const runtime=fs.readFileSync('background/update-recovery-runtime.js','utf8');
+          if(runtime.includes("'ld2_settings'")) throw new Error('Decrypter cache repair must preserve settings');
+          NODE
+
+      - name: Truth in UI and diagnostics
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const ui=fs.readFileSync('ui/update-recovery.js','utf8');
+          const docs=fs.readFileSync('docs/BUILD14_UPDATE_RECOVERY.md','utf8');
+          const diag=fs.readFileSync('content/build12-reconciliation.js','utf8');
+          if(!ui.includes('Reinstalação manual será necessária')||!docs.includes('cannot use JavaScript to silently install')) throw new Error('Manual install limitation must be explicit');
+          if(diag.includes('BUILD 14 · AINDA NÃO ATIVO')) throw new Error('Diagnostics still falsely says Repair is inactive');
+          if(!diag.includes('Update & Recovery')||!diag.includes('repairLovable: !!window.__LOVABLE_DECRYPTER_UPDATE_RECOVERY_UI__')) throw new Error('Build 14 diagnostic truth missing');
+          const recon=fs.readFileSync('content/build14-reconciliation.js','utf8');
+          if(!recon.includes("badge.textContent = 'ATIVO'")||!recon.includes("root.dataset.ld2Build = '14'")) throw new Error('Launcher reconciliation missing');
+          NODE
+
+      - name: Service worker installation contract
+        run: |
+          grep -q "installUpdateRecoveryRuntime" background/service-worker-entry.js
+          grep -q "./update-recovery-runtime.js" background/service-worker-entry.js
+
+      - name: Preserve validated engines
+        run: |
+          BASE=ef1daef93630e915cc238e0743c807e33e28bb58
+          for path in \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/queue-executor.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            ui/unified-launcher.js \
+            ui/unified-launcher.css \
+            content/live-operations.js \
+            content/activity-cloud-sync.js \
+            ui/activity-center.js \
+            ui/activity-center.css \
+            content/build13-reconciliation.js \
+            background/service-worker.js; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 14 documentation
+        run: |
+          test -f docs/BUILD14_UPDATE_RECOVERY.md
+          grep -q 'Signed update chain' docs/BUILD14_UPDATE_RECOVERY.md
+          grep -q 'Post-update health check' docs/BUILD14_UPDATE_RECOVERY.md
+          grep -q 'Repair Lovable' docs/BUILD14_UPDATE_RECOVERY.md
+          grep -q 'Rollback' docs/BUILD14_UPDATE_RECOVERY.md
+
+      - name: Package Build 14 candidate
+        run: |
+          rm -rf /tmp/ld-build14 && mkdir -p /tmp/ld-build14
+          rsync -a ./ /tmp/ld-build14/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build14/manifest.json
+          test -f /tmp/ld-build14/background/update-recovery-runtime.js
+          test -f /tmp/ld-build14/updates/update-manager.js
+          test -f /tmp/ld-build14/ui/update-recovery.js
+          test -f /tmp/ld-build14/ui/update-recovery.css
+          test -f /tmp/ld-build14/content/build14-reconciliation.js
+          cd /tmp/ld-build14
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip > Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip | grep -q ' background/update-recovery-runtime.js$'
+          unzip -l Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip | grep -q ' ui/update-recovery.js$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip | grep -q ' supabase/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY
+          path: |
+            Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.zip
+            Lovable-Decrypter-v2.4-BUILD14-UPDATE-RECOVERY.sha256
+          if-no-files-found: error
