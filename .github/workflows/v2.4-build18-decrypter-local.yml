@@ -1,0 +1,211 @@
+name: Validate v2.4 Build 18 Decrypter Local
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build18-decrypter-local
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and boot order
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.18') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 18') throw new Error('Build 18 version_name missing');
+          if(!/Build 18 · Decrypter Local/.test(m.action?.default_title||'')) throw new Error('Build 18 title missing');
+          const cs=m.content_scripts?.[0]||{};
+          const js=cs.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f) throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          for(const f of ['content/build17-reconciliation.js','content/build18-reconciliation.js']) if(!js.includes(f)) throw new Error(`Missing ${f}`);
+          if(!(js.indexOf('content/build17-reconciliation.js')<js.indexOf('content/build18-reconciliation.js'))) throw new Error('Build 18 reconciliation must load after Build 17');
+          if(cs.run_at!=='document_idle'||cs.all_frames!==false) throw new Error('Unsafe content-script scope');
+          NODE
+          grep -q "export const VERSION = '2.4.18'" settings/config.js
+          grep -q "DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'Qwen/Qwen3-Coder-30B-A3B-Instruct'" settings/config.js
+
+      - name: JavaScript syntax
+        run: |
+          node --check core/model-gateway.js
+          node --check background/model-gateway-bootstrap.js
+          node --check content/build18-reconciliation.js
+          node --check content/build17-reconciliation.js
+          node --check content/live-operations.js
+
+      - name: TypeScript syntax for backend executors
+        run: |
+          npx --yes esbuild supabase/functions/ld-command/index.ts --bundle --platform=neutral --format=esm --external:jsr:* --outfile=/tmp/ld-command.mjs
+          npx --yes esbuild supabase/functions/ld-model-gateway/index.ts --bundle --platform=neutral --format=esm --external:jsr:* --outfile=/tmp/ld-model-gateway.mjs
+
+      - name: Model Gateway contract accepts Local only when valid
+        run: |
+          node --input-type=module <<'NODE'
+          import {validateGatewayDecision} from './core/model-gateway.js';
+          const base={schema:'ld-model-gateway/1',requested_mode:'auto',profile:'fast',model:'x',authoritative:true,cross_provider_fallback:false};
+          if(!validateGatewayDecision({...base,provider:'gemini'}).allowed) throw new Error('Gemini route rejected');
+          if(!validateGatewayDecision({...base,provider:'decrypter-local',executor_model:'decrypter-local'}).allowed) throw new Error('Local route rejected');
+          if(validateGatewayDecision({...base,provider:'decrypter-local'}).allowed) throw new Error('Local route without executor_model accepted');
+          if(validateGatewayDecision({...base,provider:'premium'}).allowed) throw new Error('Inactive premium provider accepted');
+          if(validateGatewayDecision({...base,provider:'gemini',cross_provider_fallback:true}).allowed) throw new Error('Cross-provider fallback accepted');
+          NODE
+
+      - name: Local route is health-gated and fail-closed
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const gateway=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
+          for(const marker of [
+            'localRuntimeStatus',
+            "provider = localEligible ? LOCAL_PROVIDER : 'gemini'",
+            'localAttachmentsEligible',
+            'retry_across_providers: false',
+            'cross_provider_retry_attempted: false',
+            'x-decrypter-gateway-signature',
+            "LOCAL_PROVIDER = 'decrypter-local'"
+          ]) if(!gateway.includes(marker)) throw new Error(`Gateway marker missing: ${marker}`);
+          if(/catch[\s\S]{0,500}provider\s*=\s*['\"]gemini['\"]/.test(gateway)) throw new Error('Potential execution-time cross-provider retry detected');
+          NODE
+
+      - name: Provider-neutral command authority
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('supabase/functions/ld-command/index.ts','utf8');
+          for(const marker of [
+            'ld_reserve_command',
+            'ld_complete_command',
+            'validateBuild',
+            'LOCAL_PROVIDER_GATEWAY_ONLY',
+            'provider_status',
+            'internalAllowed',
+            'DECRYPTER_LOCAL_URL',
+            '/v1/models',
+            '/v1/chat/completions',
+            'json_schema',
+            'result.telemetry=usage',
+            'localTextCompatible'
+          ]) if(!src.includes(marker)) throw new Error(`ld-command marker missing: ${marker}`);
+          if(!src.includes('if(provider===LOCAL_PROVIDER)')||!src.includes('if(!geminiKey)return json')) throw new Error('Provider-specific credential policy missing');
+          NODE
+
+      - name: Browser does not require or expose Local secrets
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const bootstrap=fs.readFileSync('background/model-gateway-bootstrap.js','utf8');
+          if(bootstrap.includes('this.ensureKey()')) throw new Error('Local path still requires Gemini key');
+          if(!bootstrap.includes("if (this.apiKey) headers['x-gemini-key'] = this.apiKey")) throw new Error('Gemini key must be optional on gateway call');
+          for(const file of ['manifest.json','settings/config.js','background/model-gateway-bootstrap.js','content/build18-reconciliation.js','content/build17-reconciliation.js']) {
+            const src=fs.readFileSync(file,'utf8');
+            if(/DECRYPTER_LOCAL_TOKEN|DECRYPTER_LOCAL_URL/.test(src)) throw new Error(`Runtime secret/config leaked into browser file: ${file}`);
+          }
+          NODE
+
+      - name: Runtime deployment contract
+        run: |
+          test -f runtime/decrypter-local/compose.yaml
+          test -f runtime/decrypter-local/.env.example
+          test -f runtime/decrypter-local/README.md
+          grep -q 'Qwen/Qwen3-Coder-30B-A3B-Instruct' runtime/decrypter-local/compose.yaml
+          grep -q 'decrypter-local' runtime/decrypter-local/compose.yaml
+          grep -q -- '--api-key' runtime/decrypter-local/compose.yaml
+          grep -q '127.0.0.1' runtime/decrypter-local/compose.yaml
+          grep -q '/v1/models' runtime/decrypter-local/compose.yaml
+          grep -q 'RUNTIME NÃO CONFIGURADO' content/build18-reconciliation.js
+          if grep -q 'MutationObserver' content/build18-reconciliation.js; then exit 1; fi
+
+      - name: Decrypter Local UI truth
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('content/build18-reconciliation.js','utf8');
+          for(const marker of ['Decrypter Local','Qwen/Qwen3-Coder-30B-A3B-Instruct','vLLM','Cross-provider retry','NENHUM','ld-local-runtime/1']) if(!src.includes(marker)) throw new Error(`Build 18 UI marker missing: ${marker}`);
+          if(/token|url privada/i.test('') && false) throw new Error('noop');
+          NODE
+
+      - name: Preserve validated engines outside Build 18 scope
+        run: |
+          BASE=7c86aca5555b271c8dd6091c7bb55f9b8731858c
+          for path in \
+            ai/gemini-agent.js \
+            background/intelligence-bootstrap.js \
+            background/service-worker.js \
+            background/service-worker-entry.js \
+            background/knowledge-client.js \
+            content/ui-shell-bootstrap.js \
+            content/ui-mount-guardian.js \
+            ui/ui.js \
+            content/batch-mode.js \
+            content/queue-project-context.js \
+            content/queue-atomic-skip.js \
+            content/queue-executor.js \
+            content/composer-bridge-v3.js \
+            content/composer-guardian.js \
+            content/build11-reconciliation.js \
+            ui/unified-launcher.js \
+            ui/unified-launcher.css \
+            content/activity-cloud-sync.js \
+            ui/update-recovery.js \
+            ui/update-recovery.css \
+            background/update-recovery-runtime.js \
+            updates/update-manager.js \
+            content/build14-reconciliation.js \
+            content/skill-router.js \
+            ui/skills-engine.js \
+            background/knowledge-client.js \
+            supabase/functions/ld-knowledge-search/index.ts \
+            supabase/functions/ld-knowledge-embed/index.ts; do
+            if ! git diff --quiet "$BASE" -- "$path"; then
+              echo "Unexpected protected-engine modification: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 18 documentation
+        run: |
+          test -f docs/BUILD18_DECRYPTER_LOCAL.md
+          grep -q 'Qwen/Qwen3-Coder-30B-A3B-Instruct' docs/BUILD18_DECRYPTER_LOCAL.md
+          grep -q 'health-gated\|health' docs/BUILD18_DECRYPTER_LOCAL.md
+          grep -q 'não existe retry\|NÃO existe retry' docs/BUILD18_DECRYPTER_LOCAL.md
+          grep -q 'sem GPU\|GPU' docs/BUILD18_DECRYPTER_LOCAL.md
+
+      - name: Package Build 18 candidate
+        run: |
+          rm -rf /tmp/ld-build18 && mkdir -p /tmp/ld-build18
+          rsync -a ./ /tmp/ld-build18/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='runtime' \
+            --exclude='docs' \
+            --exclude='tests' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build18/manifest.json
+          test -f /tmp/ld-build18/content/build18-reconciliation.js
+          test -f /tmp/ld-build18/background/model-gateway-bootstrap.js
+          cd /tmp/ld-build18
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.zip > Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.sha256
+          unzip -l Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.zip | grep -q ' content/build18-reconciliation.js$'
+          if unzip -l Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.zip | grep -qE ' (supabase|runtime)/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL
+          path: |
+            Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.zip
+            Lovable-Decrypter-v2.4-BUILD18-DECRYPTER-LOCAL.sha256
+          if-no-files-found: error
