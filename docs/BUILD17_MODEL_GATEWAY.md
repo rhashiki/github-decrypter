@@ -12,6 +12,8 @@ O Gateway não substitui o Intelligence. Ele recebe o Execution Brief já classi
 
 ## Autoridade
 
+O Model Gateway é **server-authoritative**: a decisão final de provider/modelo pertence ao backend.
+
 A rota oficial de Plan/Build não chama mais `ld-command` diretamente no cliente.
 
 `GeminiAgent.backendCommand` é envolvido por `background/model-gateway-bootstrap.js` e envia a execução para `ld-model-gateway`.
