@@ -39,7 +39,7 @@ jobs:
         run: |
           node --check tests/build23-mass-scale-sim.mjs
           python -m py_compile runtime/decrypter-local/worker-agent.py
-          npx --yes esbuild supabase/functions/ld-local-router/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-local-router.js
+          npx --yes esbuild supabase/functions/ld-command/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-command.js
           npx --yes esbuild supabase/functions/ld-local-control/index.ts --bundle --platform=neutral --external:jsr:* --outfile=/tmp/ld-local-control.js
 
       - name: Mass-scale executable simulations
@@ -49,8 +49,8 @@ jobs:
         run: |
           grep -qi 'for update skip locked' supabase/migrations/20260828234500_build23_mass_scale.sql
           grep -q "payload_persisted',false" supabase/migrations/20260828234500_build23_mass_scale.sql
-          grep -q 'ld_claim_inference_worker' supabase/functions/ld-local-router/index.ts
-          grep -q 'ld_finish_inference_job' supabase/functions/ld-local-router/index.ts
+          grep -q 'ld_claim_inference_worker' supabase/functions/ld-command/index.ts
+          grep -q 'ld_finish_inference_job' supabase/functions/ld-command/index.ts
           node <<'NODE'
           const fs=require('fs');
           const s=fs.readFileSync('supabase/migrations/20260828234500_build23_mass_scale.sql','utf8');
@@ -71,17 +71,16 @@ jobs:
             exit 1
           fi
 
-      - name: Router preserves Build 18 contract
+      - name: Direct Local dispatch preserves provider contract
         run: |
-          grep -q "endsWith('/v1/models')" supabase/functions/ld-local-router/index.ts
-          grep -q "endsWith('/v1/chat/completions')" supabase/functions/ld-local-router/index.ts
-          grep -q 'DECRYPTER_LOCAL_TOKEN' supabase/functions/ld-local-router/index.ts
-          grep -q 'LOCAL_STREAMING_DISABLED' supabase/functions/ld-local-router/index.ts
-          grep -q "health-demand',true" supabase/functions/ld-local-router/index.ts
-          if grep -Eq 'generativelanguage\.googleapis\.com|cross.provider.*retry' supabase/functions/ld-local-router/index.ts; then
-            echo 'Router must not implement provider fallback'
-            exit 1
-          fi
+          grep -q 'const LOCAL_PROVIDER="decrypter-local"' supabase/functions/ld-command/index.ts
+          grep -q 'const LOCAL_POOL="decrypter-local-primary"' supabase/functions/ld-command/index.ts
+          grep -q 'runtime:await localHealth(sb)' supabase/functions/ld-command/index.ts
+          grep -q 'ld_enqueue_inference_job' supabase/functions/ld-command/index.ts
+          grep -q 'ld_claim_inference_worker' supabase/functions/ld-command/index.ts
+          grep -q 'fetch(`${exec.url}/v1/chat/completions`' supabase/functions/ld-command/index.ts
+          grep -q 'legacyLocalConfig' supabase/functions/ld-command/index.ts
+          test ! -e supabase/functions/ld-local-router/index.ts
 
       - name: Worker health and observability contract
         run: |
@@ -89,33 +88,40 @@ jobs:
           grep -q 'vllm:num_requests_running' runtime/decrypter-local/worker-agent.py
           grep -q 'vllm:num_requests_waiting' runtime/decrypter-local/worker-agent.py
           grep -q 'vllm:kv_cache_usage_perc' runtime/decrypter-local/worker-agent.py
+          grep -q 'DECRYPTER_WORKER_INSTANCE_KEY") or socket.gethostname()' runtime/decrypter-local/worker-agent.py
           grep -q 'decrypter-worker-agent:' runtime/decrypter-local/compose.yaml
           grep -q "u.protocol!=='https:'" supabase/functions/ld-local-control/index.ts
           grep -q "reconcile(sb,'heartbeat')" supabase/functions/ld-local-control/index.ts
 
       - name: Provider-neutral autoscaling contract
         run: |
-          grep -q 'DECRYPTER_GPU_SCALER_URL' supabase/functions/ld-local-router/index.ts
+          grep -q 'DECRYPTER_GPU_SCALER_URL' supabase/functions/ld-command/index.ts
+          grep -q 'DECRYPTER_GPU_SCALER_TOKEN' supabase/functions/ld-command/index.ts
+          grep -q 'schema:"ld-gpu-scale/1"' supabase/functions/ld-command/index.ts
           grep -q 'DECRYPTER_GPU_SCALER_TOKEN' supabase/functions/ld-local-control/index.ts
-          grep -q "schema:'ld-gpu-scale/1'" supabase/functions/ld-local-router/index.ts
           grep -q 'provider_neutral:true' supabase/functions/ld-local-control/index.ts
           grep -q 'scale_down_cooldown_seconds' supabase/migrations/20260828234500_build23_mass_scale.sql
           grep -q 'HEARTBEAT_EXPIRED' supabase/migrations/20260828234600_build23_pool_health_gc.sql
 
-      - name: Avoid nested Edge Function fan-out
+      - name: Avoid nested Edge Function inference fan-out
         run: |
-          if grep -E '/functions/v1/' supabase/functions/ld-local-router/index.ts supabase/functions/ld-local-control/index.ts; then
-            echo 'Build 23 control plane should call DB RPCs or external workers/actuator, not nested Edge Functions'
+          if grep -E '/functions/v1/ld-local-(router|control)' supabase/functions/ld-command/index.ts supabase/functions/ld-local-control/index.ts; then
+            echo 'Inference/control path must not call another Decrypter Edge Function'
             exit 1
           fi
+          test ! -e supabase/functions/ld-local-router/index.ts
 
       - name: Preserve execution and gateway authority
         run: |
           BASE=8dc966a438b72424217c305b57a39799e5533c13
-          git diff --quiet "$BASE"...HEAD -- supabase/functions/ld-command/index.ts
           git diff --quiet "$BASE"...HEAD -- supabase/functions/ld-model-gateway/index.ts
           grep -q 'cross_provider_fallback:false' supabase/functions/ld-model-gateway/index.ts
+          grep -q 'trust_attestation_required:true' supabase/functions/ld-model-gateway/index.ts
           grep -q 'MODEL_GATEWAY_REQUIRED' supabase/functions/ld-command/index.ts
+          grep -q 'ld_reserve_command' supabase/functions/ld-command/index.ts
+          grep -q 'ld_complete_command' supabase/functions/ld-command/index.ts
+          grep -q 'https://generativelanguage.googleapis.com/v1beta/interactions' supabase/functions/ld-command/index.ts
+          grep -q 'store:false' supabase/functions/ld-command/index.ts
 
       - name: No invasive browser changes or leaked backend secrets
         run: |
@@ -136,7 +142,7 @@ jobs:
           FAILED=0
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/v2.4-build23-mass-scale.yml|manifest.json|settings/config.js|runtime/decrypter-local/.env.example|runtime/decrypter-local/README.md|runtime/decrypter-local/compose.yaml|runtime/decrypter-local/worker-agent.py|supabase/functions/ld-local-router/index.ts|supabase/functions/ld-local-control/index.ts|supabase/migrations/20260828234500_build23_mass_scale.sql|supabase/migrations/20260828234600_build23_pool_health_gc.sql|docs/BUILD23_MASS_SCALE.md|tests/build23-mass-scale-sim.mjs) ;;
+              .github/workflows/v2.4-build23-mass-scale.yml|manifest.json|settings/config.js|runtime/decrypter-local/.env.example|runtime/decrypter-local/README.md|runtime/decrypter-local/compose.yaml|runtime/decrypter-local/worker-agent.py|supabase/functions/ld-command/index.ts|supabase/functions/ld-local-control/index.ts|supabase/migrations/20260828234500_build23_mass_scale.sql|supabase/migrations/20260828234600_build23_pool_health_gc.sql|docs/BUILD23_MASS_SCALE.md|tests/build23-mass-scale-sim.mjs) ;;
               *) echo "Unexpected Build 23 modification: $path"; FAILED=1 ;;
             esac
           done < <(git diff --name-only "$BASE"...HEAD)
@@ -148,6 +154,7 @@ jobs:
           grep -q 'scale-to-zero' -i docs/BUILD23_MASS_SCALE.md
           grep -q 'provider-neutral' -i docs/BUILD23_MASS_SCALE.md
           grep -q 'não publica OTA/release oficial automaticamente' docs/BUILD23_MASS_SCALE.md
+          grep -q 'não adiciona um salto entre Edge Functions' docs/BUILD23_MASS_SCALE.md
 
       - name: Package Build 23 candidate
         run: |
