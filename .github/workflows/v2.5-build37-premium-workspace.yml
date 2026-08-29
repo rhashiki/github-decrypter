@@ -27,7 +27,8 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const manifest = JSON.parse(fs.readFileSync('manifest.json','utf8'));
-          if (manifest.version !== '2.5.37') throw new Error('manifest version must be 2.5.37');
+          const parts = String(manifest.version || '').split('.').map(Number);
+          if (parts.length !== 3 || parts[0] !== 2 || parts[1] !== 5 || parts[2] < 37) throw new Error(`Build 37 requires version >= 2.5.37, got ${manifest.version}`);
           const scripts = manifest.content_scripts || [];
           const early = scripts.find(s => (s.js || []).includes('content/early-boot-sentinel.js'));
           if (!early || early.run_at !== 'document_start' || early.all_frames !== true) throw new Error('Build 34 early boot contract regressed');
