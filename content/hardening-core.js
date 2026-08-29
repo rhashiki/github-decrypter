@@ -54,8 +54,11 @@
     });
   }
 
-  function evaluateHardening({ online = true, routingEnabled = true, chat = null, capabilitySummary = null } = {}) {
+  function evaluateHardening({ online = true, routingEnabled = true, chat = null, capabilitySummary = null, integrity = undefined } = {}) {
     if (!routingEnabled) return Object.freeze({ phase: 'READY', reason: 'native_mode', failClosed: false });
+    if (integrity && text(integrity.status).toLowerCase() !== 'ready') {
+      return Object.freeze({ phase: 'LOCKED', reason: 'runtime_integrity_broken', failClosed: true });
+    }
     if (!online) return Object.freeze({ phase: 'LOCKED', reason: 'offline', failClosed: true });
 
     const chatPhase = text(chat?.phase).toUpperCase();
@@ -88,6 +91,7 @@
 
   window.LovableDecrypterHardeningCore = Object.freeze({
     build: 31,
+    integrityBuild: 44,
     schema: 'ld-hardening-core/1',
     capabilityIds: CAPABILITY_IDS,
     normalizeCapability,
