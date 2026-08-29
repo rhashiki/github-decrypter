@@ -35,7 +35,10 @@ jobs:
           if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('Build 45 runtime wiring missing');
           if(!(main.css||[]).includes('ui/chat-activation-premium-v45.css')) throw new Error('Build 45 CSS wiring missing');
           if(main.js.indexOf('ui/lightweight-runtime-delivery.js')>main.js.indexOf('ui/chat-activation-premium-v45.js')) throw new Error('Build 45 must load after shared scheduler');
-          if(main.css.at(-1)!=='ui/chat-activation-premium-v45.css') throw new Error('Build 45 CSS must load last');
+          const css45=main.css.indexOf('ui/chat-activation-premium-v45.css');
+          const css46=main.css.indexOf('ui/launcher-premium-v46.css');
+          if(css45<0) throw new Error('Build 45 CSS missing');
+          if(css46>=0 && css45>css46) throw new Error('Build 45 CSS must precede the later Build 46 launcher override');
           if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
           NODE
 
