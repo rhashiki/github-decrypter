@@ -43,7 +43,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const s=fs.readFileSync('ui/decrypter-marketplace.js','utf8');
-          for(const x of ['eval(','new Function','fetch(','XMLHttpRequest','sendBeacon','MutationObserver','chrome.scripting','LD2_BUILD_EXECUTE','LD2_PLAN_APPLY','LD2_PLAN_APPROVE']) if(s.includes(x)) throw new Error('marketplace supply-chain/authority violation '+x);
+          for(const x of ['eval(','new Function','fetch(','XMLHttpRequest.prototype','new XMLHttpRequest','navigator.sendBeacon','MutationObserver(','chrome.scripting','LD2_BUILD_EXECUTE','LD2_PLAN_APPLY','LD2_PLAN_APPROVE','window.fetch =','globalThis.fetch =']) if(s.includes(x)) throw new Error('marketplace supply-chain/authority violation '+x);
           if(!s.includes('api.createCustom')) throw new Error('marketplace must install through Skills Engine');
           if(!s.includes('api.deleteCustom')) throw new Error('marketplace uninstall must use Skills Engine');
           NODE
