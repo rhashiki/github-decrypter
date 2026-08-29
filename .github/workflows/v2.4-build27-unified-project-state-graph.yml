@@ -108,7 +108,7 @@ jobs:
           FAILED=0
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/v2.4-build27-unified-project-state-graph.yml|background/project-state-runtime.js|background/service-worker-entry.js|content/project-state-graph-core.js|content/unified-project-state-graph.js|docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md|manifest.json|settings/config.js|supabase/functions/ld-project-state/index.ts|tests/build27-unified-project-state-graph.mjs) ;;
+              .github/workflows/v2.4-build27-unified-project-state-graph.yml|background/project-state-runtime.js|background/service-worker-entry.js|content/project-state-graph-core.js|content/unified-project-state-graph.js|docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md|manifest.json|settings/config.js|supabase/functions/ld-project-state/index.ts|tests/build26-lovable-workspace-deep-read.mjs|tests/build27-unified-project-state-graph.mjs) ;;
               *) echo "Unexpected Build 27 modification: $path"; FAILED=1 ;;
             esac
           done < <(git diff --name-only "$BASE"...HEAD)

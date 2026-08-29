@@ -7,10 +7,11 @@ const source = fs.readFileSync('content/lovable-workspace-deep-read.js', 'utf8')
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const config = fs.readFileSync('settings/config.js', 'utf8');
 
-assert.equal(manifest.version, '2.4.26');
-assert.equal(manifest.version_name, '2.4 Build 26 · Workspace Deep Read');
-assert.match(manifest.action.default_title, /Build 26 · Workspace Deep Read/);
-assert.match(config, /export const VERSION = '2\.4\.26'/);
+const versionParts = String(manifest.version || '').split('.').map(Number);
+assert.equal(versionParts[0], 2);
+assert.equal(versionParts[1], 4);
+assert.ok(versionParts[2] >= 26, 'Current v2.4 build must preserve Build 26');
+assert.match(config, /export const VERSION = '2\.4\.\d+'/);
 assert.match(config, /export const TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 
 const scripts = manifest.content_scripts?.[0]?.js || [];
@@ -198,6 +199,7 @@ assert.ok(dispatched.some(event => event.type === 'ld2:workspace-zip-progress'))
 console.log(JSON.stringify({
   ok: true,
   build: 26,
+  current_version: manifest.version,
   source: 'lovable_workspace',
   files: snapshot.stats.fileCount,
   zipBytes: zipBytes.length,
