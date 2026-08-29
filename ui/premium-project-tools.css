@@ -1,0 +1,369 @@
+/* Lovable Decrypter · v2.5 Build 39 · Premium Project Tools */
+#ld2-root [data-ld2-project-context][data-ld39-premium-project="1"]{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(123,220,255,.16);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(117,220,255,.12),transparent 38%),
+    linear-gradient(145deg,rgba(11,22,43,.94),rgba(8,15,31,.90));
+  box-shadow:0 18px 48px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+#ld2-root .ld39-project-tools{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin:14px 0 0;
+  padding:14px 15px;
+  border-top:1px solid rgba(117,220,255,.10);
+  background:linear-gradient(90deg,rgba(117,220,255,.045),rgba(141,111,255,.035));
+}
+
+#ld2-root .ld39-project-tools-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+#ld2-root .ld39-project-tools-copy small{
+  color:#75dcff;
+  font-size:10px;
+  line-height:1.2;
+  letter-spacing:.16em;
+  font-weight:800;
+}
+
+#ld2-root .ld39-project-tools-copy b{
+  color:#eef8ff;
+  font-size:13px;
+  line-height:1.35;
+}
+
+#ld2-root .ld39-project-tools-copy span{
+  max-width:360px;
+  color:#8fa6ba;
+  font-size:11px;
+  line-height:1.35;
+}
+
+#ld2-root .ld39-project-tools-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+#ld2-root .ld39-project-tools-actions button{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  padding:7px 11px;
+  border:1px solid rgba(132,184,214,.16);
+  border-radius:11px;
+  background:rgba(13,27,49,.72);
+  color:#c8d9e7;
+  font:700 11px/1.1 Arial,sans-serif;
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease;
+}
+
+#ld2-root .ld39-project-tools-actions button:hover{
+  transform:translateY(-1px);
+  color:#f4fbff;
+  border-color:rgba(117,220,255,.34);
+  background:rgba(20,44,75,.88);
+  box-shadow:0 8px 22px rgba(24,155,209,.10);
+}
+
+#ld2-root .ld39-project-tools-actions button em{
+  position:absolute;
+  top:-7px;
+  right:-6px;
+  min-width:26px;
+  padding:3px 5px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.10);
+  background:#15263b;
+  color:#a9c3d7;
+  box-shadow:0 4px 12px rgba(0,0,0,.22);
+  font:800 8px/1 Arial,sans-serif;
+  letter-spacing:.06em;
+}
+
+#ld2-root .ld39-project-tools-actions button em[data-ld39-risk="low"]{color:#8ee6c4;background:rgba(18,65,58,.94)}
+#ld2-root .ld39-project-tools-actions button em[data-ld39-risk="medium"]{color:#ffd58b;background:rgba(80,57,18,.96)}
+#ld2-root .ld39-project-tools-actions button em[data-ld39-risk="high"]{color:#ffb083;background:rgba(85,39,24,.96)}
+#ld2-root .ld39-project-tools-actions button em[data-ld39-risk="critical"]{color:#ff9fa7;background:rgba(88,25,35,.96)}
+
+#ld2-root .ld2-cc-card[data-ld39-project-tool]{
+  border-color:rgba(117,220,255,.13);
+  background:linear-gradient(145deg,rgba(17,33,58,.86),rgba(10,22,42,.78));
+}
+
+#ld2-root .ld2-cc-card[data-ld39-project-tool]:hover{
+  border-color:rgba(117,220,255,.32);
+  box-shadow:0 12px 30px rgba(30,154,210,.08);
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal]{
+  width:min(900px,calc(100vw - 44px));
+  max-width:900px;
+  max-height:min(82vh,790px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(117,220,255,.20);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 80% -20%,rgba(117,220,255,.12),transparent 34%),
+    linear-gradient(150deg,rgba(10,21,40,.985),rgba(7,14,29,.98));
+  box-shadow:0 32px 80px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-cloud-head{
+  flex:0 0 auto;
+  padding:22px 24px 16px;
+  border-bottom:0;
+  background:transparent;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-cloud-head small{
+  color:#75dcff;
+  letter-spacing:.15em;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-cloud-head h2{
+  margin-top:5px;
+  color:#f0f8ff;
+  font-size:24px;
+  letter-spacing:-.025em;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-cloud-head p{
+  max-width:620px;
+  margin-top:5px;
+  color:#8fa7bb;
+}
+
+#ld2-root .ld39-project-modal-tabs{
+  flex:0 0 auto;
+  display:flex;
+  gap:5px;
+  margin:0 24px;
+  padding:5px;
+  border:1px solid rgba(126,179,211,.12);
+  border-radius:14px;
+  background:rgba(4,12,26,.56);
+}
+
+#ld2-root .ld39-project-modal-tabs button{
+  flex:1 1 0;
+  min-width:0;
+  min-height:36px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#8099ad;
+  font:700 11px/1 Arial,sans-serif;
+  cursor:pointer;
+  transition:background .16s ease,color .16s ease,box-shadow .16s ease;
+}
+
+#ld2-root .ld39-project-modal-tabs button:hover{
+  color:#d8ecf8;
+  background:rgba(117,220,255,.06);
+}
+
+#ld2-root .ld39-project-modal-tabs button[data-active="1"]{
+  color:#eaf9ff;
+  background:linear-gradient(135deg,rgba(40,112,154,.42),rgba(72,91,170,.30));
+  box-shadow:inset 0 0 0 1px rgba(117,220,255,.17),0 6px 18px rgba(0,0,0,.15);
+}
+
+#ld2-root .ld39-project-modal-meta{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  margin:10px 24px 0;
+  padding:9px 12px;
+  border-bottom:1px solid rgba(126,179,211,.10);
+  color:#738da2;
+}
+
+#ld2-root .ld39-project-modal-meta span{
+  color:#75dcff;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.13em;
+}
+
+#ld2-root .ld39-project-modal-meta b{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#91a9bb;
+  font-size:10px;
+  font-weight:500;
+}
+
+#ld2-root .ld39-project-modal-meta em{
+  color:#607b90;
+  font:700 9px/1 Arial,sans-serif;
+  font-style:normal;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-loading,
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-empty,
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-history-list,
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > [data-rules-body]{
+  overflow:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(117,220,255,.28) transparent;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-loading{
+  min-height:210px;
+  padding:34px 24px;
+  color:#91a9bc;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-empty{
+  margin:16px 24px 12px;
+  padding:18px;
+  border:1px solid rgba(121,177,210,.12);
+  border-radius:16px;
+  background:rgba(9,22,41,.62);
+  color:#a8bdcc;
+  line-height:1.62;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-empty b{
+  color:#eef8ff;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-list{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  padding:16px 24px 22px;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row{
+  margin:0;
+  padding:13px 14px;
+  border:1px solid rgba(126,179,211,.12);
+  border-radius:14px;
+  background:rgba(10,25,46,.68);
+  box-shadow:none;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row:hover{
+  border-color:rgba(117,220,255,.24);
+  background:rgba(14,31,55,.80);
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row.status-critical{border-color:rgba(255,100,117,.28)}
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row.status-high{border-color:rgba(255,151,94,.23)}
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row.status-medium{border-color:rgba(255,204,112,.20)}
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-row.status-low{border-color:rgba(96,218,179,.18)}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#718ba0;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-meta b{
+  color:#75dcff;
+  font-size:9px;
+  letter-spacing:.08em;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] [data-rules-body]{
+  padding:16px 24px 22px;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  margin:0 0 12px;
+  padding:12px;
+  border:1px solid rgba(117,220,255,.13);
+  border-radius:15px;
+  background:rgba(10,27,49,.68);
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-row textarea{
+  min-height:54px;
+  resize:vertical;
+  border:1px solid rgba(126,179,211,.14);
+  border-radius:11px;
+  background:rgba(3,11,24,.55);
+  color:#dcebf4;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-footer{
+  flex:0 0 auto;
+  display:flex;
+  justify-content:flex-end;
+  padding:0 24px 22px;
+}
+
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] button.primary{
+  border-color:rgba(117,220,255,.30);
+  background:linear-gradient(135deg,#197aa8,#5c5fb4);
+  color:#fff;
+  box-shadow:0 9px 22px rgba(25,112,163,.19);
+}
+
+#ld2-root .ld39-project-tools button:focus-visible,
+#ld2-root .ld39-project-modal-tabs button:focus-visible,
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] button:focus-visible,
+#ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] textarea:focus-visible{
+  outline:2px solid #75dcff;
+  outline-offset:2px;
+}
+
+@media (max-width:760px){
+  #ld2-root .ld39-project-tools{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  #ld2-root .ld39-project-tools-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #ld2-root .ld39-project-tools-actions button{width:100%}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal]{
+    width:calc(100vw - 20px);
+    max-height:calc(100vh - 20px);
+    border-radius:18px;
+  }
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-cloud-head{padding:18px 16px 13px}
+  #ld2-root .ld39-project-modal-tabs{margin:0 16px}
+  #ld2-root .ld39-project-modal-meta{margin:9px 16px 0;grid-template-columns:auto 1fr}
+  #ld2-root .ld39-project-modal-meta em{display:none}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] > .ld2-cloud-empty{margin:14px 16px 10px}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-history-list,
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] [data-rules-body]{padding:14px 16px 18px}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-row{grid-template-columns:1fr}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-row > span{display:none}
+  #ld2-root .ld2-card.project-intelligence[data-ld39-project-modal] .ld2-fragment-footer{padding:0 16px 18px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  #ld2-root .ld39-project-tools-actions button,
+  #ld2-root .ld39-project-modal-tabs button{transition:none!important}
+}
