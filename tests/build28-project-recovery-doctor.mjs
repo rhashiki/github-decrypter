@@ -8,9 +8,10 @@ const coreSource = fs.readFileSync('content/project-recovery-doctor-core.js', 'u
 const runtimeSource = fs.readFileSync('content/project-recovery-doctor.js', 'utf8');
 const edge = fs.readFileSync('supabase/functions/ld-project-state/index.ts', 'utf8');
 
-assert.equal(manifest.version, '2.4.28');
-assert.equal(manifest.version_name, '2.4 Build 28 · Project Recovery Doctor');
-assert.match(config, /export const VERSION = '2\.4\.28'/);
+const [major, minor, patch] = String(manifest.version || '').split('.').map(Number);
+assert.equal(`${major}.${minor}`, '2.4');
+assert.ok(patch >= 28, `Build 28 regression contract requires patch >= 28; received ${manifest.version}`);
+assert.match(config, /export const VERSION = '2\.4\.\d+'/);
 assert.match(config, /TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 
 const boot = manifest.content_scripts[0].js;
@@ -135,7 +136,7 @@ assert.equal(remote.object, 'company.png');
 console.log(JSON.stringify({
   ok: true,
   build: 28,
-  version: manifest.version,
+  current_version: manifest.version,
   report_schema: report.schema,
   status: report.status,
   critical: report.counts.critical,

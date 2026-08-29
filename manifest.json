@@ -1,22 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.4.28",
-  "version_name": "2.4 Build 28 · Project Recovery Doctor",
-  "description": "AI engineering layer for Lovable projects with Project Recovery Doctor, asset portability diagnostics, reconciled Lovable/GitHub/Supabase state, server-authoritative trust, Decrypter Intelligence, Knowledge and Model Gateway.",
+  "version": "2.4.29",
+  "version_name": "2.4 Build 29 · Decrypter Chat",
+  "description": "AI engineering layer for Lovable projects with integrated fail-closed Decrypter Chat, Project Recovery Doctor, reconciled Lovable/GitHub/Supabase state, server-authoritative trust, Knowledge and Model Gateway.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-  "permissions": [
-    "storage",
-    "tabs",
-    "downloads",
-    "unlimitedStorage",
-    "alarms"
-  ],
+  "permissions": ["storage", "tabs", "downloads", "unlimitedStorage", "alarms"],
   "host_permissions": [
     "https://lovable.dev/*",
     "https://*.lovable.dev/*",
@@ -26,31 +20,18 @@
     "https://api.supabase.com/*",
     "https://*.supabase.co/*"
   ],
-  "background": {
-    "service_worker": "background/service-worker-entry.js",
-    "type": "module"
-  },
+  "background": { "service_worker": "background/service-worker-entry.js", "type": "module" },
   "browser_specific_settings": {
     "gecko": {
       "id": "lovable-decrypter@rhashiki.dev",
       "strict_min_version": "121.0",
-      "data_collection_permissions": {
-        "required": [
-          "authenticationInfo",
-          "websiteContent"
-        ]
-      }
+      "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": {
-    "default_title": "Lovable Decrypter v2.4 Build 28 · Project Recovery Doctor"
-  },
+  "action": { "default_title": "Lovable Decrypter v2.4 Build 29 · Decrypter Chat" },
   "content_scripts": [
     {
-      "matches": [
-        "https://lovable.dev/*",
-        "https://*.lovable.dev/*"
-      ],
+      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
       "js": [
         "content/ui-shell-bootstrap.js",
         "content/content.js",
@@ -84,6 +65,8 @@
         "content/lovable-sync-verifier.js",
         "content/composer-bridge-v3.js",
         "content/composer-guardian.js",
+        "content/decrypter-chat-core.js",
+        "content/decrypter-chat.js",
         "content/build11-reconciliation.js",
         "ui/unified-launcher.js",
         "content/commercial-runtime.js",
@@ -123,15 +106,6 @@
     }
   ],
   "web_accessible_resources": [
-    {
-      "resources": [
-        "assets/fab.png",
-        "assets/icon128.png"
-      ],
-      "matches": [
-        "https://lovable.dev/*",
-        "https://*.lovable.dev/*"
-      ]
-    }
+    { "resources": ["assets/fab.png", "assets/icon128.png"], "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"] }
   ]
 }
