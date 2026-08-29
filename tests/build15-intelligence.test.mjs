@@ -30,7 +30,10 @@ const planBrief = createExecutionBrief({
 });
 assert.equal(planBrief.identity, 'Decrypter Intelligence');
 assert.equal(planBrief.provider.role, 'executor_only');
-assert.equal(planBrief.provider.gateway_active, false);
+assert.equal(planBrief.provider.gateway_active, true);
+assert.equal(planBrief.provider.gateway_build, 17);
+assert.equal(planBrief.provider.gateway_authority, 'server');
+assert.equal(planBrief.provider.cross_provider_fallback, false);
 assert.equal(planBrief.knowledge.active, false);
 assert.equal(planBrief.strategy, 'plan_only');
 assert.match(serializeExecutionBrief(planBrief), /DECRYPTER_INTELLIGENCE_V1/);
