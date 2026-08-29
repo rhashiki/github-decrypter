@@ -1,0 +1,97 @@
+name: v2.5 Build 46 · FAB Rail Cascade Premium
+
+on:
+  push:
+    branches: [main, v2.5-build46-fab-rail-cascade-premium]
+    paths:
+      - 'ui/launcher-premium-v46.js'
+      - 'ui/launcher-premium-v46.css'
+      - 'manifest.json'
+      - '.github/workflows/v2.5-build46-fab-rail-cascade-premium.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        run: node --check ui/launcher-premium-v46.js
+
+      - name: Validate manifest and protected boot
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const [a=0,b=0,c=0]=String(m.version||'0.0.0').split('.').map(Number);
+          if(a*10000+b*100+c<20546) throw new Error('manifest version older than Build 46');
+          const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
+          if(!early||early.run_at!=='document_start'||early.all_frames!==true||early.match_about_blank!==true) throw new Error('zero-gap boot regression');
+          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/launcher-premium-v46.js'));
+          if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('Build 46 wiring missing');
+          if(!(main.css||[]).includes('ui/launcher-premium-v46.css')) throw new Error('Build 46 CSS missing');
+          if(main.js.indexOf('ui/lightweight-runtime-delivery.js')>main.js.indexOf('ui/launcher-premium-v46.js')) throw new Error('Build 46 must load after shared scheduler');
+          if(main.js.indexOf('ui/launcher-rail-v3.js')>main.js.indexOf('ui/launcher-premium-v46.js')) throw new Error('Build 46 must enhance the existing launcher');
+          if(main.css.at(-1)!=='ui/launcher-premium-v46.css') throw new Error('Build 46 CSS must be final launcher override');
+          if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
+          NODE
+
+      - name: Validate approved launcher geometry
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const css=fs.readFileSync('ui/launcher-premium-v46.css','utf8');
+          const required=[
+            'width:82px!important','height:82px!important','width:68px!important','width:44px!important','height:44px!important',
+            'border-radius:26px!important','width:294px!important','width:332px!important',
+            'transition:transform .82s cubic-bezier(.18,.98,.18,1)','translateY(calc(100% + 52px))',
+            'background:linear-gradient(180deg,rgba(15,26,44,.98),rgba(11,19,34,.98))',
+            'background:linear-gradient(180deg,rgba(24,29,42,.985),rgba(21,24,36,.985))'
+          ];
+          for(const token of required) if(!css.includes(token)) throw new Error('approved v11 parity missing '+token);
+          NODE
+
+      - name: Validate cascade interaction repair
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const css=fs.readFileSync('ui/launcher-premium-v46.css','utf8');
+          const js=fs.readFileSync('ui/launcher-premium-v46.js','utf8');
+          for(const token of ['.ld3-flyout[data-show="1"]','.ld3-detail[data-show="1"]','pointer-events:auto!important','visibility:visible!important']) if(!css.includes(token)) throw new Error('cascade interaction contract missing '+token);
+          for(const token of ['ld46-fab-mark','ld46-rail-logo','LovableDecrypterDeliveryScheduler','aria-haspopup','LovableDecrypterLauncherPremium']) if(!js.includes(token)) throw new Error('launcher enhancement missing '+token);
+          if(!js.includes('<rect x="12"')||!js.includes('<rect x="8"')||!js.includes('<rect x="13"')) throw new Error('approved pixel-decrypt logo motif missing');
+          NODE
+
+      - name: Validate non-invasive presentation boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('ui/launcher-premium-v46.js','utf8');
+          const forbidden=[
+            [/fetch\s*\(/,'fetch'],[/XMLHttpRequest/,'XHR'],[/sendBeacon/,'sendBeacon'],[/MutationObserver/,'MutationObserver'],
+            [/window\.postMessage\s*\(/,'postMessage'],[/\beval\s*\(/,'eval'],[/new\s+Function\s*\(/,'new Function'],[/chrome\.runtime\.sendMessage\s*\(/,'new runtime command']
+          ];
+          for(const [rx,label] of forbidden) if(rx.test(s)) throw new Error('Build 46 presentation layer added forbidden '+label);
+          NODE
+
+      - name: Preserve repository supply-chain guarantees
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const files=[];
+          const walk=p=>{for(const name of fs.readdirSync(p)){const f=path.join(p,name),st=fs.statSync(f);if(st.isDirectory())walk(f);else if(/\.js$/.test(f))files.push(f)}};
+          ['content','ui','background'].forEach(walk);
+          const forbidden=[
+            [/(?:window|globalThis)\.fetch\s*=(?!=)/,'global fetch assignment'],
+            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment'],
+            [/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],
+            [/window\.postMessage\s*\(/,'page-world postMessage bridge'],
+            [/\beval\s*\(/,'eval'],
+            [/new\s+Function\s*\(/,'new Function']
+          ];
+          for(const file of files){const s=fs.readFileSync(file,'utf8');for(const [rx,label] of forbidden)if(rx.test(s))throw new Error(`${label} forbidden in ${file}`)}
+          NODE
