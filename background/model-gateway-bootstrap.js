@@ -2,7 +2,7 @@ import { GeminiAgent } from '../ai/gemini-agent.js';
 import { getSettings } from '../storage/settings-store.js';
 import { getModelGatewayStatus } from './model-gateway-client.js';
 import { assertGatewayDecision, publicGatewaySummary } from '../core/model-gateway.js';
-import { VERSION } from '../settings/config.js';
+import { TRUST_PROTOCOL_VERSION } from '../settings/config.js';
 import { ensureTrustSession, trustPublicSummary } from '../security/trust.js';
 
 const LAST_KEY = 'ld2_gateway_last_v1';
@@ -52,7 +52,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
       'x-license-key': this.licenseKey,
       'x-device-id': this.deviceId,
       'x-decrypter-trust': trust.token,
-      'x-decrypter-client-version': VERSION
+      'x-decrypter-client-version': TRUST_PROTOCOL_VERSION
     };
     if (this.apiKey) headers['x-gemini-key'] = this.apiKey;
     const res = await fetch(`${String(this.backendBase).replace(/\/+$/, '')}/ld-model-gateway`, {
@@ -110,7 +110,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
   };
 
   globalThis.LovableDecrypterModelGatewayRuntime = Object.freeze({
-    build: 21,
+    build: 24,
     schema: 'ld-model-gateway/1',
     active: true,
     authority: 'server',
