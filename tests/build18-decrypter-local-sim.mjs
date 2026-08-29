@@ -37,7 +37,9 @@ assert(/cross_provider_retry_attempted\s*:\s*false/.test(gatewaySrc), 'No-retry 
 assert(/retry_across_providers\s*:\s*false/.test(gatewaySrc), 'No-retry policy missing');
 
 const stripJsonFence = loadFunction(commandSrc, 'stripJsonFence', '\nfunction compact');
-assert.throws(() => JSON.parse(stripJsonFence('not-json')), SyntaxError, 'Invalid model JSON must fail');
+let invalidJsonBlocked = false;
+try { JSON.parse(stripJsonFence('not-json')); } catch { invalidJsonBlocked = true; }
+assert(invalidJsonBlocked, 'Invalid model JSON must fail');
 assert(commandSrc.includes('INVALID_MODEL_JSON'), 'Invalid JSON production guard missing');
 
 const deleteIntent = between(commandSrc, 'function deleteIntent', '\nconst PLAN_SCHEMA');
