@@ -106,7 +106,7 @@ jobs:
           FAILED=0
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/v2.4-build25-release-candidate.yml|manifest.json|settings/config.js|release/RC25_MANIFEST.json|docs/BUILD25_RELEASE_CANDIDATE.md|tests/build25-release-candidate.mjs|tests/build15-intelligence.test.mjs|tests/build18-decrypter-local-sim.mjs|tests/build19-decrypterbench-sim.mjs|tests/build20-decrypter-coder-sim.mjs) ;;
+              .github/workflows/v2.4-build25-release-candidate.yml|manifest.json|settings/config.js|release/RC25_MANIFEST.json|docs/BUILD25_RELEASE_CANDIDATE.md|tests/build25-release-candidate.mjs|tests/build15-intelligence.test.mjs|tests/build18-decrypter-local-sim.mjs|tests/build19-decrypterbench-sim.mjs|tests/build20-decrypter-coder-sim.mjs|tests/build24-security-chaos.mjs) ;;
               *) echo "Unexpected Build 25 modification: $path"; FAILED=1 ;;
             esac
           done < <(git diff --name-only "$BASE"...HEAD)
