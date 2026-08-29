@@ -126,7 +126,7 @@ jobs:
           grep -q 'TRUST_PROTOCOL_VERSION' docs/BUILD24_SECURITY_CHAOS.md
           grep -q 'signature_valid=false' docs/BUILD24_SECURITY_CHAOS.md
           grep -q 'SSRF' docs/BUILD24_SECURITY_CHAOS.md
-          grep -q 'não publica OTA/release oficial automaticamente' docs/BUILD24_SECURITY_CHAOS.md
+          grep -qi 'não publica OTA/release oficial automaticamente' docs/BUILD24_SECURITY_CHAOS.md
 
       - name: Package Build 24 candidate
         run: |
