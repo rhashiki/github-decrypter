@@ -1,0 +1,65 @@
+name: v2.5 Build 37 · Premium Workspace UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ui/premium-workspace.js'
+      - 'ui/premium-workspace.css'
+      - 'manifest.json'
+      - '.github/workflows/v2.5-build37-premium-workspace.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        run: node --check ui/premium-workspace.js
+
+      - name: Validate manifest wiring
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if (manifest.version !== '2.5.37') throw new Error('manifest version must be 2.5.37');
+          const scripts = manifest.content_scripts || [];
+          const early = scripts.find(s => (s.js || []).includes('content/early-boot-sentinel.js'));
+          if (!early || early.run_at !== 'document_start' || early.all_frames !== true) throw new Error('Build 34 early boot contract regressed');
+          const main = scripts.find(s => (s.js || []).includes('ui/premium-workspace.js'));
+          if (!main) throw new Error('premium-workspace.js is not wired');
+          if (!(main.css || []).includes('ui/premium-workspace.css')) throw new Error('premium-workspace.css is not wired');
+          if (!(main.js || []).includes('ui/error-intelligence-center.js')) throw new Error('Build 35 Error Intelligence wiring regressed');
+          if (!(main.js || []).includes('ui/launcher-rail-v3.js')) throw new Error('Build 36 rail wiring regressed');
+          NODE
+
+      - name: Validate workspace read-only contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ui = fs.readFileSync('ui/premium-workspace.js','utf8');
+          const deep = fs.readFileSync('content/lovable-workspace-deep-read.js','utf8');
+          if (!ui.includes("allowSensitive:false")) throw new Error('file preview must keep sensitive reads disabled');
+          if (!ui.includes('Workspace Premium')) throw new Error('protected-file UX missing');
+          if (!ui.includes('somente leitura') && !ui.includes('SOMENTE LEITURA')) throw new Error('read-only UX contract missing');
+          if (!deep.includes('writeFiles: false')) throw new Error('workspace write capability must remain disabled');
+          if (/\.writeFile\s*\(|writeFiles\s*:\s*true/.test(ui)) throw new Error('Premium Workspace must not introduce workspace writes');
+          NODE
+
+      - name: Validate premium workspace features
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ui = fs.readFileSync('ui/premium-workspace.js','utf8');
+          const css = fs.readFileSync('ui/premium-workspace.css','utf8');
+          for (const token of ['data-ws-health','data-ws-stats','data-ws-files','data-ws-preview','data-ws-zip','data-ws-github','data-ws-supabase']) {
+            if (!ui.includes(token)) throw new Error(`missing UI contract: ${token}`);
+          }
+          if (!ui.includes("data-item=\"workspace\"")) throw new Error('Workspace rail handoff missing');
+          if (!css.includes('.ld3-ws-browser') || !css.includes('.ld3-ws-preview')) throw new Error('Premium Workspace visual contract missing');
+          NODE
