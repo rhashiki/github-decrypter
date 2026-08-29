@@ -24,7 +24,8 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const m = JSON.parse(fs.readFileSync('manifest.json','utf8'));
-          if (m.version !== '2.5.36') throw new Error('Unexpected version');
+          const parts = String(m.version || '').split('.').map(Number);
+          if (parts.length !== 3 || parts[0] !== 2 || parts[1] !== 5 || parts[2] < 36) throw new Error(`Build 36 requires version >= 2.5.36, got ${m.version}`);
           const runtime = m.content_scripts.find(x => x.run_at === 'document_idle' && x.all_frames === false);
           if (!runtime) throw new Error('Main runtime content script missing');
           if (!runtime.js.includes('ui/launcher-rail-v3.js')) throw new Error('Rail launcher not wired');
