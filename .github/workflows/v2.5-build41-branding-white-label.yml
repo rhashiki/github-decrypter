@@ -2,10 +2,11 @@ name: v2.5 Build 41 · Branding & White-Label Platform
 
 on:
   push:
-    branches: [main, v2.5-build41-branding-white-label]
+    branches: [main, v2.5-build41-branding-white-label, v2.5-build43-lightweight-runtime-delivery]
     paths:
       - 'ui/branding-white-label.js'
       - 'ui/branding-white-label.css'
+      - 'ui/lightweight-runtime-delivery.js'
       - 'manifest.json'
       - '.github/workflows/v2.5-build41-branding-white-label.yml'
   workflow_dispatch:
@@ -20,7 +21,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: JavaScript syntax
-        run: node --check ui/branding-white-label.js
+        run: |
+          node --check ui/branding-white-label.js
+          node --check ui/lightweight-runtime-delivery.js
 
       - name: Validate manifest and cumulative wiring
         run: |
@@ -34,8 +37,9 @@ jobs:
           const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/branding-white-label.js'));
           if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('branding wiring missing');
           if(!(main.css||[]).includes('ui/branding-white-label.css')) throw new Error('branding css missing');
-          for(const f of ['ui/launcher-rail-v3.js','ui/premium-project-tools.js','ui/productivity-suite.js']) if(!(main.js||[]).includes(f)) throw new Error('cumulative wiring regression '+f);
+          for(const f of ['ui/launcher-rail-v3.js','ui/premium-project-tools.js','ui/productivity-suite.js','ui/lightweight-runtime-delivery.js']) if(!(main.js||[]).includes(f)) throw new Error('cumulative wiring regression '+f);
           if(main.js.indexOf('ui/branding-white-label.js')<main.js.indexOf('ui/productivity-suite.js')) throw new Error('branding must load after productivity');
+          if(main.js.indexOf('ui/lightweight-runtime-delivery.js')>main.js.indexOf('ui/branding-white-label.js')) throw new Error('delivery scheduler must load before branding');
           if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
           NODE
 
@@ -46,6 +50,7 @@ jobs:
           const s=fs.readFileSync('ui/branding-white-label.js','utf8');
           for(const x of ['LD2_BUILD_EXECUTE','LD2_PLAN_ONLY','LD2_PLAN_APPLY','LD2_PLAN_APPROVE','LD2_LICENSE_LOGIN','LD2_LICENSE_LOGOUT','LD2_LICENSE_STATUS','XMLHttpRequest','MutationObserver','fetch(']) if(s.includes(x)) throw new Error('branding crossed authority boundary '+x);
           for(const x of ['prototype.open','prototype.send','navigator.sendBeacon =','window.fetch =','globalThis.fetch =']) if(s.includes(x)) throw new Error('global patch forbidden '+x);
+          if(s.includes('setInterval(')) throw new Error('independent branding polling reintroduced');
           NODE
 
       - name: Validate branding contract
@@ -54,7 +59,7 @@ jobs:
           const fs=require('fs');
           const js=fs.readFileSync('ui/branding-white-label.js','utf8');
           const css=fs.readFileSync('ui/branding-white-label.css','utf8');
-          for(const x of ['PROFILE_KEY','Branding & White-Label','logoDataUrl','communityUrl','supportUrl','220 * 1024','LovableDecrypterBranding','ld41Branding','installAttempts >= 120','data:image','https?:']) if(!js.includes(x)) throw new Error('missing branding contract '+x);
+          for(const x of ['PROFILE_KEY','Branding & White-Label','logoDataUrl','communityUrl','supportUrl','220 * 1024','LovableDecrypterBranding','ld41Branding','LovableDecrypterDeliveryScheduler','build41:branding-rail','data:image','https?:']) if(!js.includes(x)) throw new Error('missing branding contract '+x);
           for(const x of ['.ld41-studio','.ld41-preview','.ld41-grid','.ld41-branding-rail','.ld41-byline','--ld41-accent','focus-visible','prefers-reduced-motion']) if(!css.includes(x)) throw new Error('missing branding visual contract '+x);
           NODE
 
