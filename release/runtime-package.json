@@ -9,7 +9,6 @@
     "content",
     "core",
     "github",
-    "runtime",
     "security",
     "settings",
     "storage",
@@ -20,11 +19,12 @@
     "benchmark",
     "docs",
     "release",
+    "runtime",
     "scripts",
     "supabase",
     "tests",
     "updates"
   ],
   "forbidden_extensions": [".pem", ".key", ".p12", ".pfx"],
-  "notes": "Only browser-extension runtime files belong in the distributable ZIP. Backend, tests, docs and release metadata stay out."
+  "notes": "Only browser-extension runtime files belong in the distributable ZIP. Backend, local workers, tests, docs and release metadata stay out."
 }
