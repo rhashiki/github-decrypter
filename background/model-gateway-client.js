@@ -1,4 +1,4 @@
-import { DEFAULT_BACKEND_BASE, VERSION } from '../settings/config.js';
+import { DEFAULT_BACKEND_BASE, TRUST_PROTOCOL_VERSION } from '../settings/config.js';
 import { ensureTrustSession } from '../security/trust.js';
 
 export async function getModelGatewayStatus(settings = {}) {
@@ -17,7 +17,7 @@ export async function getModelGatewayStatus(settings = {}) {
         'x-license-key': licenseKey,
         'x-device-id': deviceId,
         'x-decrypter-trust': trust.token,
-        'x-decrypter-client-version': VERSION
+        'x-decrypter-client-version': TRUST_PROTOCOL_VERSION
       },
       body: JSON.stringify({ action: 'status' }),
       signal: controller.signal
