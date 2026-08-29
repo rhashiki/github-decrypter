@@ -12,9 +12,11 @@ const graphSource = fs.readFileSync('content/unified-project-state-graph.js', 'u
 const edge = fs.readFileSync('supabase/functions/ld-project-state/index.ts', 'utf8');
 const build26 = fs.readFileSync('content/lovable-workspace-deep-read.js', 'utf8');
 
-assert.equal(manifest.version, '2.4.27');
-assert.equal(manifest.version_name, '2.4 Build 27 · Unified Project State Graph');
-assert.match(config, /export const VERSION = '2\.4\.27'/);
+const versionParts = String(manifest.version || '').split('.').map(Number);
+assert.equal(versionParts[0], 2);
+assert.equal(versionParts[1], 4);
+assert.ok(versionParts[2] >= 27, 'Current v2.4 build must not regress below Build 27');
+assert.match(config, /export const VERSION = '2\.4\.\d+'/);
 assert.match(config, /TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 
 const boot = manifest.content_scripts[0].js;

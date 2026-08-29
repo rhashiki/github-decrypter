@@ -1,0 +1,123 @@
+name: Validate v2.4 Build 28 Project Recovery Doctor
+
+on:
+  push:
+    branches:
+      - v2.4-build28-project-recovery-doctor
+  pull_request:
+    branches:
+      - main
+      - v2.4-build28-project-recovery-doctor
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 28 identity and boot contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.28') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 28 · Project Recovery Doctor') throw new Error('Build 28 version_name missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const graph=js.indexOf('content/unified-project-state-graph.js');
+          const core=js.indexOf('content/project-recovery-doctor-core.js');
+          const doctor=js.indexOf('content/project-recovery-doctor.js');
+          const intel=js.indexOf('content/project-intelligence.js');
+          if(!(graph>=0&&core>graph&&doctor>core&&intel>doctor)) throw new Error('Recovery Doctor boot order invalid');
+          if(!(m.content_scripts?.[0]?.css||[]).includes('ui/recovery-doctor.css')) throw new Error('Recovery Doctor CSS missing');
+          NODE
+          grep -q "export const VERSION = '2.4.28'" settings/config.js
+          grep -q "export const TRUST_PROTOCOL_VERSION = '2.4.21'" settings/config.js
+
+      - name: Syntax check all JavaScript and tests
+        run: |
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) -not -path './.git/*' | LC_ALL=C sort)
+
+      - name: Build 28 recovery simulation
+        run: node tests/build28-project-recovery-doctor.mjs
+
+      - name: Full repository regression simulations
+        run: |
+          while IFS= read -r testfile; do
+            echo "==> $testfile"
+            node "$testfile"
+          done < <(find tests -maxdepth 1 -type f -name '*.mjs' | LC_ALL=C sort)
+
+      - name: Read-only Storage metadata contract
+        run: |
+          grep -q 'from storage.buckets' supabase/functions/ld-project-state/index.ts
+          grep -q 'from storage.objects' supabase/functions/ld-project-state/index.ts
+          grep -q 'storage_metadata_read: true' supabase/functions/ld-project-state/index.ts
+          grep -q 'storage_object_bytes_read: false' supabase/functions/ld-project-state/index.ts
+          grep -q 'secret_values_read: false' supabase/functions/ld-project-state/index.ts
+          grep -q 'writes: false' supabase/functions/ld-project-state/index.ts
+          ! grep -Eq 'delete[[:space:]]+from[[:space:]]+storage\.|update[[:space:]]+storage\.|insert[[:space:]]+into[[:space:]]+storage\.' supabase/functions/ld-project-state/index.ts
+
+      - name: Recovery Doctor safety gate
+        run: |
+          grep -q 'automaticRepair: false' content/project-recovery-doctor-core.js
+          grep -q 'arbitraryRemoteAssetFetch: false' content/project-recovery-doctor-core.js
+          grep -q 'allowSensitive: false' content/project-recovery-doctor.js
+          grep -q 'Auto Repair · Build 30' content/project-recovery-doctor.js
+          ! grep -Eq 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*=' content/project-recovery-doctor.js content/project-recovery-doctor-core.js
+
+      - name: Database schema freeze
+        run: |
+          BASE=39b751960eedab45a739fbeea107f325c20b05f1
+          if git diff --name-only "$BASE"...HEAD -- supabase/migrations | grep -q .; then
+            echo 'Build 28 must not change database schema'
+            exit 1
+          fi
+
+      - name: Backend scope lock
+        run: |
+          BASE=39b751960eedab45a739fbeea107f325c20b05f1
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              supabase/functions/ld-project-state/index.ts) ;;
+              *) echo "Unexpected backend change: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD -- supabase/functions)
+          test "$FAILED" -eq 0
+
+      - name: Freeze official release surfaces
+        run: |
+          BASE=39b751960eedab45a739fbeea107f325c20b05f1
+          for path in .github/RELEASE_TRIGGER updates/latest.json updates/release.json .github/workflows/release.yml; do
+            if git diff --name-only "$BASE"...HEAD -- "$path" | grep -q .; then
+              echo "Official release surface changed: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 28 scope lock
+        run: |
+          BASE=39b751960eedab45a739fbeea107f325c20b05f1
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build28-project-recovery-doctor.yml|content/project-recovery-doctor-core.js|content/project-recovery-doctor.js|docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md|manifest.json|settings/config.js|supabase/functions/ld-project-state/index.ts|tests/build27-unified-project-state-graph.mjs|tests/build28-project-recovery-doctor.mjs|ui/recovery-doctor.css) ;;
+              *) echo "Unexpected Build 28 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          grep -q 'Trust protocol: `2.4.21`' docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md
+          grep -q 'não baixa assets remotos arbitrários' docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md
+          grep -q 'nenhum Auto Repair' docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md
+          grep -q 'Build 29' docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md
+          grep -q 'Build 30' docs/BUILD28_PROJECT_RECOVERY_DOCTOR.md

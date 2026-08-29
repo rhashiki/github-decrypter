@@ -1,4 +1,4 @@
-export const VERSION = '2.4.27';
+export const VERSION = '2.4.28';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -54,9 +54,7 @@ export const DEFAULT_SETTINGS = {
     updateFeedUrl: DEFAULT_UPDATE_FEED_URL,
     lastVaultSyncAt: null
   },
-  gateway: {
-    mode: 'auto'
-  },
+  gateway: { mode: 'auto' },
   gemini: {
     apiKey: '',
     model: DEFAULT_FREE_MODEL,
@@ -89,16 +87,8 @@ export const DEFAULT_SETTINGS = {
   },
   projectMappings: {},
   supabaseMappings: {},
-  agent: {
-    maxFiles: 18,
-    maxContextBytes: 500000,
-    rules: ''
-  },
-  ui: {
-    theme: 'matrix',
-    sounds: false,
-    background: 'matrix'
-  }
+  agent: { maxFiles: 18, maxContextBytes: 500000, rules: '' },
+  ui: { theme: 'matrix', sounds: false, background: 'matrix' }
 };
 
 export function mergeSettings(saved = {}) {
@@ -124,8 +114,6 @@ export function mergeSettings(saved = {}) {
     ? String(merged.gateway.mode).toLowerCase()
     : 'auto';
 
-  // Gratuito é o padrão. O modo pago só é habilitado por opt-in explícito e usa a API do próprio usuário.
-  // Quando o Gateway escolhe Decrypter Local, nenhuma chave Gemini é necessária para aquela execução.
   merged.gemini.billingMode = merged.gemini.billingMode === 'user_paid' ? 'user_paid' : 'free';
   merged.gemini.zeroCost = merged.gemini.billingMode !== 'user_paid';
   if (merged.gemini.zeroCost) {
@@ -133,19 +121,16 @@ export function mergeSettings(saved = {}) {
     if (!isVerifiedFreeModel(merged.gemini.advancedModel)) merged.gemini.advancedModel = DEFAULT_FREE_ADVANCED_MODEL;
   }
 
-  // GitHub App é o caminho normal. PAT só sobrevive quando explicitamente marcado como legado.
   merged.github.authMode = merged.github.authMode === 'legacy_token' ? 'legacy_token' : 'github_app';
   merged.github.installationId = Number.isInteger(Number(merged.github.installationId)) && Number(merged.github.installationId) > 0
     ? Number(merged.github.installationId)
     : null;
   if (merged.github.authMode !== 'legacy_token') merged.github.token = '';
 
-  // Supabase usa OAuth oficial pelo backend. Credenciais administrativas legadas nunca permanecem no cliente.
   merged.supabase.authMode = 'oauth';
   merged.supabase.anonKey = '';
   merged.supabase.managementToken = '';
 
-  // Um novo commit por comando na branch selecionada, sem branch/PR automático.
   merged.github.createBranch = false;
   merged.github.createPr = false;
   return merged;

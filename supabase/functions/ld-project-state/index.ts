@@ -139,9 +139,7 @@ async function refreshAccessToken(sb: any, config: any, connection: any) {
     body
   });
   const data = await response.json().catch(() => null);
-  if (!response.ok || !data?.access_token) {
-    throw new Error(`TOKEN_REFRESH_FAILED:${response.status}`);
-  }
+  if (!response.ok || !data?.access_token) throw new Error(`TOKEN_REFRESH_FAILED:${response.status}`);
   if (data.refresh_token && String(data.refresh_token) !== refresh) {
     await setSecret(sb, String(connection.refresh_secret_name), String(data.refresh_token));
   }
@@ -292,6 +290,20 @@ async function inspect(accessToken: string, ref: string) {
     order by trigger_schema, event_object_table, trigger_name
     limit 3000`;
   const migrationSql = `select version from supabase_migrations.schema_migrations order by version limit 10000`;
+  const storageBucketSql = `
+    select id::text as id, name, public, file_size_limit, allowed_mime_types
+    from storage.buckets
+    order by name
+    limit 500`;
+  const storageObjectSql = `
+    select bucket_id, name,
+           metadata->>'mimetype' as mime_type,
+           case when coalesce(metadata->>'size','') ~ '^[0-9]+$' then (metadata->>'size')::bigint else null end as size,
+           created_at, updated_at
+    from storage.objects
+    where lower(name) ~ '\\.(png|jpe?g|gif|webp|svg|ico|avif|bmp|tiff?|woff2?|ttf|otf|eot|mp4|webm|mov|mp3|wav|ogg|pdf)$'
+    order by bucket_id, name
+    limit 10000`;
 
   const [
     relations,
@@ -300,6 +312,8 @@ async function inspect(accessToken: string, ref: string) {
     routines,
     triggers,
     migrations,
+    storageBuckets,
+    storageObjects,
     functionsResult,
     authResult,
     secretsResult
@@ -310,6 +324,8 @@ async function inspect(accessToken: string, ref: string) {
     safeDatabaseQuery(accessToken, ref, routineSql),
     safeDatabaseQuery(accessToken, ref, triggerSql),
     safeDatabaseQuery(accessToken, ref, migrationSql),
+    safeDatabaseQuery(accessToken, ref, storageBucketSql),
+    safeDatabaseQuery(accessToken, ref, storageObjectSql),
     managementRequest(accessToken, `/projects/${encodeURIComponent(ref)}/functions`).catch(() => []),
     managementRequest(accessToken, `/projects/${encodeURIComponent(ref)}/config/auth`).catch(() => null),
     managementRequest(accessToken, `/projects/${encodeURIComponent(ref)}/secrets`).catch(() => [])
@@ -327,6 +343,11 @@ async function inspect(accessToken: string, ref: string) {
       triggers: compactRows(triggers, ["schema_name", "table_name", "trigger_name", "event_manipulation", "action_timing"]),
       migrations: migrations.map(row => ({ version: String(row?.version || "") })).filter(row => row.version)
     },
+    storage: {
+      buckets: compactRows(storageBuckets, ["id", "name", "public", "file_size_limit", "allowed_mime_types"]),
+      objects: compactRows(storageObjects, ["bucket_id", "name", "mime_type", "size", "created_at", "updated_at"]),
+      metadata_only: true
+    },
     edgeFunctions: safeEdgeFunctions(functionsResult),
     auth: safeAuthConfig(authResult),
     secrets: safeSecretNames(secretsResult),
@@ -335,6 +356,8 @@ async function inspect(accessToken: string, ref: string) {
       migration_history_read: true,
       edge_functions_read: true,
       auth_config_read: true,
+      storage_metadata_read: true,
+      storage_object_bytes_read: false,
       secret_names_read: true,
       secret_values_read: false,
       writes: false
