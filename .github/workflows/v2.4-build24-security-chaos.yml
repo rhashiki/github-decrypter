@@ -1,0 +1,159 @@
+name: Validate v2.4 Build 24 Security Chaos
+
+on:
+  push:
+    branches:
+      - rebuild-v2.4-build24-security-chaos
+  pull_request:
+    branches:
+      - main
+      - rebuild-v2.4-build24-security-chaos
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Manifest and trust protocol contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.24') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 24') throw new Error('Build 24 version_name missing');
+          if(!/Build 24 · Security & Chaos/.test(m.action?.default_title||'')) throw new Error('Build 24 title missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const first=['content/ui-shell-bootstrap.js','content/content.js','content/ui-mount-guardian.js','ui/ui.js'];
+          first.forEach((f,i)=>{if(js[i]!==f)throw new Error(`Validated boot order changed at ${i}: ${js[i]}`)});
+          NODE
+          grep -q "export const VERSION = '2.4.24'" settings/config.js
+          grep -q "export const TRUST_PROTOCOL_VERSION = '2.4.21'" settings/config.js
+          grep -q "client_version:TRUST_PROTOCOL_VERSION" security/trust.js
+          grep -q "'x-decrypter-client-version': TRUST_PROTOCOL_VERSION" background/model-gateway-client.js
+          grep -q "'x-decrypter-client-version': TRUST_PROTOCOL_VERSION" background/model-gateway-bootstrap.js
+          if grep -q "'x-decrypter-client-version': VERSION" background/model-gateway-client.js background/model-gateway-bootstrap.js; then
+            echo 'App version must not be used as the Trust protocol version'
+            exit 1
+          fi
+
+      - name: Build 24 source syntax
+        run: |
+          node --check tests/build24-security-chaos.mjs
+          node --check settings/config.js
+          node --check security/trust.js
+          node --check background/model-gateway-client.js
+          node --check background/model-gateway-bootstrap.js
+
+      - name: Regression simulations 21 through 23
+        run: |
+          node tests/build21-trust-sim.mjs
+          node tests/build22-commercial-platform-sim.mjs
+          node tests/build23-mass-scale-sim.mjs
+
+      - name: Security chaos executable simulation
+        run: node tests/build24-security-chaos.mjs
+
+      - name: Webhook database boundary
+        run: |
+          M=supabase/migrations/20260829003000_build24_security_chaos_hardening.sql
+          grep -q 'ld_webhook_accept_signed_row_trigger' "$M"
+          grep -q 'if new.signature_valid is not true then' "$M"
+          grep -q 'octet_length(payload::text) <= 524288' "$M"
+          grep -q 'revoke all on function public.ld_webhook_accept_signed_row() from public, anon, authenticated' "$M"
+          grep -q "paymentStatus==='approved'" supabase/functions/ld-mercadopago-webhook/index.ts
+          grep -q 'payment_authoritative_entitlement:true' supabase/functions/ld-mercadopago-webhook/index.ts
+
+      - name: Worker SSRF and telemetry boundary
+        run: |
+          M=supabase/migrations/20260829003000_build24_security_chaos_hardening.sql
+          grep -q 'ld_worker_endpoint_is_public_https' "$M"
+          grep -q "v_host in ('localhost','0.0.0.0','::','::1')" "$M"
+          grep -q "169\\.254" "$M"
+          grep -q "192\\.168" "$M"
+          grep -q "local|internal|localhost|lan" "$M"
+          grep -q 'octet_length(metrics::text) <= 65536' "$M"
+          grep -q 'octet_length(metadata::text) <= 32768' "$M"
+          grep -q "u.protocol!=='https:'" supabase/functions/ld-local-control/index.ts
+
+      - name: Privilege and authority invariants
+        run: |
+          M=supabase/migrations/20260829003000_build24_security_chaos_hardening.sql
+          if grep -qi 'security definer' "$M"; then
+            echo 'Build 24 DB helpers must stay SECURITY INVOKER'
+            exit 1
+          fi
+          grep -qi 'security invoker' "$M"
+          grep -q 'MODEL_GATEWAY_REQUIRED' supabase/functions/ld-command/index.ts
+          grep -q 'cross_provider_fallback:false' supabase/functions/ld-model-gateway/index.ts
+          grep -q 'retry_across_providers:false' supabase/functions/ld-model-gateway/index.ts
+          grep -q 'TRUST_NONCE_REPLAY' supabase/functions/ld-trust-attest/index.ts
+          grep -q 'chrome.storage.session' security/trust.js
+          if grep -q 'chrome.storage.local.set' security/trust.js; then exit 1; fi
+
+      - name: No invasive browser patches or backend secrets
+        run: |
+          BASE=044b982144e4cd17e60a5e82d2b48aff80cdee62
+          ADDED="$(git diff -U0 "$BASE"...HEAD -- manifest.json settings security background | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+            echo 'Forbidden invasive browser patch detected'
+            exit 1
+          fi
+          if grep -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN|DECRYPTER_WORKER_SECRET|MERCADOPAGO_ACCESS_TOKEN' manifest.json settings/config.js security/trust.js background/model-gateway-client.js background/model-gateway-bootstrap.js; then
+            echo 'Backend secret identifier leaked into Build 24 browser surface'
+            exit 1
+          fi
+
+      - name: Build 24 scope lock
+        run: |
+          BASE=044b982144e4cd17e60a5e82d2b48aff80cdee62
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build24-security-chaos.yml|manifest.json|settings/config.js|security/trust.js|background/model-gateway-client.js|background/model-gateway-bootstrap.js|supabase/migrations/20260829003000_build24_security_chaos_hardening.sql|docs/BUILD24_SECURITY_CHAOS.md|tests/build24-security-chaos.mjs) ;;
+              *) echo "Unexpected Build 24 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          grep -q 'TRUST_PROTOCOL_VERSION' docs/BUILD24_SECURITY_CHAOS.md
+          grep -q 'signature_valid=false' docs/BUILD24_SECURITY_CHAOS.md
+          grep -q 'SSRF' docs/BUILD24_SECURITY_CHAOS.md
+          grep -q 'não publica OTA/release oficial automaticamente' docs/BUILD24_SECURITY_CHAOS.md
+
+      - name: Package Build 24 candidate
+        run: |
+          rm -rf /tmp/ld-build24 && mkdir -p /tmp/ld-build24
+          rsync -a ./ /tmp/ld-build24/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='supabase' \
+            --exclude='runtime' \
+            --exclude='docs' \
+            --exclude='tests' \
+            --exclude='benchmark' \
+            --exclude='training' \
+            --exclude='*.zip' \
+            --exclude='*.sha256'
+          test -f /tmp/ld-build24/manifest.json
+          test -f /tmp/ld-build24/security/trust.js
+          cd /tmp/ld-build24
+          zip -qr "$GITHUB_WORKSPACE/Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.zip" .
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.zip > Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.sha256
+          if unzip -l Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.zip | grep -qE ' (supabase|runtime|docs|tests|benchmark|training)/'; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS
+          path: |
+            Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.zip
+            Lovable-Decrypter-v2.4-BUILD24-SECURITY-CHAOS.sha256
+          if-no-files-found: error
