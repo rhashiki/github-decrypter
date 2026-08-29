@@ -71,7 +71,7 @@ assert(h1.sequence === 1 && h1.cached === false, 'Initial health must query runt
 assert(h2.sequence === 1 && h2.cached === true && healthCalls === 2, 'Fresh health must use cache before stale recheck');
 assert(h3.sequence === 2 && h3.cached === false, 'Stale health must recheck runtime');
 assert(/LOCAL_HEALTH_TTL_MS\s*=\s*15_000/.test(gatewaySrc), 'Production gateway health TTL missing');
-assert(gatewaySrc.includes('now < localHealthCache.expiresAt'), 'Production stale-cache gate missing');
+assert(/now\s*<\s*localHealthCache\.expiresAt/.test(gatewaySrc), 'Production stale-cache gate missing');
 assert(gatewaySrc.includes('cachedLocalRuntimeStatus'), 'Production cached health function missing');
 
 // Failure after provider start must fail closed: never invoke Gemini as a retry.
@@ -85,8 +85,8 @@ try {
   await executeStartedProvider('decrypter-local', true);
 } catch (_) {}
 assert(attempts.join(',') === 'decrypter-local', 'Local failure after start must not invoke Gemini');
-assert(gatewaySrc.includes('cross_provider_retry_attempted: false'), 'Gateway must report no cross-provider retry');
-assert(gatewaySrc.includes('retry_across_providers: false'), 'Gateway policy must disable cross-provider retry');
+assert(/cross_provider_retry_attempted\s*:\s*false/.test(gatewaySrc), 'Gateway must report no cross-provider retry');
+assert(/retry_across_providers\s*:\s*false/.test(gatewaySrc), 'Gateway policy must disable cross-provider retry');
 
 // Invalid model JSON must block.
 const stripJsonFence = loadFunction(commandSrc, 'stripJsonFence', '\nfunction compact');
