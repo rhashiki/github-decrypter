@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.5.41",
-  "version_name": "2.5 Build 41 · Branding & White-Label Platform",
-  "description": "AI engineering layer for Lovable projects with local Branding and White-Label profiles, custom product identity, logo, accents, community and support links; Productivity Suite command palette, searchable history, autosaving project notes, shortcuts, favorites and recent actions; premium Project Brain, Rules, Impact Map and Explain Project tools; premium Chat and Engineering UX; premium Workspace browser; premium rail launcher; local sanitized Error Intelligence; document-start frame protection; premium license activation UX; native pt-BR voice feedback; project monitor; capability registry; fail-closed hardening; approval transactions; Auto Repair; Decrypter Chat; Project Recovery Doctor; reconciled Lovable/GitHub/Supabase state; server-authoritative trust; Knowledge and Model Gateway.",
+  "version": "2.5.42",
+  "version_name": "2.5 Build 42 · Decrypter Marketplace",
+  "description": "AI engineering layer for Lovable projects with a safe curated Decrypter Marketplace for versioned Skills installed through the existing Skills Engine, with no remote code execution; local Branding and White-Label profiles; Productivity Suite command palette, searchable history, autosaving project notes, shortcuts, favorites and recent actions; premium Project Brain, Rules, Impact Map and Explain Project tools; premium Chat and Engineering UX; premium Workspace browser; premium rail launcher; local sanitized Error Intelligence; document-start frame protection; premium license activation UX; native pt-BR voice feedback; project monitor; capability registry; fail-closed hardening; approval transactions; Auto Repair; Decrypter Chat; Project Recovery Doctor; reconciled Lovable/GitHub/Supabase state; server-authoritative trust; Knowledge and Model Gateway.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -28,7 +28,7 @@
       "data_collection_permissions": { "required": ["authenticationInfo", "websiteContent"] }
     }
   },
-  "action": { "default_title": "Lovable Decrypter v2.5 Build 41 · Branding & White-Label Platform" },
+  "action": { "default_title": "Lovable Decrypter v2.5 Build 42 · Decrypter Marketplace" },
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
@@ -97,6 +97,7 @@
         "ui/premium-project-tools.js",
         "ui/productivity-suite.js",
         "ui/branding-white-label.js",
+        "ui/decrypter-marketplace.js",
         "content/build14-reconciliation.js",
         "content/build15-reconciliation.js",
         "content/build16-reconciliation.js",
@@ -128,7 +129,8 @@
         "ui/premium-engineering-ux.css",
         "ui/premium-project-tools.css",
         "ui/productivity-suite.css",
-        "ui/branding-white-label.css"
+        "ui/branding-white-label.css",
+        "ui/decrypter-marketplace.css"
       ],
       "run_at": "document_idle",
       "all_frames": false
