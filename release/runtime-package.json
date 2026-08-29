@@ -13,7 +13,8 @@
     "settings",
     "storage",
     "tools",
-    "ui"
+    "ui",
+    "updates/update-manager.js"
   ],
   "forbidden_roots": [
     ".github",
@@ -23,9 +24,12 @@
     "runtime",
     "scripts",
     "supabase",
-    "tests",
-    "updates"
+    "tests"
+  ],
+  "forbidden_paths": [
+    "updates/latest.json",
+    "updates/release.json"
   ],
   "forbidden_extensions": [".pem", ".key", ".p12", ".pfx"],
-  "notes": "Only browser-extension runtime files belong in the distributable ZIP. Backend, local workers, tests, docs and release metadata stay out."
+  "notes": "Only browser-extension runtime files belong in the distributable ZIP. The browser update manager is included; OTA metadata, backend, local workers, tests, docs and release metadata stay out."
 }

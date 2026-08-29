@@ -47,6 +47,7 @@ jobs:
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
           unzip -Z1 "$ZIP" > /tmp/ld-rc-files.txt
           grep -qx 'manifest.json' /tmp/ld-rc-files.txt
+          grep -qx 'updates/update-manager.js' /tmp/ld-rc-files.txt
           rm -rf /tmp/ld-rc-package
           mkdir -p /tmp/ld-rc-package
           unzip -q "$ZIP" -d /tmp/ld-rc-package
@@ -59,16 +60,17 @@ jobs:
           VERSION="$(node -p "require('./manifest.json').version")"
           ZIP="Lovable-Decrypter-v${VERSION}-rc1.zip"
           unzip -Z1 "$ZIP" > /tmp/ld-rc-files.txt
-          if grep -E '^(\.github|benchmark|docs|release|scripts|supabase|tests|updates)/' /tmp/ld-rc-files.txt; then
-            echo 'Development/backend/release metadata leaked into extension ZIP'
+          if grep -E '^(\.github|benchmark|docs|release|runtime|scripts|supabase|tests)/' /tmp/ld-rc-files.txt; then
+            echo 'Development/backend/local-worker/release content leaked into extension ZIP'
             exit 1
           fi
           if grep -Ei '(^|/)\.env($|\.)|\.(pem|key|p12|pfx)$' /tmp/ld-rc-files.txt; then
             echo 'Credential-like file leaked into extension ZIP'
             exit 1
           fi
-          ! grep -q '^updates/release.json$' /tmp/ld-rc-files.txt
-          ! grep -q '^updates/latest.json$' /tmp/ld-rc-files.txt
+          ! grep -qx 'updates/release.json' /tmp/ld-rc-files.txt
+          ! grep -qx 'updates/latest.json' /tmp/ld-rc-files.txt
+          grep -qx 'updates/update-manager.js' /tmp/ld-rc-files.txt
 
       - name: RC1 identity and candidate manifest contract
         run: |
@@ -115,8 +117,15 @@ jobs:
 
       - name: Release pipeline safety contract
         run: |
-          grep -q 'scripts/release-preflight.mjs' .github/workflows/release.yml
-          grep -q 'release/runtime-package.json' .github/workflows/release.yml
-          ! grep -q "zip -qr .*\. \\\\" .github/workflows/release.yml
+          node <<'NODE'
+          const fs=require('fs');
+          const source=fs.readFileSync('.github/workflows/release.yml','utf8');
+          for (const required of ['scripts/release-preflight.mjs','release/runtime-package.json','RUNTIME_PATHS','updates/update-manager.js']) {
+            if (!source.includes(required)) throw new Error(`Release workflow missing ${required}`);
+          }
+          if (/zip\s+-qr\s+"?\$\{?ZIP\}?"?\s+\.\s/.test(source) || /zip\s+-qr[^\n]+\s\.\s*\\?$/m.test(source)) {
+            throw new Error('Broad whole-repository ZIP packaging is forbidden');
+          }
+          NODE
           grep -q 'candidate-only' release/RC31_MANIFEST.json
           grep -q 'Nenhuma publicação ocorre na preparação do RC' RELEASE.md

@@ -23,8 +23,10 @@ if (trust !== '2.4.21') fail(`unexpected Trust Protocol ${trust}`);
 
 const packageRoots = new Set((packageSpec.paths || []).map(normalize));
 const forbiddenRoots = new Set((packageSpec.forbidden_roots || []).map(normalize));
+const forbiddenPaths = new Set((packageSpec.forbidden_paths || []).map(normalize));
 for (const item of packageRoots) {
   if (!item || forbiddenRoots.has(item.split('/')[0])) fail(`forbidden package root: ${item}`);
+  if (forbiddenPaths.has(item)) fail(`forbidden package path: ${item}`);
   if (!fs.existsSync(path.join(root, item))) fail(`missing package path: ${item}`);
 }
 
@@ -49,6 +51,7 @@ const forbiddenExtensions = new Set((packageSpec.forbidden_extensions || []).map
 for (const file of packageFiles) {
   const lower = file.toLowerCase();
   const base = path.posix.basename(lower);
+  if (forbiddenPaths.has(file)) fail(`forbidden file leaked into package: ${file}`);
   if (base === '.env' || base.startsWith('.env.')) fail(`environment file in package: ${file}`);
   if (forbiddenExtensions.has(path.posix.extname(lower))) fail(`private credential file in package: ${file}`);
   const top = file.split('/')[0];
@@ -123,6 +126,7 @@ const result = {
   runtime_files: packageFiles.size,
   manifest_references: manifestRefs.size,
   relative_imports_resolved: true,
+  forbidden_paths_absent: true,
   global_network_monkeypatch: false,
   private_key_material: false,
   candidate_mode: candidateMode,

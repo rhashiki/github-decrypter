@@ -47,14 +47,18 @@ jobs:
           test "${#RUNTIME_PATHS[@]}" -gt 1
           zip -qr "$ZIP" "${RUNTIME_PATHS[@]}"
           unzip -Z1 "$ZIP" > /tmp/ld-release-files.txt
-          if grep -E '^(\.github|benchmark|docs|release|scripts|supabase|tests|updates)/' /tmp/ld-release-files.txt; then
-            echo 'Development/backend/release metadata leaked into extension ZIP'
+          grep -qx 'manifest.json' /tmp/ld-release-files.txt
+          grep -qx 'updates/update-manager.js' /tmp/ld-release-files.txt
+          if grep -E '^(\.github|benchmark|docs|release|runtime|scripts|supabase|tests)/' /tmp/ld-release-files.txt; then
+            echo 'Development/backend/local-worker/release content leaked into extension ZIP'
             exit 1
           fi
           if grep -Ei '(^|/)\.env($|\.)|\.(pem|key|p12|pfx)$' /tmp/ld-release-files.txt; then
             echo 'Credential-like file leaked into extension ZIP'
             exit 1
           fi
+          ! grep -qx 'updates/release.json' /tmp/ld-release-files.txt
+          ! grep -qx 'updates/latest.json' /tmp/ld-release-files.txt
           sha256sum "$ZIP" | tee "Lovable-Decrypter-v${VERSION}.sha256"
 
       - name: Create or update GitHub release

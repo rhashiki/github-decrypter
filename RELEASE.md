@@ -14,9 +14,11 @@ A preparação de uma candidata acontece em branch própria e passa pelo workflo
 - GitHub Releases/tags oficiais;
 - backend e migrations Supabase.
 
-O ZIP candidato é montado somente com a allowlist de runtime em `release/runtime-package.json`. `tests`, `docs`, `supabase`, `.github`, `scripts`, `release`, `benchmark` e metadata OTA não entram no pacote da extensão.
+O ZIP candidato é montado somente com a allowlist de runtime em `release/runtime-package.json`. `tests`, `docs`, `supabase`, `.github`, `scripts`, `release`, `benchmark` e o worker standalone em `runtime/decrypter-local` não entram no pacote da extensão.
 
-O preflight `scripts/release-preflight.mjs` valida versão, Trust Protocol, referências do `manifest.json`, fechamento dos imports relativos, ausência de arquivos de credenciais e ausência de monkeypatch global de rede.
+`updates/update-manager.js` faz parte do runtime do navegador e entra no ZIP. Já `updates/release.json` e `updates/latest.json` são metadata de publicação/OTA e permanecem fora do pacote.
+
+O preflight `scripts/release-preflight.mjs` valida versão, Trust Protocol, referências do `manifest.json`, fechamento dos imports relativos, ausência de arquivos de credenciais, ausência de metadata OTA no ZIP e ausência de monkeypatch global de rede.
 
 ## Publicação oficial
 
@@ -39,6 +41,7 @@ A chave privada de assinatura permanece no backend/Supabase e nunca deve ser ver
 - Trust Protocol: `2.4.21`.
 - `updates/release.json` e `updates/latest.json` continuam apontando para a release estável anterior até autorização de publicação.
 - `.github/RELEASE_TRIGGER` não é alterado durante a preparação.
+- O worker `runtime/decrypter-local` é distribuído separadamente e não faz parte do ZIP da extensão Chrome.
 
 ## Limitação do Chrome
 
