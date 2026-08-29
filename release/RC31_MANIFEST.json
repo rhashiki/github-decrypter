@@ -47,6 +47,10 @@
     "scope_lock_required": true,
     "guarded_commit_required": true,
     "runtime_package_allowlist": true,
+    "runtime_import_closure_required": true,
+    "legacy_global_fetch_interceptor_packaged": false,
+    "standalone_local_worker_packaged": false,
+    "ota_metadata_packaged": false,
     "secret_values_in_release_metadata": false,
     "arbitrary_remote_asset_fetch": false
   },
@@ -55,12 +59,14 @@
     "runtime_import_closure": "required",
     "manifest_reference_closure": "required",
     "package_forbidden_roots": "required",
+    "package_excluded_paths": "required",
     "private_key_scan": "required",
     "release_surfaces_frozen_until_explicit_publish": "required"
   },
   "known_non_blockers": [
     "Stable OTA metadata remains on v2.2.0 until an explicit official release is authorized.",
     "ld-owner-key-bootstrap-temp remains deployed but is hard-disabled and returns HTTP 410 BOOTSTRAP_DISABLED.",
-    "Decrypter Local may remain unavailable until a real GPU worker is registered."
+    "Decrypter Local may remain unavailable until a real GPU worker is registered.",
+    "content/cloud-runtime.js remains in source history as legacy code but is not booted and is explicitly excluded from the distributable package."
   ]
 }

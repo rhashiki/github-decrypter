@@ -18,7 +18,9 @@ O ZIP candidato é montado somente com a allowlist de runtime em `release/runtim
 
 `updates/update-manager.js` faz parte do runtime do navegador e entra no ZIP. Já `updates/release.json` e `updates/latest.json` são metadata de publicação/OTA e permanecem fora do pacote.
 
-O preflight `scripts/release-preflight.mjs` valida versão, Trust Protocol, referências do `manifest.json`, fechamento dos imports relativos, ausência de arquivos de credenciais, ausência de metadata OTA no ZIP e ausência de monkeypatch global de rede.
+Arquivos legados que não pertencem ao boot atual podem ser listados em `excluded_paths`. O RC1 exclui explicitamente `content/cloud-runtime.js`, um interceptor legado com monkeypatch global de `fetch`. O preflight garante que nenhum script do manifest nem import relativo do runtime dependa de um caminho excluído.
+
+O preflight `scripts/release-preflight.mjs` valida versão, Trust Protocol, referências do `manifest.json`, fechamento dos imports relativos, ausência de arquivos de credenciais, ausência de metadata OTA no ZIP e ausência de monkeypatch global de rede nos arquivos efetivamente distribuídos.
 
 ## Publicação oficial
 
@@ -28,7 +30,7 @@ A publicação oficial só deve ser iniciada após autorização explícita.
 2. Confirme CI verde do Release Readiness e da regressão integral.
 3. Confira `release/RC31_MANIFEST.json` e o SHA da candidata.
 4. Somente então dispare `release.yml` por mecanismo de release explicitamente autorizado (trigger/tag/workflow manual).
-5. O workflow executa novamente o preflight e gera `Lovable-Decrypter-vX.Y.Z.zip` usando a mesma allowlist de runtime.
+5. O workflow executa novamente o preflight e gera `Lovable-Decrypter-vX.Y.Z.zip` usando a mesma allowlist/exclusões de runtime.
 6. O workflow calcula SHA-256, cria/atualiza a GitHub Release e publica `updates/release.json` em `main`.
 7. A Edge Function Supabase `ld-release-feed` lê o metadata estável, valida versão/URL/SHA-256 e devolve um envelope ECDSA assinado.
 8. Para clientes legados, o workflow copia um envelope já assinado pelo `ld-release-feed` para `updates/latest.json`.
@@ -42,6 +44,7 @@ A chave privada de assinatura permanece no backend/Supabase e nunca deve ser ver
 - `updates/release.json` e `updates/latest.json` continuam apontando para a release estável anterior até autorização de publicação.
 - `.github/RELEASE_TRIGGER` não é alterado durante a preparação.
 - O worker `runtime/decrypter-local` é distribuído separadamente e não faz parte do ZIP da extensão Chrome.
+- `content/cloud-runtime.js` é legado morto e não faz parte do pacote candidato.
 
 ## Limitação do Chrome
 

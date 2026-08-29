@@ -16,6 +16,9 @@
     "ui",
     "updates/update-manager.js"
   ],
+  "excluded_paths": [
+    "content/cloud-runtime.js"
+  ],
   "forbidden_roots": [
     ".github",
     "benchmark",
@@ -31,5 +34,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions": [".pem", ".key", ".p12", ".pfx"],
-  "notes": "Only browser-extension runtime files belong in the distributable ZIP. The browser update manager is included; OTA metadata, backend, local workers, tests, docs and release metadata stay out."
+  "notes": "Only browser-extension runtime files belong in the distributable ZIP. The browser update manager is included; OTA metadata, backend, local workers, tests, docs and dead legacy network interceptors stay out."
 }

@@ -44,11 +44,18 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           ZIP="Lovable-Decrypter-v${VERSION}.zip"
           mapfile -t RUNTIME_PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          mapfile -t EXCLUDED_PATHS < <(node -e "(require('./release/runtime-package.json').excluded_paths||[]).forEach(p=>console.log(p))")
           test "${#RUNTIME_PATHS[@]}" -gt 1
-          zip -qr "$ZIP" "${RUNTIME_PATHS[@]}"
+          ZIP_ARGS=("$ZIP" "${RUNTIME_PATHS[@]}")
+          if [ "${#EXCLUDED_PATHS[@]}" -gt 0 ]; then
+            zip -qr "${ZIP_ARGS[@]}" -x "${EXCLUDED_PATHS[@]}"
+          else
+            zip -qr "${ZIP_ARGS[@]}"
+          fi
           unzip -Z1 "$ZIP" > /tmp/ld-release-files.txt
           grep -qx 'manifest.json' /tmp/ld-release-files.txt
           grep -qx 'updates/update-manager.js' /tmp/ld-release-files.txt
+          ! grep -qx 'content/cloud-runtime.js' /tmp/ld-release-files.txt
           if grep -E '^(\.github|benchmark|docs|release|runtime|scripts|supabase|tests)/' /tmp/ld-release-files.txt; then
             echo 'Development/backend/local-worker/release content leaked into extension ZIP'
             exit 1

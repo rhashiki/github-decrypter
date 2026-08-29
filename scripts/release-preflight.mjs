@@ -22,12 +22,17 @@ if (configVersion !== version) fail(`settings VERSION ${configVersion} != manife
 if (trust !== '2.4.21') fail(`unexpected Trust Protocol ${trust}`);
 
 const packageRoots = new Set((packageSpec.paths || []).map(normalize));
+const excludedPaths = new Set((packageSpec.excluded_paths || []).map(normalize));
 const forbiddenRoots = new Set((packageSpec.forbidden_roots || []).map(normalize));
 const forbiddenPaths = new Set((packageSpec.forbidden_paths || []).map(normalize));
 for (const item of packageRoots) {
   if (!item || forbiddenRoots.has(item.split('/')[0])) fail(`forbidden package root: ${item}`);
   if (forbiddenPaths.has(item)) fail(`forbidden package path: ${item}`);
   if (!fs.existsSync(path.join(root, item))) fail(`missing package path: ${item}`);
+}
+for (const item of excludedPaths) {
+  if (!item || !fs.existsSync(path.join(root, item))) fail(`excluded path does not exist: ${item}`);
+  if (packageRoots.has(item)) fail(`path cannot be both included and excluded: ${item}`);
 }
 
 function walk(relative) {
@@ -45,6 +50,7 @@ function walk(relative) {
 
 const packageFiles = new Set();
 for (const item of packageRoots) for (const file of walk(item)) packageFiles.add(file);
+for (const item of excludedPaths) packageFiles.delete(item);
 if (!packageFiles.has('manifest.json')) fail('manifest.json missing from runtime package');
 
 const forbiddenExtensions = new Set((packageSpec.forbidden_extensions || []).map(value => String(value).toLowerCase()));
@@ -52,6 +58,7 @@ for (const file of packageFiles) {
   const lower = file.toLowerCase();
   const base = path.posix.basename(lower);
   if (forbiddenPaths.has(file)) fail(`forbidden file leaked into package: ${file}`);
+  if (excludedPaths.has(file)) fail(`excluded file leaked into package: ${file}`);
   if (base === '.env' || base.startsWith('.env.')) fail(`environment file in package: ${file}`);
   if (forbiddenExtensions.has(path.posix.extname(lower))) fail(`private credential file in package: ${file}`);
   const top = file.split('/')[0];
@@ -71,7 +78,10 @@ for (const script of manifest.content_scripts || []) {
   (script.css || []).forEach(addRef);
 }
 for (const item of manifest.web_accessible_resources || []) (item.resources || []).forEach(addRef);
-for (const ref of manifestRefs) if (!packageFiles.has(ref)) fail(`manifest runtime reference missing from package: ${ref}`);
+for (const ref of manifestRefs) {
+  if (excludedPaths.has(ref)) fail(`manifest references excluded path: ${ref}`);
+  if (!packageFiles.has(ref)) fail(`manifest runtime reference missing from package: ${ref}`);
+}
 
 function resolveRelativeImport(fromFile, specifier) {
   const clean = String(specifier || '').split(/[?#]/, 1)[0];
@@ -125,6 +135,7 @@ const result = {
   trust_protocol: trust,
   runtime_files: packageFiles.size,
   manifest_references: manifestRefs.size,
+  excluded_paths: [...excludedPaths].sort(),
   relative_imports_resolved: true,
   forbidden_paths_absent: true,
   global_network_monkeypatch: false,

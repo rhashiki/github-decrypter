@@ -42,12 +42,19 @@ jobs:
           VERSION="$(node -p "require('./manifest.json').version")"
           ZIP="Lovable-Decrypter-v${VERSION}-rc1.zip"
           mapfile -t RUNTIME_PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          mapfile -t EXCLUDED_PATHS < <(node -e "(require('./release/runtime-package.json').excluded_paths||[]).forEach(p=>console.log(p))")
           test "${#RUNTIME_PATHS[@]}" -gt 1
-          zip -qr "$ZIP" "${RUNTIME_PATHS[@]}"
+          ZIP_ARGS=("$ZIP" "${RUNTIME_PATHS[@]}")
+          if [ "${#EXCLUDED_PATHS[@]}" -gt 0 ]; then
+            zip -qr "${ZIP_ARGS[@]}" -x "${EXCLUDED_PATHS[@]}"
+          else
+            zip -qr "${ZIP_ARGS[@]}"
+          fi
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
           unzip -Z1 "$ZIP" > /tmp/ld-rc-files.txt
           grep -qx 'manifest.json' /tmp/ld-rc-files.txt
           grep -qx 'updates/update-manager.js' /tmp/ld-rc-files.txt
+          ! grep -qx 'content/cloud-runtime.js' /tmp/ld-rc-files.txt
           rm -rf /tmp/ld-rc-package
           mkdir -p /tmp/ld-rc-package
           unzip -q "$ZIP" -d /tmp/ld-rc-package
@@ -70,6 +77,7 @@ jobs:
           fi
           ! grep -qx 'updates/release.json' /tmp/ld-rc-files.txt
           ! grep -qx 'updates/latest.json' /tmp/ld-rc-files.txt
+          ! grep -qx 'content/cloud-runtime.js' /tmp/ld-rc-files.txt
           grep -qx 'updates/update-manager.js' /tmp/ld-rc-files.txt
 
       - name: RC1 identity and candidate manifest contract
@@ -78,11 +86,13 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
           const rc=JSON.parse(fs.readFileSync('release/RC31_MANIFEST.json','utf8'));
+          const pkg=JSON.parse(fs.readFileSync('release/runtime-package.json','utf8'));
           if(m.version!=='2.4.31') throw new Error(`Unexpected version ${m.version}`);
           if(rc.candidate!==m.version) throw new Error('RC candidate mismatch');
           if(rc.trust_protocol_version!=='2.4.21') throw new Error('Trust Protocol mismatch');
           if(rc.release_state!=='candidate-only'||rc.official_release_published!==false||rc.ota_published!==false) throw new Error('RC accidentally marked published');
           if(!rc.release_invariants?.runtime_package_allowlist) throw new Error('Runtime allowlist invariant missing');
+          if(!(pkg.excluded_paths||[]).includes('content/cloud-runtime.js')) throw new Error('Legacy network interceptor must be excluded');
           NODE
 
       - name: Backend and database freeze
@@ -120,7 +130,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const source=fs.readFileSync('.github/workflows/release.yml','utf8');
-          for (const required of ['scripts/release-preflight.mjs','release/runtime-package.json','RUNTIME_PATHS','updates/update-manager.js']) {
+          for (const required of ['scripts/release-preflight.mjs','release/runtime-package.json','RUNTIME_PATHS','EXCLUDED_PATHS','updates/update-manager.js','content/cloud-runtime.js']) {
             if (!source.includes(required)) throw new Error(`Release workflow missing ${required}`);
           }
           if (/zip\s+-qr\s+"?\$\{?ZIP\}?"?\s+\.\s/.test(source) || /zip\s+-qr[^\n]+\s\.\s*\\?$/m.test(source)) {
