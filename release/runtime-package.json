@@ -1,6 +1,6 @@
 {
   "schema": "ld-runtime-package/1",
-  "candidate": "2.4.31",
+  "candidate": "2.5.44",
   "paths": [
     "manifest.json",
     "ai",
@@ -16,9 +16,7 @@
     "ui",
     "updates/update-manager.js"
   ],
-  "excluded_paths": [
-    "content/cloud-runtime.js"
-  ],
+  "excluded_paths": [],
   "forbidden_roots": [
     ".github",
     "benchmark",
