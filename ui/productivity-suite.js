@@ -302,11 +302,9 @@
     if (history) { event.preventDefault(); event.stopImmediatePropagation(); openHistory(); }
   }, true);
 
-  let attempts = 0;
-  const timer = setInterval(() => {
-    attempts += 1;
-    if (installRailButton() || attempts >= 120) clearInterval(timer);
-  }, 100);
+  const delivery = window.LovableDecrypterDeliveryScheduler;
+  if (delivery?.register) delivery.register('build40:productivity-rail', () => installRailButton(), { interval:100, maxAttempts:120 });
+  else queueMicrotask(installRailButton);
 
   window.addEventListener('ld3:design-system-ready', installRailButton);
   window.LovableDecrypterProductivitySuite = Object.freeze({
