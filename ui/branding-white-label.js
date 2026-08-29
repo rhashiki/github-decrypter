@@ -23,8 +23,8 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
   let profile = { ...DEFAULT_PROFILE };
+  let profileLoaded = false;
   let studio = null;
-  let installAttempts = 0;
   let reconcileTimer = 0;
 
   function root() { return document.getElementById(ROOT_ID); }
@@ -69,11 +69,13 @@
       const data = await chrome.storage.local.get(PROFILE_KEY);
       profile = sanitize(data[PROFILE_KEY] || DEFAULT_PROFILE);
     } catch (_) { profile = { ...DEFAULT_PROFILE }; }
+    profileLoaded = true;
     return profile;
   }
 
   async function saveProfile(next) {
     profile = sanitize(next);
+    profileLoaded = true;
     await chrome.storage.local.set({ [PROFILE_KEY]: profile });
     applyProfile();
     window.dispatchEvent(new CustomEvent('ld41:branding-changed', { detail:{ profile:{ ...profile, logoDataUrl:profile.logoDataUrl ? '[local-image]' : '' } } }));
@@ -274,23 +276,22 @@
   }
 
   async function install() {
-    await loadProfile();
+    if (!profileLoaded) await loadProfile();
     installCommunityOverride();
     applyProfile();
     if (installRailButton()) return true;
     return false;
   }
 
-  const timer = setInterval(async () => {
-    installAttempts += 1;
-    if (await install() || installAttempts >= 120) clearInterval(timer);
-  }, 100);
+  const delivery = window.LovableDecrypterDeliveryScheduler;
+  if (delivery?.register) delivery.register('build41:branding-rail', () => install(), { interval:100, maxAttempts:120 });
+  else queueMicrotask(() => install().catch(() => {}));
 
   window.addEventListener('ld3:design-system-ready', scheduleReconcile);
   window.addEventListener('ld2:dom-reconcile', scheduleReconcile);
   window.addEventListener('ld2:control-center-ready', scheduleReconcile);
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes[PROFILE_KEY]) { profile = sanitize(changes[PROFILE_KEY].newValue || DEFAULT_PROFILE); scheduleReconcile(); }
+    if (area === 'local' && changes[PROFILE_KEY]) { profile = sanitize(changes[PROFILE_KEY].newValue || DEFAULT_PROFILE); profileLoaded = true; scheduleReconcile(); }
   });
 
   window.LovableDecrypterBranding = Object.freeze({
