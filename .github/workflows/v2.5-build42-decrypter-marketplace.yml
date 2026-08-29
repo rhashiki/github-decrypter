@@ -44,7 +44,7 @@ jobs:
           const fs=require('fs');
           const s=fs.readFileSync('ui/decrypter-marketplace.js','utf8');
           for(const x of ['eval(','new Function','fetch(','XMLHttpRequest','sendBeacon','MutationObserver','chrome.scripting','LD2_BUILD_EXECUTE','LD2_PLAN_APPLY','LD2_PLAN_APPROVE']) if(s.includes(x)) throw new Error('marketplace supply-chain/authority violation '+x);
-          if(!s.includes('router().createCustom')&&!s.includes('api.createCustom')) throw new Error('marketplace must install through Skills Engine');
+          if(!s.includes('api.createCustom')) throw new Error('marketplace must install through Skills Engine');
           if(!s.includes('api.deleteCustom')) throw new Error('marketplace uninstall must use Skills Engine');
           NODE
 
@@ -54,7 +54,7 @@ jobs:
           const fs=require('fs');
           const js=fs.readFileSync('ui/decrypter-marketplace.js','utf8');
           const css=fs.readFileSync('ui/decrypter-marketplace.css','utf8');
-          for(const x of ['INSTALLS_KEY','Decrypter Marketplace','CATALOG','UI/UX Quality Gate','Supabase Migration Guard','Browser Extension Security','Release Readiness','Ctrl','ld42Marketplace','attempts >= 120','LovableDecrypterMarketplace','sem código remoto']) if(!js.includes(x)) throw new Error('missing marketplace contract '+x);
+          for(const x of ['INSTALLS_KEY','Decrypter Marketplace','CATALOG','UI/UX Quality Gate','Supabase Migration Guard','Browser Extension Security','Release Readiness','event.ctrlKey','ld42Marketplace','attempts >= 120','LovableDecrypterMarketplace','sem código remoto']) if(!js.includes(x)) throw new Error('missing marketplace contract '+x);
           for(const x of ['.ld42-shell','.ld42-card','.ld42-detail','.ld42-market-rail','data-installed','focus-visible','prefers-reduced-motion']) if(!css.includes(x)) throw new Error('missing marketplace visual contract '+x);
           NODE
 
