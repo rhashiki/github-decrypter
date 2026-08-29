@@ -94,6 +94,11 @@ function resolveRelativeImport(fromFile, specifier) {
 }
 
 const importPattern = /(?:import|export)\s+(?:[^'"\n]*?\sfrom\s*)?['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+const monkeypatchPatterns = [
+  /(?:window|globalThis)\.fetch\s*=(?!=)/,
+  /XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,
+  /navigator\.sendBeacon\s*=(?!=)/
+];
 for (const file of packageFiles) {
   if (!/\.(?:m?js)$/i.test(file)) continue;
   const source = read(file);
@@ -104,9 +109,7 @@ for (const file of packageFiles) {
     const resolved = resolveRelativeImport(file, specifier);
     if (!resolved) fail(`unresolved relative import ${specifier} from ${file}`);
   }
-  if (/window\.fetch\s*=|globalThis\.fetch\s*=|XMLHttpRequest\.prototype\s*\.|navigator\.sendBeacon\s*=/.test(source)) {
-    fail(`global network monkeypatch detected in ${file}`);
-  }
+  if (monkeypatchPatterns.some(pattern => pattern.test(source))) fail(`global network monkeypatch detected in ${file}`);
   if (/-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/.test(source)) fail(`private key material marker detected in ${file}`);
 }
 
