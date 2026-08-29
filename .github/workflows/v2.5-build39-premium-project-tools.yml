@@ -70,7 +70,7 @@ jobs:
           const fs = require('fs');
           const js = fs.readFileSync('ui/premium-project-tools.js','utf8');
           const css = fs.readFileSync('ui/premium-project-tools.css','utf8');
-          for (const token of ['Project Brain','Project Rules','Impact Map','Explain Project','data-ld39-toolstrip','data-ld39-project-modal','LovableDecrypterPremiumProjectTools']) {
+          for (const token of ['Project Brain','Project Rules','Impact Map','Explain Project','ld39Toolstrip','ld39ProjectModal','LovableDecrypterPremiumProjectTools']) {
             if (!js.includes(token)) throw new Error(`Missing Project Tools contract: ${token}`);
           }
           for (const token of ['.ld39-project-tools','.ld39-project-modal-tabs','.ld39-project-modal-meta','[data-ld39-project-modal]','button:focus-visible','prefers-reduced-motion']) {
