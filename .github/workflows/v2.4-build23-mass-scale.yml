@@ -58,7 +58,7 @@ jobs:
           if(/\b(prompt|content|payload|attachment|source_code|project_context)\b\s+(text|jsonb|bytea)/i.test(jobs)) throw new Error('Inference queue must not persist customer payload');
           NODE
 
-      - name: Pool security and rate limiting
+      - name: Pool security, rate limiting and FK indexes
         run: |
           for t in ld_inference_pools ld_inference_workers ld_inference_jobs ld_inference_leases ld_inference_rate_windows ld_inference_scale_decisions; do
             grep -q "alter table public.$t enable row level security" supabase/migrations/20260828234500_build23_mass_scale.sql
@@ -66,6 +66,9 @@ jobs:
           done
           grep -q 'POOL_RATE_LIMITED' supabase/migrations/20260828234500_build23_mass_scale.sql
           grep -q 'grant execute on function public.ld_claim_inference_worker(text,uuid) to service_role' supabase/migrations/20260828234500_build23_mass_scale.sql
+          grep -q 'ld_inference_jobs_worker_id_idx' supabase/migrations/20260829001310_build23_fk_indexes.sql
+          grep -q 'ld_inference_leases_job_id_idx' supabase/migrations/20260829001310_build23_fk_indexes.sql
+          grep -q 'ld_inference_leases_pool_id_idx' supabase/migrations/20260829001310_build23_fk_indexes.sql
           if grep -qi 'security definer' supabase/migrations/20260828234500_build23_mass_scale.sql supabase/migrations/20260828234600_build23_pool_health_gc.sql; then
             echo 'Build 23 RPCs must stay SECURITY INVOKER'
             exit 1
@@ -142,7 +145,7 @@ jobs:
           FAILED=0
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/v2.4-build23-mass-scale.yml|manifest.json|settings/config.js|runtime/decrypter-local/.env.example|runtime/decrypter-local/README.md|runtime/decrypter-local/compose.yaml|runtime/decrypter-local/worker-agent.py|supabase/functions/ld-command/index.ts|supabase/functions/ld-local-control/index.ts|supabase/migrations/20260828234500_build23_mass_scale.sql|supabase/migrations/20260828234600_build23_pool_health_gc.sql|docs/BUILD23_MASS_SCALE.md|tests/build23-mass-scale-sim.mjs) ;;
+              .github/workflows/v2.4-build23-mass-scale.yml|manifest.json|settings/config.js|runtime/decrypter-local/.env.example|runtime/decrypter-local/README.md|runtime/decrypter-local/compose.yaml|runtime/decrypter-local/worker-agent.py|supabase/functions/ld-command/index.ts|supabase/functions/ld-local-control/index.ts|supabase/migrations/20260828234500_build23_mass_scale.sql|supabase/migrations/20260828234600_build23_pool_health_gc.sql|supabase/migrations/20260829001310_build23_fk_indexes.sql|docs/BUILD23_MASS_SCALE.md|tests/build23-mass-scale-sim.mjs) ;;
               *) echo "Unexpected Build 23 modification: $path"; FAILED=1 ;;
             esac
           done < <(git diff --name-only "$BASE"...HEAD)
