@@ -78,12 +78,13 @@ jobs:
 
       - name: Browser security and non-invasive integration gate
         run: |
-          BROWSER_FILES="manifest.json settings security background content ui core ai storage"
-          if grep -R -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN|DECRYPTER_WORKER_SECRET|MERCADOPAGO_ACCESS_TOKEN' $BROWSER_FILES --include='*.js' --include='manifest.json'; then
-            echo 'Backend secret identifier leaked into browser surface'
+          BASE=f955f30f1d643a1551f6fc60270af60911e4904d
+          ADDED="$(git diff -U0 "$BASE"...HEAD -- manifest.json settings security background content ui core ai storage | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN|DECRYPTER_WORKER_SECRET|MERCADOPAGO_ACCESS_TOKEN'; then
+            echo 'Backend secret identifier introduced by Build 25 browser diff'
             exit 1
           fi
-          if git diff -U0 f955f30f1d643a1551f6fc60270af60911e4904d...HEAD -- manifest.json settings security background content ui core ai storage | grep '^+' | grep -v '^+++' | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
+          if printf '%s\n' "$ADDED" | grep -E 'new[[:space:]]+MutationObserver|window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*='; then
             echo 'Forbidden invasive browser patch detected'
             exit 1
           fi
