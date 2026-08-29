@@ -1,0 +1,53 @@
+name: v2.5 Build 40 · Productivity Suite
+
+on:
+  push:
+    branches: [main, v2.5-build40-productivity-suite]
+    paths:
+      - 'ui/productivity-suite.js'
+      - 'ui/productivity-suite.css'
+      - 'manifest.json'
+      - '.github/workflows/v2.5-build40-productivity-suite.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check ui/productivity-suite.js
+      - name: Validate manifest wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.5.40') throw new Error('manifest version mismatch');
+          const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
+          if(!early||early.run_at!=='document_start'||early.all_frames!==true) throw new Error('early boot regression');
+          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/productivity-suite.js'));
+          if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('productivity wiring missing');
+          if(!(main.css||[]).includes('ui/productivity-suite.css')) throw new Error('productivity css missing');
+          for(const f of ['ui/launcher-rail-v3.js','ui/premium-engineering-ux.js','ui/premium-project-tools.js']) if(!(main.js||[]).includes(f)) throw new Error('cumulative wiring regression '+f);
+          if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
+          NODE
+      - name: Validate authority boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('ui/productivity-suite.js','utf8');
+          for(const x of ['LD2_BUILD_EXECUTE','LD2_PLAN_ONLY','LD2_PLAN_APPLY','LD2_PLAN_APPROVE','XMLHttpRequest','MutationObserver']) if(s.includes(x)) throw new Error('authority boundary crossed '+x);
+          if(!s.includes('LD2_HISTORY_GET')||!s.includes('target.click()')) throw new Error('existing read/action reuse missing');
+          NODE
+      - name: Validate Productivity contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const js=fs.readFileSync('ui/productivity-suite.js','utf8');
+          const css=fs.readFileSync('ui/productivity-suite.css','utf8');
+          for(const x of ['ld40-palette','Produtividade','Notas rápidas','Histórico','FAVORITES_KEY','RECENTS_KEY','Ctrl+Shift+N','Ctrl+Shift+H','Ctrl+Shift+S','Ctrl+Shift+Q','ld2_notes_','LovableDecrypterProductivitySuite','attempts >= 120']) if(!js.includes(x)) throw new Error('missing contract '+x);
+          for(const x of ['.ld40-palette','.ld40-command','.ld40-notes','.ld40-history','.ld40-productivity-rail','focus-visible','prefers-reduced-motion']) if(!css.includes(x)) throw new Error('missing visual contract '+x);
+          NODE
