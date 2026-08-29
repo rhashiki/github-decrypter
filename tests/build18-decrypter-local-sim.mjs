@@ -70,7 +70,7 @@ const h3 = await cachedHealth(16_001);
 assert(h1.sequence === 1 && h1.cached === false, 'Initial health must query runtime');
 assert(h2.sequence === 1 && h2.cached === true && healthCalls === 2, 'Fresh health must use cache before stale recheck');
 assert(h3.sequence === 2 && h3.cached === false, 'Stale health must recheck runtime');
-assert(gatewaySrc.includes('LOCAL_HEALTH_TTL_MS = 15_000'), 'Production gateway health TTL missing');
+assert(/LOCAL_HEALTH_TTL_MS\s*=\s*15_000/.test(gatewaySrc), 'Production gateway health TTL missing');
 assert(gatewaySrc.includes('now < localHealthCache.expiresAt'), 'Production stale-cache gate missing');
 assert(gatewaySrc.includes('cachedLocalRuntimeStatus'), 'Production cached health function missing');
 
