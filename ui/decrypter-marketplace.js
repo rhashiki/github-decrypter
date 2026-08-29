@@ -48,14 +48,14 @@
     {
       id:'performance-budget', version:1, category:'Quality', title:'Performance Budget', badge:'PERF', risk:'low',
       description:'Evita observers amplos, loops infinitos e trabalho repetitivo desnecessário no browser.',
-      useWhen:'Use when a mudança adicionar listeners, timers, observers, reconciliação de UI ou processamento frequente.',
+      useWhen:'Use when uma mudança adicionar listeners, timers, observers, reconciliação de UI ou processamento frequente.',
       avoidWhen:'Evite em alterações estáticas sem impacto de runtime.',
       definition:'Mantenha reconciliações bounded, idempotentes e escopadas. Evite polling permanente quando eventos existentes resolvem o problema. Não observe document/body globalmente sem necessidade. Limite listas renderizadas, debounces e caches. Meça custo antes de adicionar processamento frequente.'
     },
     {
       id:'release-readiness', version:1, category:'Operations', title:'Release Readiness', badge:'REL', risk:'low',
       description:'Checklist pré-release de versão, manifest, CI, artefato e rollback.',
-      useWhen:'Use when a tarefa preparar versão, tag, artefato, release, OTA ou publicação.',
+      useWhen:'Use when uma tarefa preparar versão, tag, artefato, release, OTA ou publicação.',
       avoidWhen:'Evite durante implementação comum que ainda não está sendo preparada para release.',
       definition:'Antes de uma release, valide versão e version_name, CI cumulativo, wiring do manifest, permissões, artefato reproduzível, checksum e caminho de rollback. Separe merge em main de publicação. Não crie release oficial, tag ou OTA sem autorização explícita.'
     },
@@ -73,7 +73,6 @@
   let query = '';
   let installs = {};
   let busy = new Set();
-  let attempts = 0;
 
   const root = () => document.getElementById(ROOT_ID);
   const router = () => window.LovableDecrypterSkillRouter;
@@ -259,7 +258,10 @@
     else if (event.key === 'Escape' && overlay?.classList.contains('open')) close();
   }, true);
 
-  const timer = setInterval(() => { attempts += 1; if (installRailButton() || attempts >= 120) clearInterval(timer); }, 100);
+  const delivery = window.LovableDecrypterDeliveryScheduler;
+  if (delivery?.register) delivery.register('build42:marketplace-rail', () => installRailButton(), { interval:100, maxAttempts:120 });
+  else queueMicrotask(installRailButton);
+
   window.addEventListener('ld3:design-system-ready', installRailButton);
   window.addEventListener('ld41:branding-changed', installRailButton);
 
