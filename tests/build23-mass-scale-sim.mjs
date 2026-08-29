@@ -3,8 +3,9 @@ import fs from 'node:fs';
 
 const migration=fs.readFileSync('supabase/migrations/20260828234500_build23_mass_scale.sql','utf8');
 const hardening=fs.readFileSync('supabase/migrations/20260828234600_build23_pool_health_gc.sql','utf8');
-const router=fs.readFileSync('supabase/functions/ld-local-router/index.ts','utf8');
+const command=fs.readFileSync('supabase/functions/ld-command/index.ts','utf8');
 const control=fs.readFileSync('supabase/functions/ld-local-control/index.ts','utf8');
+const gateway=fs.readFileSync('supabase/functions/ld-model-gateway/index.ts','utf8');
 const agent=fs.readFileSync('runtime/decrypter-local/worker-agent.py','utf8');
 const compose=fs.readFileSync('runtime/decrypter-local/compose.yaml','utf8');
 
@@ -21,14 +22,24 @@ assert.match(hardening,/status in \('joining','ready','draining'\)/);
 const jobs=migration.slice(migration.indexOf('create table if not exists public.ld_inference_jobs'),migration.indexOf('create index if not exists ld_inference_jobs_pool_status_idx'));
 assert.doesNotMatch(jobs,/\b(prompt|content|payload|attachment|source_code|project_context)\b\s+(text|jsonb|bytea)/i);
 
-assert.match(router,/endsWith\('\/v1\/models'\)/);
-assert.match(router,/endsWith\('\/v1\/chat\/completions'\)/);
-assert.match(router,/LOCAL_STREAMING_DISABLED/);
-assert.match(router,/maybeScale\(sb,snap,'health-demand',true\)/);
-assert.match(router,/DECRYPTER_GPU_SCALER_URL/);
-assert.match(router,/ld_claim_inference_worker/);
-assert.match(router,/ld_finish_inference_job/);
-assert.doesNotMatch(router,/gemini|generativelanguage\.googleapis\.com/i);
+assert.match(command,/const LOCAL_POOL="decrypter-local-primary"/);
+assert.match(command,/ld_inference_pool_snapshot/);
+assert.match(command,/ld_enqueue_inference_job/);
+assert.match(command,/ld_claim_inference_worker/);
+assert.match(command,/ld_finish_inference_job/);
+assert.match(command,/fetch\(`\$\{exec\.url\}\/v1\/chat\/completions`/);
+assert.match(command,/DECRYPTER_LOCAL_TOKEN/);
+assert.match(command,/DECRYPTER_GPU_SCALER_URL/);
+assert.match(command,/DECRYPTER_GPU_SCALER_TOKEN/);
+assert.match(command,/provider_status/);
+assert.match(command,/runtime:await localHealth\(sb\)/);
+assert.match(command,/dispatch:"pooled-direct"/);
+assert.match(command,/legacyLocalConfig/);
+assert.match(command,/ld_reserve_command/);
+assert.match(command,/ld_complete_command/);
+assert.match(command,/MODEL_GATEWAY_REQUIRED/);
+assert.doesNotMatch(command,/\/functions\/v1\/ld-local-(?:router|control)/);
+assert.ok(!fs.existsSync('supabase/functions/ld-local-router/index.ts'));
 
 assert.match(control,/x-decrypter-worker-secret/);
 assert.match(control,/u\.protocol!=='https:'/);
@@ -36,10 +47,14 @@ assert.match(control,/reconcile\(sb,'heartbeat'\)/);
 assert.match(control,/DECRYPTER_GPU_SCALER_TOKEN/);
 assert.match(control,/provider_neutral:true/);
 
+assert.match(gateway,/cross_provider_fallback:false/);
+assert.match(gateway,/trust_attestation_required:true/);
+
 for(const metric of ['vllm:num_requests_running','vllm:num_requests_waiting','vllm:kv_cache_usage_perc'])assert.ok(agent.includes(metric));
 assert.match(agent,/\/health/);
 assert.match(agent,/\/v1\/models/);
 assert.match(agent,/\/metrics/);
+assert.match(agent,/DECRYPTER_WORKER_INSTANCE_KEY"\) or socket\.gethostname\(\)/);
 assert.doesNotMatch(agent,/^\s*(?:import|from)\s+(?:requests|httpx|aiohttp)\b/m);
 assert.match(compose,/decrypter-worker-agent:/);
 assert.match(compose,/python:3\.12-slim/);
@@ -59,4 +74,4 @@ assert.equal(canScaleDown({inflight:0,queued:1,lastActivityMs:999999,cooldownMs:
 assert.equal(canScaleDown({inflight:0,queued:0,lastActivityMs:1000,cooldownMs:300000}),false);
 assert.equal(canScaleDown({inflight:0,queued:0,lastActivityMs:301000,cooldownMs:300000}),true);
 
-console.log(JSON.stringify({ok:true,cases:43,pool:'decrypter-local-primary',batching:'vllm-continuous',payload_persistence:false,scale_to_zero:true},null,2));
+console.log(JSON.stringify({ok:true,cases:53,pool:'decrypter-local-primary',dispatch:'direct-leased-worker',batching:'vllm-continuous',payload_persistence:false,scale_to_zero:true,nested_edge_function_inference:false},null,2));
