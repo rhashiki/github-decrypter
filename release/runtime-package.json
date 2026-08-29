@@ -12,6 +12,7 @@
     "security",
     "settings",
     "storage",
+    "tools",
     "ui"
   ],
   "forbidden_roots": [
