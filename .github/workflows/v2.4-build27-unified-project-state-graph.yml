@@ -1,0 +1,122 @@
+name: Validate v2.4 Build 27 Unified Project State Graph
+
+on:
+  push:
+    branches:
+      - v2.4-build27-unified-project-state-graph
+  pull_request:
+    branches:
+      - main
+      - v2.4-build27-unified-project-state-graph
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 27 identity and boot contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.27') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 27 · Unified Project State Graph') throw new Error('Build 27 version_name missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const deep=js.indexOf('content/lovable-workspace-deep-read.js');
+          const core=js.indexOf('content/project-state-graph-core.js');
+          const graph=js.indexOf('content/unified-project-state-graph.js');
+          if(!(deep>=0&&core>deep&&graph>core)) throw new Error('Project State Graph boot order invalid');
+          NODE
+          grep -q "export const VERSION = '2.4.27'" settings/config.js
+          grep -q "export const TRUST_PROTOCOL_VERSION = '2.4.21'" settings/config.js
+
+      - name: Syntax check all JavaScript and tests
+        run: |
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) -not -path './.git/*' | LC_ALL=C sort)
+
+      - name: Build 27 graph simulation
+        run: node tests/build27-unified-project-state-graph.mjs
+
+      - name: Full repository regression simulations
+        run: |
+          while IFS= read -r testfile; do
+            echo "==> $testfile"
+            node "$testfile"
+          done < <(find tests -maxdepth 1 -type f -name '*.mjs' | LC_ALL=C sort)
+
+      - name: Read-only state inspection contract
+        run: |
+          grep -q "database_schema_read: true" supabase/functions/ld-project-state/index.ts
+          grep -q "migration_history_read: true" supabase/functions/ld-project-state/index.ts
+          grep -q "edge_functions_read: true" supabase/functions/ld-project-state/index.ts
+          grep -q "auth_config_read: true" supabase/functions/ld-project-state/index.ts
+          grep -q "secret_values_read: false" supabase/functions/ld-project-state/index.ts
+          grep -q "writes: false" supabase/functions/ld-project-state/index.ts
+          ! grep -q '/functions/deploy' supabase/functions/ld-project-state/index.ts
+          ! grep -Eq 'method:[[:space:]]*"PATCH"|method:[[:space:]]*"DELETE"' supabase/functions/ld-project-state/index.ts
+
+      - name: Browser non-invasive integration gate
+        run: |
+          BASE=7fb74895118392335db29f97b4145cbaaf881287
+          ADDED="$(git diff -U0 "$BASE"...HEAD -- manifest.json settings background content core ui | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*=|new[[:space:]]+MutationObserver'; then
+            echo 'Forbidden invasive browser patch detected'
+            exit 1
+          fi
+          if printf '%s\n' "$ADDED" | grep -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|MERCADOPAGO_ACCESS_TOKEN'; then
+            echo 'Backend secret identifier leaked into browser changes'
+            exit 1
+          fi
+
+      - name: Backend and database scope freeze
+        run: |
+          BASE=7fb74895118392335db29f97b4145cbaaf881287
+          if git diff --name-only "$BASE"...HEAD -- supabase/migrations | grep -q .; then
+            echo 'Build 27 must not change database schema'
+            exit 1
+          fi
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              supabase/functions/ld-project-state/index.ts) ;;
+              *) echo "Unexpected backend change: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD -- supabase/functions)
+          test "$FAILED" -eq 0
+
+      - name: Freeze official release surfaces
+        run: |
+          BASE=7fb74895118392335db29f97b4145cbaaf881287
+          for path in .github/RELEASE_TRIGGER updates/latest.json updates/release.json .github/workflows/release.yml; do
+            if git diff --name-only "$BASE"...HEAD -- "$path" | grep -q .; then
+              echo "Official release surface changed: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 27 scope lock
+        run: |
+          BASE=7fb74895118392335db29f97b4145cbaaf881287
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build27-unified-project-state-graph.yml|background/project-state-runtime.js|background/service-worker-entry.js|content/project-state-graph-core.js|content/unified-project-state-graph.js|docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md|manifest.json|settings/config.js|supabase/functions/ld-project-state/index.ts|tests/build27-unified-project-state-graph.mjs) ;;
+              *) echo "Unexpected Build 27 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          grep -q 'Trust protocol: `2.4.21`' docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md
+          grep -q 'Valores de secrets nunca entram' docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md
+          grep -q 'não corrige' docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md
+          grep -q 'Build 28' docs/BUILD27_UNIFIED_PROJECT_STATE_GRAPH.md
