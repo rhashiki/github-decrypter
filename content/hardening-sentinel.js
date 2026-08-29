@@ -4,7 +4,11 @@
   window.__LD2_HARDENING_SENTINEL__ = true;
 
   const ROUTING_KEY = 'ld2_native_routing_enabled';
-  const WATCH_MS = 2200;
+  const DEGRADED_WATCH_MS = 2200;
+  const BUSY_WATCH_MS = 5000;
+  const READY_WATCH_MS = 12000;
+  const HIDDEN_WATCH_MS = 30000;
+  const EVENT_DEBOUNCE_MS = 80;
   const ownIds = new Set(['ld2-decrypter-chat-host', 'ld2-root']);
   const composerWords = /message|mensagem|ask|prompt|describe|descreva|chat|lovable|what do you want|type|build|planejar|construir/i;
   const sendWords = /send|submit|enviar|mandar|arrow.?up|paper.?plane|prompt/i;
@@ -17,13 +21,16 @@
     blockedNativeIntents: 0,
     updatedAt: 0,
     registry: null,
+    integrity: null,
     timer: 0,
+    kickTimer: 0,
     mountInFlight: null,
     refreshing: null
   };
 
   const core = () => window.LovableDecrypterHardeningCore;
   const registry = () => window.LovableDecrypterCapabilities;
+  const integrityGuard = () => window.LovableDecrypterIntegrity;
 
   function ownSurface(event) {
     const path = event?.composedPath?.() || [];
@@ -105,12 +112,15 @@
     return Object.freeze({
       schema: 'ld-hardening-state/1',
       build: 31,
+      hardeningBuild: 44,
       phase: state.phase,
       reason: state.reason,
       routingEnabled: state.routingEnabled,
       online: state.online,
       blockedNativeIntents: state.blockedNativeIntents,
       capabilityStatus: state.registry?.summary?.status || 'unknown',
+      integrityStatus: state.integrity?.status || 'unknown',
+      integrityFailed: state.integrity?.failed || [],
       updatedAt: state.updatedAt || null
     });
   }
@@ -122,6 +132,7 @@
     state.updatedAt = Date.now();
     document.documentElement.dataset.ld2Hardening = state.phase.toLowerCase();
     document.documentElement.dataset.ld2HardeningReason = state.reason;
+    document.documentElement.dataset.ld2Integrity = state.integrity?.status || 'unknown';
     if (changed) window.dispatchEvent(new CustomEvent('ld2:hardening-state', { detail: snapshot() }));
   }
 
@@ -134,8 +145,17 @@
     }
   }
 
+  function verifyIntegrity(reason) {
+    try {
+      state.integrity = integrityGuard()?.verify?.(reason) || Object.freeze({ status:'broken', failed:['integrity.guard_missing'] });
+    } catch (_) {
+      state.integrity = Object.freeze({ status:'broken', failed:['integrity.guard_error'] });
+    }
+    return state.integrity;
+  }
+
   async function safeRemount() {
-    if (!state.routingEnabled || !state.online || state.mountInFlight || typeof window.LovableDecrypterChat?.mount !== 'function') return;
+    if (!state.routingEnabled || !state.online || state.integrity?.status !== 'ready' || state.mountInFlight || typeof window.LovableDecrypterChat?.mount !== 'function') return;
     const chat = window.LovableDecrypterChat?.snapshot?.();
     if (chat?.mounted && ['READY', 'BUSY'].includes(String(chat?.phase || '').toUpperCase())) return;
     state.mountInFlight = Promise.resolve(window.LovableDecrypterChat.mount())
@@ -149,6 +169,7 @@
     state.refreshing = (async () => {
       await readRouting();
       state.online = navigator.onLine !== false;
+      verifyIntegrity(reason);
       try { state.registry = await registry()?.refresh?.(reason) || await registry()?.getLast?.() || null; }
       catch (_) { state.registry = await registry()?.getLast?.().catch?.(() => null) || null; }
       let chat = null;
@@ -157,14 +178,16 @@
         online: state.online,
         routingEnabled: state.routingEnabled,
         chat,
-        capabilitySummary: state.registry?.summary || null
-      }) || { phase: 'DEGRADED', reason: 'hardening_core_unavailable' };
+        capabilitySummary: state.registry?.summary || null,
+        integrity: state.integrity
+      }) || { phase: 'LOCKED', reason: 'hardening_core_unavailable' };
       publish(evaluated.phase, `${reason}:${evaluated.reason}`);
-      if (state.routingEnabled && state.online && (evaluated.phase === 'DEGRADED' || !chat?.mounted)) {
+      if (state.integrity?.status === 'ready' && state.routingEnabled && state.online && (evaluated.phase === 'DEGRADED' || !chat?.mounted)) {
         await safeRemount();
         try { state.registry = await registry()?.refresh?.('post-remount') || state.registry; } catch (_) {}
         try { chat = window.LovableDecrypterChat?.snapshot?.() || chat; } catch (_) {}
-        const after = core()?.evaluateHardening?.({ online: state.online, routingEnabled: state.routingEnabled, chat, capabilitySummary: state.registry?.summary || null });
+        verifyIntegrity('post-remount');
+        const after = core()?.evaluateHardening?.({ online: state.online, routingEnabled: state.routingEnabled, chat, capabilitySummary: state.registry?.summary || null, integrity: state.integrity });
         if (after) publish(after.phase, `post-remount:${after.reason}`);
       }
       return snapshot();
@@ -172,15 +195,34 @@
     return state.refreshing;
   }
 
+  function watchDelay() {
+    if (document.visibilityState === 'hidden') return HIDDEN_WATCH_MS;
+    if (state.phase === 'READY') return READY_WATCH_MS;
+    if (state.phase === 'BUSY') return BUSY_WATCH_MS;
+    return DEGRADED_WATCH_MS;
+  }
+
+  function armWatchdog() {
+    clearTimeout(state.timer);
+    state.timer = setTimeout(async () => {
+      await refresh('watchdog').catch(() => {});
+      armWatchdog();
+    }, watchDelay());
+  }
+
   function schedule(reason) {
-    setTimeout(() => refresh(reason).catch(() => {}), 80);
+    clearTimeout(state.kickTimer);
+    state.kickTimer = setTimeout(async () => {
+      await refresh(reason).catch(() => {});
+      armWatchdog();
+    }, EVENT_DEBOUNCE_MS);
   }
 
   window.addEventListener('keydown', onKeydown, true);
   window.addEventListener('click', onClick, true);
   window.addEventListener('submit', onSubmit, true);
   window.addEventListener('online', () => { state.online = true; schedule('online'); });
-  window.addEventListener('offline', () => { state.online = false; publish(state.routingEnabled ? 'LOCKED' : 'READY', state.routingEnabled ? 'offline' : 'native_mode'); });
+  window.addEventListener('offline', () => { state.online = false; publish(state.routingEnabled ? 'LOCKED' : 'READY', state.routingEnabled ? 'offline' : 'native_mode'); armWatchdog(); });
   window.addEventListener('popstate', () => schedule('popstate'));
   window.addEventListener('hashchange', () => schedule('hashchange'));
   window.addEventListener('ld2:project', () => schedule('project-change'));
@@ -188,21 +230,31 @@
   window.addEventListener('ld2:composer-guardian-state', () => schedule('composer-state'));
   window.addEventListener('ld2:project-state-graph', () => schedule('project-state'));
   window.addEventListener('ld2:dom-reconcile', () => schedule('dom-reconcile'));
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') schedule('visible'); });
+  window.addEventListener('ld2:runtime-integrity', () => schedule('runtime-integrity'));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') schedule('visible');
+    else armWatchdog();
+  });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes[ROUTING_KEY]) schedule('routing-change');
   });
 
-  state.timer = setInterval(() => refresh('watchdog').catch(() => {}), WATCH_MS);
-  addEventListener('beforeunload', () => clearInterval(state.timer), { once: true });
+  addEventListener('beforeunload', () => {
+    clearTimeout(state.timer);
+    clearTimeout(state.kickTimer);
+  }, { once: true });
 
   window.LovableDecrypterHardening = Object.freeze({
     build: 31,
+    hardeningBuild: 44,
     schema: 'ld-hardening-state/1',
     snapshot,
     refresh,
-    capabilities: () => state.registry
+    capabilities: () => state.registry,
+    integrity: () => state.integrity
   });
 
-  refresh('boot').catch(() => publish('DEGRADED', 'boot_failed'));
+  refresh('boot')
+    .catch(() => publish('LOCKED', 'boot_failed'))
+    .finally(armWatchdog);
 })();
