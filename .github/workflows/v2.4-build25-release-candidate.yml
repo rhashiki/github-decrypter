@@ -58,8 +58,8 @@ jobs:
               exit 1
             fi
           done
-          grep -q "- '.github/RELEASE_TRIGGER'" .github/workflows/release.yml
-          grep -q "- 'v\*'" .github/workflows/release.yml
+          grep -q -- "- '.github/RELEASE_TRIGGER'" .github/workflows/release.yml
+          grep -q -- "- 'v\*'" .github/workflows/release.yml
           grep -q 'workflow_dispatch:' .github/workflows/release.yml
 
       - name: Backend freeze and critical authority invariants
@@ -106,7 +106,7 @@ jobs:
           FAILED=0
           while IFS= read -r path; do
             case "$path" in
-              .github/workflows/v2.4-build25-release-candidate.yml|manifest.json|settings/config.js|release/RC25_MANIFEST.json|docs/BUILD25_RELEASE_CANDIDATE.md|tests/build25-release-candidate.mjs) ;;
+              .github/workflows/v2.4-build25-release-candidate.yml|manifest.json|settings/config.js|release/RC25_MANIFEST.json|docs/BUILD25_RELEASE_CANDIDATE.md|tests/build25-release-candidate.mjs|tests/build15-intelligence.test.mjs) ;;
               *) echo "Unexpected Build 25 modification: $path"; FAILED=1 ;;
             esac
           done < <(git diff --name-only "$BASE"...HEAD)
