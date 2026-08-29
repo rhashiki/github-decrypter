@@ -15,10 +15,11 @@ const webhook=read('supabase/functions/ld-mercadopago-webhook/index.ts');
 const hardening=read('supabase/migrations/20260829003000_build24_security_chaos_hardening.sql');
 const massScale=read('supabase/migrations/20260828234500_build23_mass_scale.sql');
 
-// Version/trust-protocol drift: app releases must not silently invalidate the Build 21 protocol.
-assert.equal(manifest.version,'2.4.24');
-assert.equal(manifest.version_name,'2.4 Build 24');
-assert.match(config,/export const VERSION = '2\.4\.24'/);
+// Build 24 hardening must survive later app versions without changing the Trust protocol.
+const versionMatch=config.match(/export const VERSION = '([^']+)'/);
+assert.equal(versionMatch?.[1],manifest.version);
+const [major,minor,patch]=String(manifest.version).split('.').map(Number);
+assert.equal(major,2);assert.equal(minor,4);assert.ok(patch>=24);
 assert.match(config,/export const TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 assert.match(attest,/const EXPECTED_VERSION='2\.4\.21'/);
 assert.match(gateway,/const EXPECTED_CLIENT_VERSION='2\.4\.21'/);
@@ -43,7 +44,7 @@ assert.match(command,/DELETE_NOT_EXPLICIT/);
 assert.match(command,/PATCH_TOO_LARGE/);
 assert.match(command,/SEARCH_AMBIGUOUS/);
 
-// Browser trust bearer remains ephemeral and secrets remain server-only.
+// Browser trust bearer remains ephemeral and server-only credentials remain absent from this surface.
 assert.match(trust,/chrome\.storage\.session/);
 assert.doesNotMatch(trust,/chrome\.storage\.local\.set/);
 for(const client of [config,trust,gatewayClient,gatewayBootstrap,read('manifest.json')]){
@@ -111,7 +112,7 @@ assert.doesNotMatch(jobs,/\b(prompt|content|payload|attachment|source_code|proje
 assert.match(massScale,/for update skip locked/i);
 assert.match(massScale,/POOL_RATE_LIMITED/);
 
-// No invasive Lovable DOM/network hooks are introduced by Build 24 browser changes.
+// No invasive Lovable DOM/network hooks are introduced by the hardened browser modules.
 const browserChanged=[trust,gatewayClient,gatewayBootstrap,config];
 for(const source of browserChanged){
   assert.doesNotMatch(source,/new\s+MutationObserver/);
@@ -120,7 +121,8 @@ for(const source of browserChanged){
 
 console.log(JSON.stringify({
   ok:true,
-  app_version:'2.4.24',
+  app_version:manifest.version,
+  minimum_hardened_app_version:'2.4.24',
   trust_protocol:'2.4.21',
   deterministic_chaos_iterations:500,
   blocked_ssrf_vectors:blocked.length,
