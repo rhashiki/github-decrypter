@@ -1,0 +1,85 @@
+name: v2.5 Build 47 · Nexus UI Parity
+
+on:
+  push:
+    branches: [main, v2.5-build47-nexus-ui-parity]
+    paths:
+      - 'ui/nexus-parity-v47.js'
+      - 'ui/nexus-parity-v47.css'
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - '.github/workflows/v2.5-build47-nexus-ui-parity.yml'
+      - '.github/workflows/v2.5-build46-fab-rail-cascade-premium.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        run: node --check ui/nexus-parity-v47.js
+
+      - name: Validate version and wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.5.47') throw new Error('manifest version must be 2.5.47');
+          const config=fs.readFileSync('settings/config.js','utf8');
+          if(!config.includes("export const VERSION = '2.5.47'")) throw new Error('settings version mismatch');
+          const pkg=JSON.parse(fs.readFileSync('release/runtime-package.json','utf8'));
+          if(pkg.candidate!=='2.5.47') throw new Error('package candidate mismatch');
+          const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
+          if(!early||early.run_at!=='document_start'||early.all_frames!==true||early.match_about_blank!==true) throw new Error('zero-gap boot regression');
+          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/nexus-parity-v47.js'));
+          if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('Build 47 runtime wiring missing');
+          if(!(main.css||[]).includes('ui/nexus-parity-v47.css')) throw new Error('Build 47 CSS missing');
+          if((main.js||[]).includes('ui/launcher-premium-v46.js')||(main.css||[]).includes('ui/launcher-premium-v46.css')) throw new Error('Build 46 visual layer still wired');
+          if(main.css.at(-1)!=='ui/nexus-parity-v47.css') throw new Error('Build 47 must be final visual override');
+          if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
+          NODE
+
+      - name: Validate approved Nexus visual contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');const css=fs.readFileSync('ui/nexus-parity-v47.css','utf8');
+          const required=[
+            'width:50px!important','conic-gradient(from 210deg,#6736ff,#ef3da3,#4f7cff,#6736ff)',
+            'width:min(292px,calc(100vw - 20px))','border-radius:26px','blur(30px) saturate(150%)',
+            '#ef3da3','#8358ff','#4f7cff','font-family:Arial,Helvetica,sans-serif',
+            '.ld47-cascade[data-show="1"]','pointer-events:auto','linear-gradient(135deg,rgba(131,88,255,.16),rgba(239,61,163,.08))'
+          ];
+          for(const token of required) if(!css.includes(token)) throw new Error('approved Nexus parity token missing: '+token);
+          NODE
+
+      - name: Validate cascade behavior and real action routing
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');const js=fs.readFileSync('ui/nexus-parity-v47.js','utf8');
+          for(const token of ['mouseenter','openGroup','openDetail','placeCascade','ACTION_SELECTORS','LovableDecrypterWorkspace','LovableDecrypterVoice','MutationObserver','attributeFilter:[\'class\']','LovableDecrypterNexusParity']) if(!js.includes(token)) throw new Error('cascade/runtime contract missing '+token);
+          if(!js.includes("window.open(COMMUNITY_URL,'_blank','noopener,noreferrer')")) throw new Error('community click-only contract missing');
+          NODE
+
+      - name: Validate non-invasive boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');const s=fs.readFileSync('ui/nexus-parity-v47.js','utf8');
+          const forbidden=[
+            [/(?:window|globalThis)\.fetch\s*=(?!=)/,'global fetch assignment'],
+            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment'],
+            [/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],
+            [/window\.postMessage\s*\(/,'page-world postMessage bridge'],
+            [/\beval\s*\(/,'eval'],[/new\s+Function\s*\(/,'new Function'],
+            [/observe\s*\(\s*document(?:\.documentElement|\.body)?/,'global MutationObserver']
+          ];
+          for(const [rx,label] of forbidden) if(rx.test(s)) throw new Error('Build 47 added forbidden '+label);
+          NODE
+
+      - name: Release preflight candidate
+        run: node scripts/release-preflight.mjs --candidate
