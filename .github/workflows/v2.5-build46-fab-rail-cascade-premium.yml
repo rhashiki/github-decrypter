@@ -7,6 +7,7 @@ on:
       - 'ui/launcher-premium-v46.js'
       - 'ui/launcher-premium-v46.css'
       - 'manifest.json'
+      - '.github/workflows/v2.5-build45-chat-activation-premium.yml'
       - '.github/workflows/v2.5-build46-fab-rail-cascade-premium.yml'
   workflow_dispatch:
 
@@ -36,7 +37,10 @@ jobs:
           if(!(main.css||[]).includes('ui/launcher-premium-v46.css')) throw new Error('Build 46 CSS missing');
           if(main.js.indexOf('ui/lightweight-runtime-delivery.js')>main.js.indexOf('ui/launcher-premium-v46.js')) throw new Error('Build 46 must load after shared scheduler');
           if(main.js.indexOf('ui/launcher-rail-v3.js')>main.js.indexOf('ui/launcher-premium-v46.js')) throw new Error('Build 46 must enhance the existing launcher');
-          if(main.css.at(-1)!=='ui/launcher-premium-v46.css') throw new Error('Build 46 CSS must be final launcher override');
+          const css45=main.css.indexOf('ui/chat-activation-premium-v45.css');
+          const css46=main.css.indexOf('ui/launcher-premium-v46.css');
+          if(css46<0) throw new Error('Build 46 CSS missing');
+          if(css45>=0 && css46<css45) throw new Error('Build 46 launcher override must load after Build 45');
           if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
           NODE
 
@@ -64,6 +68,18 @@ jobs:
           for(const token of ['.ld3-flyout[data-show="1"]','.ld3-detail[data-show="1"]','pointer-events:auto!important','visibility:visible!important']) if(!css.includes(token)) throw new Error('cascade interaction contract missing '+token);
           for(const token of ['ld46-fab-mark','ld46-rail-logo','LovableDecrypterDeliveryScheduler','aria-haspopup','LovableDecrypterLauncherPremium']) if(!js.includes(token)) throw new Error('launcher enhancement missing '+token);
           if(!js.includes('<rect x="12"')||!js.includes('<rect x="8"')||!js.includes('<rect x="13"')) throw new Error('approved pixel-decrypt logo motif missing');
+          NODE
+
+      - name: Validate Build 45 remains cumulative
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/chat-activation-premium-v45.js'));
+          if(!main) throw new Error('Build 45 runtime missing');
+          const c45=main.css.indexOf('ui/chat-activation-premium-v45.css');
+          const c46=main.css.indexOf('ui/launcher-premium-v46.css');
+          if(c45<0||c46<0||c45>c46) throw new Error('Build 45/46 CSS layering regression');
           NODE
 
       - name: Validate non-invasive presentation boundary
