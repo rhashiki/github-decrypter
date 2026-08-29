@@ -1,0 +1,69 @@
+name: v2.5 Build 41 · Branding & White-Label Platform
+
+on:
+  push:
+    branches: [main, v2.5-build41-branding-white-label]
+    paths:
+      - 'ui/branding-white-label.js'
+      - 'ui/branding-white-label.css'
+      - 'manifest.json'
+      - '.github/workflows/v2.5-build41-branding-white-label.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        run: node --check ui/branding-white-label.js
+
+      - name: Validate manifest and cumulative wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.5.41') throw new Error('manifest version mismatch');
+          const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
+          if(!early||early.run_at!=='document_start'||early.all_frames!==true) throw new Error('early boot regression');
+          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/branding-white-label.js'));
+          if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('branding wiring missing');
+          if(!(main.css||[]).includes('ui/branding-white-label.css')) throw new Error('branding css missing');
+          for(const f of ['ui/launcher-rail-v3.js','ui/premium-project-tools.js','ui/productivity-suite.js']) if(!(main.js||[]).includes(f)) throw new Error('cumulative wiring regression '+f);
+          if(main.js.indexOf('ui/branding-white-label.js')<main.js.indexOf('ui/productivity-suite.js')) throw new Error('branding must load after productivity');
+          if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
+          NODE
+
+      - name: Validate UI-only authority boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('ui/branding-white-label.js','utf8');
+          for(const x of ['LD2_BUILD_EXECUTE','LD2_PLAN_ONLY','LD2_PLAN_APPLY','LD2_PLAN_APPROVE','LD2_LICENSE_LOGIN','LD2_LICENSE_LOGOUT','LD2_LICENSE_STATUS','XMLHttpRequest','MutationObserver','fetch(']) if(s.includes(x)) throw new Error('branding crossed authority boundary '+x);
+          for(const x of ['prototype.open','prototype.send','navigator.sendBeacon =','window.fetch =','globalThis.fetch =']) if(s.includes(x)) throw new Error('global patch forbidden '+x);
+          NODE
+
+      - name: Validate branding contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const js=fs.readFileSync('ui/branding-white-label.js','utf8');
+          const css=fs.readFileSync('ui/branding-white-label.css','utf8');
+          for(const x of ['PROFILE_KEY','Branding & White-Label','logoDataUrl','communityUrl','supportUrl','220 * 1024','LovableDecrypterBranding','ld41Branding','installAttempts >= 120','data:image','https?:']) if(!js.includes(x)) throw new Error('missing branding contract '+x);
+          for(const x of ['.ld41-studio','.ld41-preview','.ld41-grid','.ld41-branding-rail','.ld41-byline','--ld41-accent','focus-visible','prefers-reduced-motion']) if(!css.includes(x)) throw new Error('missing branding visual contract '+x);
+          NODE
+
+      - name: Validate safe local profile semantics
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('ui/branding-white-label.js','utf8');
+          if(!s.includes('chrome.storage.local')) throw new Error('branding profile must remain local');
+          if(!s.includes("/^https?:$/")) throw new Error('external branding links must be restricted to http/https');
+          if(!s.includes("/^image\\/(png|jpeg|webp)$/i")) throw new Error('logo MIME allowlist missing');
+          if(!s.includes("data-rail-id=\"settings\"")) throw new Error('Settings-last placement guard missing');
+          NODE
