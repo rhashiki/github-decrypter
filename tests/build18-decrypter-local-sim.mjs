@@ -101,7 +101,7 @@ assert(commandSrc.includes('INVALID_MODEL_JSON'), 'Production invalid JSON block
 
 // Invalid patch must block through the actual validateBuild implementation.
 const deleteIntent = extractBetween(commandSrc, 'function deleteIntent', '\nconst PLAN_SCHEMA');
-const validateBuild = loadFunction(commandSrc, 'validateBuild', '\nfunction localConfig', deleteIntent);
+const validateBuild = loadFunction(commandSrc, 'validateBuild', '\nfunction localModelConfig', deleteIntent);
 const ctx = { files: [{ path: 'src/a.js', content: 'const a = 1;\nconst b = 2;\n' }] };
 const invalidPatch = {
   files: [{ path: 'src/a.js', action: 'update', content: 'rewritten', edits: [], explanation: 'bad' }]
