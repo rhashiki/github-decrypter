@@ -115,7 +115,7 @@ jobs:
           NODE
 
       - name: Release preflight
-        run: node scripts/release-preflight.mjs
+        run: node scripts/release-preflight.mjs --candidate
 
       - name: Package RC runtime only
         id: package
