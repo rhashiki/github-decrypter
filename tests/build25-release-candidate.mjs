@@ -15,10 +15,11 @@ const releaseWorkflow=fs.readFileSync('.github/workflows/release.yml','utf8');
 const rc=JSON.parse(fs.readFileSync('release/RC25_MANIFEST.json','utf8'));
 
 assert.equal(manifest.manifest_version,3);
-assert.equal(manifest.version,'2.4.25');
-assert.equal(manifest.version_name,'2.4 Build 25 RC');
-assert.match(manifest.action.default_title,/Build 25 · Release Candidate/);
-assert.match(config,/export const VERSION = '2\.4\.25'/);
+const versionParts=String(manifest.version||'').split('.').map(Number);
+assert.equal(versionParts[0],2);
+assert.equal(versionParts[1],4);
+assert.ok(versionParts[2]>=25,'Current v2.4 build must not regress below RC25');
+assert.match(config,/export const VERSION = '2\.4\.\d+'/);
 assert.match(config,/export const TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 assert.doesNotMatch(config,/TRUST_PROTOCOL_VERSION = '2\.4\.25'/);
 
@@ -86,6 +87,7 @@ for(const browserFile of ['manifest.json','settings/config.js','security/trust.j
 console.log(JSON.stringify({
   ok:true,
   candidate:'2.4.25',
+  current_version:manifest.version,
   trust_protocol:'2.4.21',
   critical_backend_functions:7,
   official_release_published:false,

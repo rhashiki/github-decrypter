@@ -1,0 +1,108 @@
+name: Validate v2.4 Build 26 Lovable Workspace Deep Read
+
+on:
+  push:
+    branches:
+      - v2.4-build26-lovable-workspace-deep-read
+  pull_request:
+    branches:
+      - main
+      - v2.4-build26-lovable-workspace-deep-read
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 26 identity and boot contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.manifest_version!==3) throw new Error('Manifest V3 required');
+          if(m.version!=='2.4.26') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 26 · Workspace Deep Read') throw new Error('Build 26 version_name missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const runtime=js.indexOf('content/lovable-project-runtime.js');
+          const deep=js.indexOf('content/lovable-workspace-deep-read.js');
+          if(runtime<0||deep!==runtime+1) throw new Error('Deep Read boot order invalid');
+          NODE
+          grep -q "export const VERSION = '2.4.26'" settings/config.js
+          grep -q "export const TRUST_PROTOCOL_VERSION = '2.4.21'" settings/config.js
+
+      - name: Syntax check all JavaScript and tests
+        run: |
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) -not -path './.git/*' | LC_ALL=C sort)
+
+      - name: Build 26 workspace simulation
+        run: node tests/build26-lovable-workspace-deep-read.mjs
+
+      - name: Full repository regression simulations
+        run: |
+          while IFS= read -r testfile; do
+            echo "==> $testfile"
+            node "$testfile"
+          done < <(find tests -maxdepth 1 -type f -name '*.mjs' | LC_ALL=C sort)
+
+      - name: Lovable read-only endpoint contract
+        run: |
+          grep -Fq '/git/files?${query}' content/lovable-workspace-deep-read.js
+          grep -Fq '/git/file?${params}' content/lovable-workspace-deep-read.js
+          grep -q "source: 'lovable_workspace'" content/lovable-workspace-deep-read.js
+          grep -q "writeFiles: false" content/lovable-workspace-deep-read.js
+          grep -q 'LOVABLE_WORKSPACE_INCOMPLETE' content/lovable-workspace-deep-read.js
+          grep -q 'githubFallbackDownload' content/lovable-workspace-deep-read.js
+
+      - name: Non-invasive browser integration gate
+        run: |
+          BASE=b7b79f89060b0ae547c1a91d3423e1bb01940288
+          ADDED="$(git diff -U0 "$BASE"...HEAD -- manifest.json settings content ui background core | grep '^+' | grep -v '^+++' || true)"
+          if printf '%s\n' "$ADDED" | grep -E 'window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*=|new[[:space:]]+MutationObserver'; then
+            echo 'Forbidden invasive browser integration detected'
+            exit 1
+          fi
+          if printf '%s\n' "$ADDED" | grep -E 'SUPABASE_SERVICE_ROLE_KEY|LD_LICENSE_PRIVATE_JWK|DECRYPTER_LOCAL_TOKEN|DECRYPTER_WORKER_SECRET|MERCADOPAGO_ACCESS_TOKEN'; then
+            echo 'Backend secret identifier introduced in browser diff'
+            exit 1
+          fi
+
+      - name: Backend and release freeze
+        run: |
+          BASE=b7b79f89060b0ae547c1a91d3423e1bb01940288
+          if git diff --name-only "$BASE"...HEAD -- supabase/functions supabase/migrations | grep -q .; then
+            echo 'Build 26 must not mutate Supabase backend/schema'
+            exit 1
+          fi
+          for path in .github/RELEASE_TRIGGER updates/latest.json updates/release.json .github/workflows/release.yml; do
+            if git diff --name-only "$BASE"...HEAD -- "$path" | grep -q .; then
+              echo "Official release surface changed: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 26 scope lock
+        run: |
+          BASE=b7b79f89060b0ae547c1a91d3423e1bb01940288
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build26-lovable-workspace-deep-read.yml|manifest.json|settings/config.js|content/lovable-workspace-deep-read.js|docs/BUILD26_LOVABLE_WORKSPACE_DEEP_READ.md|tests/build26-lovable-workspace-deep-read.mjs|tests/build25-release-candidate.mjs) ;;
+              *) echo "Unexpected Build 26 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          grep -q 'Trust protocol preservado: `2.4.21`' docs/BUILD26_LOVABLE_WORKSPACE_DEEP_READ.md
+          grep -q 'Lovable Workspace' docs/BUILD26_LOVABLE_WORKSPACE_DEEP_READ.md
+          grep -q 'GitHub fallback' docs/BUILD26_LOVABLE_WORKSPACE_DEEP_READ.md
+          grep -q 'não publica OTA nem GitHub Release automaticamente' docs/BUILD26_LOVABLE_WORKSPACE_DEEP_READ.md
