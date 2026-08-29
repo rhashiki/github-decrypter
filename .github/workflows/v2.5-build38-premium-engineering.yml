@@ -1,0 +1,82 @@
+name: v2.5 Build 38 · Premium Chat & Engineering UX
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ui/premium-engineering-ux.js'
+      - 'ui/premium-engineering-ux.css'
+      - 'manifest.json'
+      - '.github/workflows/v2.5-build38-premium-engineering.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        run: node --check ui/premium-engineering-ux.js
+
+      - name: Validate cumulative manifest wiring
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const parts = String(manifest.version || '').split('.').map(Number);
+          const current = parts[0] * 10000 + parts[1] * 100 + parts[2];
+          if (current < 20538) throw new Error(`manifest version ${manifest.version} is older than Build 38`);
+          const scripts = manifest.content_scripts || [];
+          const early = scripts.find(s => (s.js || []).includes('content/early-boot-sentinel.js'));
+          if (!early || early.run_at !== 'document_start' || early.all_frames !== true) throw new Error('Build 34 early boot contract regressed');
+          const main = scripts.find(s => (s.js || []).includes('ui/premium-engineering-ux.js'));
+          if (!main || main.run_at !== 'document_idle' || main.all_frames !== false) throw new Error('Premium Engineering runtime wiring missing');
+          if (!(main.css || []).includes('ui/premium-engineering-ux.css')) throw new Error('Premium Engineering CSS missing');
+          for (const required of ['ui/error-intelligence-center.js','ui/launcher-rail-v3.js','ui/premium-workspace.js']) {
+            if (!(main.js || []).includes(required)) throw new Error(`Cumulative wiring regressed: ${required}`);
+          }
+          NODE
+
+      - name: Validate presentation-only authority boundary
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('ui/premium-engineering-ux.js','utf8');
+          for (const forbidden of ['LD2_PLAN_ONLY','LD2_PLAN_APPROVE','LD2_BUILD_EXECUTE','LD2_PLAN_APPLY','XMLHttpRequest','sendBeacon','window.fetch','globalThis.fetch']) {
+            if (source.includes(forbidden)) throw new Error(`Presentation layer crossed authority boundary: ${forbidden}`);
+          }
+          if (source.includes("addEventListener('error'") || source.includes("addEventListener('unhandledrejection'")) throw new Error('Page-wide error capture is not allowed');
+          if (!source.includes("mainObserver.observe(messages")) throw new Error('Main observer must stay scoped to the Decrypter messages container');
+          if (!source.includes("shadowObserver.observe(messages")) throw new Error('Shadow observer must stay scoped to the Decrypter Chat messages container');
+          NODE
+
+      - name: Validate Premium Engineering UX contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const js = fs.readFileSync('ui/premium-engineering-ux.js','utf8');
+          const css = fs.readFileSync('ui/premium-engineering-ux.css','utf8');
+          for (const token of ['ENGINEERING PIPELINE','APPROVAL GATE','FAIL-CLOSED','ld38-plan-kicker','ld38-premium-engineering-style','data-ld38-premium']) {
+            if (!js.includes(token)) throw new Error(`Missing UX contract: ${token}`);
+          }
+          for (const token of ['.ld38-engineering-bar','.ld2-task-progress','.ld2-plan-result','.ld2-build-result','.ld2-preview-card','--ld38-accent:#75dcff','button:focus-visible']) {
+            if (!css.includes(token)) throw new Error(`Missing visual contract: ${token}`);
+          }
+          NODE
+
+      - name: Validate protected execution engines unchanged
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ui = fs.readFileSync('ui/ui.js','utf8');
+          const chat = fs.readFileSync('content/decrypter-chat.js','utf8');
+          for (const token of ["type:'LD2_PLAN_ONLY'","type:'LD2_PLAN_APPROVE'","type:'LD2_BUILD_EXECUTE'"]) {
+            if (!ui.includes(token)) throw new Error(`Main engineering authority missing: ${token}`);
+          }
+          if (!chat.includes("phase('LOCKED'")) throw new Error('Decrypter Chat fail-closed lock contract missing');
+          if (!chat.includes("inert = true")) throw new Error('Native chat isolation contract missing');
+          NODE
