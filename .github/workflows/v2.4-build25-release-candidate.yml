@@ -116,7 +116,7 @@ jobs:
       - name: Documentation contract
         run: |
           grep -q 'Trust protocol: `2.4.21`' docs/BUILD25_RELEASE_CANDIDATE.md
-          grep -q 'não publica OTA ou GitHub Release automaticamente' docs/BUILD25_RELEASE_CANDIDATE.md
+          grep -q 'sem publicar OTA ou GitHub Release automaticamente' docs/BUILD25_RELEASE_CANDIDATE.md
           grep -q 'Release Candidate' docs/BUILD25_RELEASE_CANDIDATE.md
           grep -q '20260829002720_build24_security_chaos_hardening' docs/BUILD25_RELEASE_CANDIDATE.md
 
