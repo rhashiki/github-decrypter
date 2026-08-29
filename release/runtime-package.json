@@ -1,6 +1,6 @@
 {
   "schema": "ld-runtime-package/1",
-  "candidate": "2.5.46",
+  "candidate": "2.5.47",
   "paths": [
     "manifest.json",
     "ai",
