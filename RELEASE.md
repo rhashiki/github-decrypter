@@ -2,17 +2,43 @@
 
 O código-fonte da extensão fica neste repositório. A distribuição estável usa GitHub Releases e o feed OTA assinado servido pela Edge Function `ld-release-feed`.
 
-## Release automática
+## Release Candidate
 
-1. Atualize a versão em `manifest.json` e nos pontos de versão do projeto.
-2. Valide a candidata com os workflows de CI da versão.
-3. Promova a candidata para `main` por fast-forward.
-4. Atualize `.github/RELEASE_TRIGGER` (ou dispare manualmente `release.yml`).
-5. O workflow `release.yml` gera `Lovable-Decrypter-vX.Y.Z.zip`, calcula SHA-256, cria/atualiza a GitHub Release e publica `updates/release.json` em `main`.
-6. A Edge Function Supabase `ld-release-feed` lê o metadata estável, valida versão/URL/SHA-256 e devolve um envelope ECDSA assinado. A extensão só aceita releases verificadas.
-7. Para compatibilidade de upgrade com a v2.1.1, o workflow copia um envelope já assinado pelo `ld-release-feed` para `updates/latest.json`. Assim clientes antigos conseguem descobrir a nova versão sem expor a chave privada ao GitHub Actions.
+A preparação de uma candidata acontece em branch própria e passa pelo workflow de Release Readiness.
+
+**Nenhuma publicação ocorre na preparação do RC.** Durante essa etapa permanecem congelados:
+
+- `.github/RELEASE_TRIGGER`;
+- `updates/release.json`;
+- `updates/latest.json`;
+- GitHub Releases/tags oficiais;
+- backend e migrations Supabase.
+
+O ZIP candidato é montado somente com a allowlist de runtime em `release/runtime-package.json`. `tests`, `docs`, `supabase`, `.github`, `scripts`, `release`, `benchmark` e metadata OTA não entram no pacote da extensão.
+
+O preflight `scripts/release-preflight.mjs` valida versão, Trust Protocol, referências do `manifest.json`, fechamento dos imports relativos, ausência de arquivos de credenciais e ausência de monkeypatch global de rede.
+
+## Publicação oficial
+
+A publicação oficial só deve ser iniciada após autorização explícita.
+
+1. Confirme que `main` contém exatamente a candidata validada.
+2. Confirme CI verde do Release Readiness e da regressão integral.
+3. Confira `release/RC31_MANIFEST.json` e o SHA da candidata.
+4. Somente então dispare `release.yml` por mecanismo de release explicitamente autorizado (trigger/tag/workflow manual).
+5. O workflow executa novamente o preflight e gera `Lovable-Decrypter-vX.Y.Z.zip` usando a mesma allowlist de runtime.
+6. O workflow calcula SHA-256, cria/atualiza a GitHub Release e publica `updates/release.json` em `main`.
+7. A Edge Function Supabase `ld-release-feed` lê o metadata estável, valida versão/URL/SHA-256 e devolve um envelope ECDSA assinado.
+8. Para clientes legados, o workflow copia um envelope já assinado pelo `ld-release-feed` para `updates/latest.json`.
 
 A chave privada de assinatura permanece no backend/Supabase e nunca deve ser versionada, enviada ao GitHub Actions ou exposta no content script.
+
+## Estado atual do RC1
+
+- Candidata: `2.4.31`.
+- Trust Protocol: `2.4.21`.
+- `updates/release.json` e `updates/latest.json` continuam apontando para a release estável anterior até autorização de publicação.
+- `.github/RELEASE_TRIGGER` não é alterado durante a preparação.
 
 ## Limitação do Chrome
 

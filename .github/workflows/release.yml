@@ -34,13 +34,28 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Package extension
+      - name: Release preflight
+        run: node scripts/release-preflight.mjs
+
+      - name: Package extension runtime only
         shell: bash
         run: |
+          set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
-          zip -qr "Lovable-Decrypter-v${VERSION}.zip" . \
-            -x '.git/*' '.github/*' 'updates/latest.json' 'updates/release.json' '*.zip' '*.pem' '*.key' 'RELEASE.md'
-          sha256sum "Lovable-Decrypter-v${VERSION}.zip" | tee "Lovable-Decrypter-v${VERSION}.sha256"
+          ZIP="Lovable-Decrypter-v${VERSION}.zip"
+          mapfile -t RUNTIME_PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          test "${#RUNTIME_PATHS[@]}" -gt 1
+          zip -qr "$ZIP" "${RUNTIME_PATHS[@]}"
+          unzip -Z1 "$ZIP" > /tmp/ld-release-files.txt
+          if grep -E '^(\.github|benchmark|docs|release|scripts|supabase|tests|updates)/' /tmp/ld-release-files.txt; then
+            echo 'Development/backend/release metadata leaked into extension ZIP'
+            exit 1
+          fi
+          if grep -Ei '(^|/)\.env($|\.)|\.(pem|key|p12|pfx)$' /tmp/ld-release-files.txt; then
+            echo 'Credential-like file leaked into extension ZIP'
+            exit 1
+          fi
+          sha256sum "$ZIP" | tee "Lovable-Decrypter-v${VERSION}.sha256"
 
       - name: Create or update GitHub release
         env:

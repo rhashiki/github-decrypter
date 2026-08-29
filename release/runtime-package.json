@@ -1,0 +1,30 @@
+{
+  "schema": "ld-runtime-package/1",
+  "candidate": "2.4.31",
+  "paths": [
+    "manifest.json",
+    "ai",
+    "assets",
+    "background",
+    "content",
+    "core",
+    "github",
+    "runtime",
+    "security",
+    "settings",
+    "storage",
+    "ui"
+  ],
+  "forbidden_roots": [
+    ".github",
+    "benchmark",
+    "docs",
+    "release",
+    "scripts",
+    "supabase",
+    "tests",
+    "updates"
+  ],
+  "forbidden_extensions": [".pem", ".key", ".p12", ".pfx"],
+  "notes": "Only browser-extension runtime files belong in the distributable ZIP. Backend, tests, docs and release metadata stay out."
+}
