@@ -1,0 +1,119 @@
+name: Validate v2.4 Build 30 Approve Skip Auto Repair
+
+on:
+  push:
+    branches:
+      - v2.4-build30-approve-skip-auto-repair
+  pull_request:
+    branches:
+      - main
+      - v2.4-build30-approve-skip-auto-repair
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build 30 identity and boot contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          if(m.version!=='2.4.30') throw new Error(`Unexpected version ${m.version}`);
+          if(m.version_name!=='2.4 Build 30 · Approve Skip Auto Repair') throw new Error('Build 30 version_name missing');
+          const js=m.content_scripts?.[0]?.js||[];
+          const chat=js.indexOf('content/decrypter-chat.js');
+          const approval=js.indexOf('content/approval-auto-repair.js');
+          if(!(chat>=0&&approval>chat)) throw new Error('Approval UI boot order invalid');
+          NODE
+          grep -q "export const VERSION = '2.4.30'" settings/config.js
+          grep -q "export const TRUST_PROTOCOL_VERSION = '2.4.21'" settings/config.js
+
+      - name: Syntax check all JavaScript and tests
+        run: |
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find . -type f \( -name '*.js' -o -name '*.mjs' \) -not -path './.git/*' | LC_ALL=C sort)
+
+      - name: Build 30 transaction simulation
+        run: node tests/build30-approve-skip-auto-repair.mjs
+
+      - name: Full repository regression simulations
+        run: |
+          while IFS= read -r testfile; do
+            echo "==> $testfile"
+            node "$testfile"
+          done < <(find tests -maxdepth 1 -type f -name '*.mjs' | LC_ALL=C sort)
+
+      - name: Approval and skip protection contract
+        run: |
+          grep -q 'Pular aprovação, não proteções' content/approval-auto-repair.js
+          grep -q 'humanApprovalCanBeSkipped: true' background/approval-runtime.js
+          grep -q 'protectionsCanBeSkipped: false' background/approval-runtime.js
+          grep -q 'assertScopeLock' background/approval-runtime.js
+          grep -q 'validatePreparedFiles' background/approval-runtime.js
+          grep -q 'assertRevision' background/approval-runtime.js
+          grep -q 'assertHead' background/approval-runtime.js
+          grep -q 'validationHash' background/approval-runtime.js
+          grep -q 'atomicCommit' background/approval-runtime.js
+          grep -q 'APPROVAL_ALREADY_APPLIED' background/approval-runtime.js
+
+      - name: Auto Repair safety contract
+        run: |
+          grep -q 'Auto Repair' content/approval-auto-repair.js
+          grep -qi 'não invente valores de secrets' content/approval-auto-repair.js
+          grep -qi 'não crie placeholders' content/approval-auto-repair.js
+          grep -q 'Não baixe assets de URLs arbitrárias' content/approval-auto-repair.js
+          ! grep -Eq 'LD2_SUPABASE_SQL|runSupabaseSql' background/approval-runtime.js content/approval-auto-repair.js
+          ! grep -Eq 'fetch\([^)]*https?://' content/approval-auto-repair.js
+
+      - name: Browser non-invasive integration gate
+        run: |
+          for file in content/approval-auto-repair.js content/decrypter-chat.js; do
+            ! grep -Eq 'window\.fetch[[:space:]]*=|globalThis\.fetch[[:space:]]*=|XMLHttpRequest\.prototype|navigator\.sendBeacon[[:space:]]*=|new[[:space:]]+MutationObserver' "$file"
+          done
+          ! grep -Eq 'new[[:space:]]+KeyboardEvent|dispatchEvent\(new[[:space:]]+KeyboardEvent' content/approval-auto-repair.js
+
+      - name: Backend and database freeze
+        run: |
+          BASE=d16995587f86f988b47663a7d6e309b417c5c67a
+          if git diff --name-only "$BASE"...HEAD -- supabase | grep -q .; then
+            echo 'Build 30 must not change Supabase backend or database schema'
+            exit 1
+          fi
+
+      - name: Freeze official release surfaces
+        run: |
+          BASE=d16995587f86f988b47663a7d6e309b417c5c67a
+          for path in .github/RELEASE_TRIGGER updates/latest.json updates/release.json .github/workflows/release.yml; do
+            if git diff --name-only "$BASE"...HEAD -- "$path" | grep -q .; then
+              echo "Official release surface changed: $path"
+              exit 1
+            fi
+          done
+
+      - name: Build 30 scope lock
+        run: |
+          BASE=d16995587f86f988b47663a7d6e309b417c5c67a
+          FAILED=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/v2.4-build30-approve-skip-auto-repair.yml|background/approval-runtime.js|background/service-worker-entry.js|content/approval-auto-repair.js|core/approval-transaction.js|docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md|manifest.json|settings/config.js|tests/build29-decrypter-chat.mjs|tests/build30-approve-skip-auto-repair.mjs) ;;
+              *) echo "Unexpected Build 30 modification: $path"; FAILED=1 ;;
+            esac
+          done < <(git diff --name-only "$BASE"...HEAD)
+          test "$FAILED" -eq 0
+
+      - name: Documentation contract
+        run: |
+          grep -q 'Trust protocol: `2.4.21`' docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md
+          grep -q 'Pular aprovação, não proteções' docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md
+          grep -q 'Validation Gate' docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md
+          grep -q 'Guarded Commit' docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md
+          grep -q 'Build 31' docs/BUILD30_APPROVE_SKIP_AUTO_REPAIR.md
