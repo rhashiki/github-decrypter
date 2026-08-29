@@ -3,7 +3,8 @@
   if (window.__LOVABLE_DECRYPTER_V2_CONTENT__) return;
   window.__LOVABLE_DECRYPTER_V2_CONTENT__ = true;
 
-  const state = { projectId: '', url: location.href };
+  const MONITOR_KEY = 'ld2_monitor_enabled';
+  const state = { projectId: '', url: location.href, monitorEnabled: true };
 
   function extractProjectId() {
     const path = `${location.pathname}${location.hash}`;
@@ -14,6 +15,7 @@
   }
 
   async function announce() {
+    if (!state.monitorEnabled) return;
     const next = extractProjectId();
     if (next === state.projectId && state.url === location.href) return;
     state.projectId = next;
@@ -34,11 +36,29 @@
     });
   }
 
+  async function initMonitor() {
+    try {
+      const stored = await chrome.storage.local.get(MONITOR_KEY);
+      state.monitorEnabled = stored[MONITOR_KEY] !== false;
+    } catch (_) {
+      state.monitorEnabled = true;
+    }
+    if (state.monitorEnabled) announce();
+  }
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !changes[MONITOR_KEY]) return;
+    state.monitorEnabled = changes[MONITOR_KEY].newValue !== false;
+    window.dispatchEvent(new CustomEvent('ld2:monitor-state', { detail: { enabled: state.monitorEnabled } }));
+    if (state.monitorEnabled) announce();
+  });
+
   window.LovableDecrypterV2 = {
     version: chrome.runtime.getManifest().version,
     state,
     runtime,
     getProjectId: () => state.projectId,
+    getMonitorEnabled: () => state.monitorEnabled,
     plan: (command, attachments = []) => runtime({ type: 'LD2_PLAN_ONLY', command, attachments, projectId: state.projectId }),
     build: (command, attachments = []) => runtime({ type: 'LD2_BUILD_EXECUTE', command, attachments, projectId: state.projectId }),
     prepare: command => runtime({ type: 'LD2_PLAN_PREPARE', command, projectId: state.projectId }),
@@ -46,8 +66,8 @@
     settings: () => runtime({ type: 'LD2_SETTINGS_GET' })
   };
 
-  announce();
-  setInterval(announce, 1200);
-  addEventListener('popstate', announce);
-  addEventListener('hashchange', announce);
+  initMonitor();
+  setInterval(() => { if (state.monitorEnabled) announce(); }, 1200);
+  addEventListener('popstate', () => { if (state.monitorEnabled) announce(); });
+  addEventListener('hashchange', () => { if (state.monitorEnabled) announce(); });
 })();
