@@ -4,9 +4,9 @@ on:
   push:
     branches: [main, v2.5-build44-premium-final-hardening]
     paths:
-      - 'content/runtime-integrity-guard.js'
-      - 'content/hardening-core.js'
-      - 'content/hardening-sentinel.js'
+      - 'content/**/*.js'
+      - 'ui/**/*.js'
+      - 'background/**/*.js'
       - 'manifest.json'
       - '.github/workflows/v2.5-build44-premium-final-hardening.yml'
   workflow_dispatch:
