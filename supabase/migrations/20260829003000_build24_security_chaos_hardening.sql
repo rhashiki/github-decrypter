@@ -28,7 +28,7 @@ alter table public.ld_webhook_events
   drop constraint if exists ld_webhook_events_payload_size_chk;
 alter table public.ld_webhook_events
   add constraint ld_webhook_events_payload_size_chk
-  check (octet_length(payload::text) <= 524288) not valid;
+  check (octet_length(payload::text) <= 524288);
 
 create or replace function public.ld_worker_endpoint_is_public_https(p_endpoint text)
 returns boolean
@@ -71,10 +71,10 @@ alter table public.ld_inference_workers
   drop constraint if exists ld_inference_workers_public_endpoint_chk;
 alter table public.ld_inference_workers
   add constraint ld_inference_workers_public_endpoint_chk
-  check (public.ld_worker_endpoint_is_public_https(endpoint)) not valid;
+  check (public.ld_worker_endpoint_is_public_https(endpoint));
 
 alter table public.ld_inference_workers
   drop constraint if exists ld_inference_workers_metrics_size_chk;
 alter table public.ld_inference_workers
   add constraint ld_inference_workers_metrics_size_chk
-  check (octet_length(metrics::text) <= 65536 and octet_length(metadata::text) <= 32768) not valid;
+  check (octet_length(metrics::text) <= 65536 and octet_length(metadata::text) <= 32768);
