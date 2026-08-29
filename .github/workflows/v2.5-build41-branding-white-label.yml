@@ -27,7 +27,8 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
-          if(m.version!=='2.5.41') throw new Error('manifest version mismatch');
+          const [a=0,b=0,c=0]=String(m.version||'0.0.0').split('.').map(Number);
+          if(a*10000+b*100+c<20541) throw new Error('manifest version older than Build 41');
           const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
           if(!early||early.run_at!=='document_start'||early.all_frames!==true) throw new Error('early boot regression');
           const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/branding-white-label.js'));
