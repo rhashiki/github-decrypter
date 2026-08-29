@@ -1,0 +1,88 @@
+name: v2.5 Build 35 · Error Intelligence Center
+
+on:
+  push:
+    branches:
+      - v2.5-build35-error-intelligence-center
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check content/error-intelligence-core.js
+          node --check ui/error-intelligence-center.js
+
+      - name: Validate manifest wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          if (manifest.version !== '2.5.35') throw new Error(`Unexpected version ${manifest.version}`);
+          const early = manifest.content_scripts.find(x => (x.js || []).includes('content/early-boot-sentinel.js'));
+          if (!early || early.run_at !== 'document_start' || early.all_frames !== true) throw new Error('Build 34 early boot contract changed');
+          const main = manifest.content_scripts.find(x => (x.js || []).includes('ui/ui.js'));
+          if (!main || main.run_at !== 'document_idle' || main.all_frames !== false) throw new Error('Main runtime isolation changed');
+          for (const required of ['content/error-intelligence-core.js', 'ui/error-intelligence-center.js']) {
+            if (!(main.js || []).includes(required)) throw new Error(`Missing ${required}`);
+          }
+          if (!(main.css || []).includes('ui/error-intelligence-center.css')) throw new Error('Missing Error Intelligence CSS');
+          const coreIndex = main.js.indexOf('content/error-intelligence-core.js');
+          const uiIndex = main.js.indexOf('ui/error-intelligence-center.js');
+          if (coreIndex < 0 || uiIndex <= coreIndex) throw new Error('Classifier must load before Error Intelligence UI');
+          NODE
+
+      - name: Validate classifier and sanitization
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const sandbox = { window: {}, URL, Date, Object, String, Number, Math, RegExp, Set };
+          vm.createContext(sandbox);
+          vm.runInContext(fs.readFileSync('content/error-intelligence-core.js', 'utf8'), sandbox);
+          const core = sandbox.window.LovableDecrypterErrorIntelligenceCore;
+          if (!core || core.build !== 35) throw new Error('Core unavailable');
+          const github = core.classify({ source: 'github', message: 'GitHub repository unavailable' });
+          if (github.source !== 'github' || github.recovery.type !== 'github') throw new Error('GitHub classification failed');
+          const gemini = core.classify({ source: 'gemini', message: '429 quota exhausted' });
+          if (gemini.source !== 'gemini') throw new Error('Gemini classification failed');
+          const secret = 'github_pat_' + 'A'.repeat(30);
+          const cleaned = core.sanitizeText(`token=${secret}`);
+          if (cleaned.includes(secret)) throw new Error('Known token was not sanitized');
+          const license = core.sanitizeText('license_key=LD2.ABCDEFGHIJKLMNOP');
+          if (license.includes('LD2.ABCDEFGHIJKLMNOP')) throw new Error('License was not sanitized');
+          NODE
+
+      - name: Validate center contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('ui/error-intelligence-center.js', 'utf8');
+          for (const token of [
+            'ld2_error_intelligence_history_v1',
+            "'.ld2-toast-wrap'",
+            "'ld2:hardening-state'",
+            "'ld2:composer-guardian-state'",
+            "'ld2:early-boot-blocked'",
+            'data-eic-recovery',
+            'Nenhuma chamada de modelo foi feita pelo diagnóstico'
+          ]) {
+            if (!source.includes(token)) throw new Error(`Missing contract token: ${token}`);
+          }
+          if (source.includes("addEventListener('unhandledrejection'")) throw new Error('Page-wide rejection capture is not allowed');
+          NODE
