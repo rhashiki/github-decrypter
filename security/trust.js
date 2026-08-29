@@ -1,4 +1,4 @@
-import { VERSION, DEFAULT_BACKEND_BASE } from '../settings/config.js';
+import { VERSION, TRUST_PROTOCOL_VERSION, DEFAULT_BACKEND_BASE } from '../settings/config.js';
 
 const SESSION_KEY='ld2_trust_session_v1';
 const REFRESH_SKEW_SECONDS=60;
@@ -36,7 +36,7 @@ function cacheValid(cached,settings){
   if(!Number.isFinite(exp)||exp<=Date.now()+REFRESH_SKEW_SECONDS*1000)return false;
   if(String(cached.licenseId||'')!==String(settings?.auth?.licenseId||''))return false;
   if(String(cached.deviceId||'')!==String(settings?.auth?.deviceId||''))return false;
-  if(String(cached.clientVersion||'')!==VERSION)return false;
+  if(String(cached.clientVersion||'')!==TRUST_PROTOCOL_VERSION)return false;
   return true;
 }
 
@@ -57,21 +57,21 @@ export async function ensureTrustSession(settings={},options={}){
     const response=await fetch(`${backendBase}/ld-trust-attest`,{
       method:'POST',
       headers:{'content-type':'application/json','x-license-key':licenseKey,'x-device-id':deviceId},
-      body:JSON.stringify({client_version:VERSION,client_fingerprint:integrity.fingerprint,nonce:randomNonce(),integrity:{algorithm:integrity.algorithm,critical_assets:integrity.critical_assets}}),
+      body:JSON.stringify({client_version:TRUST_PROTOCOL_VERSION,client_fingerprint:integrity.fingerprint,nonce:randomNonce(),integrity:{algorithm:integrity.algorithm,critical_assets:integrity.critical_assets}}),
       signal:controller.signal
     });
     const body=await response.json().catch(()=>({}));
     if(!response.ok||body?.ok!==true||!String(body?.trust_token||'').startsWith('LDT1.'))throw new Error(body?.code||`TRUST_HTTP_${response.status}`);
     const expiresAt=String(body.expires_at||'');if(!Number.isFinite(Date.parse(expiresAt)))throw new Error('TRUST_RESPONSE_INVALID');
-    const session=Object.freeze({token:String(body.trust_token),expiresAt,licenseId,deviceId,clientVersion:VERSION,clientFingerprint:integrity.fingerprint,policy:body.policy||{}});
+    const session=Object.freeze({token:String(body.trust_token),expiresAt,licenseId,deviceId,appVersion:VERSION,clientVersion:TRUST_PROTOCOL_VERSION,clientFingerprint:integrity.fingerprint,policy:body.policy||{}});
     await sessionSet(session);return session;
   }catch(error){await clearTrustSession();if(error?.name==='AbortError')throw new Error('TRUST_ATTEST_TIMEOUT');throw error;}finally{clearTimeout(timer);}
 }
 
 export async function trustPublicSummary(settings={}){
   const cached=await sessionGet();
-  if(!cacheValid(cached,settings))return {required:true,active:false,client_version:VERSION};
-  return {required:true,active:true,client_version:VERSION,expires_at:cached.expiresAt,client_fingerprint_prefix:String(cached.clientFingerprint||'').slice(0,12)};
+  if(!cacheValid(cached,settings))return {required:true,active:false,app_version:VERSION,client_version:TRUST_PROTOCOL_VERSION};
+  return {required:true,active:true,app_version:VERSION,client_version:TRUST_PROTOCOL_VERSION,expires_at:cached.expiresAt,client_fingerprint_prefix:String(cached.clientFingerprint||'').slice(0,12)};
 }
 
 export const TRUST_CRITICAL_ASSETS=CRITICAL_ASSETS;
