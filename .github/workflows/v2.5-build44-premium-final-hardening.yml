@@ -49,7 +49,17 @@ jobs:
           const fs=require('fs');
           const s=fs.readFileSync('content/runtime-integrity-guard.js','utf8');
           for(const x of ['LovableDecrypterIntegrity','ld-runtime-integrity/1','extension.runtime_id','boot.early_sentinel','boot.top_scope','credentials.sentinel_guard','network.fetch_identity','network.xhr_open_identity','network.xhr_send_identity','network.beacon_identity','ld2:runtime-integrity','build: BUILD']) if(!s.includes(x)) throw new Error('missing integrity contract '+x);
-          for(const x of ['setInterval(','MutationObserver','window.postMessage(','eval(','new Function','window.fetch =','globalThis.fetch =','navigator.sendBeacon =','XMLHttpRequest.prototype.open =','XMLHttpRequest.prototype.send =']) if(s.includes(x)) throw new Error('integrity guard must observe, never patch: '+x);
+          const forbidden=[
+            [/setInterval\s*\(/,'setInterval'],
+            [/MutationObserver/,'MutationObserver'],
+            [/window\.postMessage\s*\(/,'window.postMessage'],
+            [/\beval\s*\(/,'eval'],
+            [/new\s+Function\s*\(/,'new Function'],
+            [/(?:window|globalThis)\.fetch\s*=(?!=)/,'fetch assignment'],
+            [/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],
+            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment']
+          ];
+          for(const [rx,label] of forbidden) if(rx.test(s)) throw new Error('integrity guard must observe, never patch: '+label);
           NODE
 
       - name: Validate fail-closed integration
@@ -89,10 +99,9 @@ jobs:
           const walk=p=>{for(const name of fs.readdirSync(p)){const f=path.join(p,name),st=fs.statSync(f);if(st.isDirectory())walk(f);else if(/\.js$/.test(f))files.push(f)}};
           roots.forEach(r=>walk(r));
           const forbidden=[
-            [/window\.fetch\s*=/,'window.fetch assignment'],
-            [/globalThis\.fetch\s*=/,'globalThis.fetch assignment'],
-            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=/,'XHR prototype assignment'],
-            [/navigator\.sendBeacon\s*=/,'sendBeacon assignment'],
+            [/(?:window|globalThis)\.fetch\s*=(?!=)/,'global fetch assignment'],
+            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment'],
+            [/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],
             [/window\.postMessage\s*\(/,'page-world postMessage bridge'],
             [/\beval\s*\(/,'eval'],
             [/new\s+Function\s*\(/,'new Function']
