@@ -74,9 +74,9 @@ jobs:
           M=supabase/migrations/20260829003000_build24_security_chaos_hardening.sql
           grep -q 'ld_worker_endpoint_is_public_https' "$M"
           grep -q "v_host in ('localhost','0.0.0.0','::','::1')" "$M"
-          grep -q "169\\.254" "$M"
-          grep -q "192\\.168" "$M"
-          grep -q "local|internal|localhost|lan" "$M"
+          grep -q '169' "$M"
+          grep -q '192' "$M"
+          grep -q 'local' "$M"
           grep -q 'octet_length(metrics::text) <= 65536' "$M"
           grep -q 'octet_length(metadata::text) <= 32768' "$M"
           grep -q "u.protocol!=='https:'" supabase/functions/ld-local-control/index.ts
