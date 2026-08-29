@@ -1,0 +1,68 @@
+{
+  "schema": "ld-release-candidate/1",
+  "candidate": "2.4.25",
+  "label": "Build 25 Release Candidate",
+  "base_commit": "f955f30f1d643a1551f6fc60270af60911e4904d",
+  "trust_protocol_version": "2.4.21",
+  "release_state": "candidate-only",
+  "official_release_published": false,
+  "ota_published": false,
+  "release_trigger_modified": false,
+  "supabase_project_ref": "kkzxxnfxgrouhkzyszxs",
+  "database_migration_head": {
+    "version": "20260829002720",
+    "name": "build24_security_chaos_hardening"
+  },
+  "critical_edge_functions": {
+    "ld-model-gateway": {
+      "version": 5,
+      "status": "ACTIVE",
+      "ezbr_sha256": "02121d4e1243d377596af99cf5f1b402a31b82b76f7423cabb591fdc07d3b30b"
+    },
+    "ld-command": {
+      "version": 8,
+      "status": "ACTIVE",
+      "ezbr_sha256": "b0969f47cf761b887482f4bb6b810b9197078d6b73bae92d6b351086f47ab64d"
+    },
+    "ld-trust-attest": {
+      "version": 1,
+      "status": "ACTIVE",
+      "ezbr_sha256": "19f8e78dc07809807f45066946198f88e157b78a316f348027f83967fdcf4aea"
+    },
+    "ld-commercial": {
+      "version": 1,
+      "status": "ACTIVE",
+      "ezbr_sha256": "c55c209ed6a98476c4eef5ccd6dfd45ec3c8ca92481e2fca129ed00197c368c2"
+    },
+    "ld-license-validate": {
+      "version": 6,
+      "status": "ACTIVE",
+      "ezbr_sha256": "22241c0ba88d6ce2f2377748de3775962e99392f0265bc11ecbe723d255fe8a2"
+    },
+    "ld-mercadopago-webhook": {
+      "version": 5,
+      "status": "ACTIVE",
+      "ezbr_sha256": "4f56d4d5da86f22c5713a8595d1d6c1c2d6f4cf0e43f38fd63a67b176e622db1"
+    },
+    "ld-local-control": {
+      "version": 1,
+      "status": "ACTIVE",
+      "ezbr_sha256": "1c0c635b284b2680bb08258788d1ad303cb49cd8305db01d1006cff6d56a4f79"
+    }
+  },
+  "release_invariants": {
+    "server_authoritative_execution": true,
+    "trust_attestation_required": true,
+    "cross_provider_retry_after_execution_start": false,
+    "customer_prompt_persisted_in_gpu_queue": false,
+    "invalid_webhook_payload_persisted": false,
+    "gpu_worker_private_endpoint_allowed": false,
+    "local_runtime_may_be_unavailable_without_real_gpu": true,
+    "free_mode_has_no_paid_fallback": true
+  },
+  "known_non_blockers": [
+    "Supabase advisor INFO: backend-only RLS tables intentionally have no client policies",
+    "Supabase advisor INFO: four legacy foreign keys outside Build 23 remain unindexed",
+    "Decrypter Local remains unavailable until a real GPU worker is registered"
+  ]
+}
