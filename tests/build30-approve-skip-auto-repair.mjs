@@ -17,10 +17,13 @@ const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
 const runtime = fs.readFileSync('background/approval-runtime.js', 'utf8');
 const ui = fs.readFileSync('content/approval-auto-repair.js', 'utf8');
 
-assert.equal(manifest.version, '2.4.30');
-assert.equal(manifest.version_name, '2.4 Build 30 · Approve Skip Auto Repair');
-assert.match(manifest.action.default_title, /Build 30 · Approve Skip Auto Repair/);
-assert.match(config, /export const VERSION = '2\.4\.30'/);
+const versionParts = manifest.version.split('.').map(Number);
+assert.deepEqual(versionParts.slice(0, 2), [2, 4]);
+assert.ok(Number.isInteger(versionParts[2]) && versionParts[2] >= 30, `Build 30 contract requires v2.4.30+; got ${manifest.version}`);
+assert.match(manifest.version_name, /^2\.4 Build \d+ · /);
+assert.match(manifest.action.default_title, /Lovable Decrypter v2\.4 Build \d+/);
+const configVersion = config.match(/export const VERSION = '([^']+)'/)?.[1];
+assert.equal(configVersion, manifest.version);
 assert.match(config, /TRUST_PROTOCOL_VERSION = '2\.4\.21'/);
 
 const boot = manifest.content_scripts?.[0]?.js || [];
