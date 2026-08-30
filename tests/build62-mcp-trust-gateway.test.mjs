@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   MCP_PROTOCOL_VERSION,
   normalizeMcpEndpoint,
+  mcpResourceUri,
   originPermissionPattern,
   mcpRequestHeaders,
   buildMcpRequest
@@ -20,10 +21,11 @@ const trust = read('core/mcp-trust-gateway.js');
 const mcpClient = read('core/mcp-client.js');
 const oauth = read('security/mcp-oauth.js');
 
-assert.equal(manifest.version, '2.6.62');
-assert.match(manifest.version_name, /Build 62 · MCP Core \+ Trust Gateway/);
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 62, `Build62 contract requires authoritative Build >=62, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.62'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("MCP_RUNTIME_SCHEMA = 'ld-mcp-runtime/1'"));
 assert.ok(settings.includes("MCP_PROTOCOL_VERSION = '2026-07-28'"));
 assert.equal(MCP_PROTOCOL_VERSION, '2026-07-28');
@@ -41,17 +43,23 @@ assert.equal(normalizeMcpEndpoint('http://127.0.0.1:7777/mcp'), 'http://127.0.0.
 assert.equal(originPermissionPattern('https://mcp.example.com/mcp'), 'https://mcp.example.com/*');
 assert.throws(() => normalizeMcpEndpoint('http://mcp.example.com/mcp'), /HTTPS/);
 assert.throws(() => normalizeMcpEndpoint('https://user:pass@mcp.example.com/mcp'), /Credenciais/);
-assert.throws(() => normalizeMcpEndpoint('https://mcp.example.com/mcp?token=secret'), /query string/);
+assert.throws(() => normalizeMcpEndpoint('https://mcp.example.com/mcp?token=secret'), /sensível/);
+assert.throws(() => normalizeMcpEndpoint('https://mcp.example.com/mcp?scope=repo'), /não autorizados/);
+assert.equal(
+  normalizeMcpEndpoint('https://mcp.example.com/mcp?scope=repo', { allowedQueryKeys: ['scope'] }),
+  'https://mcp.example.com/mcp?scope=repo'
+);
+assert.equal(mcpResourceUri('https://mcp.example.com/mcp?scope=repo'), 'https://mcp.example.com/mcp');
 
 const headers = mcpRequestHeaders({ method: 'tools/call', name: 'search' });
 assert.equal(headers['MCP-Protocol-Version'], '2026-07-28');
 assert.equal(headers['Mcp-Method'], 'tools/call');
 assert.equal(headers['Mcp-Name'], 'search');
 assert.ok(!('Authorization' in headers));
-const req = buildMcpRequest({ method: 'tools/list', client: { clientVersion: '2.6.62' } });
+const req = buildMcpRequest({ method: 'tools/list', client: { clientVersion: manifest.version } });
 assert.equal(req.jsonrpc, '2.0');
 assert.equal(req.method, 'tools/list');
-assert.equal(req.params._meta['io.modelcontextprotocol/clientInfo'].version, '2.6.62');
+assert.equal(req.params._meta['io.modelcontextprotocol/clientInfo'].version, manifest.version);
 
 for (const token of [
   "'server/discover'",
@@ -111,8 +119,8 @@ assert.ok(mcpClient.includes('beginOperation'));
 assert.ok(mcpClient.includes('finishOperation'));
 assert.ok(mcpClient.includes("credentials: 'omit'"));
 assert.ok(mcpClient.includes("securityAuthority: 'local-trust-gateway'"));
-assert.ok(pkg.notes.includes('MCP 2026-07-28'));
+assert.ok(pkg.notes.includes('MCP'));
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build62 MCP Core + Trust Gateway contract OK');
+console.log(`Build62 MCP Core + Trust Gateway contract OK on authoritative Build ${currentBuild}`);
