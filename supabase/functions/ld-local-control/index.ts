@@ -2,15 +2,19 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const POOL='decrypter-local-primary';
+const RUNTIMES=new Set(['ollama','vllm']);
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'content-type,x-decrypter-worker-secret,x-owner-secret,authorization','Access-Control-Allow-Methods':'POST,OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+
 function safeEq(a:string,b:string){if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0;}
 async function backendSecret(sb:any,name:string){const env=Deno.env.get(name)||'';if(env)return env;const {data,error}=await sb.rpc('ld_backend_secret',{p_name:name});if(error)return '';return String(data||'');}
 async function workerAuthorized(req:Request,sb:any){const expected=(await backendSecret(sb,'DECRYPTER_WORKER_SECRET'))||(await backendSecret(sb,'DECRYPTER_LOCAL_TOKEN'));const got=String(req.headers.get('x-decrypter-worker-secret')||'').trim();return Boolean(expected&&got&&safeEq(expected,got));}
 async function ownerAuthorized(req:Request,sb:any){const expected=await backendSecret(sb,'LD_OWNER_SECRET');const got=String(req.headers.get('x-owner-secret')||'').trim();return Boolean(expected&&got&&safeEq(expected,got));}
 function endpoint(value:unknown){try{const u=new URL(String(value||''));if(u.protocol!=='https:'||u.username||u.password)return null;u.pathname=u.pathname.replace(/\/+$/,'');u.search='';u.hash='';return u.toString().replace(/\/$/,'');}catch{return null;}}
+function runtimeKind(value:unknown){const runtime=String(value||'').trim().toLowerCase();return RUNTIMES.has(runtime)?runtime:null;}
 async function pool(sb:any){const {data,error}=await sb.from('ld_inference_pools').select('*').eq('code',POOL).maybeSingle();if(error||!data)throw new Error('POOL_NOT_FOUND');return data;}
 async function snap(sb:any){await sb.rpc('ld_reap_inference_leases',{p_pool_code:POOL}).catch(()=>null);const {data,error}=await sb.rpc('ld_inference_pool_snapshot',{p_pool_code:POOL});if(error)throw new Error('POOL_SNAPSHOT_FAILED');return data;}
+
 async function reconcile(sb:any,reason:string){
   const s=await snap(sb),p=await pool(sb);let desired=Number(s?.desired_workers||0),current=Number(s?.current_workers||0);
   if(desired<current){
@@ -28,24 +32,54 @@ async function reconcile(sb:any,reason:string){
 }
 
 Deno.serve(async req=>{
-  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});if(req.method!=='POST')return json({ok:false,code:'METHOD_NOT_ALLOWED'},405);
+  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
+  if(req.method!=='POST')return json({ok:false,code:'METHOD_NOT_ALLOWED'},405);
   try{
-    const url=Deno.env.get('SUPABASE_URL'),service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');if(!url||!service)return json({ok:false,code:'BACKEND_NOT_CONFIGURED'},503);const sb=createClient(url,service,{auth:{persistSession:false}});const body=await req.json().catch(()=>({}));const action=String(body.action||'status');
+    const url=Deno.env.get('SUPABASE_URL'),service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if(!url||!service)return json({ok:false,code:'BACKEND_NOT_CONFIGURED'},503);
+    const sb=createClient(url,service,{auth:{persistSession:false}});
+    const body=await req.json().catch(()=>({}));
+    const action=String(body.action||'status');
+
     if(action==='register'){
-      if(!await workerAuthorized(req,sb))return json({ok:false,code:'WORKER_AUTH_REQUIRED'},401);const p=await pool(sb);const ep=endpoint(body.endpoint);const instanceKey=String(body.instance_key||'').trim().slice(0,180);if(!ep||!instanceKey)return json({ok:false,code:'WORKER_REGISTRATION_INVALID'},400);const capacity=Math.max(1,Math.min(Number(p.max_inflight_per_worker||4),Number(body.max_inflight||p.max_inflight_per_worker||4)));const health=body.healthy===true;const row={pool_id:p.id,instance_key:instanceKey,endpoint:ep,status:health?'ready':'joining',max_inflight:capacity,zone:String(body.zone||'').slice(0,80)||null,last_heartbeat_at:new Date().toISOString(),metrics:body.metrics&&typeof body.metrics==='object'?body.metrics:{},metadata:{runtime:'vllm',served_model:String(body.served_model||p.served_model),agent_version:String(body.agent_version||'build23')}};const {data,error}=await sb.from('ld_inference_workers').upsert(row,{onConflict:'pool_id,instance_key'}).select('id,status,max_inflight').single();if(error)throw new Error('WORKER_REGISTER_FAILED');return json({ok:true,worker:data,pool_code:POOL,heartbeat_timeout_seconds:p.heartbeat_timeout_seconds});
+      if(!await workerAuthorized(req,sb))return json({ok:false,code:'WORKER_AUTH_REQUIRED'},401);
+      const p=await pool(sb);const ep=endpoint(body.endpoint);const instanceKey=String(body.instance_key||'').trim().slice(0,180);const runtime=runtimeKind(body.runtime);const servedModel=String(body.served_model||'').trim();const runtimeModel=String(body.runtime_model||'').trim().slice(0,240);const modelLabel=String(body.model_label||p.model_label||'').trim().slice(0,240);
+      if(!ep||!instanceKey||!runtime||!runtimeModel)return json({ok:false,code:'WORKER_REGISTRATION_INVALID'},400);
+      if(servedModel!==String(p.served_model))return json({ok:false,code:'WORKER_MODEL_CONTRACT_MISMATCH',expected:String(p.served_model)},409);
+      const capacity=Math.max(1,Math.min(Number(p.max_inflight_per_worker||4),Number(body.max_inflight||1)));
+      const health=body.healthy===true;
+      const row={pool_id:p.id,instance_key:instanceKey,endpoint:ep,status:health?'ready':'joining',max_inflight:capacity,zone:String(body.zone||'').slice(0,80)||null,last_heartbeat_at:new Date().toISOString(),metrics:body.metrics&&typeof body.metrics==='object'?body.metrics:{},metadata:{runtime,runtime_model:runtimeModel,served_model:servedModel,model_label:modelLabel,agent_version:String(body.agent_version||'build60').slice(0,80),contract:'openai-compatible/v1'}};
+      const {data,error}=await sb.from('ld_inference_workers').upsert(row,{onConflict:'pool_id,instance_key'}).select('id,status,max_inflight,metadata').single();
+      if(error)throw new Error('WORKER_REGISTER_FAILED');
+      return json({ok:true,worker:data,pool_code:POOL,heartbeat_timeout_seconds:p.heartbeat_timeout_seconds,contract:{runtime,served_model:servedModel,runtime_model:runtimeModel,openai_compatible:true,zero_cost_api:true}});
     }
+
     if(action==='heartbeat'){
-      if(!await workerAuthorized(req,sb))return json({ok:false,code:'WORKER_AUTH_REQUIRED'},401);const id=String(body.worker_id||'');if(!/^[0-9a-f-]{36}$/i.test(id))return json({ok:false,code:'WORKER_ID_INVALID'},400);const healthy=body.healthy===true;const metrics=body.metrics&&typeof body.metrics==='object'?body.metrics:{};const {data,error}=await sb.from('ld_inference_workers').update({status:healthy?'ready':'offline',last_heartbeat_at:new Date().toISOString(),metrics,last_error:healthy?null:String(body.error_code||'RUNTIME_UNHEALTHY').slice(0,160),updated_at:new Date().toISOString()}).eq('id',id).select('id,status,inflight,max_inflight').maybeSingle();if(error||!data)return json({ok:false,code:'WORKER_NOT_FOUND'},404);const autoscale=await reconcile(sb,'heartbeat').catch(()=>null);return json({ok:true,worker:data,pool:autoscale?.snapshot||await snap(sb),autoscale});
+      if(!await workerAuthorized(req,sb))return json({ok:false,code:'WORKER_AUTH_REQUIRED'},401);
+      const id=String(body.worker_id||'');if(!/^[0-9a-f-]{36}$/i.test(id))return json({ok:false,code:'WORKER_ID_INVALID'},400);
+      const healthy=body.healthy===true;const metrics=body.metrics&&typeof body.metrics==='object'?body.metrics:{};
+      const {data,error}=await sb.from('ld_inference_workers').update({status:healthy?'ready':'offline',last_heartbeat_at:new Date().toISOString(),metrics,last_error:healthy?null:String(body.error_code||'RUNTIME_UNHEALTHY').slice(0,160),updated_at:new Date().toISOString()}).eq('id',id).select('id,status,inflight,max_inflight,metadata').maybeSingle();
+      if(error||!data)return json({ok:false,code:'WORKER_NOT_FOUND'},404);
+      const autoscale=await reconcile(sb,'heartbeat').catch(()=>null);
+      return json({ok:true,worker:data,pool:autoscale?.snapshot||await snap(sb),autoscale});
     }
+
     if(action==='drain'){
-      if(!await ownerAuthorized(req,sb))return json({ok:false,code:'OWNER_AUTH_REQUIRED'},401);const id=String(body.worker_id||'');const {data,error}=await sb.from('ld_inference_workers').update({status:'draining',updated_at:new Date().toISOString()}).eq('id',id).select('id,status,inflight').maybeSingle();if(error||!data)return json({ok:false,code:'WORKER_NOT_FOUND'},404);return json({ok:true,worker:data});
+      if(!await ownerAuthorized(req,sb))return json({ok:false,code:'OWNER_AUTH_REQUIRED'},401);
+      const id=String(body.worker_id||'');const {data,error}=await sb.from('ld_inference_workers').update({status:'draining',updated_at:new Date().toISOString()}).eq('id',id).select('id,status,inflight').maybeSingle();if(error||!data)return json({ok:false,code:'WORKER_NOT_FOUND'},404);return json({ok:true,worker:data});
     }
+
     if(action==='reconcile'){
-      if(!await ownerAuthorized(req,sb))return json({ok:false,code:'OWNER_AUTH_REQUIRED'},401);return json(await reconcile(sb,'manual-reconcile'));
+      if(!await ownerAuthorized(req,sb))return json({ok:false,code:'OWNER_AUTH_REQUIRED'},401);
+      return json(await reconcile(sb,'manual-reconcile'));
     }
+
     if(action==='status'){
-      if(!await ownerAuthorized(req,sb)&&!await workerAuthorized(req,sb))return json({ok:false,code:'CONTROL_AUTH_REQUIRED'},401);const s=await snap(sb);const p=await pool(sb);const {data:workers}=await sb.from('ld_inference_workers').select('id,instance_key,status,inflight,max_inflight,zone,last_heartbeat_at,last_assigned_at,metrics').eq('pool_id',p.id).order('created_at');return json({ok:true,schema:'ld-local-control/1',pool:s,workers:workers||[],autoscaling:{actuator_configured:Boolean((await backendSecret(sb,'DECRYPTER_GPU_SCALER_URL'))&&(await backendSecret(sb,'DECRYPTER_GPU_SCALER_TOKEN'))),provider_neutral:true}});
+      if(!await ownerAuthorized(req,sb)&&!await workerAuthorized(req,sb))return json({ok:false,code:'CONTROL_AUTH_REQUIRED'},401);
+      const s=await snap(sb);const p=await pool(sb);const {data:workers}=await sb.from('ld_inference_workers').select('id,instance_key,status,inflight,max_inflight,zone,last_heartbeat_at,last_assigned_at,metrics,metadata').eq('pool_id',p.id).order('created_at');
+      return json({ok:true,schema:'ld-local-control/2',pool:s,workers:workers||[],runtime_contract:{allowed:['ollama','vllm'],served_model:String(p.served_model),model_label:String(p.model_label),openai_compatible:true,zero_cost_api:true},autoscaling:{actuator_configured:Boolean((await backendSecret(sb,'DECRYPTER_GPU_SCALER_URL'))&&(await backendSecret(sb,'DECRYPTER_GPU_SCALER_TOKEN'))),provider_neutral:true}});
     }
+
     return json({ok:false,code:'UNKNOWN_ACTION'},400);
   }catch(e){console.error('ld-local-control',e);return json({ok:false,code:String((e as Error)?.message||'INTERNAL_ERROR')},500);}
 });
