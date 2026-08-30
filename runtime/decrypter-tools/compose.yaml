@@ -1,0 +1,33 @@
+services:
+  decrypter-tools:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${PORT:-8787}:8787"
+    volumes:
+      - ${WORKSPACE_DIR:?WORKSPACE_DIR is required}:/workspace:ro
+    environment:
+      DECRYPTER_TOOL_WORKER_TOKEN: ${DECRYPTER_TOOL_WORKER_TOKEN:?DECRYPTER_TOOL_WORKER_TOKEN is required}
+      DECRYPTER_WORKSPACE_ID: ${DECRYPTER_WORKSPACE_ID:?DECRYPTER_WORKSPACE_ID is required}
+      DECRYPTER_WORKSPACE_ROOT: /workspace
+      DECRYPTER_TOOL_MAX_READ_BYTES: ${DECRYPTER_TOOL_MAX_READ_BYTES:-300000}
+      DECRYPTER_TOOL_MAX_GREP_FILES: ${DECRYPTER_TOOL_MAX_GREP_FILES:-1200}
+      DECRYPTER_TOOL_MAX_GREP_MATCHES: ${DECRYPTER_TOOL_MAX_GREP_MATCHES:-120}
+      DECRYPTER_TOOL_MAX_LIST_FILES: ${DECRYPTER_TOOL_MAX_LIST_FILES:-1500}
+      DECRYPTER_LSP_TIMEOUT_MS: ${DECRYPTER_LSP_TIMEOUT_MS:-10000}
+      PORT: 8787
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http=require('http');const r=http.request({host:'127.0.0.1',port:8787,path:'/health',headers:{authorization:'Bearer ${DECRYPTER_TOOL_WORKER_TOKEN}'}},x=>process.exit(x.statusCode===200?0:1));r.on('error',()=>process.exit(1));r.end()\""]
+      interval: 20s
+      timeout: 8s
+      retries: 5
+      start_period: 15s
