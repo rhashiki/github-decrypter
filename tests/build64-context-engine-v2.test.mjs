@@ -27,10 +27,11 @@ const client = read('content/context-engine-client.js');
 const entry = read('background/service-worker-entry.js');
 const git = read('github/git-adapter.js');
 
-assert.equal(manifest.version, '2.6.64');
-assert.match(manifest.version_name, /Build 64 · Context Engine v2/);
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 64, `Build64 contract requires authoritative Build >=64, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.64'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("CONTEXT_ENGINE_SCHEMA = 'ld-context-pack/2'"));
 assert.ok(settings.includes("USER_EDIT_CONTEXT_SCHEMA = 'ld-user-edit-context/1'"));
 assert.ok(settings.includes("agent:{maxFiles:16,maxContextBytes:220000"));
@@ -139,9 +140,10 @@ assert.ok(pack.budget.usedCodeBytes <= pack.budget.codeBytes);
 assert.ok(pack.files.length <= pack.budget.maxFiles);
 assert.ok(pack.authority.precedence.indexOf('explicit-user-manual-edit') < pack.authority.precedence.indexOf('historical-ai-output'));
 
-assert.match(pkg.notes, /Build64/);
+assert.match(pkg.notes, /Build6[4-9]/);
+assert.match(pkg.notes, /Context Engine v2/);
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build64 Context Engine v2 contract OK');
+console.log(`Build64 Context Engine v2 contract OK on authoritative Build ${currentBuild}`);
