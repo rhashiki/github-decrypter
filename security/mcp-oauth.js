@@ -1,4 +1,4 @@
-import { normalizeMcpEndpoint, mcpError } from '../core/mcp-protocol.js';
+import { normalizeMcpEndpoint, mcpResourceUri, mcpError } from '../core/mcp-protocol.js';
 import { getMcpServer, setMcpSessionAuth } from '../core/mcp-trust-gateway.js';
 
 function text(value, max = 4000) { return String(value ?? '').trim().slice(0, max); }
@@ -26,7 +26,7 @@ async function jsonFetch(url, options = {}) {
 }
 
 function protectedResourceCandidates(endpoint) {
-  const url = new URL(normalizeMcpEndpoint(endpoint));
+  const url = new URL(mcpResourceUri(endpoint));
   const path = url.pathname === '/' ? '' : url.pathname;
   const origin = url.origin;
   const values = [];
@@ -62,6 +62,7 @@ async function firstMetadata(urls) {
 export async function discoverMcpOAuth(serverId) {
   const server = await getMcpServer(serverId);
   if (server?.auth?.mode !== 'oauth') throw mcpError('MCP_OAUTH_MODE_REQUIRED', 'Servidor MCP não está configurado para OAuth.');
+  normalizeMcpEndpoint(server.endpoint, { allowedQueryKeys: server.allowedQueryKeys || [] });
   const protectedResource = await firstMetadata(protectedResourceCandidates(server.endpoint));
   const authServers = Array.isArray(protectedResource.metadata?.authorization_servers)
     ? protectedResource.metadata.authorization_servers.map(value => text(value, 2000)).filter(Boolean)
@@ -83,7 +84,8 @@ export async function discoverMcpOAuth(serverId) {
     throw mcpError('MCP_OAUTH_PKCE_S256_REQUIRED', 'Authorization Server MCP não anuncia suporte PKCE S256.');
   }
   return {
-    resource: normalizeMcpEndpoint(server.endpoint),
+    resource: mcpResourceUri(server.endpoint),
+    requestEndpoint: normalizeMcpEndpoint(server.endpoint, { allowedQueryKeys: server.allowedQueryKeys || [] }),
     protectedResourceMetadataUrl: protectedResource.url,
     protectedResource: protectedResource.metadata,
     authorizationServerMetadataUrl: auth.url,
