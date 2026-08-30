@@ -1,36 +1,10 @@
 {
   "schema": "ld-runtime-package/1",
-  "candidate": "2.5.48",
-  "paths": [
-    "manifest.json",
-    "ai",
-    "assets",
-    "background",
-    "content",
-    "core",
-    "github",
-    "security",
-    "settings",
-    "storage",
-    "tools",
-    "ui",
-    "updates/update-manager.js"
-  ],
+  "candidate": "2.5.49",
+  "paths": ["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
   "excluded_paths": [],
-  "forbidden_roots": [
-    ".github",
-    "benchmark",
-    "docs",
-    "release",
-    "runtime",
-    "scripts",
-    "supabase",
-    "tests"
-  ],
-  "forbidden_paths": [
-    "updates/latest.json",
-    "updates/release.json"
-  ],
+  "forbidden_roots": [".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
+  "forbidden_paths": ["updates/latest.json","updates/release.json"],
   "forbidden_extensions": [".pem", ".key", ".p12", ".pfx"],
   "notes": "Only browser-extension runtime files belong in the distributable ZIP. The browser update manager is included; OTA metadata, backend, local workers, tests, docs and dead legacy network interceptors stay out."
 }
