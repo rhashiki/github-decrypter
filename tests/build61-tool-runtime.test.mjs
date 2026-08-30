@@ -13,10 +13,11 @@ const journal = read('core/operation-journal.js');
 const patch = read('core/patch-engine.js');
 const roadmap = read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
 
-assert.equal(manifest.version, '2.6.61');
-assert.match(manifest.version_name, /Build 61 · Tool Runtime \/ Coding Tools/);
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 61, `Build61 contract requires authoritative Build >=61, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.61'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("TOOL_RUNTIME_SCHEMA = 'ld-tool-runtime/1'"));
 assert.ok(settings.includes("OPERATION_JOURNAL_SCHEMA = 'ld-operation-journal/1'"));
 assert.ok(manifest.content_scripts[1].js.includes('content/tool-runtime-client.js'));
@@ -80,4 +81,4 @@ for (const invariant of [
   'Build 67 — Continuity Engine'
 ]) assert.ok(roadmap.includes(invariant), invariant);
 
-console.log('Build61 Tool Runtime contract OK');
+console.log(`Build61 Tool Runtime contract OK on authoritative Build ${currentBuild}`);
