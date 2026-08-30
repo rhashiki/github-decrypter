@@ -10,6 +10,9 @@ const MAX_SERVERS = 80;
 function nowIso() { return new Date().toISOString(); }
 function text(value, max = 500) { return String(value ?? '').trim().slice(0, max); }
 function cleanId(value = '') { return text(value, 120).replace(/[^a-z0-9._-]/gi, ''); }
+function safeQueryKeys(value = []) {
+  return [...new Set((Array.isArray(value) ? value : []).map(item => text(item, 120)).filter(item => /^[a-z0-9._-]+$/i.test(item)))].slice(0, 40);
+}
 
 function publicServer(server = {}) {
   return {
@@ -21,7 +24,17 @@ function publicServer(server = {}) {
     trust: server.trust,
     auth: server.auth || { mode: 'none', issuer: '', clientId: '' },
     allowedMethods: Array.isArray(server.allowedMethods) ? server.allowedMethods : [],
+    allowedQueryKeys: safeQueryKeys(server.allowedQueryKeys),
     toolPolicies: server.toolPolicies && typeof server.toolPolicies === 'object' ? structuredClone(server.toolPolicies) : {},
+    marketplace: server.marketplace && typeof server.marketplace === 'object' ? {
+      itemId: text(server.marketplace.itemId, 160),
+      catalogVersion: Number(server.marketplace.catalogVersion || 0) || 0,
+      publisher: text(server.marketplace.publisher, 200),
+      provenance: text(server.marketplace.provenance, 2000),
+      verifiedDomain: text(server.marketplace.verifiedDomain, 300),
+      installedAt: text(server.marketplace.installedAt, 100),
+      revokedAt: text(server.marketplace.revokedAt, 100)
+    } : null,
     createdAt: server.createdAt,
     updatedAt: server.updatedAt
   };
@@ -47,11 +60,13 @@ async function updateServer(id, mutator) {
   return publicServer(next);
 }
 
-export async function registerMcpServer({ name = '', endpoint = '', auth = {} } = {}) {
-  const safeEndpoint = normalizeMcpEndpoint(endpoint);
+export async function registerMcpServer({ name = '', endpoint = '', auth = {}, allowedQueryKeys = [], marketplace = null } = {}) {
+  const queryKeys = safeQueryKeys(allowedQueryKeys);
+  const safeEndpoint = normalizeMcpEndpoint(endpoint, { allowedQueryKeys: queryKeys });
   const servers = await loadServers();
   const duplicate = servers.find(item => item?.endpoint === safeEndpoint);
   if (duplicate) return publicServer(duplicate);
+  const installedAt = marketplace?.itemId ? nowIso() : '';
   const server = {
     id: crypto.randomUUID(),
     name: text(name, 160) || new URL(safeEndpoint).hostname,
@@ -65,7 +80,17 @@ export async function registerMcpServer({ name = '', endpoint = '', auth = {} } 
       clientId: text(auth?.clientId, 1000)
     },
     allowedMethods: ['server/discover', 'tools/list'],
+    allowedQueryKeys: queryKeys,
     toolPolicies: {},
+    marketplace: marketplace?.itemId ? {
+      itemId: text(marketplace.itemId, 160),
+      catalogVersion: Number(marketplace.catalogVersion || 0) || 0,
+      publisher: text(marketplace.publisher, 200),
+      provenance: text(marketplace.provenance, 2000),
+      verifiedDomain: text(marketplace.verifiedDomain, 300),
+      installedAt,
+      revokedAt: ''
+    } : null,
     createdAt: nowIso(),
     updatedAt: nowIso()
   };
@@ -82,6 +107,27 @@ export async function getMcpServer(id = '') {
   return structuredClone(server);
 }
 
+export async function removeMcpServer(id = '', { revoke = true } = {}) {
+  const serverId = cleanId(id);
+  const servers = await loadServers();
+  const index = servers.findIndex(item => item?.id === serverId);
+  if (index < 0) throw mcpError('MCP_SERVER_NOT_FOUND', 'Servidor MCP não encontrado.');
+  const server = servers[index];
+  if (revoke) {
+    server.trust = 'blocked';
+    if (server.marketplace) server.marketplace.revokedAt = nowIso();
+  }
+  servers.splice(index, 1);
+  await saveServers(servers);
+  await clearMcpSessionAuth(serverId).catch(() => null);
+  const session = await chrome.storage.session.get(null);
+  const approvalKeys = Object.entries(session)
+    .filter(([key, value]) => key.startsWith(APPROVAL_PREFIX) && value?.serverId === serverId)
+    .map(([key]) => key);
+  if (approvalKeys.length) await chrome.storage.session.remove(approvalKeys);
+  return { removed: true, server: publicServer(server), approvalsRevoked: approvalKeys.length };
+}
+
 export async function setMcpServerTrust(id, trust) {
   const value = ['pending', 'approved', 'blocked'].includes(String(trust)) ? String(trust) : 'pending';
   return updateServer(cleanId(id), server => ({ ...server, trust: value }));
@@ -92,7 +138,6 @@ export async function setMcpMethodPermission(id, method, enabled) {
   return updateServer(cleanId(id), server => {
     const set = new Set(Array.isArray(server.allowedMethods) ? server.allowedMethods : []);
     if (enabled) set.add(safeMethod); else set.delete(safeMethod);
-    // Discovery is always locally safe unless the whole server is blocked.
     set.add('server/discover');
     set.add('tools/list');
     return { ...server, allowedMethods: [...set].sort() };
