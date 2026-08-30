@@ -13,6 +13,7 @@ const METHODS = new Set([
   'prompts/get',
   'subscriptions/listen'
 ]);
+const SENSITIVE_QUERY_KEY = /(token|secret|password|passwd|api[_-]?key|access[_-]?key|authorization|credential|private[_-]?key)/i;
 
 function text(value, max = 500) { return String(value ?? '').slice(0, max); }
 
@@ -39,7 +40,14 @@ export function validateMcpName(name = '') {
   return value;
 }
 
-export function normalizeMcpEndpoint(value = '') {
+function normalizedQueryPolicy(options = {}) {
+  return {
+    allowedQueryKeys: new Set((Array.isArray(options?.allowedQueryKeys) ? options.allowedQueryKeys : []).map(value => String(value || '').trim()).filter(Boolean)),
+    allowSafeQuery: options?.allowSafeQuery === true
+  };
+}
+
+export function normalizeMcpEndpoint(value = '', options = {}) {
   let url;
   try { url = new URL(String(value || '').trim()); }
   catch { throw mcpError('MCP_ENDPOINT_INVALID', 'Endpoint MCP inválido.'); }
@@ -48,22 +56,43 @@ export function normalizeMcpEndpoint(value = '') {
     throw mcpError('MCP_ENDPOINT_INSECURE', 'MCP remoto exige HTTPS; HTTP só é permitido em localhost.');
   }
   if (url.username || url.password) throw mcpError('MCP_ENDPOINT_CREDENTIALS_FORBIDDEN', 'Credenciais não podem ficar na URL MCP.');
-  if (url.search || url.hash) throw mcpError('MCP_ENDPOINT_QUERY_FORBIDDEN', 'Endpoint MCP não pode conter query string ou fragmento.');
+  if (url.hash) throw mcpError('MCP_ENDPOINT_FRAGMENT_FORBIDDEN', 'Endpoint MCP não pode conter fragmento.');
+
+  const policy = normalizedQueryPolicy(options);
+  if (url.search) {
+    const rejected = [];
+    for (const [key] of url.searchParams) {
+      if (SENSITIVE_QUERY_KEY.test(key)) throw mcpError('MCP_ENDPOINT_SECRET_QUERY_FORBIDDEN', `Parâmetro sensível não pode ficar na URL MCP: ${key}`);
+      if (!policy.allowSafeQuery && !policy.allowedQueryKeys.has(key)) rejected.push(key);
+    }
+    if (rejected.length) {
+      throw mcpError('MCP_ENDPOINT_QUERY_FORBIDDEN', `Parâmetros MCP não autorizados: ${[...new Set(rejected)].join(', ')}`, { rejected: [...new Set(rejected)] });
+    }
+    const sorted = [...url.searchParams.entries()].sort(([ak, av], [bk, bv]) => ak.localeCompare(bk) || av.localeCompare(bv));
+    url.search = '';
+    for (const [key, value] of sorted) url.searchParams.append(key, value);
+  }
   url.hash = '';
+  return url.toString();
+}
+
+export function mcpResourceUri(endpoint = '') {
+  const url = new URL(normalizeMcpEndpoint(endpoint, { allowSafeQuery: true }));
   url.search = '';
+  url.hash = '';
   return url.toString();
 }
 
 export function originPermissionPattern(endpoint = '') {
-  const url = new URL(normalizeMcpEndpoint(endpoint));
+  const url = new URL(normalizeMcpEndpoint(endpoint, { allowSafeQuery: true }));
   return `${url.protocol}//${url.host}/*`;
 }
 
-export function buildMcpMeta({ clientName = 'lovable-decrypter', clientVersion = '2.6.62', capabilities = {} } = {}) {
+export function buildMcpMeta({ clientName = 'lovable-decrypter', clientVersion = '2.6.63', capabilities = {} } = {}) {
   return {
     [MCP_CLIENT_INFO_KEY]: {
       name: text(clientName, 120) || 'lovable-decrypter',
-      version: text(clientVersion, 80) || '2.6.62'
+      version: text(clientVersion, 80) || '2.6.63'
     },
     [MCP_CLIENT_CAPABILITIES_KEY]: capabilities && typeof capabilities === 'object' ? structuredClone(capabilities) : {}
   };
