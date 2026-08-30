@@ -1,0 +1,26 @@
+name: v2.5 Build 49 · Dedicated Integrations
+
+on:
+  push:
+    branches: [main, v2.5-build49-integrations]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'ui/integrations-v49.js'
+      - 'ui/integrations-v49.css'
+      - 'tests/build49-integrations.test.mjs'
+      - '.github/workflows/v2.5-build49-integrations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check ui/integrations-v49.js
+      - run: node tests/build49-integrations.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
