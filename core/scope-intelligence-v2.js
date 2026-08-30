@@ -51,7 +51,7 @@ export function deriveHumanIntentLocks(userEdits = [], { now = Date.now() } = {}
     eventIds: unique(lock.eventIds).slice(0, 12),
     evidence: unique(lock.evidence).slice(0, 12),
     lastObservedAt: lock.lastObservedAt,
-    policy: lock.count >= 2 ? 'explicit-path-override-required' : 'preserve-unless-current-request-explicitly-targets-path'
+    policy: lock.count >= 2 ? 'explicit-path-request-or-override-required' : 'preserve-unless-current-request-explicitly-targets-path'
   })).sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -192,8 +192,14 @@ export function evaluateScopeIntelligence({
       continue;
     }
     const explicitTarget = requestExplicitlyTargetsPath(request, lock.path);
-    if (lock.level === 'soft' && explicitTarget) {
-      warnings.push({ code: 'human-intent-soft-lock-explicit-target', path: lock.path, level: lock.level, message: `Pedido atual cita explicitamente ${lock.path}; soft lock preservado como aviso.` });
+    if (explicitTarget) {
+      overridesUsed.push(lock.path);
+      warnings.push({
+        code: lock.level === 'strong' ? 'human-intent-strong-lock-explicit-request' : 'human-intent-soft-lock-explicit-target',
+        path: lock.path,
+        level: lock.level,
+        message: `Pedido atual cita explicitamente ${lock.path}; a alteração atual é tratada como autorização específica para este path.`
+      });
       continue;
     }
     overridesRequired.push(lock.path);
@@ -201,7 +207,7 @@ export function evaluateScopeIntelligence({
       code: 'human-intent-override-required',
       path: lock.path,
       level: lock.level,
-      message: `${lock.level === 'strong' ? 'Strong' : 'Soft'} User Intent Lock em ${lock.path}; é necessária autorização específica para sobrepor a alteração manual.`
+      message: `${lock.level === 'strong' ? 'Strong' : 'Soft'} User Intent Lock em ${lock.path}; cite este path explicitamente no novo pedido ou forneça autorização específica para sobrepor a alteração manual.`
     });
   }
 
@@ -236,7 +242,7 @@ export function evaluateScopeIntelligence({
       locks: touchedLocks,
       overridesRequired: unique(overridesRequired),
       overridesUsed: unique(overridesUsed),
-      explicitOverrideOnlyForStrongLocks: true,
+      strongLockAuthorization: 'explicit-path-in-current-request-or-explicit-override',
       externalSignals
     },
     legacyScopeLock: scopeLock,
