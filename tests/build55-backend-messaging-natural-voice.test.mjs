@@ -34,7 +34,7 @@ for (const token of [
   'backendAuthority:true',
   'localCatalog:false',
   'SpeechSynthesisUtterance',
-  'preferNatural',
+  'pickNaturalVoice',
   'MutationObserver',
   "type:'LD2_MESSAGE_NORMALIZE'",
   "type:'LD2_MESSAGE_RESOLVE'"
@@ -51,6 +51,7 @@ for (const token of [
   'const NORMALIZERS',
   'validateLicense',
   'ld-license-validate',
+  'preferNatural: true',
   "authority: 'backend'",
   "build: 55"
 ]) assert.ok(backend.includes(token), `backend missing ${token}`);
