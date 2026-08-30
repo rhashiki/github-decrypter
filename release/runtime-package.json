@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.60",
+  "candidate":"2.6.61",
   "paths":["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build60 adds the backend-only Ollama-first Local Model Runtime and runtime-neutral worker contract while keeping vLLM compatible. Worker runtime files remain outside the extension package. No OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build61 adds the provider-neutral Tool Runtime, fail-closed coding writes, Operation Journal, patch preview/apply primitives and capability-gated diagnostics/LSP. The local model worker remains outside the browser extension package. No OTA metadata, GitHub Release or store publication is authorized."
 }
