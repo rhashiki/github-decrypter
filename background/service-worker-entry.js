@@ -18,6 +18,7 @@ import { installUpdateRecoveryRuntime } from './update-recovery-runtime.js';
 import { installMessagingRuntime } from './messaging-runtime.js';
 import { installAgentRuntimeClient } from './agent-runtime-client.js';
 import { installToolRuntime } from './tool-runtime.js';
+import { installMcpRuntime } from './mcp-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -37,3 +38,4 @@ installUpdateRecoveryRuntime();
 installMessagingRuntime();
 installAgentRuntimeClient();
 installToolRuntime();
+installMcpRuntime();
