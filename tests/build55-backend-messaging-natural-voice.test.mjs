@@ -8,9 +8,17 @@ const entry = fs.readFileSync('background/service-worker-entry.js', 'utf8');
 const runtime = fs.readFileSync('background/messaging-runtime.js', 'utf8');
 const client = fs.readFileSync('ui/backend-messaging-v55.js', 'utf8');
 const backend = fs.readFileSync('supabase/functions/ld-messaging/index.ts', 'utf8');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.5.55');
-assert.match(manifest.version_name, /Build 55 · Backend Messaging & Natural Voice/);
+assert.ok(atLeast(manifest.version, '2.5.55'), `unexpected successor version ${manifest.version}`);
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 
@@ -56,4 +64,4 @@ for (const token of [
   "build: 55"
 ]) assert.ok(backend.includes(token), `backend missing ${token}`);
 
-console.log('Build55 Backend Messaging & Natural Voice contract OK');
+console.log('Build55 Backend Messaging & Natural Voice cumulative contract OK');
