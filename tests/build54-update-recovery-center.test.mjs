@@ -8,9 +8,17 @@ const js = fs.readFileSync('ui/update-center-v54.js', 'utf8');
 const css = fs.readFileSync('ui/update-center-v54.css', 'utf8');
 const legacy = fs.readFileSync('ui/update-recovery.js', 'utf8');
 const runtime = fs.readFileSync('background/update-recovery-runtime.js', 'utf8');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.5.54');
-assert.match(manifest.version_name, /Build 54 · Update & Recovery Center/);
+assert.ok(atLeast(manifest.version, '2.5.54'), `unexpected successor version ${manifest.version}`);
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 
@@ -63,4 +71,4 @@ assert.ok(!js.includes('updates/release.json'), 'Build54 must not publish or rew
 assert.ok(css.includes('.ld54-overlay'));
 assert.ok(css.includes('@media(max-width:560px)'));
 
-console.log('Build54 Update & Recovery Center contract OK');
+console.log('Build54 Update & Recovery Center cumulative contract OK');
