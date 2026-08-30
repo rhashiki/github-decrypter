@@ -6,5 +6,5 @@
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build64 adds Context Engine v2 with budgeted multi-source ranking, repository and Git history signals, Project Brain/Rules, Skills metadata, Impact Maps, Operation Journal, project-state diagnostics, optional Knowledge/RAG evidence and coalesced recent user-edit context. Raw keystrokes and raw prompts are not persisted by the Context Engine; human-intent enforcement remains reserved for Build65. No OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build64 adds Context Engine v2 with budgeted multi-source ranking, repository and Git history signals, Project Brain/Rules, Skills metadata, Impact Maps, Operation Journal, project-state diagnostics, optional Knowledge/RAG evidence and coalesced recent user-edit context. Existing MCP 2026-07-28 Trust Gateway and curated marketplace guarantees remain cumulative. Raw keystrokes and raw prompts are not persisted by the Context Engine; human-intent enforcement remains reserved for Build65. No OTA metadata, GitHub Release or store publication is authorized."
 }
