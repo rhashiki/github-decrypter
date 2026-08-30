@@ -48,7 +48,13 @@ for (const token of [
 ]) assert.ok(`${tools}\n${patch}`.includes(token), token);
 
 assert.ok(bg.includes("tx.status !== 'validated'"));
-assert.ok(bg.includes("writePolicy: 'validated-approval-transaction-only'"));
+if (currentBuild >= 65) {
+  assert.ok(bg.includes("writePolicy: 'validated-approval+scope-intelligence-v2'"));
+  assert.ok(bg.includes('scopeIntelligenceValidated: true'));
+  assert.ok(bg.includes('scopeIntelligenceHash'));
+} else {
+  assert.ok(bg.includes("writePolicy: 'validated-approval-transaction-only'"));
+}
 assert.ok(!bg.includes('payload?.authorization?.writeApproved'), 'background must not trust client writeApproved booleans');
 assert.ok(client.includes('transactionId'));
 assert.ok(client.includes("origin: options.origin || 'tool'"));
