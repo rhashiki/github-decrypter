@@ -1,6 +1,6 @@
 FROM node:24-bookworm-slim
 
-RUN npm install --global --omit=dev typescript@7.0.2 typescript-language-server@6.0.0 \
+RUN npm install --global --omit=dev typescript@6.0.3 typescript-language-server@6.0.0 \
     && npm cache clean --force
 
 WORKDIR /opt/decrypter-tools
