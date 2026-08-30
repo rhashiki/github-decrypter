@@ -17,6 +17,7 @@
   let overlay = null;
   let generation = 0;
   let downloading = false;
+  let providerInstalled = false;
 
   function root() { return document.getElementById(ROOT_ID); }
 
@@ -223,9 +224,11 @@
   }
 
   function installProvider() {
+    if (providerInstalled) return true;
     const registry = window.LovableDecrypterUIActions;
     if (!registry?.register) return false;
     registry.register('zip', open, { build:BUILD, suite:'project-tools', source:'github-archive' });
+    providerInstalled = true;
     return true;
   }
 
@@ -239,7 +242,6 @@
   });
 
   installProvider();
-  window.addEventListener('ld2:ui-mounted', installProvider);
+  window.addEventListener('ld2:ui-mounted', installProvider, { once:true });
   window.addEventListener('ld2:dom-reconcile', installProvider);
-  window.addEventListener('ld48:action-registered', installProvider);
 })();
