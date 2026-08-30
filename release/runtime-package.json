@@ -6,5 +6,5 @@
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build63 adds an embedded curated MCP Marketplace with verified provenance metadata, GitHub/Supabase direct remote profiles, Code/Memory/Security bridge-required profiles, Datadog observability endpoint validation, safe query allowlists, install/revoke state, host permission handoff and zero automatic write-tool enablement. No remote catalog, remote code execution, OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build63 adds an embedded curated MCP Marketplace with verified provenance metadata, GitHub/Supabase direct remote profiles, Code/Memory/Security bridge-required profiles, Datadog observability endpoint validation, safe query allowlists, install/revoke state, host permission handoff and zero automatic write-tool enablement. No remote catalog or remote code execution is authorized. No OTA metadata, GitHub Release or store publication is authorized."
 }
