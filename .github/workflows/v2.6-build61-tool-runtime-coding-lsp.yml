@@ -1,0 +1,75 @@
+name: v2.6 Build 61 · Tool Runtime + LSP
+
+on:
+  push:
+    branches: [main, v2.6-build61-tool-runtime-coding-lsp]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'background/service-worker-entry.js'
+      - 'background/tool-runtime-client.js'
+      - 'runtime/decrypter-tools/**'
+      - 'supabase/functions/ld-tool-runtime/**'
+      - 'supabase/migrations/20260830095614_build61_tool_runtime_audit.sql'
+      - 'tests/build60-local-model-runtime.test.mjs'
+      - 'tests/build61-tool-worker.test.cjs'
+      - 'tests/build61-tool-runtime-coding-lsp.test.mjs'
+      - '.github/workflows/v2.6-build61-tool-runtime-coding-lsp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check background/service-worker-entry.js
+      - run: node --check background/tool-runtime-client.js
+      - run: node --check runtime/decrypter-tools/tool-worker.cjs
+      - name: Install pinned TypeScript LSP runtime
+        run: npm install --global typescript@6.0.3 typescript-language-server@6.0.0
+      - run: typescript-language-server --version
+      - run: tsc --version
+      - name: Exercise workspace tools and real LSP
+        run: node tests/build61-tool-worker.test.cjs
+      - name: Validate hardened tool worker compose
+        env:
+          WORKSPACE_DIR: ./tests
+          DECRYPTER_WORKSPACE_ID: ci-project
+          DECRYPTER_TOOL_WORKER_TOKEN: ci-tool-token
+        run: docker compose -f runtime/decrypter-tools/compose.yaml config >/dev/null
+      - run: node --check background/agent-runtime-client.js
+      - run: node --check background/model-gateway-bootstrap.js
+      - run: node --check content/content.js
+      - run: node --check content/zero-cost-runtime-guard.js
+      - run: python -m py_compile runtime/decrypter-local/worker-agent.py runtime/decrypter-local/ollama-gateway.py
+      - run: python tests/build60-ollama-gateway.test.py
+      - run: node --check ui/ui-kernel-v48.js
+      - run: node --check ui/integrations-v49.js
+      - run: node --check ui/project-intelligence-v50.js
+      - run: node --check ui/engineering-suite-v51.js
+      - run: node --check ui/project-tools-v52.js
+      - run: node --check ui/settings-v53.js
+      - run: node --check ui/update-center-v54.js
+      - run: node --check ui/backend-messaging-v55.js
+      - run: node tests/build48-ui-kernel.test.mjs
+      - run: node tests/build49-integrations.test.mjs
+      - run: node tests/build50-project-intelligence.test.mjs
+      - run: node tests/build51-engineering-suite.test.mjs
+      - run: node tests/build52-project-tools-zip.test.mjs
+      - run: node tests/build53-settings-preferences.test.mjs
+      - run: node tests/build54-update-recovery-center.test.mjs
+      - run: node tests/build55-backend-messaging-natural-voice.test.mjs
+      - run: node tests/build56-legacy-purge-performance.test.mjs
+      - run: node tests/build57-final-homologation.test.mjs
+      - run: node tests/build58-decrypter-ai-core.test.mjs
+      - run: node tests/build59-memory-engine-project-brain-v2.test.mjs
+      - run: node tests/build60-local-model-runtime.test.mjs
+      - run: node tests/build61-tool-runtime-coding-lsp.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
