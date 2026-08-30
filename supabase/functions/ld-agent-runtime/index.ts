@@ -1,0 +1,182 @@
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+
+const SCHEMA='ld-agent-runtime/1';
+const BUILD=58;
+const EXPECTED_CLIENT_VERSION='2.4.21';
+const PUBLIC_SPKI_B64='MFkwEwYHKoZIzj0CAQYIKoS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==';
+const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'content-type,x-license-key,x-device-id,x-gemini-key,x-decrypter-trust,x-decrypter-client-version,authorization','Access-Control-Allow-Methods':'POST,OPTIONS'};
+const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+const enc=new TextEncoder();
+
+function b64u(value:string){const s=value.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(value.length/4)*4,'=');return Uint8Array.from(atob(s),c=>c.charCodeAt(0));}
+async function publicKey(){const der=Uint8Array.from(atob(PUBLIC_SPKI_B64),c=>c.charCodeAt(0));return crypto.subtle.importKey('spki',der,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);}
+async function sha(value:string){const digest=await crypto.subtle.digest('SHA-256',enc.encode(value));return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function verifySigned(prefix:string,aud:string,token:string){const [p,payloadPart,signaturePart]=token.trim().split('.');if(p!==prefix||!payloadPart||!signaturePart)throw new Error(prefix==='LD2'?'KEY_INVALID_FORMAT':'TRUST_INVALID_FORMAT');const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await publicKey(),b64u(signaturePart),enc.encode(payloadPart));if(!ok)throw new Error(prefix==='LD2'?'KEY_INVALID_SIGNATURE':'TRUST_INVALID_SIGNATURE');const payload=JSON.parse(new TextDecoder().decode(b64u(payloadPart)));if(payload?.aud!==aud||Number(payload?.v)!==1)throw new Error(prefix==='LD2'?'KEY_INVALID_PAYLOAD':'TRUST_INVALID_PAYLOAD');return payload;}
+
+async function authorize(req:Request,body:any,sb:any){
+  const bearer=(req.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
+  const token=String(req.headers.get('x-license-key')||body.license_key||bearer||'').trim();
+  if(!token)throw new Error('KEY_REQUIRED');
+  const signed=await verifySigned('LD2','lovable-decrypter',token);
+  if(!signed?.license_id)throw new Error('KEY_INVALID_PAYLOAD');
+  const now=Math.floor(Date.now()/1000);
+  if(signed.nbf&&now<Number(signed.nbf))throw new Error('KEY_NOT_ACTIVE');
+  if(signed.exp&&now>=Number(signed.exp))throw new Error('KEY_EXPIRED');
+  const {data:license,error}=await sb.from('ld_license_keys').select('id,status,expires_at,credit_balance,credit_debt').eq('id',String(signed.license_id)).eq('key_hash',await sha(token)).maybeSingle();
+  if(error)throw new Error('DB_ERROR');
+  if(!license)throw new Error('KEY_NOT_REGISTERED');
+  if(license.status!=='active')throw new Error('KEY_'+String(license.status).toUpperCase());
+  const timeActive=Boolean(license.expires_at&&Date.parse(license.expires_at)>Date.now());
+  const credits=Number(license.credit_balance||0);
+  if(!timeActive&&!(credits>0&&Number(license.credit_debt||0)===0))throw new Error('ENTITLEMENT_EXHAUSTED');
+  const deviceId=String(req.headers.get('x-device-id')||body.device_id||'').trim();
+  if(!deviceId)throw new Error('DEVICE_REQUIRED');
+  const deviceHash=await sha(deviceId);
+  const {data:device,error:deviceError}=await sb.from('ld_license_devices').select('id,revoked_at').eq('license_id',license.id).eq('device_hash',deviceHash).maybeSingle();
+  if(deviceError)throw new Error('DB_ERROR');
+  if(!device)throw new Error('DEVICE_NOT_BOUND');
+  if(device.revoked_at)throw new Error('DEVICE_REVOKED');
+  return {token,licenseId:String(license.id),deviceId,deviceHash};
+}
+
+async function verifyTrust(req:Request,sb:any,auth:any){
+  const token=String(req.headers.get('x-decrypter-trust')||'').trim();
+  const clientVersion=String(req.headers.get('x-decrypter-client-version')||'').trim();
+  if(!token)throw new Error('TRUST_REQUIRED');
+  if(clientVersion!==EXPECTED_CLIENT_VERSION)throw new Error('TRUST_CLIENT_VERSION_REQUIRED');
+  const payload=await verifySigned('LDT1','lovable-decrypter-trust',token);
+  const now=Math.floor(Date.now()/1000);
+  if(!payload?.sid||!payload?.license_id||!payload?.device_hash||!payload?.client_fingerprint||!payload?.client_version)throw new Error('TRUST_INVALID_PAYLOAD');
+  if(Number(payload.exp||0)<=now)throw new Error('TRUST_EXPIRED');
+  if(String(payload.license_id)!==auth.licenseId)throw new Error('TRUST_LICENSE_MISMATCH');
+  if(String(payload.device_hash)!==auth.deviceHash)throw new Error('TRUST_DEVICE_MISMATCH');
+  if(String(payload.client_version)!==EXPECTED_CLIENT_VERSION||String(payload.client_version)!==clientVersion)throw new Error('TRUST_VERSION_MISMATCH');
+  const {data:session,error}=await sb.from('ld_trust_sessions').select('id,license_id,device_hash,client_version,client_fingerprint,expires_at,revoked_at').eq('id',String(payload.sid)).maybeSingle();
+  if(error)throw new Error('DB_ERROR');
+  if(!session)throw new Error('TRUST_SESSION_NOT_FOUND');
+  if(session.revoked_at)throw new Error('TRUST_REVOKED');
+  if(Date.parse(session.expires_at)<=Date.now())throw new Error('TRUST_EXPIRED');
+  if(String(session.license_id)!==auth.licenseId||String(session.device_hash)!==auth.deviceHash)throw new Error('TRUST_BINDING_MISMATCH');
+  if(String(session.client_version)!==clientVersion||String(session.client_fingerprint)!==String(payload.client_fingerprint))throw new Error('TRUST_SESSION_MISMATCH');
+  await sb.from('ld_trust_sessions').update({last_seen_at:new Date().toISOString()}).eq('id',session.id);
+  return {token,clientVersion,sessionId:String(session.id)};
+}
+
+function clampInt(value:unknown,min:number,max:number,fallback:number){const n=Number(value);return Number.isFinite(n)?Math.min(max,Math.max(min,Math.round(n))):fallback;}
+function modeOf(value:unknown){return String(value||'').toLowerCase()==='plan'?'plan':'build';}
+function gatewayMode(value:unknown){const v=String(value||'auto').toLowerCase();return ['auto','fast','deep'].includes(v)?v:'auto';}
+function publicRun(run:any){return run?{id:run.id,project_id:run.project_id||null,mode:run.mode,status:run.status,max_steps:Number(run.max_steps||0),step_count:Number(run.step_count||0),last_error_code:run.last_error_code||null,created_at:run.created_at,updated_at:run.updated_at,completed_at:run.completed_at||null}:null;}
+function publicStep(step:any){return step?{id:step.id,step_index:Number(step.step_index||0),kind:step.kind,status:step.status,provider:step.provider||null,model:step.model||null,gateway_profile:step.gateway_profile||null,duration_ms:step.duration_ms??null,error_code:step.error_code||null,started_at:step.started_at,completed_at:step.completed_at||null}:null;}
+async function ownedRun(sb:any,runId:string,auth:any){const {data,error}=await sb.from('ld_agent_runs').select('id,project_id,mode,status,max_steps,step_count,last_error_code,created_at,updated_at,completed_at').eq('id',runId).eq('license_id',auth.licenseId).eq('device_hash',auth.deviceHash).maybeSingle();if(error)throw new Error('DB_ERROR');if(!data)throw new Error('AGENT_RUN_NOT_FOUND');return data;}
+
+Deno.serve(async req=>{
+  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
+  if(req.method!=='POST')return json({ok:false,code:'METHOD_NOT_ALLOWED'},405);
+  try{
+    const url=Deno.env.get('SUPABASE_URL');
+    const service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if(!url||!service)return json({ok:false,code:'BACKEND_NOT_CONFIGURED'},503);
+    const sb=createClient(url,service,{auth:{persistSession:false}});
+    const body=await req.json().catch(()=>({}));
+    const auth=await authorize(req,body,sb);
+    const trust=await verifyTrust(req,sb,auth);
+    const action=String(body.action||'status').toLowerCase();
+
+    if(action==='status')return json({ok:true,schema:SCHEMA,build:BUILD,authority:'server',state_machine:true,max_steps:8,actions:['status','start','get','step','complete','cancel'],policy:{start_inference:false,one_inference_per_step:true,model_gateway_authority:true,zero_cost:true,paid_mode_allowed:false,raw_content_persistence:false,trajectory_capture:false,tool_execution:false,automatic_loop:false,trust_required:true},trust:{verified:true,client_version:trust.clientVersion}});
+
+    if(action==='start'){
+      const command=String(body.command||'').trim();
+      if(!command)return json({ok:false,code:'COMMAND_REQUIRED'},400);
+      const projectId=String(body.project_id||body.projectId||'').trim().slice(0,200)||null;
+      const mode=modeOf(body.mode);
+      const maxSteps=clampInt(body.max_steps,1,8,8);
+      const {data,error}=await sb.from('ld_agent_runs').insert({license_id:auth.licenseId,device_hash:auth.deviceHash,project_id:projectId,mode,status:'created',max_steps:maxSteps,command_hash:await sha(command)}).select('id,project_id,mode,status,max_steps,step_count,last_error_code,created_at,updated_at,completed_at').single();
+      if(error)throw new Error('AGENT_RUN_CREATE_FAILED');
+      return json({ok:true,schema:SCHEMA,run:publicRun(data),inference_started:false,next_action:'step'});
+    }
+
+    const runId=String(body.run_id||body.runId||'').trim();
+    if(!runId)return json({ok:false,code:'RUN_ID_REQUIRED'},400);
+
+    if(action==='get'){
+      const run=await ownedRun(sb,runId,auth);
+      const {data:steps,error}=await sb.from('ld_agent_steps').select('id,step_index,kind,status,provider,model,gateway_profile,duration_ms,error_code,started_at,completed_at').eq('run_id',runId).order('step_index',{ascending:true});
+      if(error)throw new Error('DB_ERROR');
+      return json({ok:true,schema:SCHEMA,run:publicRun(run),steps:(steps||[]).map(publicStep)});
+    }
+
+    if(action==='cancel'||action==='complete'){
+      await ownedRun(sb,runId,auth);
+      const status=action==='cancel'?'cancelled':'completed';
+      const now=new Date().toISOString();
+      const {data,error}=await sb.from('ld_agent_runs').update({status,updated_at:now,completed_at:now,last_error_code:null}).eq('id',runId).eq('license_id',auth.licenseId).eq('device_hash',auth.deviceHash).select('id,project_id,mode,status,max_steps,step_count,last_error_code,created_at,updated_at,completed_at').single();
+      if(error)throw new Error('AGENT_RUN_UPDATE_FAILED');
+      return json({ok:true,schema:SCHEMA,run:publicRun(data)});
+    }
+
+    if(action!=='step')return json({ok:false,code:'UNKNOWN_ACTION'},400);
+    const command=String(body.command||'').trim();
+    if(!command)return json({ok:false,code:'COMMAND_REQUIRED'},400);
+    const run=await ownedRun(sb,runId,auth);
+    if(['completed','cancelled','failed'].includes(String(run.status)))return json({ok:false,code:'AGENT_RUN_CLOSED',run:publicRun(run)},409);
+
+    const {data:claimed,error:claimError}=await sb.rpc('ld_agent_claim_step',{p_run_id:runId,p_license_id:auth.licenseId,p_device_hash:auth.deviceHash});
+    if(claimError){const code=String(claimError.message||'').includes('AGENT_STEP_NOT_CLAIMABLE')?'AGENT_STEP_NOT_CLAIMABLE':'AGENT_STEP_CLAIM_FAILED';return json({ok:false,code},409);}
+    const claim=Array.isArray(claimed)?claimed[0]:claimed;
+    if(!claim?.step_id)return json({ok:false,code:'AGENT_STEP_CLAIM_FAILED'},409);
+    const stepId=String(claim.step_id);
+    const inputHash=await sha(JSON.stringify({command,project_context:body.project_context||{},agent_rules:String(body.agent_rules||''),approved_plan:body.approved_plan||null,attachments:Array.isArray(body.attachments)?body.attachments:[]}));
+    await sb.from('ld_agent_steps').update({status:'running',input_hash:inputHash}).eq('id',stepId);
+
+    const started=Date.now();
+    const headers:Record<string,string>={
+      'content-type':'application/json',
+      'x-license-key':auth.token,
+      'x-device-id':auth.deviceId,
+      'x-decrypter-trust':trust.token,
+      'x-decrypter-client-version':trust.clientVersion
+    };
+    const geminiKey=String(req.headers.get('x-gemini-key')||body.gemini_api_key||'').trim();
+    if(geminiKey)headers['x-gemini-key']=geminiKey;
+    const gatewayResponse=await fetch(`${url}/functions/v1/ld-model-gateway`,{
+      method:'POST',headers,
+      body:JSON.stringify({
+        action:'execute',
+        mode:String(claim.run_mode)==='plan'?'plan':'build',
+        gateway_mode:gatewayMode(body.gateway_mode),
+        preferred_fast_model:String(body.preferred_fast_model||''),
+        preferred_deep_model:String(body.preferred_deep_model||''),
+        max_output_tokens:clampInt(body.max_output_tokens,1024,65536,32768),
+        gemini_billing_mode:'free',
+        command_id:crypto.randomUUID(),
+        command,
+        project_context:body.project_context||{},
+        agent_rules:String(body.agent_rules||''),
+        approved_plan:body.approved_plan||null,
+        attachments:Array.isArray(body.attachments)?body.attachments.slice(0,8):[]
+      })
+    });
+    const gatewayBody=await gatewayResponse.json().catch(()=>({}));
+    const duration=Date.now()-started;
+    if(!gatewayResponse.ok||gatewayBody?.ok===false){
+      const errorCode=String(gatewayBody?.code||`MODEL_GATEWAY_HTTP_${gatewayResponse.status}`).slice(0,160);
+      await sb.from('ld_agent_steps').update({status:'failed',duration_ms:duration,error_code:errorCode,completed_at:new Date().toISOString()}).eq('id',stepId);
+      await sb.from('ld_agent_runs').update({status:'running',last_error_code:errorCode,updated_at:new Date().toISOString()}).eq('id',runId);
+      return json({ok:false,code:errorCode,run_id:runId,step:{id:stepId,step_index:Number(claim.step_index),status:'failed',duration_ms:duration},gateway:gatewayBody?.gateway||null},gatewayResponse.status>=500?502:gatewayResponse.status);
+    }
+
+    const outputHash=await sha(JSON.stringify(gatewayBody.result||{}));
+    const gateway=gatewayBody.gateway||{};
+    await sb.from('ld_agent_steps').update({status:'completed',output_hash:outputHash,provider:String(gatewayBody.provider||gateway.provider||'').slice(0,80)||null,model:String(gatewayBody.model||gateway.model||'').slice(0,240)||null,gateway_profile:String(gateway.profile||'').slice(0,40)||null,duration_ms:duration,error_code:null,completed_at:new Date().toISOString()}).eq('id',stepId);
+    const nextStatus=String(claim.run_mode)==='plan'?'waiting_approval':'running';
+    await sb.from('ld_agent_runs').update({status:nextStatus,last_error_code:null,updated_at:new Date().toISOString()}).eq('id',runId);
+    const updatedRun=await ownedRun(sb,runId,auth);
+    return json({ok:true,schema:SCHEMA,run:publicRun(updatedRun),step:{id:stepId,step_index:Number(claim.step_index),status:'completed',duration_ms:duration,provider:gatewayBody.provider||gateway.provider||null,model:gatewayBody.model||gateway.model||null,gateway_profile:gateway.profile||null},gateway,result:gatewayBody.result,next_action:String(claim.run_mode)==='plan'?'review_or_complete':'review_or_continue',raw_content_persisted:false});
+  }catch(error){
+    const code=String((error as Error)?.message||'INTERNAL_ERROR');
+    const authish=/^(KEY_|DEVICE_|ENTITLEMENT_|TRUST_)/.test(code);
+    console.error('ld-agent-runtime',code);
+    return json({ok:false,code},authish?403:500);
+  }
+});
