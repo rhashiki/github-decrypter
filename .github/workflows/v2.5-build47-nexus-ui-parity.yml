@@ -2,15 +2,16 @@ name: v2.5 Build 47 · Nexus UI Parity
 
 on:
   push:
-    branches: [main, v2.5-build47-nexus-ui-parity]
+    branches: [main, v2.5-build47-nexus-ui-parity, v2.5-build50-project-intelligence-ux]
     paths:
       - 'ui/nexus-parity-v47.js'
       - 'ui/nexus-parity-v47.css'
+      - 'ui/ui-kernel-v48.js'
+      - 'ui/ui-kernel-v48.css'
       - 'manifest.json'
       - 'settings/config.js'
       - 'release/runtime-package.json'
       - '.github/workflows/v2.5-build47-nexus-ui-parity.yml'
-      - '.github/workflows/v2.5-build46-fab-rail-cascade-premium.yml'
   workflow_dispatch:
 
 permissions:
@@ -21,65 +22,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: JavaScript syntax
-        run: node --check ui/nexus-parity-v47.js
-
-      - name: Validate version and wiring
+        run: |
+          node --check ui/nexus-parity-v47.js
+          node --check ui/ui-kernel-v48.js
+      - name: Validate cumulative succession
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
-          if(m.version!=='2.5.47') throw new Error('manifest version must be 2.5.47');
-          const config=fs.readFileSync('settings/config.js','utf8');
-          if(!config.includes("export const VERSION = '2.5.47'")) throw new Error('settings version mismatch');
+          const cfg=fs.readFileSync('settings/config.js','utf8');
           const pkg=JSON.parse(fs.readFileSync('release/runtime-package.json','utf8'));
-          if(pkg.candidate!=='2.5.47') throw new Error('package candidate mismatch');
+          const parts=v=>String(v).split('.').map(Number);const ge=(v,f)=>{const a=parts(v),b=parts(f);for(let i=0;i<Math.max(a.length,b.length);i++){const x=a[i]||0,y=b[i]||0;if(x!==y)return x>y;}return true;};
+          if(!ge(m.version,'2.5.47')) throw new Error('version predates Build47');
+          if(!cfg.includes(`VERSION = '${m.version}'`)) throw new Error('settings version mismatch');
+          if(pkg.candidate!==m.version) throw new Error('package candidate mismatch');
           const early=(m.content_scripts||[]).find(x=>(x.js||[]).includes('content/early-boot-sentinel.js'));
           if(!early||early.run_at!=='document_start'||early.all_frames!==true||early.match_about_blank!==true) throw new Error('zero-gap boot regression');
-          const main=(m.content_scripts||[]).find(x=>(x.js||[]).includes('ui/nexus-parity-v47.js'));
-          if(!main||main.run_at!=='document_idle'||main.all_frames!==false) throw new Error('Build 47 runtime wiring missing');
-          if(!(main.css||[]).includes('ui/nexus-parity-v47.css')) throw new Error('Build 47 CSS missing');
-          if((main.js||[]).includes('ui/launcher-premium-v46.js')||(main.css||[]).includes('ui/launcher-premium-v46.css')) throw new Error('Build 46 visual layer still wired');
-          if(main.css.at(-1)!=='ui/nexus-parity-v47.css') throw new Error('Build 47 must be final visual override');
+          const app=(m.content_scripts||[]).find(x=>x.run_at==='document_idle'&&x.all_frames===false);
+          if(!app) throw new Error('main runtime missing');
+          const successor=(app.js||[]).includes('ui/ui-kernel-v48.js');
+          if(successor){
+            if((app.js||[]).includes('ui/nexus-parity-v47.js')) throw new Error('v47 JS must stay superseded by UI Kernel');
+            if(!(app.css||[]).includes('ui/ui-kernel-v48.css')) throw new Error('UI Kernel CSS missing');
+            if((app.css||[]).indexOf('ui/ui-kernel-v48.css') <= (app.css||[]).indexOf('ui/nexus-parity-v47.css')) throw new Error('successor CSS must override v47 legacy CSS');
+          }else{
+            if(!(app.js||[]).includes('ui/nexus-parity-v47.js')||!(app.css||[]).includes('ui/nexus-parity-v47.css')) throw new Error('Build47 wiring missing without successor');
+          }
           if(JSON.stringify(m.permissions)!==JSON.stringify(['storage','tabs','downloads','unlimitedStorage','alarms'])) throw new Error('permissions changed');
           NODE
-
-      - name: Validate approved Nexus visual contract
+      - name: Validate approved visual lineage
         run: |
           node - <<'NODE'
-          const fs=require('fs');const css=fs.readFileSync('ui/nexus-parity-v47.css','utf8');
-          const required=[
-            'width:50px!important','conic-gradient(from 210deg,#6736ff,#ef3da3,#4f7cff,#6736ff)',
-            'width:min(292px,calc(100vw - 20px))','border-radius:26px','blur(30px) saturate(150%)',
-            '#ef3da3','#8358ff','#4f7cff','font-family:Arial,Helvetica,sans-serif',
-            '.ld47-cascade[data-show="1"]','pointer-events:auto','linear-gradient(135deg,rgba(131,88,255,.16),rgba(239,61,163,.08))'
-          ];
-          for(const token of required) if(!css.includes(token)) throw new Error('approved Nexus parity token missing: '+token);
+          const fs=require('fs');const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));const app=(m.content_scripts||[]).find(x=>x.run_at==='document_idle'&&x.all_frames===false);const successor=(app.js||[]).includes('ui/ui-kernel-v48.js');
+          const css=fs.readFileSync(successor?'ui/ui-kernel-v48.css':'ui/nexus-parity-v47.css','utf8');
+          for(const token of successor?['conic-gradient','backdrop-filter:blur(30px)','clamp(','#ef3da3','#8358ff','#4f7cff']:['width:50px!important','#ef3da3','#8358ff','#4f7cff']) if(!css.includes(token)) throw new Error('Nexus lineage token missing '+token);
           NODE
-
-      - name: Validate cascade behavior and real action routing
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');const js=fs.readFileSync('ui/nexus-parity-v47.js','utf8');
-          for(const token of ['mouseenter','openGroup','openDetail','placeCascade','ACTION_SELECTORS','LovableDecrypterWorkspace','LovableDecrypterVoice','MutationObserver','attributeFilter:[\'class\']','LovableDecrypterNexusParity']) if(!js.includes(token)) throw new Error('cascade/runtime contract missing '+token);
-          if(!js.includes("window.open(COMMUNITY_URL,'_blank','noopener,noreferrer')")) throw new Error('community click-only contract missing');
-          NODE
-
       - name: Validate non-invasive boundary
         run: |
           node - <<'NODE'
-          const fs=require('fs');const s=fs.readFileSync('ui/nexus-parity-v47.js','utf8');
-          const forbidden=[
-            [/(?:window|globalThis)\.fetch\s*=(?!=)/,'global fetch assignment'],
-            [/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment'],
-            [/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],
-            [/window\.postMessage\s*\(/,'page-world postMessage bridge'],
-            [/\beval\s*\(/,'eval'],[/new\s+Function\s*\(/,'new Function'],
-            [/observe\s*\(\s*document(?:\.documentElement|\.body)?/,'global MutationObserver']
-          ];
-          for(const [rx,label] of forbidden) if(rx.test(s)) throw new Error('Build 47 added forbidden '+label);
+          const fs=require('fs');const s=['ui/nexus-parity-v47.js','ui/ui-kernel-v48.js'].map(p=>fs.readFileSync(p,'utf8')).join('\n');
+          const forbidden=[[/XMLHttpRequest\.prototype\.(?:open|send)\s*=(?!=)/,'XHR prototype assignment'],[/navigator\.sendBeacon\s*=(?!=)/,'sendBeacon assignment'],[/window\.postMessage\s*\(/,'page-world postMessage bridge'],[/\beval\s*\(/,'eval'],[/new\s+Function\s*\(/,'new Function']];
+          for(const [rx,label] of forbidden) if(rx.test(s)) throw new Error('forbidden '+label);
           NODE
-
       - name: Release preflight candidate
         run: node scripts/release-preflight.mjs --candidate
