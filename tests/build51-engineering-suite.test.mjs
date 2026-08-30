@@ -4,9 +4,17 @@ import assert from 'node:assert/strict';
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const js = fs.readFileSync('ui/engineering-suite-v51.js', 'utf8');
 const css = fs.readFileSync('ui/engineering-suite-v51.css', 'utf8');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.5.51');
-assert.match(manifest.version_name, /Build 51 · Engineering Suite/);
+assert.ok(atLeast(manifest.version, '2.5.51'), `unexpected successor version ${manifest.version}`);
 const scripts = manifest.content_scripts.flatMap(x => x.js || []);
 const styles = manifest.content_scripts.flatMap(x => x.css || []);
 assert.ok(scripts.includes('ui/engineering-suite-v51.js'));
@@ -39,4 +47,4 @@ assert.ok(!/XMLHttpRequest|sendBeacon/.test(js), 'Build 51 must not add invasive
 assert.ok(css.includes('.ld51-overlay'));
 assert.ok(css.includes('@media(max-width:640px)'));
 
-console.log('Build 51 Engineering Suite contract OK');
+console.log('Build 51 Engineering Suite cumulative contract OK');
