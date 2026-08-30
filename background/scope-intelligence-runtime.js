@@ -18,7 +18,7 @@ async function handle(action, payload = {}) {
     comparison: 'request->approved-plan->prepared-diff',
     enforcement: 'fail-closed-before-write',
     humanIntentPolicy: 'USER_EDIT > AI_EDIT',
-    strongLockPolicy: 'explicit-path-override-required',
+    strongLockPolicy: 'explicit-path-in-current-request-or-explicit-override',
     softLockPolicy: 'preserve-unless-current-request-explicitly-targets-path',
     skipApprovalBypassesScope: false
   };
