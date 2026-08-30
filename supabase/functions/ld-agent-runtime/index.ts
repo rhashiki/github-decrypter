@@ -4,7 +4,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 const SCHEMA='ld-agent-runtime/1';
 const BUILD=58;
 const EXPECTED_CLIENT_VERSION='2.4.21';
-const PUBLIC_SPKI_B64='MFkwEwYHKoZIzj0CAQYIKoS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==';
+const PUBLIC_SPKI_B64='MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==';
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'content-type,x-license-key,x-device-id,x-gemini-key,x-decrypter-trust,x-decrypter-client-version,authorization','Access-Control-Allow-Methods':'POST,OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const enc=new TextEncoder();
