@@ -2,7 +2,7 @@ name: v2.6 Build 60 · Local Model Runtime
 
 on:
   push:
-    branches: [main, v2.6-build60-local-model-runtime]
+    branches: [main, v2.6-build60-local-model-runtime, v2.6-build60-homologation]
     paths:
       - 'manifest.json'
       - 'settings/config.js'
@@ -15,6 +15,7 @@ on:
       - 'tests/build59-memory-engine-project-brain-v2.test.mjs'
       - 'tests/build60-local-model-runtime.test.mjs'
       - 'tests/build60-ollama-gateway.test.py'
+      - 'tests/build60-local-homologation.test.py'
       - '.github/workflows/v2.6-build60-local-model-runtime.yml'
   workflow_dispatch:
 
@@ -31,8 +32,9 @@ jobs:
       - run: node --check background/model-gateway-bootstrap.js
       - run: node --check content/content.js
       - run: node --check content/zero-cost-runtime-guard.js
-      - run: python -m py_compile runtime/decrypter-local/worker-agent.py runtime/decrypter-local/ollama-gateway.py
+      - run: python -m py_compile runtime/decrypter-local/worker-agent.py runtime/decrypter-local/ollama-gateway.py runtime/decrypter-local/homologate.py
       - run: python tests/build60-ollama-gateway.test.py
+      - run: python tests/build60-local-homologation.test.py
       - name: Validate Ollama compose
         env:
           RUNTIME_TOKEN: ci-runtime-token
