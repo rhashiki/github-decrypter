@@ -4,10 +4,12 @@ import { getSettings } from '../storage/settings-store.js';
 import { GitAdapter } from '../github/git-adapter.js';
 import { GeminiAgent } from '../ai/gemini-agent.js';
 import { buildProjectContext } from '../core/context-builder.js';
+import { loadRecentUserEdits } from '../core/context-engine-v2.js';
 import { syncRepositoryCache, getCachedFile } from '../core/repo-cache.js';
 import { parseCommand } from '../core/command-parser.js';
 import { assertSafeRepoPath, nowIso } from '../core/utils.js';
 import { assertScopeLock } from '../core/scope-lock.js';
+import { assertScopeIntelligence, scopeIntelligenceFingerprint } from '../core/scope-intelligence-v2.js';
 import { HISTORY_KEY } from '../settings/config.js';
 import {
   APPROVAL_SCHEMA,
@@ -117,6 +119,10 @@ async function freezeTransaction(payload = {}) {
   const command = text(payload.command).slice(0, 50000);
   const plan = normalizeApprovalPlan(payload.plan || {});
   const authorizedFiles = approvalFileWhitelist(plan).map(assertSafeRepoPath);
+  const authorizedSet = new Set(authorizedFiles);
+  const humanIntentOverrides = [...new Set((Array.isArray(payload.humanIntentOverrides) ? payload.humanIntentOverrides : [])
+    .map(value => assertSafeRepoPath(value))
+    .filter(path => authorizedSet.has(path)))].slice(0, 30);
   const stateRevision = text(payload.stateRevision).slice(0, 160);
   if (!projectId || !command) throw new Error('APPROVAL_CONTEXT_REQUIRED');
   if (!stateRevision) throw new Error('APPROVAL_STATE_REVISION_REQUIRED');
@@ -129,7 +135,16 @@ async function freezeTransaction(payload = {}) {
   if (!head) throw new Error('APPROVAL_HEAD_UNAVAILABLE');
   const id = crypto.randomUUID();
   const decision = payload.decision === 'skip' ? 'skip' : 'approve';
-  const canonical = canonicalApprovalPayload({ projectId, command, plan, baseHeadSha: head, stateRevision, decision, source: payload.source || 'decrypter-chat' });
+  const canonical = canonicalApprovalPayload({
+    projectId,
+    command,
+    plan,
+    baseHeadSha: head,
+    stateRevision,
+    decision,
+    source: payload.source || 'decrypter-chat',
+    humanIntentOverrides
+  });
   const tx = {
     ...canonical,
     id,
@@ -141,6 +156,7 @@ async function freezeTransaction(payload = {}) {
     expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
     bundleId: '',
     validationHash: '',
+    scopeIntelligenceHash: '',
     skillSlugs: (Array.isArray(payload.skillSlugs) ? payload.skillSlugs : []).map(text).filter(Boolean).slice(0, 12)
   };
   await saveTransaction(tx);
@@ -175,8 +191,11 @@ async function prepareTransaction(port, id, payload = {}) {
   emit(port, id, 'Shadow Build', 'Sincronizando HEAD e cache do repositório…');
   const repoCache = await syncRepositoryCache(adapter, { branch: github.branch });
   assertHead(tx.baseHeadSha, repoCache.headSha);
-  emit(port, id, 'Context', 'Montando contexto e aplicando plano congelado…');
+  emit(port, id, 'Context', 'Montando Context Pack e congelando intenção humana…');
   const context = await buildProjectContext(adapter, tx.command, {
+    projectId: tx.projectId,
+    owner: github.owner,
+    repo: github.repo,
     branch: github.branch,
     maxFiles: settings.agent?.maxFiles,
     maxContextBytes: settings.agent?.maxContextBytes,
@@ -190,10 +209,11 @@ async function prepareTransaction(port, id, payload = {}) {
     baseHeadSha: tx.baseHeadSha,
     stateRevision: tx.stateRevision,
     authorizedFiles: tx.authorizedFiles,
+    humanIntentOverrides: tx.humanIntentOverrides || [],
     humanApprovalSkipped: tx.decision === 'skip'
   };
   const rules = await projectRules(settings, github, payload.skillContext || '');
-  emit(port, id, 'Intelligence', 'Brain · Rules · Knowledge/RAG · Model Gateway · Scope whitelist…');
+  emit(port, id, 'Intelligence', 'Pedido → plano → diff · Human Intent Locks · Scope Lock…');
   const result = await agent.processCommand(tx.command, context, rules, attachments, tx.plan);
   const preparedCheck = validatePreparedFiles(result?.files || [], tx.authorizedFiles);
   if (!preparedCheck.ok) throw new Error(`APPROVAL_SCOPE_VIOLATION:${preparedCheck.violations.join('|')}`);
@@ -223,6 +243,16 @@ async function prepareTransaction(port, id, payload = {}) {
 
   assertRevision(tx.stateRevision, payload.currentStateRevision);
   assertHead(tx.baseHeadSha, await currentHead(adapter, github.branch));
+  const recentUserEdits = Array.isArray(context.recentUserEdits) ? context.recentUserEdits : await loadRecentUserEdits(tx.projectId, 80);
+  const scopeIntelligence = assertScopeIntelligence({
+    command: tx.command,
+    approvedPlan: tx.plan,
+    files: result.files,
+    recentUserEdits,
+    humanIntentOverrides: tx.humanIntentOverrides || [],
+    decision: tx.decision
+  });
+  const scopeIntelligenceHash = await sha256(JSON.stringify(scopeIntelligenceFingerprint(scopeIntelligence)));
   const bundle = {
     id: crypto.randomUUID(),
     createdAt: nowIso(),
@@ -232,21 +262,38 @@ async function prepareTransaction(port, id, payload = {}) {
     baseHeadSha: tx.baseHeadSha,
     settings: { createBranch: false, createPr: false },
     attachments: attachments.map(({ name, mimeType, size }) => ({ name, mimeType, size })),
-    approval: publicApproval(tx),
-    plan: result
+    approval: publicApproval({ ...tx, scopeIntelligenceHash }),
+    plan: result,
+    scopeIntelligence
   };
   bundle.scopeLock = assertScopeLock(bundle);
-  const validationHash = await sha256(JSON.stringify({ tx: tx.hash, base: bundle.baseHeadSha, files: preparedCheck.files }));
+  const validationHash = await sha256(JSON.stringify({
+    tx: tx.hash,
+    base: bundle.baseHeadSha,
+    files: preparedCheck.files,
+    scopeIntelligenceHash
+  }));
   tx.status = 'validated';
   tx.bundleId = bundle.id;
   tx.validationHash = validationHash;
-  tx.validatedAt = nowIso();
+  tx.scopeIntelligenceHash = scopeIntelligenceHash;
+  tx.scopeValidatedAt = nowIso();
   await Promise.all([
     saveTransaction(tx),
     chrome.storage.local.set({ [`ld2_pending_${bundle.id}`]: bundle })
   ]);
-  emit(port, id, 'Validation Gate', `${result.files.length} arquivo(s) · Scope Lock OK · HEAD travado`, 'done');
-  return { transaction: publicApproval(tx), bundle: { id: bundle.id, baseHeadSha: bundle.baseHeadSha, summary: String(result.summary || ''), files: result.files.map(file => ({ path: file.path, action: file.action, before: file.before, content: file.content, explanation: file.explanation || '' })), warnings: result.warnings || [] } };
+  emit(port, id, 'Validation Gate', `${result.files.length} arquivo(s) · Scope Intelligence v2 OK · Human Intent preservado`, 'done');
+  return {
+    transaction: publicApproval(tx),
+    scopeIntelligence,
+    bundle: {
+      id: bundle.id,
+      baseHeadSha: bundle.baseHeadSha,
+      summary: String(result.summary || ''),
+      files: result.files.map(file => ({ path: file.path, action: file.action, before: file.before, content: file.content, explanation: file.explanation || '' })),
+      warnings: [...(result.warnings || []), ...(scopeIntelligence.warnings || []).map(item => item.message || item.code)]
+    }
+  };
 }
 
 async function pushHistory(entry) {
@@ -259,7 +306,7 @@ async function pushHistory(entry) {
 async function applyTransaction(port, id, payload = {}) {
   const tx = await getTransaction(payload.transactionId);
   if (tx.status === 'applied') throw new Error('APPROVAL_ALREADY_APPLIED');
-  if (tx.status !== 'validated' || !tx.bundleId || !tx.validationHash) throw new Error('APPROVAL_NOT_VALIDATED');
+  if (tx.status !== 'validated' || !tx.bundleId || !tx.validationHash || !tx.scopeIntelligenceHash) throw new Error('APPROVAL_NOT_VALIDATED');
   assertRevision(tx.stateRevision, payload.currentStateRevision);
   const pendingKey = `ld2_pending_${tx.bundleId}`;
   const stored = await chrome.storage.local.get(pendingKey);
@@ -273,10 +320,34 @@ async function applyTransaction(port, id, payload = {}) {
   assertHead(tx.baseHeadSha, await currentHead(adapter, bundle.github.branch));
   const check = validatePreparedFiles(bundle.plan?.files || [], tx.authorizedFiles);
   if (!check.ok) throw new Error(`APPROVAL_SCOPE_VIOLATION:${check.violations.join('|')}`);
-  const validationHash = await sha256(JSON.stringify({ tx: tx.hash, base: bundle.baseHeadSha, files: check.files }));
-  if (validationHash !== tx.validationHash) throw new Error('APPROVAL_VALIDATION_HASH_CHANGED');
 
-  emit(port, id, 'Guarded Commit', tx.decision === 'skip' ? 'Pular aprovação humana · proteções mantidas…' : 'Plano aprovado · aplicando transação validada…');
+  emit(port, id, 'Scope Intelligence', 'Revalidando intenção humana imediatamente antes do write…');
+  const currentUserEdits = await loadRecentUserEdits(tx.projectId, 80);
+  const scopeIntelligence = assertScopeIntelligence({
+    command: tx.command,
+    approvedPlan: tx.plan,
+    files: bundle.plan?.files || [],
+    recentUserEdits: currentUserEdits,
+    humanIntentOverrides: tx.humanIntentOverrides || [],
+    decision: tx.decision
+  });
+  const scopeIntelligenceHash = await sha256(JSON.stringify(scopeIntelligenceFingerprint(scopeIntelligence)));
+  if (scopeIntelligenceHash !== tx.scopeIntelligenceHash) {
+    const error = new Error('SCOPE_INTELLIGENCE_CHANGED_AFTER_VALIDATION');
+    error.code = 'SCOPE_INTELLIGENCE_CHANGED_AFTER_VALIDATION';
+    error.scopeIntelligence = scopeIntelligence;
+    throw error;
+  }
+  const validationHash = await sha256(JSON.stringify({
+    tx: tx.hash,
+    base: bundle.baseHeadSha,
+    files: check.files,
+    scopeIntelligenceHash
+  }));
+  if (validationHash !== tx.validationHash) throw new Error('APPROVAL_VALIDATION_HASH_CHANGED');
+  bundle.scopeIntelligence = scopeIntelligence;
+
+  emit(port, id, 'Guarded Commit', tx.decision === 'skip' ? 'Pular aprovação humana · Scope Intelligence continua obrigatório…' : 'Plano aprovado · escopo e intenção humana revalidados…');
   const result = await adapter.atomicCommit({
     files: bundle.plan.files.map(({ path, action, content }) => ({ path, action, content })),
     message: bundle.plan.commit_message || `fix: ${bundle.plan.summary || 'Lovable Decrypter approved changes'}`,
@@ -291,11 +362,21 @@ async function applyTransaction(port, id, payload = {}) {
   await Promise.all([
     saveTransaction(tx),
     chrome.storage.local.remove(pendingKey),
-    pushHistory({ type: 'approval-auto-repair', decision: tx.decision, command: tx.command, repo: `${bundle.github.owner}/${bundle.github.repo}`, transactionId: tx.id, planHash: tx.hash, result })
+    pushHistory({
+      type: 'approval-auto-repair',
+      decision: tx.decision,
+      command: tx.command,
+      repo: `${bundle.github.owner}/${bundle.github.repo}`,
+      transactionId: tx.id,
+      planHash: tx.hash,
+      scopeIntelligenceHash,
+      humanIntentOverrides: tx.humanIntentOverrides || [],
+      result
+    })
   ]);
   syncRepositoryCache(adapter, { branch: bundle.github.branch }).catch(() => null);
-  emit(port, id, 'Concluído', `Commit ${tx.commitSha.slice(0, 8)} · todas as proteções preservadas`, 'done');
-  return { transaction: publicApproval(tx), result };
+  emit(port, id, 'Concluído', `Commit ${tx.commitSha.slice(0, 8)} · escopo + Human Intent preservados`, 'done');
+  return { transaction: publicApproval(tx), scopeIntelligence, result };
 }
 
 async function cancelTransaction(payload = {}) {
@@ -326,7 +407,15 @@ export function installApprovalRuntime() {
         else throw new Error('APPROVAL_ACTION_INVALID');
         port.postMessage({ id, ok: true, data });
       } catch (error) {
-        try { port.postMessage({ id, ok: false, error: error?.message || String(error), code: error?.code || '' }); } catch (_) {}
+        try {
+          port.postMessage({
+            id,
+            ok: false,
+            error: error?.message || String(error),
+            code: error?.code || '',
+            scopeIntelligence: error?.scopeIntelligence || null
+          });
+        } catch (_) {}
       }
     };
     port.onMessage.addListener(handler);
@@ -335,10 +424,13 @@ export function installApprovalRuntime() {
 
 export const ApprovalRuntime = Object.freeze({
   build: 30,
+  scopeIntelligenceBuild: 65,
   schema: APPROVAL_SCHEMA,
   port: PORT_NAME,
   humanApprovalCanBeSkipped: true,
   protectionsCanBeSkipped: false,
+  scopeIntelligenceCanBeSkipped: false,
+  genericPlanApprovalOverridesHumanIntent: false,
   directLovableSend: false,
   arbitraryAssetFetch: false,
   secretRecovery: false
