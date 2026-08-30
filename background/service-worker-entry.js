@@ -19,6 +19,7 @@ import { installMessagingRuntime } from './messaging-runtime.js';
 import { installAgentRuntimeClient } from './agent-runtime-client.js';
 import { installToolRuntime } from './tool-runtime.js';
 import { installMcpRuntime } from './mcp-runtime.js';
+import { installMcpMarketplaceRuntime } from './mcp-marketplace-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -39,3 +40,4 @@ installMessagingRuntime();
 installAgentRuntimeClient();
 installToolRuntime();
 installMcpRuntime();
+installMcpMarketplaceRuntime();
