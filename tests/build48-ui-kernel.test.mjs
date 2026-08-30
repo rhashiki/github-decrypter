@@ -6,13 +6,19 @@ const js = fs.readFileSync('ui/ui-kernel-v48.js', 'utf8');
 const css = fs.readFileSync('ui/ui-kernel-v48.css', 'utf8');
 const settings = fs.readFileSync('settings/config.js', 'utf8');
 const app = manifest.content_scripts.find(item => Array.isArray(item.js) && item.js.includes('ui/ui-kernel-v48.js'));
+const versionParts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a=versionParts(value), b=versionParts(floor);
+  for(let i=0;i<Math.max(a.length,b.length);i++){const x=a[i]||0,y=b[i]||0;if(x!==y)return x>y;}
+  return true;
+};
 
 if (!app) throw new Error('Build48 kernel missing from manifest');
 if (app.js.includes('ui/nexus-parity-v47.js')) throw new Error('Build47 launcher JS must be superseded');
 if (!app.css.includes('ui/ui-kernel-v48.css')) throw new Error('Build48 CSS missing');
-if (manifest.version !== '2.5.48') throw new Error(`unexpected manifest version ${manifest.version}`);
-if (!settings.includes("VERSION = '2.5.48'")) throw new Error('settings version mismatch');
-if (pkg.candidate !== '2.5.48') throw new Error('runtime package candidate mismatch');
+if (!atLeast(manifest.version,'2.5.48')) throw new Error(`unexpected manifest version ${manifest.version}`);
+if (!settings.includes(`VERSION = '${manifest.version}'`)) throw new Error('settings version mismatch');
+if (pkg.candidate !== manifest.version) throw new Error('runtime package candidate mismatch');
 
 const expectedPerms = ['storage', 'tabs', 'downloads', 'unlimitedStorage', 'alarms'];
 if (JSON.stringify(manifest.permissions) !== JSON.stringify(expectedPerms)) throw new Error('permissions boundary changed');
@@ -27,4 +33,4 @@ if (!js.includes('[data-minimize]')) throw new Error('minimize controller missin
 if (!css.includes('clamp(')) throw new Error('responsive typography missing');
 if (!css.includes('conic-gradient')) throw new Error('approved FAB gradient missing');
 
-console.log('Build48 UI kernel contract OK');
+console.log('Build48 UI kernel cumulative contract OK');
