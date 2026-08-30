@@ -218,7 +218,11 @@ async function prepareTransaction(port, id, payload = {}) {
   const preparedCheck = validatePreparedFiles(result?.files || [], tx.authorizedFiles);
   if (!preparedCheck.ok) throw new Error(`APPROVAL_SCOPE_VIOLATION:${preparedCheck.violations.join('|')}`);
 
-  const beforeByPath = new Map((context.files || []).map(file => [file.path, file.content]));
+  // Context Engine may truncate large files for inference. A truncated context is
+  // NEVER authoritative write input: fetch the complete current file before patching.
+  const beforeByPath = new Map((context.files || [])
+    .filter(file => file?.truncated !== true)
+    .map(file => [file.path, file.content]));
   for (const file of result.files) {
     file.path = assertSafeRepoPath(file.path);
     if (!beforeByPath.has(file.path) && file.action !== 'create') {
