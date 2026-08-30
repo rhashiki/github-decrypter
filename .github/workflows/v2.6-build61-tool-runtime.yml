@@ -1,0 +1,64 @@
+name: v2.6 Build 61 · Tool Runtime / Coding Tools
+
+on:
+  push:
+    branches: [main, v2.6-build61-tool-runtime]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'background/service-worker-entry.js'
+      - 'background/tool-runtime.js'
+      - 'content/tool-runtime-client.js'
+      - 'core/tool-runtime.js'
+      - 'core/operation-journal.js'
+      - 'core/patch-engine.js'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'tests/build61-tool-runtime.test.mjs'
+      - '.github/workflows/v2.6-build61-tool-runtime.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'background/service-worker-entry.js'
+      - 'background/tool-runtime.js'
+      - 'content/tool-runtime-client.js'
+      - 'core/tool-runtime.js'
+      - 'core/operation-journal.js'
+      - 'core/patch-engine.js'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'tests/build61-tool-runtime.test.mjs'
+      - '.github/workflows/v2.6-build61-tool-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check background/service-worker-entry.js
+      - run: node --check background/tool-runtime.js
+      - run: node --check content/tool-runtime-client.js
+      - run: node --check core/tool-runtime.js
+      - run: node --check core/operation-journal.js
+      - run: node --check core/patch-engine.js
+      - run: node tests/build48-ui-kernel.test.mjs
+      - run: node tests/build49-integrations.test.mjs
+      - run: node tests/build50-project-intelligence.test.mjs
+      - run: node tests/build51-engineering-suite.test.mjs
+      - run: node tests/build52-project-tools-zip.test.mjs
+      - run: node tests/build53-settings-preferences.test.mjs
+      - run: node tests/build54-update-recovery-center.test.mjs
+      - run: node tests/build55-backend-messaging-natural-voice.test.mjs
+      - run: node tests/build56-legacy-purge-performance.test.mjs
+      - run: node tests/build57-final-homologation.test.mjs
+      - run: node tests/build58-decrypter-ai-core.test.mjs
+      - run: node tests/build59-memory-engine-project-brain-v2.test.mjs
+      - run: node tests/build60-local-model-runtime.test.mjs
+      - run: node tests/build61-tool-runtime.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
