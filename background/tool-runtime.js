@@ -15,20 +15,25 @@ function activeGithub(settings, projectId = '') {
 
 async function resolveWriteAuthorization(payload = {}, projectId = '') {
   const transactionId = text(payload?.authorization?.transactionId || payload?.transactionId);
-  if (!transactionId) return { writeApproved: false, allowedPaths: [], transactionId: '' };
+  if (!transactionId) return { writeApproved: false, allowedPaths: [], transactionId: '', scopeIntelligenceValidated: false };
   const key = txKey(transactionId);
   const stored = await chrome.storage.session.get(key);
   const tx = stored[key];
-  if (!tx || tx.id !== transactionId) return { writeApproved: false, allowedPaths: [], transactionId };
-  if (Date.parse(tx.expiresAt || '') <= Date.now()) return { writeApproved: false, allowedPaths: [], transactionId };
-  if (tx.status !== 'validated') return { writeApproved: false, allowedPaths: [], transactionId };
-  if (projectId && tx.projectId && String(tx.projectId) !== String(projectId)) return { writeApproved: false, allowedPaths: [], transactionId };
+  if (!tx || tx.id !== transactionId) return { writeApproved: false, allowedPaths: [], transactionId, scopeIntelligenceValidated: false };
+  if (Date.parse(tx.expiresAt || '') <= Date.now()) return { writeApproved: false, allowedPaths: [], transactionId, scopeIntelligenceValidated: false };
+  if (tx.status !== 'validated') return { writeApproved: false, allowedPaths: [], transactionId, scopeIntelligenceValidated: false };
+  if (projectId && tx.projectId && String(tx.projectId) !== String(projectId)) return { writeApproved: false, allowedPaths: [], transactionId, scopeIntelligenceValidated: false };
+  const scopeIntelligenceHash = text(tx.scopeIntelligenceHash);
+  if (!scopeIntelligenceHash) return { writeApproved: false, allowedPaths: [], transactionId, scopeIntelligenceValidated: false };
   return {
     writeApproved: true,
     allowedPaths: Array.isArray(tx.authorizedFiles) ? tx.authorizedFiles : [],
     transactionId,
     approvalHash: text(tx.hash),
-    baseHeadSha: text(tx.baseHeadSha)
+    baseHeadSha: text(tx.baseHeadSha),
+    scopeIntelligenceHash,
+    scopeIntelligenceValidated: true,
+    humanIntentOverrides: Array.isArray(tx.humanIntentOverrides) ? tx.humanIntentOverrides : []
   };
 }
 
@@ -71,11 +76,11 @@ async function handle(action, payload = {}) {
   if (op === 'list') {
     return {
       schema: 'ld-tool-runtime/1',
-      build: 61,
+      build: 65,
       repo: `${github.owner}/${github.repo}`,
       branch: github.branch || 'main',
       tools: runtime.list(),
-      writePolicy: 'validated-approval-transaction-only',
+      writePolicy: 'validated-approval+scope-intelligence-v2',
       fakeDiagnostics: false,
       fakeLsp: false
     };
@@ -87,7 +92,7 @@ async function handle(action, payload = {}) {
   if (!tool) throw Object.assign(new Error(`TOOL_NOT_FOUND: ${toolName}`), { code: 'TOOL_NOT_FOUND' });
   const authorization = tool.mode === 'write'
     ? await resolveWriteAuthorization(payload, projectId)
-    : { writeApproved: false, allowedPaths: [] };
+    : { writeApproved: false, allowedPaths: [], scopeIntelligenceValidated: false };
 
   return runtime.invoke(toolName, payload?.input || {}, {
     origin: payload?.origin || 'tool',
@@ -125,13 +130,14 @@ export function installToolRuntime() {
   });
 
   globalThis.LovableDecrypterToolRuntime = Object.freeze({
-    build: 61,
+    build: 65,
     schema: 'ld-tool-runtime/1',
     port: PORT_NAME,
     providerNeutral: true,
     readToolsAutomatic: true,
     writesFailClosed: true,
-    writePolicy: 'validated-approval-transaction-only',
+    writePolicy: 'validated-approval+scope-intelligence-v2',
+    scopeIntelligenceRequiredForWrites: true,
     operationJournal: true,
     manualChangeOrigins: true,
     diagnosticsCapabilityGated: true,
