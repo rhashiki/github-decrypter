@@ -1,10 +1,12 @@
-export const VERSION = '2.6.62';
+export const VERSION = '2.6.63';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
 export const TOOL_RUNTIME_SCHEMA = 'ld-tool-runtime/1';
 export const OPERATION_JOURNAL_SCHEMA = 'ld-operation-journal/1';
 export const MCP_RUNTIME_SCHEMA = 'ld-mcp-runtime/1';
+export const MCP_MARKETPLACE_SCHEMA = 'ld-mcp-marketplace/1';
+export const MCP_MARKETPLACE_CATALOG_VERSION = 1;
 export const MCP_PROTOCOL_VERSION = '2026-07-28';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
 export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
