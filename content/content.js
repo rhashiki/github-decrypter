@@ -5,6 +5,7 @@
 
   const MONITOR_KEY = 'ld2_monitor_enabled';
   const state = { projectId: '', url: location.href, monitorEnabled: true };
+  let announceQueued = false;
 
   function extractProjectId() {
     const path = `${location.pathname}${location.hash}`;
@@ -15,6 +16,7 @@
   }
 
   async function announce() {
+    announceQueued = false;
     if (!state.monitorEnabled) return;
     const next = extractProjectId();
     if (next === state.projectId && state.url === location.href) return;
@@ -22,6 +24,12 @@
     state.url = location.href;
     try { await chrome.runtime.sendMessage({ type: 'LD2_PROJECT_SEEN', projectId: next, url: location.href }); } catch (_) {}
     window.dispatchEvent(new CustomEvent('ld2:project', { detail: { ...state } }));
+  }
+
+  function scheduleAnnounce() {
+    if (!state.monitorEnabled || announceQueued) return;
+    announceQueued = true;
+    queueMicrotask(announce);
   }
 
   async function runtime(message) {
@@ -43,14 +51,14 @@
     } catch (_) {
       state.monitorEnabled = true;
     }
-    if (state.monitorEnabled) announce();
+    scheduleAnnounce();
   }
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local' || !changes[MONITOR_KEY]) return;
     state.monitorEnabled = changes[MONITOR_KEY].newValue !== false;
     window.dispatchEvent(new CustomEvent('ld2:monitor-state', { detail: { enabled: state.monitorEnabled } }));
-    if (state.monitorEnabled) announce();
+    scheduleAnnounce();
   });
 
   window.LovableDecrypterV2 = {
@@ -67,7 +75,10 @@
   };
 
   initMonitor();
-  setInterval(() => { if (state.monitorEnabled) announce(); }, 1200);
-  addEventListener('popstate', () => { if (state.monitorEnabled) announce(); });
-  addEventListener('hashchange', () => { if (state.monitorEnabled) announce(); });
+  addEventListener('popstate', scheduleAnnounce);
+  addEventListener('hashchange', scheduleAnnounce);
+  addEventListener('pageshow', scheduleAnnounce);
+  addEventListener('focus', scheduleAnnounce);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleAnnounce(); });
+  try { window.navigation?.addEventListener?.('navigate', scheduleAnnounce); } catch (_) {}
 })();
