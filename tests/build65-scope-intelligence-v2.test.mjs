@@ -34,13 +34,16 @@ for (const token of [
   "comparison: 'request->approved-plan->prepared-diff'",
   "enforcement: 'fail-closed-before-write'",
   "humanIntentPolicy: 'USER_EDIT > AI_EDIT'",
+  "strongLockPolicy: 'explicit-path-in-current-request-or-explicit-override'",
   'skipApprovalBypassesScope: false'
 ]) assert.ok(runtime.includes(token), token);
 
 for (const token of [
   'deriveHumanIntentLocks',
   "level: lock.count >= 2 ? 'strong' : 'soft'",
+  'explicit-path-request-or-override-required',
   'human-intent-override-required',
+  'human-intent-strong-lock-explicit-request',
   'outside-approved-plan',
   'broad-rewrite',
   'external-change-signal',
@@ -59,7 +62,9 @@ for (const token of [
   'humanIntentOverrides: tx.humanIntentOverrides',
   'scopeIntelligence: error?.scopeIntelligence || null',
   'scopeIntelligenceCanBeSkipped: false',
-  'genericPlanApprovalOverridesHumanIntent: false'
+  'genericPlanApprovalOverridesHumanIntent: false',
+  'file?.truncated !== true',
+  'NEVER authoritative write input'
 ]) assert.ok(approval.includes(token), token);
 
 for (const token of [
@@ -88,6 +93,7 @@ const recentEdits = [
 const locks = deriveHumanIntentLocks(recentEdits, { now });
 assert.equal(locks.find(lock => lock.path === 'src/App.tsx')?.level, 'strong');
 assert.equal(locks.find(lock => lock.path === 'src/App.tsx')?.count, 2);
+assert.equal(locks.find(lock => lock.path === 'src/App.tsx')?.policy, 'explicit-path-request-or-override-required');
 assert.equal(locks.find(lock => lock.path === 'src/Profile.tsx')?.level, 'soft');
 
 const approvedPlan = {
@@ -121,6 +127,17 @@ const explicitOverride = evaluateScopeIntelligence({
 assert.equal(explicitOverride.allowed, true);
 assert.deepEqual(explicitOverride.humanIntent.overridesUsed, ['src/App.tsx']);
 assert.ok(explicitOverride.warnings.some(item => item.code === 'human-intent-explicit-override'));
+
+const strongExplicitRequest = evaluateScopeIntelligence({
+  command:'Ajuste especificamente src/App.tsx na sidebar e não toque em outros arquivos',
+  approvedPlan,
+  files,
+  recentUserEdits: recentEdits,
+  now
+});
+assert.equal(strongExplicitRequest.allowed, true);
+assert.deepEqual(strongExplicitRequest.humanIntent.overridesUsed, ['src/App.tsx']);
+assert.ok(strongExplicitRequest.warnings.some(item => item.code === 'human-intent-strong-lock-explicit-request'));
 
 const softExplicitTarget = evaluateScopeIntelligence({
   command:'Ajuste especificamente src/Profile.tsx',
