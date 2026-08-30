@@ -6,9 +6,17 @@ const pkg = JSON.parse(fs.readFileSync('release/runtime-package.json', 'utf8'));
 const settings = fs.readFileSync('settings/config.js', 'utf8');
 const content = fs.readFileSync('content/content.js', 'utf8');
 const app = manifest.content_scripts.find(item => Array.isArray(item.js) && item.js.includes('ui/ui-kernel-v48.js'));
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.5.56');
-assert.match(manifest.version_name, /Build 56 · Legacy Purge \+ Performance/);
+assert.ok(atLeast(manifest.version, '2.5.56'), `unexpected successor version ${manifest.version}`);
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(app, 'authoritative UI runtime missing');
@@ -55,4 +63,4 @@ const manifestText = JSON.stringify(manifest);
 for (const token of ['BUILD 12 · Unified Launcher','LD38_PREMIUM_ENGINEERING','LD39_PREMIUM_PROJECT_TOOLS'])
   assert.ok(!manifestText.includes(token), `legacy marker leaked into manifest: ${token}`);
 
-console.log('Build56 Legacy Purge + Performance contract OK');
+console.log('Build56 Legacy Purge + Performance cumulative contract OK');
