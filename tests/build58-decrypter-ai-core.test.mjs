@@ -14,8 +14,8 @@ const fixMigration = read('supabase/migrations/20260830085526_build58_agent_clai
 const serviceWorker = read('background/service-worker.js');
 const gatewayBootstrap = read('background/model-gateway-bootstrap.js');
 
-assert.equal(manifest.version, '2.6.58');
-assert.match(manifest.version_name, /Build 58 · Decrypter AI Core/);
+const version = manifest.version.match(/^2\.6\.(\d+)$/);
+assert.ok(version && Number(version[1]) >= 58, 'Build58 contract must survive successor versions');
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 
@@ -30,7 +30,8 @@ assert.ok(client.includes('oneInferencePerStep: true'));
 assert.ok(client.includes('rawContentPersistence: false'));
 
 assert.ok(agent.includes("const SCHEMA='ld-agent-runtime/1'"));
-assert.ok(agent.includes('const BUILD=58'));
+const agentBuild = Number(agent.match(/const BUILD=(\d+)/)?.[1] || 0);
+assert.ok(agentBuild >= 58, 'Agent Runtime Build58 authority must survive successor builds');
 for (const token of [
   'start_inference:false',
   'one_inference_per_step:true',
@@ -49,7 +50,7 @@ assert.ok(agent.includes("sb.rpc('ld_agent_claim_step'"));
 assert.ok(agent.includes("action==='start'"));
 assert.ok(agent.indexOf("action==='start'") < agent.indexOf('/ld-model-gateway'), 'start must be handled before inference dispatch');
 assert.ok(agent.includes('raw_content_persisted:false'));
-assert.ok(!/child_process|Deno\.Command|eval\s*\(|new Function/.test(agent), 'Build58 must not introduce arbitrary tool execution');
+assert.ok(!/child_process|Deno\.Command|eval\s*\(|new Function/.test(agent), 'Agent Runtime must not introduce arbitrary tool execution');
 
 const key = source => source.match(/PUBLIC_SPKI_B64=['\"]([^'\"]+)/)?.[1] || '';
 assert.ok(key(agent));
@@ -80,8 +81,8 @@ assert.ok(fixMigration.includes('security invoker'));
 
 const app = manifest.content_scripts.find(item => Array.isArray(item.js) && item.js.includes('ui/ui-kernel-v48.js'));
 assert.ok(app);
-assert.ok(!app.js.some(path => /agent-runtime/i.test(path)), 'Build58 agent runtime must remain background/server-only');
-assert.ok(!serviceWorker.includes('ld-agent-runtime'), 'existing Plan/Build switch must not be silently redirected in Build58');
+assert.ok(!app.js.some(path => /agent-runtime/i.test(path)), 'Agent Runtime must remain background/server-only');
+assert.ok(!serviceWorker.includes('ld-agent-runtime'), 'existing Plan/Build switch must not be silently redirected by Agent Runtime');
 assert.ok(gatewayBootstrap.includes('GeminiAgent.prototype.backendCommand'));
 assert.ok(gatewayBootstrap.includes('/ld-model-gateway'));
 
@@ -91,4 +92,4 @@ assert.ok(!client.includes('user_paid'));
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
 assert.ok(!read('release/homologation-v2.5.57.json').includes('"release_authorized": true'));
 
-console.log('Build58 Decrypter AI Core contract OK');
+console.log('Build58 Decrypter AI Core cumulative contract OK');
