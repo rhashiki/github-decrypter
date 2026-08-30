@@ -17,6 +17,22 @@ on:
       - 'tests/build60-ollama-gateway.test.py'
       - 'tests/build60-local-homologation.test.py'
       - '.github/workflows/v2.6-build60-local-model-runtime.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'runtime/decrypter-local/**'
+      - 'supabase/functions/ld-local-control/**'
+      - 'supabase/functions/ld-command/**'
+      - 'supabase/functions/ld-model-gateway/**'
+      - 'supabase/migrations/20260830094418_build60_local_model_runtime.sql'
+      - 'tests/build59-memory-engine-project-brain-v2.test.mjs'
+      - 'tests/build60-local-model-runtime.test.mjs'
+      - 'tests/build60-ollama-gateway.test.py'
+      - 'tests/build60-local-homologation.test.py'
+      - '.github/workflows/v2.6-build60-local-model-runtime.yml'
   workflow_dispatch:
 
 permissions:
