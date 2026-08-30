@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Build 23 worker agent: registers one vLLM runtime and sends health/metrics heartbeats.
-Uses only the Python standard library. It never reads or stores inference prompts.
+"""Build 60 worker agent for Ollama or vLLM runtimes.
+
+Registers an authenticated OpenAI-compatible endpoint and sends health/metrics
+heartbeats. It never reads or stores inference prompts.
 """
 
 import json
@@ -19,20 +21,27 @@ POOL_CODE = os.environ.get("DECRYPTER_POOL_CODE", "decrypter-local-primary")
 ZONE = os.environ.get("DECRYPTER_WORKER_ZONE", "")
 RUNTIME_URL = os.environ.get("DECRYPTER_RUNTIME_URL", "http://decrypter-local:8000").rstrip("/")
 RUNTIME_TOKEN = os.environ.get("RUNTIME_TOKEN", "")
+RUNTIME_KIND = os.environ.get("DECRYPTER_RUNTIME_KIND", "ollama").strip().lower()
+RUNTIME_MODEL = os.environ.get("DECRYPTER_RUNTIME_MODEL", "qwen3-coder:30b").strip()
+MODEL_LABEL = os.environ.get("DECRYPTER_MODEL_LABEL", "Qwen3-Coder 30B A3B · Ollama").strip()
 SERVED_MODEL = os.environ.get("SERVED_MODEL_NAME", "decrypter-local")
-MAX_INFLIGHT = max(1, int(os.environ.get("DECRYPTER_WORKER_MAX_INFLIGHT", "4")))
+MAX_INFLIGHT = max(1, int(os.environ.get("DECRYPTER_WORKER_MAX_INFLIGHT", "1")))
 INTERVAL = max(5, int(os.environ.get("DECRYPTER_HEARTBEAT_SECONDS", "15")))
-AGENT_VERSION = "2.4.23"
+AGENT_VERSION = "2.6.60"
 
 METRIC_NAMES = {
     "vllm:num_requests_running": "running",
     "vllm:num_requests_waiting": "waiting",
     "vllm:kv_cache_usage_perc": "kv_cache_usage",
+    "decrypter_requests_inflight": "running",
+    "decrypter_requests_total": "requests_total",
+    "decrypter_errors_total": "errors_total",
+    "decrypter_last_latency_ms": "last_latency_ms",
 }
 
 
 def http(url, method="GET", payload=None, token=None, timeout=8):
-    headers = {"user-agent": "decrypter-worker-agent/2.4.23"}
+    headers = {"user-agent": "decrypter-worker-agent/2.6.60"}
     if token:
         headers["authorization"] = f"Bearer {token}"
     data = None
@@ -53,7 +62,7 @@ def control(action, payload):
         headers={
             "content-type": "application/json",
             "x-decrypter-worker-secret": WORKER_SECRET,
-            "user-agent": "decrypter-worker-agent/2.4.23",
+            "user-agent": "decrypter-worker-agent/2.6.60",
         },
         method="POST",
     )
@@ -78,19 +87,19 @@ def metric_value(text, name):
 
 def probe_runtime():
     started = time.monotonic()
-    metrics = {}
+    metrics = {"runtime": RUNTIME_KIND, "runtime_model": RUNTIME_MODEL}
     error = None
     healthy = False
+    models = []
     try:
-        status, _, _ = http(f"{RUNTIME_URL}/health", token=RUNTIME_TOKEN, timeout=5)
+        status, _, _ = http(f"{RUNTIME_URL}/health", timeout=6)
         healthy = status == 200
-        status, model_bytes, _ = http(f"{RUNTIME_URL}/v1/models", token=RUNTIME_TOKEN, timeout=5)
-        models = []
+        status, model_bytes, _ = http(f"{RUNTIME_URL}/v1/models", token=RUNTIME_TOKEN, timeout=6)
         if status == 200:
             data = json.loads(model_bytes.decode() or "{}")
             models = [str(item.get("id", "")) for item in data.get("data", [])]
             healthy = healthy and SERVED_MODEL in models
-        status, metric_bytes, _ = http(f"{RUNTIME_URL}/metrics", token=RUNTIME_TOKEN, timeout=5)
+        status, metric_bytes, _ = http(f"{RUNTIME_URL}/metrics", token=RUNTIME_TOKEN, timeout=6)
         if status == 200:
             text = metric_bytes.decode(errors="replace")
             for source, target in METRIC_NAMES.items():
@@ -120,6 +129,8 @@ def validate_config():
         raise SystemExit("Missing required worker configuration: " + ", ".join(missing))
     if not PUBLIC_ENDPOINT.startswith("https://"):
         raise SystemExit("DECRYPTER_WORKER_ENDPOINT must use https://")
+    if RUNTIME_KIND not in {"ollama", "vllm"}:
+        raise SystemExit("DECRYPTER_RUNTIME_KIND must be ollama or vllm")
 
 
 def main():
@@ -139,6 +150,9 @@ def main():
                         "zone": ZONE or None,
                         "healthy": healthy,
                         "served_model": SERVED_MODEL,
+                        "model_label": MODEL_LABEL,
+                        "runtime": RUNTIME_KIND,
+                        "runtime_model": RUNTIME_MODEL,
                         "agent_version": AGENT_VERSION,
                         "metrics": metrics,
                     },
