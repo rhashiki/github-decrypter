@@ -16,6 +16,7 @@ import { installCloudAssetsRuntime } from './cloud-assets-runtime.js';
 import { installCloudCompleteRuntime } from './cloud-complete-runtime.js';
 import { installUpdateRecoveryRuntime } from './update-recovery-runtime.js';
 import { installMessagingRuntime } from './messaging-runtime.js';
+import { installAgentRuntimeClient } from './agent-runtime-client.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -33,3 +34,4 @@ installCloudAssetsRuntime();
 installCloudCompleteRuntime();
 installUpdateRecoveryRuntime();
 installMessagingRuntime();
+installAgentRuntimeClient();
