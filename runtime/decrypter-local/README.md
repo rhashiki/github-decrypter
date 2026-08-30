@@ -43,6 +43,28 @@ The control plane remains provider-neutral. `min_workers=0`, so the local pool m
 
 No cloud GPU is provisioned by this repository automatically. A worker becomes available only when your own machine/GPU or an explicitly configured external scaler actually starts one.
 
+## Final homologation
+
+After the worker stack is up and `worker-agent.py` has registered the instance, run:
+
+```bash
+python runtime/decrypter-local/homologate.py
+```
+
+The probe uses the same private environment variables as the worker and validates, in order:
+
+1. `/health` is healthy and reports the stable `decrypter-local` served model;
+2. authenticated `/v1/models` exposes `decrypter-local`;
+3. required runtime metrics are available;
+4. a real authenticated chat completion succeeds through the public worker gateway;
+5. the completion reports `zero_cost_api=true` and keeps the stable served-model identity;
+6. metrics remain readable after inference;
+7. when `DECRYPTER_CONTROL_URL` and `DECRYPTER_WORKER_SECRET` are configured, `ld-local-control` reports the same instance as `ready` with the expected model contract.
+
+The homologator never prints secrets, prompts or completion content. It emits only pass/fail metadata and returns a non-zero exit code on any failed invariant.
+
+For a full Build 60 sign-off, the control-plane check must not be skipped. A successful report with `checks.control_plane.worker_ready=true` is the evidence that the physical worker, authenticated gateway, heartbeat registration and local inference path are all operating together.
+
 ## Security invariants
 
 - runtime bearer and worker-control secrets are backend-only;
