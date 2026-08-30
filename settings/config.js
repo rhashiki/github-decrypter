@@ -1,4 +1,4 @@
-export const VERSION = '2.5.47';
+export const VERSION = '2.5.48';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -88,7 +88,7 @@ export const DEFAULT_SETTINGS = {
   projectMappings: {},
   supabaseMappings: {},
   agent: { maxFiles: 18, maxContextBytes: 500000, rules: '' },
-  ui: { theme: 'matrix', sounds: false, background: 'matrix' }
+  ui: { theme: 'nexus', sounds: false, background: 'glass' }
 };
 
 export function mergeSettings(saved = {}) {
