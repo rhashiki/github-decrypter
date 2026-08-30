@@ -1,6 +1,6 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.5.53",
+  "candidate":"2.5.54",
   "paths":["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
