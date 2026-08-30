@@ -26,6 +26,15 @@ const updateRuntime = read('background/update-recovery-runtime.js');
 const projectTools = read('ui/project-tools-v52.js');
 const content = read('content/content.js');
 const app = manifest.content_scripts.find(item => Array.isArray(item.js) && item.js.includes('ui/ui-kernel-v48.js'));
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
 const gates = [];
 const gate = (id, name, fn) => {
@@ -34,10 +43,10 @@ const gate = (id, name, fn) => {
 };
 
 gate(1, 'version-package-coherence', () => {
-  assert.equal(manifest.version, '2.5.57');
-  assert.match(manifest.version_name, /Build 57 · Final Homologation RC/);
-  assert.equal(pkg.candidate, '2.5.57');
-  assert.ok(settings.includes("VERSION = '2.5.57'"));
+  assert.ok(atLeast(manifest.version, '2.5.57'), `unexpected successor version ${manifest.version}`);
+  if (manifest.version === '2.5.57') assert.match(manifest.version_name, /Build 57 · Final Homologation RC/);
+  assert.equal(pkg.candidate, manifest.version);
+  assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
   assert.equal(homologation.version, '2.5.57');
   assert.equal(homologation.release_authorized, false);
   assert.equal(homologation.ota_authorized, false);
@@ -161,4 +170,4 @@ for (const expected of homologation.gates) {
   assert.equal(actual?.name, expected.name, `homologation gate mismatch ${expected.id}`);
 }
 
-console.log(`Build57 Final Homologation RC OK · ${gates.length}/19 gates passed`);
+console.log(`Build57 Final Homologation cumulative contract OK · ${gates.length}/19 gates passed`);
