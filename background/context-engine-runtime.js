@@ -51,23 +51,23 @@ async function loadImpactSignals(settings, projectId) {
   finally { clearTimeout(timer); }
 }
 
-async function build(payload = {}, emit = null) {
+export async function buildProjectContextV2(payload = {}, emit = null) {
   const task = text(payload?.task || payload?.command || payload?.message, 60000);
   const projectId = text(payload?.projectId, 180);
   if (!task) throw Object.assign(new Error('CONTEXT_TASK_REQUIRED'), { code: 'CONTEXT_TASK_REQUIRED' });
   if (!projectId) throw Object.assign(new Error('CONTEXT_PROJECT_REQUIRED'), { code: 'CONTEXT_PROJECT_REQUIRED' });
-  const settings = await getSettings();
-  const github = activeGithub(settings, projectId);
+  const settings = payload?.settings || await getSettings();
+  const github = payload?.github || activeGithub(settings, projectId);
   if (!github?.owner || !github?.repo) throw Object.assign(new Error('CONTEXT_GITHUB_MAPPING_REQUIRED'), { code: 'CONTEXT_GITHUB_MAPPING_REQUIRED' });
-  const adapter = new GitAdapter(github);
+  const adapter = payload?.adapter || new GitAdapter(github);
   emit?.('sync', 'Sincronizando índice do repositório');
-  const repoCache = await syncRepositoryCache(adapter, { branch: github.branch || 'main' });
+  const repoCache = payload?.repoCache || await syncRepositoryCache(adapter, { branch: github.branch || 'main' });
   emit?.('signals', 'Carregando Brain, Journal, edições humanas e sinais recentes');
   const [profile, userEdits, impacts, knowledge] = await Promise.all([
-    loadProfile(github),
-    loadRecentUserEdits(projectId),
-    loadImpactSignals(settings, projectId),
-    payload?.includeKnowledge === false ? Promise.resolve(null) : searchKnowledge({
+    payload?.profile ? Promise.resolve(payload.profile) : loadProfile(github),
+    Array.isArray(payload?.userEdits) ? Promise.resolve(payload.userEdits) : loadRecentUserEdits(projectId),
+    Array.isArray(payload?.impacts) ? Promise.resolve(payload.impacts) : loadImpactSignals(settings, projectId),
+    payload?.knowledge ? Promise.resolve(payload.knowledge) : payload?.includeKnowledge === false ? Promise.resolve(null) : searchKnowledge({
       backendBase: settings?.auth?.backendBase || '',
       licenseKey: settings?.auth?.licenseKey || '',
       deviceId: settings?.auth?.deviceId || ''
@@ -108,7 +108,7 @@ async function handle(action, payload = {}, emit = null) {
     sources: ['repository', 'git-history', 'project-brain', 'project-rules', 'skills', 'impact-maps', 'operation-journal', 'recent-user-edits', 'project-state', 'diagnostics', 'knowledge']
   };
   if (op === 'user_edits') return { schema: 'ld-user-edit-context/1', edits: await loadRecentUserEdits(payload?.projectId || '', payload?.limit || 24) };
-  if (op === 'build') return { pack: await build(payload, emit) };
+  if (op === 'build') return { pack: await buildProjectContextV2(payload, emit) };
   throw Object.assign(new Error(`CONTEXT_ENGINE_ACTION_INVALID: ${op}`), { code: 'CONTEXT_ENGINE_ACTION_INVALID' });
 }
 
