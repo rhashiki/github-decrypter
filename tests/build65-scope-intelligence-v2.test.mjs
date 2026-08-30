@@ -157,7 +157,7 @@ const external = evaluateScopeIntelligence({
   command:'Ajuste src/api.ts',
   approvedPlan:{ files:[{path:'src/api.ts',reason:'Ajustar API'}] },
   files:[{path:'src/api.ts',action:'update',before:'a\nb',content:'a\nc'}],
-  recentUserEdits,
+  recentUserEdits: recentEdits,
   now
 });
 assert.equal(external.allowed, true);
