@@ -20,6 +20,7 @@ import { installAgentRuntimeClient } from './agent-runtime-client.js';
 import { installToolRuntime } from './tool-runtime.js';
 import { installMcpRuntime } from './mcp-runtime.js';
 import { installMcpMarketplaceRuntime } from './mcp-marketplace-runtime.js';
+import { installContextEngineRuntime } from './context-engine-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -41,3 +42,4 @@ installAgentRuntimeClient();
 installToolRuntime();
 installMcpRuntime();
 installMcpMarketplaceRuntime();
+installContextEngineRuntime();
