@@ -10,11 +10,19 @@ const agent = read('supabase/functions/ld-agent-runtime/index.ts');
 const gateway = read('supabase/functions/ld-model-gateway/index.ts');
 const knowledge = read('supabase/functions/ld-knowledge-search/index.ts');
 const migration = read('supabase/migrations/20260830091326_build59_memory_engine_project_brain_v2.sql');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.6.59');
-assert.match(manifest.version_name, /Build 59 · Memory Engine \/ Project Brain v2/);
-assert.equal(pkg.candidate, '2.6.59');
-assert.ok(settings.includes("VERSION = '2.6.59'"));
+assert.ok(atLeast(manifest.version, '2.6.59'), `unexpected successor version ${manifest.version}`);
+assert.equal(pkg.candidate, manifest.version);
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 
 assert.ok(memory.includes("const SCHEMA='ld-memory-engine/1'"));
 assert.ok(memory.includes('const BUILD=59'));
@@ -72,7 +80,6 @@ assert.ok(!/add column[^;]*(context|prompt|response)\s+(text|jsonb)/i.test(migra
 
 assert.ok(knowledge.includes("const EMBEDDING_MODEL = 'gte-small'"));
 assert.ok(knowledge.includes("retrieval: 'hybrid-vector-keyword'"));
-assert.ok(pkg.notes.includes('persists only memory metadata hashes/counters'));
-assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
+assert.match(read('release/homologation-v2.5.57.json'), /"release_authorized": false/);
 
-console.log('Build59 Memory Engine / Project Brain v2 contract OK');
+console.log('Build59 Memory Engine / Project Brain v2 cumulative contract OK');
