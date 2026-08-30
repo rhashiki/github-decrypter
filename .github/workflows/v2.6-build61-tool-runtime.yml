@@ -14,6 +14,7 @@ on:
       - 'core/operation-journal.js'
       - 'core/patch-engine.js'
       - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'tests/build60-local-model-runtime.test.mjs'
       - 'tests/build61-tool-runtime.test.mjs'
       - '.github/workflows/v2.6-build61-tool-runtime.yml'
   pull_request:
@@ -29,6 +30,7 @@ on:
       - 'core/operation-journal.js'
       - 'core/patch-engine.js'
       - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'tests/build60-local-model-runtime.test.mjs'
       - 'tests/build61-tool-runtime.test.mjs'
       - '.github/workflows/v2.6-build61-tool-runtime.yml'
   workflow_dispatch:
