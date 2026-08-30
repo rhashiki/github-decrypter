@@ -42,6 +42,8 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
     if (!this.licenseKey) throw new Error('Faça login com uma KEY válida.');
     if (!this.deviceId) throw new Error('Dispositivo ainda não foi vinculado à licença.');
 
+    this.billingMode = 'free';
+    this.zeroCost = true;
     const settings = await getSettings();
     const trust = await ensureTrustSession(settings);
     const gatewayMode = ['auto', 'fast', 'deep'].includes(String(settings?.gateway?.mode || '').toLowerCase())
@@ -65,7 +67,7 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
         preferred_fast_model: this.model,
         preferred_deep_model: this.advancedModel,
         max_output_tokens: this.maxOutputTokens,
-        gemini_billing_mode: this.billingMode,
+        gemini_billing_mode: 'free',
         command_id: crypto.randomUUID(),
         command,
         project_context: context,
@@ -110,13 +112,15 @@ if (!globalThis.__LOVABLE_DECRYPTER_MODEL_GATEWAY_BOOTSTRAP__) {
   };
 
   globalThis.LovableDecrypterModelGatewayRuntime = Object.freeze({
-    build: 24,
+    build: 57,
     schema: 'ld-model-gateway/1',
     active: true,
     authority: 'server',
     endpoint: 'ld-model-gateway',
     localProvider: 'health-gated',
     crossProviderFallback: false,
+    zeroCost: true,
+    paidModeAllowed: false,
     trustRequired: true,
     async trust() { return trustPublicSummary(await getSettings()); },
     async status() { return getModelGatewayStatus(await getSettings()); }
