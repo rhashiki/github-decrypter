@@ -13,11 +13,19 @@ const control = read('supabase/functions/ld-local-control/index.ts');
 const command = read('supabase/functions/ld-command/index.ts');
 const gateway = read('supabase/functions/ld-model-gateway/index.ts');
 const migration = read('supabase/migrations/20260830094418_build60_local_model_runtime.sql');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.6.60');
-assert.match(manifest.version_name, /Build 60 · Local Model Runtime/);
+assert.ok(atLeast(manifest.version, '2.6.60'), `unexpected successor version ${manifest.version}`);
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.60'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'qwen3-coder:30b'"));
 assert.ok(pkg.forbidden_roots.includes('runtime'), 'worker runtime must never ship inside the browser extension package');
 
@@ -81,4 +89,4 @@ assert.ok(gateway.includes('paid_mode_allowed:false'));
 assert.ok(gateway.includes('cross_provider_fallback:false'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build60 Local Model Runtime contract OK');
+console.log('Build60 Local Model Runtime cumulative contract OK');
