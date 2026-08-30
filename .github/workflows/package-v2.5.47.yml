@@ -1,0 +1,38 @@
+name: Package v2.5.47
+
+on:
+  push:
+    branches:
+      - package-v2.5.47
+    paths:
+      - '.github/workflows/package-v2.5.47.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact build
+        uses: actions/checkout@v4
+
+      - name: Verify version
+        run: |
+          node -e "const m=require('./manifest.json'); if(m.version!=='2.5.47') process.exit(1); console.log(m.version_name)"
+
+      - name: Stage extension package
+        run: |
+          mkdir package
+          cp manifest.json package/
+          cp -R ai assets background content core github security settings storage tools ui updates package/
+
+      - name: Upload extension ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.5.47
+          path: package/*
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 7
