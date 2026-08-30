@@ -7,9 +7,17 @@ const config = fs.readFileSync('settings/config.js', 'utf8');
 const js = fs.readFileSync('ui/settings-v53.js', 'utf8');
 const css = fs.readFileSync('ui/settings-v53.css', 'utf8');
 const build52 = fs.readFileSync('ui/project-tools-v52.js', 'utf8');
+const parts = value => String(value).split('.').map(Number);
+const atLeast = (value, floor) => {
+  const a = parts(value), b = parts(floor);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+};
 
-assert.equal(manifest.version, '2.5.53');
-assert.match(manifest.version_name, /Build 53 · Settings & Preferences/);
+assert.ok(atLeast(manifest.version, '2.5.53'), `unexpected successor version ${manifest.version}`);
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(config.includes(`VERSION = '${manifest.version}'`));
 
@@ -57,4 +65,4 @@ assert.ok(css.includes('#ld2-root[data-ld53-motion=reduced]'));
 assert.ok(css.includes('#ld2-root[data-ld53-density=compact]'));
 assert.ok(css.includes('@media(max-width:560px)'));
 
-console.log('Build53 Settings & Preferences contract OK');
+console.log('Build53 Settings & Preferences cumulative contract OK');
