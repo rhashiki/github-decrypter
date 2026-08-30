@@ -1,4 +1,4 @@
-export const VERSION = '2.6.59';
+export const VERSION = '2.6.60';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -13,7 +13,7 @@ export const VERIFIED_FREE_MODEL_IDS = Object.freeze([
 export const DEFAULT_FREE_MODEL = 'gemini-3.6-flash';
 export const DEFAULT_FREE_ADVANCED_MODEL = 'gemini-2.5-pro';
 export const DECRYPTER_LOCAL_PROVIDER_ID = 'decrypter-local';
-export const DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'Qwen/Qwen3-Coder-30B-A3B-Instruct';
+export const DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'qwen3-coder:30b';
 export function normalizeGeminiModelId(value=''){return String(value||'').trim().replace(/^models\//,'');}
 export function isSpecializedGeminiModel(value=''){const id=normalizeGeminiModelId(value).toLowerCase();return /(embedding|imagen|veo|image|tts|live|audio|aqa|robotics|computer-use|deep-research)/.test(id);}
 export function isVerifiedFreeModel(value=''){const id=normalizeGeminiModelId(value);if(VERIFIED_FREE_MODEL_IDS.includes(id))return true;if(isSpecializedGeminiModel(id))return false;return VERIFIED_FREE_MODEL_IDS.some(base=>id===`${base}-latest`||id===`${base}-001`);}
