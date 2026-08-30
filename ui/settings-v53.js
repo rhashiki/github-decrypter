@@ -13,13 +13,7 @@
   }[ch]));
   const runtime = message => window.LovableDecrypterV2?.runtime?.(message);
 
-  const LIMITS = Object.freeze({
-    minFiles: 6,
-    maxFiles: 30,
-    minContext: 100000,
-    maxContext: 1000000,
-    maxRules: 20000
-  });
+  const LIMITS = Object.freeze({ minFiles:6, maxFiles:30, minContext:100000, maxContext:1000000 });
 
   let overlay = null;
   let generation = 0;
@@ -55,13 +49,11 @@
         motion: ['full','reduced'].includes(ui.motion) ? ui.motion : 'full',
         sounds: ui.sounds === true
       },
-      gateway: {
-        mode: ['auto','fast','deep'].includes(gateway.mode) ? gateway.mode : 'auto'
-      },
+      gateway: { mode: ['auto','fast','deep'].includes(gateway.mode) ? gateway.mode : 'auto' },
       agent: {
         maxFiles: clamp(agent.maxFiles, LIMITS.minFiles, LIMITS.maxFiles, 18),
         maxContextBytes: clamp(agent.maxContextBytes, LIMITS.minContext, LIMITS.maxContext, 500000),
-        rules: String(agent.rules || '').slice(0, LIMITS.maxRules)
+        rules: String(agent.rules || '')
       }
     };
   }
@@ -74,14 +66,7 @@
     host.dataset.ld53Density = prefs.ui.density;
     host.dataset.ld53Motion = prefs.ui.motion;
     host.dataset.ld53Sounds = prefs.ui.sounds ? 'on' : 'off';
-    window.dispatchEvent(new CustomEvent('ld53:preferences-applied', {
-      detail: {
-        background: prefs.ui.background,
-        density: prefs.ui.density,
-        motion: prefs.ui.motion,
-        sounds: prefs.ui.sounds
-      }
-    }));
+    window.dispatchEvent(new CustomEvent('ld53:preferences-applied', { detail:{ background:prefs.ui.background, density:prefs.ui.density, motion:prefs.ui.motion, sounds:prefs.ui.sounds } }));
     return true;
   }
 
@@ -123,16 +108,11 @@
     host.appendChild(overlay);
     $('[data-ld53-close]', overlay).onclick = close;
     overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && overlay?.classList.contains('open')) close();
-    }, true);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay?.classList.contains('open')) close(); }, true);
     return overlay;
   }
 
-  function close() {
-    generation += 1;
-    overlay?.classList.remove('open');
-  }
+  function close() { generation += 1; overlay?.classList.remove('open'); }
 
   function loading() {
     const body = $('[data-ld53-body]', overlay);
@@ -140,28 +120,23 @@
   }
 
   function option(value, label, selected) {
-    return `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>${esc(label)}</option>`;
+    return `<option value="${esc(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${esc(label)}</option>`;
   }
 
   function integrationCard(id, mark, title, connected, detail) {
-    return `<button type="button" class="ld53-integration" data-ld53-integration="${esc(id)}">
-      <span class="ld53-integration-mark">${esc(mark)}</span>
-      <span><small>${connected ? 'CONECTADO' : 'CONFIGURAR'}</small><b>${esc(title)}</b><em>${esc(detail || (connected ? 'Pronto' : 'Não configurado'))}</em></span>
-      <i data-tone="${connected ? 'ok' : 'idle'}"></i>
-    </button>`;
+    return `<button type="button" class="ld53-integration" data-ld53-integration="${esc(id)}"><span class="ld53-integration-mark">${esc(mark)}</span><span><small>${connected ? 'CONECTADO' : 'CONFIGURAR'}</small><b>${esc(title)}</b><em>${esc(detail || (connected ? 'Pronto' : 'Não configurado'))}</em></span><i data-tone="${connected ? 'ok' : 'idle'}"></i></button>`;
   }
 
   function render(data) {
     const body = $('[data-ld53-body]', overlay);
     if (!body) return;
-    const prefs = data || {};
-    const ui = prefs.ui || {};
-    const agent = prefs.agent || {};
-    const gateway = prefs.gateway || {};
-    const integrations = prefs.integrations || {};
-    const vaultText = prefs.vault?.lastSyncAt
-      ? `Último backup: ${new Date(prefs.vault.lastSyncAt).toLocaleString('pt-BR')}`
-      : prefs.vault?.enabled ? 'Vault ativo · aguardando primeiro backup.' : 'Vault indisponível nesta sessão.';
+    const ui = data?.ui || {};
+    const agent = data?.agent || {};
+    const gateway = data?.gateway || {};
+    const integrations = data?.integrations || {};
+    const vaultText = data?.vault?.lastSyncAt
+      ? `Último backup: ${new Date(data.vault.lastSyncAt).toLocaleString('pt-BR')}`
+      : data?.vault?.enabled ? 'Vault ativo · aguardando primeiro backup.' : 'Vault indisponível nesta sessão.';
 
     body.innerHTML = `
       <section class="ld53-grid">
@@ -181,9 +156,9 @@
           <div class="ld53-form-grid">
             <label class="ld53-field"><span>Modo do gateway</span><select data-ld53-gateway>${option('auto','Auto · decide pelo contexto',gateway.mode)}${option('fast','Fast · menor latência',gateway.mode)}${option('deep','Deep · análise ampliada',gateway.mode)}</select></label>
             <label class="ld53-field"><span>Arquivos por contexto</span><input type="number" min="${LIMITS.minFiles}" max="${LIMITS.maxFiles}" step="1" data-ld53-max-files value="${esc(agent.maxFiles)}"></label>
-            <label class="ld53-field ld53-wide"><span>Limite de contexto</span><select data-ld53-context>${option('250000','250 KB · leve',String(agent.maxContextBytes))}${option('500000','500 KB · recomendado',String(agent.maxContextBytes))}${option('750000','750 KB · ampliado',String(agent.maxContextBytes))}${option('1000000','1 MB · máximo',String(agent.maxContextBytes))}</select></label>
+            <label class="ld53-field ld53-wide"><span>Limite de contexto</span><select data-ld53-context>${option('250000','250 KB · leve',agent.maxContextBytes)}${option('500000','500 KB · recomendado',agent.maxContextBytes)}${option('750000','750 KB · ampliado',agent.maxContextBytes)}${option('1000000','1 MB · máximo',agent.maxContextBytes)}</select></label>
           </div>
-          <label class="ld53-field ld53-rules"><span>Regras globais do agente</span><textarea data-ld53-rules maxlength="${LIMITS.maxRules}" placeholder="Regras que devem valer em todos os projetos…">${esc(agent.rules)}</textarea><small>Project Rules continuam independentes e têm contexto por projeto.</small></label>
+          <label class="ld53-field ld53-rules"><span>Regras globais do agente</span><textarea data-ld53-rules placeholder="Regras que devem valer em todos os projetos…">${esc(agent.rules)}</textarea><small>Project Rules continuam independentes e têm contexto por projeto.</small></label>
         </article>
       </section>
 
@@ -211,7 +186,8 @@
     const body = $('[data-ld53-body]', overlay);
     const maxFiles = clamp($('[data-ld53-max-files]', body)?.value, LIMITS.minFiles, LIMITS.maxFiles, 18);
     const maxContextBytes = clamp($('[data-ld53-context]', body)?.value, LIMITS.minContext, LIMITS.maxContext, 500000);
-    const rules = String($('[data-ld53-rules]', body)?.value || '').slice(0, LIMITS.maxRules);
+    const rules = String($('[data-ld53-rules]', body)?.value || '');
+    const gatewayValue = $('[data-ld53-gateway]', body)?.value;
     return {
       ui: {
         theme: 'nexus',
@@ -220,9 +196,7 @@
         motion: $('[data-ld53-motion]', body)?.value === 'reduced' ? 'reduced' : 'full',
         sounds: !!$('[data-ld53-sounds]', body)?.checked
       },
-      gateway: {
-        mode: ['auto','fast','deep'].includes($('[data-ld53-gateway]', body)?.value) ? $('[data-ld53-gateway]', body).value : 'auto'
-      },
+      gateway: { mode: ['auto','fast','deep'].includes(gatewayValue) ? gatewayValue : 'auto' },
       agent: { maxFiles, maxContextBytes, rules }
     };
   }
@@ -237,8 +211,7 @@
       applyPreferences(saved || patch);
       toast('Configurações salvas.');
       window.dispatchEvent(new CustomEvent('ld53:settings-saved', { detail:{ build:BUILD } }));
-      const current = await snapshot();
-      render(current);
+      render(await snapshot());
       return true;
     } catch (error) {
       toast(error?.message || String(error), true);
@@ -249,7 +222,7 @@
     }
   }
 
-  async function resetVisual() {
+  function resetVisual() {
     const body = $('[data-ld53-body]', overlay);
     if (!body) return;
     $('[data-ld53-background]', body).value = 'glass';
@@ -261,11 +234,8 @@
 
   async function openIntegration(id) {
     close();
-    try {
-      await window.LovableDecrypterUIActions?.run?.(id, { source:'settings-v53' });
-    } catch (error) {
-      toast(error?.message || String(error), true);
-    }
+    try { await window.LovableDecrypterUIActions?.run?.(id, { source:'settings-v53' }); }
+    catch (error) { toast(error?.message || String(error), true); }
   }
 
   async function open() {
@@ -290,10 +260,8 @@
   }
 
   async function loadAndApply() {
-    try {
-      const settings = await runtime({ type:'LD2_SETTINGS_GET' });
-      applyPreferences(settings || {});
-    } catch (_) {}
+    try { applyPreferences(await runtime({ type:'LD2_SETTINGS_GET' }) || {}); }
+    catch (_) {}
   }
 
   function installProvider() {
@@ -305,14 +273,7 @@
     return true;
   }
 
-  window.LovableDecrypterSettings = Object.freeze({
-    build: BUILD,
-    version: VERSION,
-    open,
-    close,
-    snapshot,
-    applyPreferences
-  });
+  window.LovableDecrypterSettings = Object.freeze({ build:BUILD, version:VERSION, open, close, snapshot, applyPreferences });
 
   installProvider();
   loadAndApply();
