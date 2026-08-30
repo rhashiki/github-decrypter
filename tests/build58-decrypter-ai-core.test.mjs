@@ -88,7 +88,7 @@ assert.ok(gatewayBootstrap.includes('/ld-model-gateway'));
 assert.ok(!/XMLHttpRequest\.prototype\s*\.|window\.fetch\s*=|globalThis\.fetch\s*=|navigator\.sendBeacon\s*=/.test(client + agent));
 assert.ok(!agent.includes('user_paid'));
 assert.ok(!client.includes('user_paid'));
-assert.ok(!pkg.notes.toLowerCase().includes('authorized'));
+assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
 assert.ok(!read('release/homologation-v2.5.57.json').includes('"release_authorized": true'));
 
 console.log('Build58 Decrypter AI Core contract OK');
