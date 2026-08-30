@@ -1,54 +1,54 @@
-# Decrypter Local Runtime — Builds 18 + 23
+# Decrypter Local Runtime — Build 60
 
-Build 18 introduced one authenticated vLLM endpoint. Build 23 preserves the logical provider/model contract while allowing many GPU workers behind a Supabase-backed control plane.
+Build 60 turns the existing Build 23 GPU pool into a runtime-neutral local inference layer. Ollama is the default runtime; vLLM remains supported through `compose.vllm.yaml`.
 
-## Recommended model
+## Default model
 
-`Qwen/Qwen3-Coder-30B-A3B-Instruct`
+- stable Decrypter served model: `decrypter-local`
+- Ollama runtime model: `qwen3-coder:30b`
+- backend display label: `Qwen3-Coder 30B A3B · Ollama`
 
-Every worker exposes the stable served model `decrypter-local`. Model weights and future Decrypter-Coder adapters remain server-side and never ship in the extension.
+The extension never receives model weights, worker endpoints or worker secrets.
 
-## Build 23 topology
+## Topology
 
-`Model Gateway -> ld-command -> leased GPU worker -> vLLM`
+`Decrypter AI -> Model Gateway -> ld-command -> leased worker -> authenticated gateway -> Ollama`
 
-There is no Edge-Function-to-Edge-Function inference hop. `ld-command` uses the control-plane RPCs to atomically lease the least-loaded healthy worker and calls that worker's authenticated HTTPS endpoint directly. Worker endpoints are never returned to the browser.
+The worker endpoint implements only the OpenAI-compatible contract needed by `ld-command`: `/v1/models` and `/v1/chat/completions`. The Ollama API stays private behind `ollama-gateway.py`, which enforces the backend-only bearer token and rewrites the stable `decrypter-local` name to the real Ollama model.
 
-A sidecar `worker-agent.py` runs beside each vLLM instance. It:
+`worker-agent.py` runs beside the runtime and:
 
 - checks `/health`;
-- verifies `decrypter-local` through `/v1/models`;
-- reads `/metrics` for running/waiting requests and KV-cache usage;
-- registers the worker in `ld-local-control`;
-- sends heartbeats every 15 seconds by default;
-- never reads, persists or uploads inference prompts.
+- verifies the stable served model through `/v1/models`;
+- reads `/metrics` without touching prompts;
+- registers the worker in `ld-local-control` with its actual runtime family and runtime model;
+- sends health/metrics heartbeats;
+- never reads, stores or uploads inference prompts or responses.
 
-The inference queue is metadata-only: request ID, timestamps, worker/lease, state and outcome. Project source code, prompts and attachments are not stored there.
+## Structured output
 
-## Continuous batching
+The Decrypter build/plan schemas reach the worker through the OpenAI-compatible `response_format` contract. Ollama handles the JSON schema while `ld-command` continues to validate the returned plan/build before any patch can be applied.
 
-Build 23 never coalesces different customer prompts at application level. Each command remains isolated. Per-worker concurrency lets vLLM perform native continuous batching internally.
+## Scale-to-zero
 
-## Autoscaling
+The control plane remains provider-neutral. `min_workers=0`, so the local pool may stay at zero when idle. If a provider-status check or dispatch needs local capacity, the existing scaler contract may request a worker. If no scaler or worker is available, local remains unhealthy and the Model Gateway chooses the allowed Gemini free path before execution. There is no provider switch after an execution starts.
 
-The control plane calculates `desired_workers` from queued + in-flight demand, bounded by `min_workers`, `max_workers`, per-worker capacity and a scale-down cooldown. Provider-status probes can request one warm worker when the pool is at zero, enabling scale-to-zero without changing the Model Gateway.
+## Running a worker
 
-If backend-only `DECRYPTER_GPU_SCALER_URL` and `DECRYPTER_GPU_SCALER_TOKEN` are configured, `ld-command` / `ld-local-control` send the provider-neutral `ld-gpu-scale/1` contract to that actuator. The actuator may use Kubernetes, RunPod, Modal, another GPU platform or a custom controller. Without an actuator, the decision is recorded as `not_configured`; no infrastructure is falsely reported as provisioned.
+1. Copy `.env.example` to the private worker host and set strong server-only secrets.
+2. Route `DECRYPTER_WORKER_ENDPOINT` over authenticated HTTPS to local port 8000.
+3. Start `docker compose up -d` for the Ollama profile.
+4. The compose stack pulls `qwen3-coder:30b`, starts the authenticated gateway, then registers the worker.
+5. For vLLM, use `docker compose -f compose.vllm.yaml up -d` with the same control-plane secrets.
 
-## Runtime setup
+No cloud GPU is provisioned by this repository automatically. A worker becomes available only when your own machine/GPU or an explicitly configured external scaler actually starts one.
 
-1. Copy `.env.example` to each private GPU deployment.
-2. Use the same strong `RUNTIME_TOKEN` that is stored backend-side as `DECRYPTER_LOCAL_TOKEN`.
-3. Put each vLLM runtime behind authenticated HTTPS reachable from `ld-command`.
-4. Set a unique `DECRYPTER_WORKER_INSTANCE_KEY` and `DECRYPTER_WORKER_ENDPOINT`.
-5. Configure `DECRYPTER_WORKER_SECRET` for registration/heartbeat.
-6. Start `docker compose up -d` on each GPU worker.
-7. Optionally attach a provider-specific scaler through the generic actuator contract.
+## Security invariants
 
-`DECRYPTER_LOCAL_URL` is retained only as a legacy single-runtime fallback when the Build 23 pool is absent.
-
-## Provider policy
-
-There is still no cross-provider retry after execution starts. The Model Gateway chooses a provider before execution. Decrypter Local is healthy only when the pool has a ready worker with an available lease slot. If capacity is unavailable before execution, routing may stay on Gemini; after a Local execution begins, a worker failure fails closed instead of switching providers.
-
-Multimodal/binary attachments remain on Gemini until a multimodal Decrypter runtime exists.
+- runtime bearer and worker-control secrets are backend-only;
+- public worker endpoint must be HTTPS;
+- payload persistence is disabled at the Decrypter control-plane layer;
+- the inference queue stores metadata only;
+- binary/multimodal attachments stay off the local provider until a compatible local model is approved;
+- zero-cost API policy remains mandatory;
+- no cross-provider retry after execution begins.
