@@ -24,10 +24,11 @@ const client = read('content/mcp-marketplace-client.js');
 const ui = read('ui/mcp-marketplace-v63.js');
 const css = read('ui/mcp-marketplace-v63.css');
 
-assert.equal(manifest.version, '2.6.63');
-assert.match(manifest.version_name, /Build 63 · Curated MCP Marketplace/);
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 63, `Build63 contract requires authoritative Build >=63, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.63'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("MCP_MARKETPLACE_SCHEMA = 'ld-mcp-marketplace/1'"));
 assert.ok(settings.includes('MCP_MARKETPLACE_CATALOG_VERSION = 1'));
 assert.equal(MCP_MARKETPLACE_SCHEMA, 'ld-mcp-marketplace/1');
@@ -132,9 +133,13 @@ assert.ok(css.includes('@media(max-width:760px)'));
 assert.ok(css.includes('font-family:Arial'));
 assert.ok(css.includes('prefers-reduced-motion'));
 
-assert.ok(pkg.notes.includes('Build63'));
-assert.ok(pkg.notes.includes('No remote catalog'));
+if (currentBuild === 63) {
+  assert.ok(pkg.notes.includes('Build63'));
+  assert.ok(pkg.notes.includes('No remote catalog'));
+} else {
+  assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
+}
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build63 Curated MCP Marketplace contract OK');
+console.log(`Build63 Curated MCP Marketplace contract OK on authoritative Build ${currentBuild}`);
