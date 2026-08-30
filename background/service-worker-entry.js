@@ -17,6 +17,7 @@ import { installCloudCompleteRuntime } from './cloud-complete-runtime.js';
 import { installUpdateRecoveryRuntime } from './update-recovery-runtime.js';
 import { installMessagingRuntime } from './messaging-runtime.js';
 import { installAgentRuntimeClient } from './agent-runtime-client.js';
+import { installToolRuntimeClient } from './tool-runtime-client.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -35,3 +36,4 @@ installCloudCompleteRuntime();
 installUpdateRecoveryRuntime();
 installMessagingRuntime();
 installAgentRuntimeClient();
+installToolRuntimeClient();
