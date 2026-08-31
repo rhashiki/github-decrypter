@@ -134,13 +134,14 @@ async function handle(action, payload = {}) {
   if (op === 'list') {
     return {
       schema: 'ld-tool-runtime/1',
-      build: 67,
+      build: 68,
       repo: `${github.owner}/${github.repo}`,
       branch: github.branch || 'main',
       tools: runtime.list(),
       scopeLayer: { writePolicy: 'validated-approval+scope-intelligence-v2' },
       writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
       continuityAware: true,
+      localOrchestratorAware: true,
       preWriteHeadCheckpoint: true,
       ambiguousWriteRetry: 'verification-required',
       fakeDiagnostics: false,
@@ -210,6 +211,10 @@ async function handle(action, payload = {}) {
   }
 }
 
+export async function invokeToolRuntimeAction(action, payload = {}) {
+  return handle(action, payload);
+}
+
 export function installToolRuntime() {
   if (globalThis.__LD61_TOOL_RUNTIME__) return;
   globalThis.__LD61_TOOL_RUNTIME__ = true;
@@ -236,7 +241,7 @@ export function installToolRuntime() {
   });
 
   globalThis.LovableDecrypterToolRuntime = Object.freeze({
-    build: 67,
+    build: 68,
     schema: 'ld-tool-runtime/1',
     port: PORT_NAME,
     providerNeutral: true,
@@ -246,6 +251,7 @@ export function installToolRuntime() {
     writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
     scopeIntelligenceRequiredForWrites: true,
     continuityAware: true,
+    localOrchestratorAware: true,
     preWriteHeadCheckpoint: true,
     duplicateWritesPreventedByIdempotency: true,
     ambiguousWriteRetryRequiresVerification: true,
