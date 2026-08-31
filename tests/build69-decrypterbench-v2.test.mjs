@@ -62,6 +62,8 @@ for (const category of ['path-traversal','patch-engine','local-model-outage','sc
 
 assert.match(pkg.notes,/Build69|Build70/);
 assert.match(pkg.notes,/DecrypterBench v2 \/ Hardening|Build69 DecrypterBench/i);
+assert.match(pkg.notes,/path traversal/i);
+assert.match(pkg.notes,/one-shot/i);
 assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is authorized/);
 assert.match(roadmap,/Build 69 — DecrypterBench v2 \/ Hardening ✅/);
 assert.match(roadmap,/does not authorize merge to `main`/);
