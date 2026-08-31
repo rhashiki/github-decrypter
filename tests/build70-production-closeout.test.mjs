@@ -103,4 +103,8 @@ assert.ok(integrationsUi.includes('patch.projectMappings = { [projectId()]'));
 assert.ok(integrationsUi.includes("await supabase('project_test', { project_ref:project.ref })"));
 assert.ok(integrationsUi.includes('patch.supabaseMappings = { [projectId()]:selected }'));
 
+// Successor-roadmap formatting must not break the cumulative Continuity contract.
+const continuityTest = read('tests/build67-continuity-engine.test.mjs');
+assert.ok(continuityTest.includes('Status baseline:\\s*(?:\\*\\*)?Build\\s+(\\d+)'));
+
 console.log('Build70 production closeout contract OK');
