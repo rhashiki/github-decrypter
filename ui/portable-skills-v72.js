@@ -5,6 +5,23 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   function router(){return window.LovableDecrypterSkillRouter;}
   function portable(){return window.LovableDecrypterPortableSkills;}
+  function parseGithubSource(sourceUrl,requestedRef,requestedPath){
+    let url;
+    try{url=new URL(sourceUrl);}catch{throw Object.assign(new Error('URL GitHub inválida.'),{code:'SKILL_SOURCE_URL_INVALID'});}
+    if(url.protocol!=='https:'||url.hostname.toLowerCase()!=='github.com'||url.username||url.password)throw Object.assign(new Error('Use uma URL HTTPS pública do github.com.'),{code:'SKILL_SOURCE_HOST_FORBIDDEN'});
+    const parts=url.pathname.split('/').filter(Boolean);
+    if(parts.length<2)throw Object.assign(new Error('Informe owner e repositório na URL.'),{code:'SKILL_GITHUB_REPOSITORY_REQUIRED'});
+    const owner=parts[0],repo=parts[1].replace(/\.git$/i,'');
+    let ref=requestedRef||'main';
+    let path=requestedPath||'';
+    if(parts[2]==='tree'){
+      if(parts[3])ref=parts[3];
+      if(!path&&parts.length>4)path=parts.slice(4).join('/');
+    }else if(parts.length>2&&!path){
+      throw Object.assign(new Error('Para subpastas use uma URL /tree/<branch>/<caminho> ou informe o caminho abaixo.'),{code:'SKILL_GITHUB_PATH_REQUIRED'});
+    }
+    return {owner,repo,ref,path};
+  }
   function inject(){
     const panel=document.querySelector('.ld2-skills-install');
     if(!panel||panel.querySelector('[data-portable-import]'))return;
@@ -23,11 +40,12 @@
       try{
         if(!router()||!portable())throw new Error('Portable Skills v2 indisponível.');
         const sourceUrl=box.querySelector('[data-portable-url]').value.trim();
-        const ref=box.querySelector('[data-portable-ref]').value.trim()||'main';
-        const path=box.querySelector('[data-portable-path]').value.trim();
+        const requestedRef=box.querySelector('[data-portable-ref]').value.trim()||'main';
+        const requestedPath=box.querySelector('[data-portable-path]').value.trim();
         if(!sourceUrl)throw new Error('Informe a URL pública do GitHub.');
+        const source=parseGithubSource(sourceUrl,requestedRef,requestedPath);
         button.disabled=true;status.textContent='Validando e importando…';
-        const skill=await router().importGithub({sourceUrl,ref,path});
+        const skill=await router().importGithub(source);
         status.textContent=`Importada: ${skill?.display_name||skill?.slug||'Skill'} · hash ${String(skill?.contentHash||'').slice(0,12)}`;
         window.dispatchEvent(new CustomEvent('ld2:portable-skill-imported',{detail:{slug:skill?.slug||'',contentHash:skill?.contentHash||'',trust:skill?.trust||'imported'}}));
         document.querySelector('[data-skills-search]')?.dispatchEvent(new Event('input',{bubbles:true}));
