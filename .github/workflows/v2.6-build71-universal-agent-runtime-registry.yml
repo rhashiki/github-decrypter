@@ -12,6 +12,7 @@ on:
       - 'background/agent-runtime-registry-runtime.js'
       - 'background/service-worker-entry.js'
       - 'content/agent-runtime-registry-client.js'
+      - 'tests/build58-decrypter-ai-core.test.mjs'
       - 'tests/build70-account-integration-gate.test.mjs'
       - 'tests/build71-universal-agent-runtime-registry.test.mjs'
       - '.github/workflows/v2.6-build71-universal-agent-runtime-registry.yml'
