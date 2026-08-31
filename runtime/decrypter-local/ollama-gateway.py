@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build 60 authenticated Ollama bridge for the Decrypter local worker pool.
+"""Build 68 authenticated Ollama bridge for the Decrypter local agent runtime.
 
-Exposes only the OpenAI-compatible endpoints required by ld-command and never
-persists prompts or responses. Uses Python's standard library only.
+Exposes a minimal OpenAI-compatible API, supports a strict local model allowlist,
+and never persists prompts or responses. Uses Python's standard library only.
 """
 
 import hmac
@@ -15,7 +15,13 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://ollama:11434").rstrip("/")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3-coder:30b")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3-coder:30b").strip()
+OLLAMA_MODELS = tuple(dict.fromkeys(
+    model.strip() for model in os.environ.get(
+        "OLLAMA_MODELS",
+        "qwen3-coder:30b,qwen2.5-coder:14b,qwen2.5-coder:7b",
+    ).split(",") if model.strip()
+))
 SERVED_MODEL = os.environ.get("SERVED_MODEL_NAME", "decrypter-local")
 RUNTIME_TOKEN = os.environ.get("RUNTIME_TOKEN", "")
 PORT = max(1, min(65535, int(os.environ.get("PORT", "8000"))))
@@ -31,29 +37,44 @@ def authorised(header_value, token=RUNTIME_TOKEN):
     return bool(expected and header_value and hmac.compare_digest(str(header_value), expected))
 
 
-def model_loaded(payload, model=OLLAMA_MODEL):
+def loaded_model_names(payload):
     models = payload.get("models", []) if isinstance(payload, dict) else []
     names = []
     for item in models if isinstance(models, list) else []:
         if isinstance(item, dict):
             names.extend([str(item.get("name", "")), str(item.get("model", ""))])
-    wanted = str(model)
-    return wanted in names or any(name.split("@", 1)[0] == wanted for name in names if name)
+    return {name for name in names if name}
 
 
-def rewrite_chat_payload(payload, ollama_model=OLLAMA_MODEL, served_model=SERVED_MODEL):
+def model_loaded_names(payload):
+    names = loaded_model_names(payload)
+    out = []
+    for model in OLLAMA_MODELS:
+        if model in names or any(name.split("@", 1)[0] == model for name in names):
+            out.append(model)
+    return out
+
+
+def resolve_requested_model(requested):
+    value = str(requested or "").strip()
+    if value == SERVED_MODEL:
+        return OLLAMA_MODEL
+    if value in OLLAMA_MODELS:
+        return value
+    raise ValueError("MODEL_NOT_SERVED")
+
+
+def rewrite_chat_payload(payload):
     if not isinstance(payload, dict):
         raise ValueError("INVALID_JSON_BODY")
-    requested = str(payload.get("model", ""))
-    if requested not in {served_model, ollama_model}:
-        raise ValueError("MODEL_NOT_SERVED")
+    selected_model = resolve_requested_model(payload.get("model", ""))
     if payload.get("stream") is True:
         raise ValueError("STREAMING_NOT_SUPPORTED")
     messages = payload.get("messages")
     if not isinstance(messages, list) or not messages or len(messages) > 128:
         raise ValueError("MESSAGES_INVALID")
     out = dict(payload)
-    out["model"] = ollama_model
+    out["model"] = selected_model
     out["stream"] = False
     out["temperature"] = max(0.0, min(1.0, float(payload.get("temperature", 0.1))))
     if "max_tokens" in payload:
@@ -61,11 +82,11 @@ def rewrite_chat_payload(payload, ollama_model=OLLAMA_MODEL, served_model=SERVED
     response_format = payload.get("response_format")
     if response_format is not None and not isinstance(response_format, dict):
         raise ValueError("RESPONSE_FORMAT_INVALID")
-    return out
+    return out, selected_model
 
 
 def http_json(url, method="GET", payload=None, timeout=8):
-    headers = {"content-type": "application/json", "user-agent": "decrypter-ollama-gateway/2.6.60"}
+    headers = {"content-type": "application/json", "user-agent": "decrypter-ollama-gateway/2.6.68"}
     data = None if payload is None else json.dumps(payload, separators=(",", ":")).encode()
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     with urllib.request.urlopen(req, timeout=timeout) as res:
@@ -77,10 +98,11 @@ def probe():
     started = time.monotonic()
     try:
         status, payload = http_json(f"{OLLAMA_URL}/api/tags", timeout=6)
-        healthy = status == 200 and model_loaded(payload)
-        return healthy, round((time.monotonic() - started) * 1000), None if healthy else "OLLAMA_MODEL_NOT_LOADED"
+        loaded = model_loaded_names(payload) if status == 200 else []
+        healthy = status == 200 and bool(loaded)
+        return healthy, loaded, round((time.monotonic() - started) * 1000), None if healthy else "OLLAMA_MODEL_NOT_LOADED"
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
-        return False, round((time.monotonic() - started) * 1000), type(exc).__name__
+        return False, [], round((time.monotonic() - started) * 1000), type(exc).__name__
 
 
 def metric_snapshot():
@@ -99,7 +121,7 @@ def metric_set(name, value):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "DecrypterOllamaGateway/2.6.60"
+    server_version = "DecrypterOllamaGateway/2.6.68"
 
     def log_message(self, fmt, *args):
         return
@@ -124,8 +146,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            healthy, latency, error = probe()
-            self.send_json(200 if healthy else 503, {"ok": healthy, "runtime": "ollama", "model": OLLAMA_MODEL, "served_model": SERVED_MODEL, "latency_ms": latency, "error": error})
+            healthy, loaded, latency, error = probe()
+            self.send_json(200 if healthy else 503, {
+                "ok": healthy,
+                "runtime": "ollama",
+                "model": OLLAMA_MODEL,
+                "models_configured": list(OLLAMA_MODELS),
+                "models_loaded": loaded,
+                "served_model": SERVED_MODEL,
+                "latency_ms": latency,
+                "error": error,
+            })
             return
         if self.path == "/metrics":
             if not self.require_auth():
@@ -147,11 +178,13 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/v1/models":
             if not self.require_auth():
                 return
-            healthy, latency, error = probe()
+            healthy, loaded, latency, error = probe()
             if not healthy:
                 self.send_json(503, {"error": {"message": error or "ollama unavailable", "type": "runtime_unavailable"}})
                 return
-            self.send_json(200, {"object": "list", "data": [{"id": SERVED_MODEL, "object": "model", "owned_by": "lovable-decrypter", "runtime_model": OLLAMA_MODEL}], "latency_ms": latency})
+            data = [{"id": SERVED_MODEL, "object": "model", "owned_by": "lovable-decrypter", "runtime_model": OLLAMA_MODEL}]
+            data.extend({"id": model, "object": "model", "owned_by": "ollama", "runtime_model": model} for model in loaded)
+            self.send_json(200, {"object": "list", "data": data, "latency_ms": latency, "local_only": True})
             return
         self.send_json(404, {"error": {"message": "not found", "type": "not_found"}})
 
@@ -167,7 +200,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             payload = json.loads(self.rfile.read(length).decode())
-            upstream = rewrite_chat_payload(payload)
+            upstream, selected_model = rewrite_chat_payload(payload)
+            healthy, loaded, _, _ = probe()
+            if not healthy or selected_model not in loaded:
+                raise ValueError("MODEL_NOT_LOADED")
         except (ValueError, json.JSONDecodeError) as exc:
             self.send_json(400, {"error": {"message": str(exc), "type": "invalid_request_error"}})
             return
@@ -177,8 +213,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             status, body = http_json(f"{OLLAMA_URL}/v1/chat/completions", method="POST", payload=upstream, timeout=UPSTREAM_TIMEOUT)
             if isinstance(body, dict):
-                body["model"] = SERVED_MODEL
-                body["decrypter_runtime"] = {"provider": "ollama", "runtime_model": OLLAMA_MODEL, "zero_cost_api": True}
+                body["model"] = selected_model
+                body["decrypter_runtime"] = {"provider": "ollama", "runtime_model": selected_model, "zero_cost_api": True, "local_only": True}
             self.send_json(status, body)
             if status >= 400:
                 metric_add("errors")
@@ -193,8 +229,17 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     if not RUNTIME_TOKEN:
         raise SystemExit("RUNTIME_TOKEN is required")
+    if OLLAMA_MODEL not in OLLAMA_MODELS:
+        raise SystemExit("OLLAMA_MODEL must be present in OLLAMA_MODELS")
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    print(json.dumps({"event": "ready", "runtime": "ollama", "served_model": SERVED_MODEL, "runtime_model": OLLAMA_MODEL, "port": PORT}), flush=True)
+    print(json.dumps({
+        "event": "ready",
+        "runtime": "ollama",
+        "served_model": SERVED_MODEL,
+        "runtime_model": OLLAMA_MODEL,
+        "allowed_models": list(OLLAMA_MODELS),
+        "port": PORT,
+    }), flush=True)
     server.serve_forever()
 
 
