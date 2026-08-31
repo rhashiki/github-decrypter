@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 73 — Agent Sandbox / Shadow Worktree is the current engineering baseline. Builds 60→73 are implemented with cumulative CI green. Build 70 provider-side validation is complete; the final Chrome homologation is intentionally deferred until Builds 71→75 are complete. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
+Status baseline: Build 74 — Multi-Agent Runtime UI + Native Sessions is the current engineering baseline. Builds 60→74 are implemented with cumulative CI green. Build 70 provider-side validation is complete; the final Chrome homologation is intentionally deferred until Build 75 is complete. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
 
 ## Product invariants
 
@@ -53,7 +53,7 @@ Local coding loop with model degradation, proposal digest, approval, Scope Intel
 
 ## Build 69 — DecrypterBench v2 / Hardening ✅
 
-Adversarial gates cover repository path safety, stale/ambiguous patches, scope creep, Human Intent, Undo/Redo conflicts, proposal tampering, MCP trust, Continuity and zero-cost policy. This roadmap does not authorize merge to `main`.
+Adversarial gates cover repository path safety, path traversal, stale/ambiguous patches, scope creep, Human Intent, Undo/Redo conflicts, proposal tampering, MCP trust, Continuity and zero-cost policy. This roadmap does not authorize merge to `main`.
 
 ## Build 70 — Account Integration Gate ✅
 
@@ -69,28 +69,29 @@ Portable `SKILL.md` packages are local-first with provenance/hash, bounded impor
 
 ## Build 73 — Agent Sandbox / Shadow Worktree ✅
 
-Schemas `ld-agent-sandbox/1`, `ld-agent-sandbox-diff/1` and `ld-agent-sandbox-materialization/1` establish an isolated proposal boundary for external agents.
+Schemas `ld-agent-sandbox/1`, `ld-agent-sandbox-diff/1` and `ld-agent-sandbox-materialization/1` establish an isolated proposal boundary for external agents. Sandbox identity binds `taskId + runtimeId + baseHeadSha`; materialization rejects path traversal, `.git`, environment/credential files, secret key formats, symlinks, hardlinks, junctions and special files. External runtimes receive no authoritative GitHub/Supabase credentials. Imported diffs are canonicalized, bounded, digest-bound and require fresh Scope Intelligence/Human Intent before the Decrypter can write. Physical worktree creation remains honestly `bridge-required` under MV3. Final Build 73 cumulative run: `33440231905`.
+
+## Build 74 — Multi-Agent Runtime UI + Native Sessions ✅
+
+Schemas `ld-native-agent-session/1` and the Build 71 runtime registry now support an explicit multi-agent control plane in the browser.
 
 Implemented contracts:
-- sandbox identity is bound to `taskId + runtimeId + baseHeadSha`;
-- sandbox materialization rejects path traversal, `.git`, environment/credential files, secret key formats, symlinks, hardlinks, junctions and special files;
-- external sandbox descriptors explicitly carry `authoritativeWrite:false`, `gitCredentials:false`, `providerCredentials:false` and `networkDefault:deny`;
-- browser MV3 cannot spawn a physical worktree/process, therefore the physical isolation host is honestly marked `bridge-required`;
-- imported create/update/delete/rename changes are canonicalized, size bounded and rechecked for special-file/link attacks;
-- every imported proposal receives a SHA-256 proposal digest and remains bound to the exact sandbox/task/runtime/base HEAD;
-- stale HEAD, runtime mismatch and task mismatch fail closed;
-- sandbox metadata is session-only; the browser sandbox runtime does not persist raw materialized file contents;
-- final mutation remains outside the sandbox and must pass fresh Scope Intelligence, Human Intent, approval, Tool Runtime/Patch Engine, Continuity, Account Integration Gate and Guarded Commit.
+- runtime picker shows registered runtimes, health/probe state, capabilities and available models where the runtime exposes them;
+- runtime changes are explicit user actions; there is no silent agent switch;
+- Decrypter/Continuity `taskId` remains authoritative across runtimes;
+- native session metadata binds task, runtime, strategy, native session id and a monotonically increasing `generation`;
+- every proposal binds `proposalDigest + proposalGeneration`;
+- switching runtime increments generation, clears the previous proposal digest and sets `approvalInvalidated:true`;
+- proposal/session checks fail closed on task mismatch, runtime mismatch, generation mismatch, stale proposal digest or native-session mismatch;
+- `replayAllowed:false`, `replayAuthority:false` and `writeAuthority:false` remain explicit session invariants;
+- session state is stored only in `chrome.storage.session`, not durable project state;
+- UI reiterates the trust boundary: the agent proposes and the Decrypter writes.
 
-Cumulative Builds 48→73, DecrypterBench v2 and release-preflight passed on workflow run `33440142561`.
+Cumulative Builds 48→74, DecrypterBench v2 and release-preflight passed on workflow run `33440844724`.
 
-## Build 74 — Multi-Agent Runtime UI + Native Sessions ⏳ NEXT
+## Build 75 — Universal Agent Bench / External-Agent Hardening ⏳ NEXT
 
-Runtime picker, health/model/capabilities, native-session metadata and explicit switching. Decrypter task identity remains authoritative and switching runtimes cannot replay old writes or stale approvals.
-
-## Build 75 — Universal Agent Bench / External-Agent Hardening ⏳
-
-Final adversarial phase for malformed actions, digest mismatch, stale approvals, unauthorized file actions, credential persistence, sandbox escape, runtime crashes, session mismatch/replay, prompt transport abuse, Tool Runtime bypass, cross-agent scope creep, provider revocation during active work and zero paid/remote fallback.
+Final adversarial phase for malformed actions, digest mismatch, stale approvals, unauthorized create/update/delete/rename, credential persistence, sandbox escape, symlink/hardlink attacks, runtime crashes/disconnects, native-session mismatch/replay, prompt transport abuse, Tool Runtime bypass, cross-agent scope creep, provider revocation during active work and zero paid/remote fallback.
 
 ## Final cumulative homologation after Build 75
 
