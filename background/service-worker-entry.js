@@ -24,6 +24,8 @@ import { installContextEngineRuntime } from './context-engine-runtime.js';
 import { installScopeIntelligenceRuntime } from './scope-intelligence-runtime.js';
 import { installReversibleOperationsRuntime } from './reversible-operations-runtime.js';
 import { installContinuityRuntime } from './continuity-runtime.js';
+import { installLocalModelRuntime } from './local-model-runtime.js';
+import { installLocalAgentOrchestrator } from './local-agent-orchestrator.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -49,3 +51,5 @@ installContextEngineRuntime();
 installScopeIntelligenceRuntime();
 installReversibleOperationsRuntime();
 installContinuityRuntime();
+installLocalModelRuntime();
+installLocalAgentOrchestrator();
