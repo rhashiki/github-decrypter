@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 67 is the current Continuity Engine baseline. Build 68 — Local Agent Orchestrator + Model Router is next.
+Status baseline: Build 68 is the current Local Agent Orchestrator + Model Router baseline. Build 69 — DecrypterBench v2 / Hardening is next.
 
 ## Product invariants
 
@@ -15,7 +15,7 @@ Status baseline: Build 67 is the current Continuity Engine baseline. Build 68 �
 
 **Goal:** close the real local inference path with Ollama/vLLM + Qwen, health checks, worker pool, fail-closed behavior and the stable `decrypter-local` model contract.
 
-**Current baseline:** implemented with Ollama-first runtime, authenticated OpenAI-compatible gateway, worker registration/health, zero-cost policy and executable physical-host homologation probe.
+**Current baseline:** implemented with Ollama-first runtime, authenticated OpenAI-compatible gateway, worker registration/health, zero-cost policy and executable physical-host homologation probe. Build 68 extends this contract with multiple configurable local model tiers while keeping `runtime/decrypter-local` outside the browser package.
 
 ## Build 61 — Tool Runtime / Coding Tools
 
@@ -37,7 +37,6 @@ Scope:
 Non-goals:
 - MCP transport itself (Build 62).
 - Smart semantic undo/redo UI (Build 66).
-- Long-running autonomous loop (Build 68).
 
 ## Build 62 — MCP Core + MCP Trust Gateway
 
@@ -145,14 +144,32 @@ Scope:
 
 **Goal:** sustained coding workflows using local models without a commercial token meter.
 
-Scope:
-- Small/fast model routing for classification/context work.
-- Coding/reasoning model routing for hard tasks.
-- Local degradation path (large → medium → small local model) based on hardware health.
-- No paid fallback.
-- Plan → context → tools → diagnostics → repair loop.
-- Stop conditions, iteration budgets based on safety/quality rather than paid-token quotas.
-- Consume the Build 67 Continuity Engine so an orchestration run can restart from the next verified step after worker/model/runtime interruption.
+**Current baseline:** implemented as a browser-side local-only orchestration layer that can call the authenticated `decrypter-local` loopback runtime directly. It no longer requires a paid model provider or a backend inference request to execute the local agent loop.
+
+Scope implemented:
+- Direct authenticated loopback inference through `decrypter-local`.
+- Session-only local runtime token; no durable token persistence.
+- Configurable local model tiers with default degradation `large → medium → small`.
+- Local model discovery and health/pressure-aware routing.
+- No paid fallback and no remote fallback inside Local Model Router / Local Agent Orchestrator.
+- Context Engine v2 before reasoning.
+- Provider-neutral read tools executed automatically.
+- Strict one-action-per-turn local agent contract.
+- Exact proposal-digest binding before any mutating tool.
+- Human approval required for every write proposed by the local agent.
+- Fresh Scope Intelligence v2 + Human Intent evaluation at approval time.
+- Tool Runtime + Build 67 idempotency for protected writes.
+- Git diff verification after confirmed writes.
+- Capability-gated diagnostics; unavailable diagnostics are reported rather than fabricated.
+- Repair iterations with a bounded maximum, independent of commercial token billing.
+- Durable orchestration metadata/digests plus ephemeral in-session reasoning state. After the ephemeral state disappears, rehydration requires the original user command and verifies its digest before continuing.
+
+Default local tiers:
+- Large coding/reasoning: `qwen3-coder:30b`.
+- Medium coding: `qwen2.5-coder:14b`.
+- Small routing/lightweight work: `qwen2.5-coder:7b`.
+
+The Local Agent never gains implicit write authority from a plan. A proposed write is normalized and hashed; the user approves that exact digest, and the runtime re-evaluates current Git state, Scope Intelligence and Human Intent before creating a short-lived transaction for the Tool Runtime.
 
 ## Build 69 — DecrypterBench v2 / Hardening
 
@@ -165,6 +182,8 @@ Required suites:
 - Undo/redo round-trip tests.
 - Runtime crash/resume tests.
 - Local model outage/degradation tests.
+- Model-router adversarial and pressure tests.
+- Local-agent proposal-digest tamper tests.
 - MCP trust/permission tests.
 - Scope-creep adversarial tests.
 - No-paid-fallback regression tests.
