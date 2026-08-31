@@ -19,11 +19,12 @@ const toolRuntime = read('background/tool-runtime.js');
 const scope = read('core/scope-intelligence-v2.js');
 const context = read('core/context-engine-v2.js');
 const userEdit = read('content/user-edit-context.js');
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
 
-assert.equal(manifest.version, '2.6.65');
-assert.match(manifest.version_name, /Build 65 · Scope Intelligence v2 \+ Human Intent/);
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 65, `Build65 contract requires authoritative Build >=65, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.65'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("SCOPE_INTELLIGENCE_SCHEMA = 'ld-scope-intelligence/2'"));
 assert.equal(SCOPE_INTELLIGENCE_SCHEMA, 'ld-scope-intelligence/2');
 
@@ -192,4 +193,4 @@ assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build65 Scope Intelligence v2 + Human Intent contract OK');
+console.log(`Build65 Scope Intelligence v2 + Human Intent contract OK on authoritative Build ${currentBuild}`);
