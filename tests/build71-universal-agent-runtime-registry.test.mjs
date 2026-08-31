@@ -88,9 +88,9 @@ assert.equal(watchdog.status().cancelled,false);
 clock=2101;
 assert.equal(watchdog.status().code,'AGENT_RUNTIME_FIRST_OUTPUT_TIMEOUT');
 let clock2=1000;
-const watchdog2=createRuntimeWatchdog({firstOutputTimeoutMs:1000,inactivityTimeoutMs:2000,totalTimeoutMs:10000,now:()=>clock2});
+const watchdog2=createRuntimeWatchdog({firstOutputTimeoutMs:1000,inactivityTimeoutMs:5000,totalTimeoutMs:10000,now:()=>clock2});
 watchdog2.touch({output:true});
-clock2=3501;
+clock2=6001;
 assert.equal(watchdog2.status().code,'AGENT_RUNTIME_INACTIVITY_TIMEOUT');
 
 for(const token of ['decrypter-local','openhands-agent-server','codex-cli','opencode','aider','writeAuthority: false','AGENT_PROMPT_ENV_EXPANSION_RISK','AGENT_RUNTIME_FIRST_OUTPUT_TIMEOUT']) assert.ok(core.includes(token),token);
