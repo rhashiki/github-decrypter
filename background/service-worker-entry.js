@@ -31,6 +31,7 @@ import { installLocalAgentOrchestrator } from './local-agent-orchestrator.js';
 import { installAgentRuntimeRegistryRuntime } from './agent-runtime-registry-runtime.js';
 import { installPortableSkillsRuntime } from './portable-skills-runtime.js';
 import { installAgentSandboxRuntime } from './agent-sandbox-runtime.js';
+import { installNativeAgentSessionRuntime } from './native-agent-session-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -63,3 +64,4 @@ installLocalAgentOrchestrator();
 installAgentRuntimeRegistryRuntime();
 installPortableSkillsRuntime();
 installAgentSandboxRuntime();
+installNativeAgentSessionRuntime();
