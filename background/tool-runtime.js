@@ -1,6 +1,12 @@
 import { getSettings } from '../storage/settings-store.js';
 import { GitAdapter } from '../github/git-adapter.js';
 import { ToolRuntime, toolJournal } from '../core/tool-runtime.js';
+import {
+  claimContinuityStep,
+  completeContinuityStep,
+  failContinuityStep,
+  continuityDigest
+} from '../core/continuity-engine.js';
 
 const PORT_NAME = 'ld2-tool-runtime';
 const TX_PREFIX = 'ld2_approval_tx_v1_';
@@ -68,6 +74,39 @@ async function buildRuntime(payload = {}) {
   return { runtime, github, projectId };
 }
 
+function continuityRequest(payload = {}) {
+  const value = payload?.continuity;
+  if (!value || typeof value !== 'object') return null;
+  const taskId = text(value.taskId).slice(0, 160);
+  const idempotencyKey = text(value.idempotencyKey).slice(0, 240);
+  if (!taskId || !idempotencyKey) return null;
+  return {
+    taskId,
+    idempotencyKey,
+    workerId: text(value.workerId || 'tool-runtime').slice(0, 160),
+    inputDigest: text(value.inputDigest).slice(0, 128),
+    leaseMs: Number(value.leaseMs || 120000) || 120000
+  };
+}
+
+function continuityReplay(tool, ref = {}) {
+  return {
+    ok: true,
+    schema: 'ld-tool-result/1',
+    tool: tool.name,
+    mode: tool.mode,
+    operationId: ref.operationId || '',
+    continuityReplay: true,
+    data: {
+      code: 'IDEMPOTENT_REPLAY',
+      commitSha: ref.commitSha || '',
+      checkpointId: ref.checkpointId || '',
+      outputDigest: ref.outputDigest || '',
+      writeRepeated: false
+    }
+  };
+}
+
 async function handle(action, payload = {}) {
   const op = text(action || 'list').toLowerCase();
   if (op === 'journal') return { schema: 'ld-operation-journal/1', entries: await toolJournal(payload?.filters || {}) };
@@ -76,11 +115,13 @@ async function handle(action, payload = {}) {
   if (op === 'list') {
     return {
       schema: 'ld-tool-runtime/1',
-      build: 65,
+      build: 67,
       repo: `${github.owner}/${github.repo}`,
       branch: github.branch || 'main',
       tools: runtime.list(),
-      writePolicy: 'validated-approval+scope-intelligence-v2',
+      writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
+      continuityAware: true,
+      ambiguousWriteRetry: 'verification-required',
       fakeDiagnostics: false,
       fakeLsp: false
     };
@@ -94,14 +135,56 @@ async function handle(action, payload = {}) {
     ? await resolveWriteAuthorization(payload, projectId)
     : { writeApproved: false, allowedPaths: [], scopeIntelligenceValidated: false };
 
-  return runtime.invoke(toolName, payload?.input || {}, {
-    origin: payload?.origin || 'tool',
-    authorization,
-    context: {
-      taskId: text(payload?.taskId).slice(0, 160),
-      parentOperationId: text(payload?.parentOperationId).slice(0, 160)
+  const continuity = continuityRequest(payload);
+  let lease = null;
+  if (continuity) {
+    lease = await claimContinuityStep(continuity);
+    if (lease.replay) return continuityReplay(tool, lease.resultRef || {});
+    if (!lease.claimed) throw Object.assign(new Error('CONTINUITY_STEP_BUSY'), { code: 'CONTINUITY_STEP_BUSY' });
+  }
+
+  try {
+    const result = await runtime.invoke(toolName, payload?.input || {}, {
+      origin: payload?.origin || 'tool',
+      authorization,
+      context: {
+        taskId: text(payload?.taskId || continuity?.taskId).slice(0, 160),
+        parentOperationId: text(payload?.parentOperationId).slice(0, 160)
+      }
+    });
+    if (continuity && lease?.leaseToken) {
+      const digest = await continuityDigest(JSON.stringify({
+        tool: result.tool,
+        mode: result.mode,
+        operationId: result.operationId || '',
+        code: result?.data?.code || '',
+        commitSha: result?.data?.commitSha || '',
+        fileCount: Number(result?.data?.fileCount || 0) || 0
+      }));
+      await completeContinuityStep({
+        taskId: continuity.taskId,
+        idempotencyKey: continuity.idempotencyKey,
+        leaseToken: lease.leaseToken,
+        outputDigest: digest,
+        operationId: result.operationId || '',
+        commitSha: result?.data?.commitSha || '',
+        checkpointId: result?.data?.checkpoint?.id || ''
+      });
+      result.continuity = { taskId: continuity.taskId, idempotencyKey: continuity.idempotencyKey, completed: true, replay: false };
     }
-  });
+    return result;
+  } catch (error) {
+    if (continuity && lease?.leaseToken) {
+      await failContinuityStep({
+        taskId: continuity.taskId,
+        idempotencyKey: continuity.idempotencyKey,
+        leaseToken: lease.leaseToken,
+        errorCode: error?.code || 'TOOL_RUNTIME_FAILED',
+        outcomeUnknown: tool.mode === 'write'
+      }).catch(() => null);
+    }
+    throw error;
+  }
 }
 
 export function installToolRuntime() {
@@ -130,14 +213,17 @@ export function installToolRuntime() {
   });
 
   globalThis.LovableDecrypterToolRuntime = Object.freeze({
-    build: 65,
+    build: 67,
     schema: 'ld-tool-runtime/1',
     port: PORT_NAME,
     providerNeutral: true,
     readToolsAutomatic: true,
     writesFailClosed: true,
-    writePolicy: 'validated-approval+scope-intelligence-v2',
+    writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
     scopeIntelligenceRequiredForWrites: true,
+    continuityAware: true,
+    duplicateWritesPreventedByIdempotency: true,
+    ambiguousWriteRetryRequiresVerification: true,
     operationJournal: true,
     manualChangeOrigins: true,
     diagnosticsCapabilityGated: true,
