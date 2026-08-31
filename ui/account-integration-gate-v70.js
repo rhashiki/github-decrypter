@@ -5,12 +5,16 @@
 
   const ROOT_ID = 'ld2-root';
   const OVERLAY_CLASS = 'ld70-account-gate';
+  const PENDING_POLL_MS = 20000;
   const $ = (selector, root = document) => root?.querySelector?.(selector) || null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   let overlay = null;
   let checking = false;
   let lastReady = false;
   let started = false;
+  let shouldPoll = false;
+  let pollTimer = 0;
+  let lastRenderFingerprint = '';
 
   function root() { return document.getElementById(ROOT_ID); }
   function projectId() { return String(window.LovableDecrypterV2?.getProjectId?.() || ''); }
@@ -59,9 +63,23 @@
     fn().catch?.(() => {});
   }
 
+  function fingerprint(status) {
+    const gh = status?.github || {};
+    const sb = status?.supabase || {};
+    return JSON.stringify({
+      ready:!!status?.ready,
+      accountReady:!!status?.account?.ready,
+      gh:[!!gh.ready,!!gh.connected,!!gh.appConfigured,gh.repository||'',!!gh.repositoryAuthorized],
+      sb:[!!sb.ready,!!sb.connected,!!sb.appConfigured,!!sb.reauthorizeRequired,sb.projectRef||'',!!sb.projectAuthorized]
+    });
+  }
+
   function render(status) {
+    const fp = fingerprint(status);
     const node = ensureOverlay();
     if (!node) return;
+    if (fp === lastRenderFingerprint && node.classList.contains('open')) return;
+    lastRenderFingerprint = fp;
     const gh = providerState(status.github || {});
     const sb = providerState(status.supabase || {});
     node.innerHTML = `
@@ -86,50 +104,78 @@
       </section>`;
     node.classList.add('open');
     node.querySelectorAll('[data-ld70-provider]').forEach(button => button.addEventListener('click', () => openProvider(button.dataset.ld70Provider)));
-    $('[data-ld70-refresh]', node)?.addEventListener('click', () => check(true));
+    $('[data-ld70-refresh]', node)?.addEventListener('click', () => refreshNow());
+  }
+
+  function cancelPoll() {
+    clearTimeout(pollTimer);
+    pollTimer = 0;
+  }
+
+  function schedulePoll() {
+    cancelPoll();
+    if (!started || !shouldPoll || document.hidden) return;
+    pollTimer = setTimeout(async () => {
+      await check().catch(() => {});
+      schedulePoll();
+    }, PENDING_POLL_MS);
   }
 
   async function check(force = false) {
-    if (checking && !force) return;
+    if (checking) return null;
     const api = window.LovableDecrypterAccountIntegrationGate;
-    if (!api?.status || !root()) return;
+    if (!api?.status || !root()) return null;
     checking = true;
     try {
       const status = await api.status(projectId());
-      if (!status?.account?.ready) {
+      const accountReady = !!status?.account?.ready;
+      shouldPoll = accountReady && !status?.ready;
+      if (!accountReady) {
+        lastReady = false;
+        lastRenderFingerprint = '';
         hide();
-        return;
+        return status;
       }
       if (status.ready) {
         hide();
         if (!lastReady) window.dispatchEvent(new CustomEvent('ld70:account-integrations-ready', { detail:status }));
         lastReady = true;
-        return;
+        shouldPoll = false;
+        cancelPoll();
+        return status;
       }
       lastReady = false;
       render(status);
+      return status;
     } catch (_) {
-      // Fail-closed write protection remains in the background. The visual gate
-      // stays visible only after Decrypter login has been established.
+      shouldPoll = false;
       if (lastReady) lastReady = false;
+      return null;
     } finally {
       checking = false;
+      if (force) schedulePoll();
     }
+  }
+
+  async function refreshNow() {
+    cancelPoll();
+    await check(true).catch(() => {});
+    schedulePoll();
   }
 
   function start() {
     if (started) return;
     started = true;
-    check().catch(() => {});
-    setInterval(() => {
-      const providerModalOpen = Boolean(document.querySelector('#ld2-root .ld49-overlay.open'));
-      if (!providerModalOpen) check().catch(() => {});
-    }, 8000);
+    check().finally(schedulePoll);
   }
 
   window.addEventListener('ld2:ui-mounted', start, { once:true });
-  window.addEventListener('ld2:github-connected', () => setTimeout(() => check(true), 300));
-  window.addEventListener('ld2:supabase-connected', () => setTimeout(() => check(true), 300));
-  window.addEventListener('ld2:settings-changed', () => setTimeout(() => check(true), 300));
+  window.addEventListener('ld2:github-connected', () => setTimeout(refreshNow, 300));
+  window.addEventListener('ld2:supabase-connected', () => setTimeout(refreshNow, 300));
+  window.addEventListener('ld2:settings-changed', () => setTimeout(refreshNow, 300));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelPoll();
+    else if (started) refreshNow();
+  });
   if (document.readyState !== 'loading') setTimeout(start, 0);
 })();
