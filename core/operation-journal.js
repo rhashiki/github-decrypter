@@ -61,6 +61,10 @@ export function summarizeToolInput(tool = '', input = {}) {
       .reduce((total, patch) => total + (Array.isArray(patch?.edits) ? patch.edits.length : 0), 0);
   }
   if (tool === 'repo.write_file') summary.action = text(source.action || 'update', 80);
+  if (tool === 'reversible.undo' || tool === 'reversible.redo') {
+    summary.action = text(source.direction || tool.split('.').pop(), 80);
+    summary.paths = compactPaths(source.paths || []);
+  }
   return summary;
 }
 
@@ -120,7 +124,11 @@ export async function finishOperation(operation, { status = 'ok', changes = [], 
         branch: text(result?.branch, 240),
         commitSha: text(result?.commitSha, 128),
         matchCount: Number(result?.matchCount || 0) || 0,
-        fileCount: Number(result?.fileCount || 0) || 0
+        fileCount: Number(result?.fileCount || 0) || 0,
+        reversalOf: text(result?.reversalOf, 160),
+        direction: text(result?.direction, 40),
+        strategy: text(result?.strategy, 80),
+        previewId: text(result?.previewId, 160)
       },
       error: error ? {
         code: text(error?.code, 120),
@@ -133,13 +141,22 @@ export async function finishOperation(operation, { status = 'ok', changes = [], 
   return updated;
 }
 
-export async function listOperationJournal({ tool = '', status = '', origin = '', limit = 100 } = {}) {
+export async function getOperationJournalEntry(operationId = '') {
+  const id = text(operationId, 160).trim();
+  if (!id) return null;
+  const entries = await loadJournal();
+  return entries.find(entry => entry?.id === id) || null;
+}
+
+export async function listOperationJournal({ tool = '', status = '', origin = '', mode = '', projectId = '', limit = 100 } = {}) {
   const safeLimit = Math.max(1, Math.min(500, Number(limit || 100)));
   const entries = await loadJournal();
   return entries.filter(entry => {
     if (tool && entry?.tool !== tool) return false;
     if (status && entry?.status !== status) return false;
     if (origin && entry?.origin !== normalizedOrigin(origin)) return false;
+    if (mode && entry?.mode !== mode) return false;
+    if (projectId && entry?.context?.projectId !== projectId) return false;
     return true;
   }).slice(0, safeLimit);
 }
