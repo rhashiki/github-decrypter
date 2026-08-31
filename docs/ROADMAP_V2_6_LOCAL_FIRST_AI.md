@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 69 — DecrypterBench v2 / Hardening is the current homologation baseline. Builds 60→69 are implemented; release/OTA remains separately unauthorized.
+Status baseline: Build 70 — Account Integration Gate is the current post-hardening baseline. Builds 60→70 are implemented; release/OTA remains separately unauthorized.
 
 ## Product invariants
 
@@ -11,6 +11,7 @@ Status baseline: Build 69 — DecrypterBench v2 / Hardening is the current homol
 5. **Human edits outrank previous AI edits.** Manual user changes become durable context and are protected from accidental regression.
 6. **Writes are fail-closed.** Read-only tools may run automatically; mutating tools require scope checks and the established approval/trust path.
 7. **Hardening is executable.** Security and continuity guarantees must be represented by adversarial CI cases, not documentation alone.
+8. **Project mutation requires both official account integrations.** After Decrypter login, GitHub App + authorized repository and Supabase OAuth + authorized project are mandatory and remotely revalidated before writes.
 
 ## Build 60 — Local Model Runtime ✅
 
@@ -52,24 +53,21 @@ The loop integrates Context Engine → local inference → provider-neutral tool
 
 ## Build 69 — DecrypterBench v2 / Hardening ✅
 
-**Goal:** validate and adversarially harden the complete local-first stack before any release decision.
+Implemented adversarial gates for path traversal, stale/ambiguous patches, Scope/Human Intent attacks, Smart Undo conflicts, proposal tampering, MCP trust/tickets, Continuity recovery, local model degradation/outage and zero paid/remote fallback. Build 69 closed the original local-first AI roadmap and remains the cumulative hardening baseline.
 
-Implemented gates:
-- Repository path traversal/canonicalization: absolute paths, URI-like paths, control characters, dot segments, empty segments, `.git` case variants and percent-encoded transformations.
-- Sensitive-path blocklist regression.
-- Stale blob and ambiguous patch rejection.
-- Scope-creep extra-file and broad-rewrite attacks.
-- Strong Human Intent lock and explicit-path authority tests.
-- Smart Undo preservation when manual edits are outside the target hunk and conflict when they overlap it.
-- Local-agent SHA-256 proposal tamper detection.
-- MCP insecure/credential/query/fragment endpoint attacks.
-- MCP write ticket exact binding and one-shot consumption.
-- Continuity inference crash/resume, ambiguous-write fail-closed retry and expired write-lease recovery.
-- Local model large→medium→small routing, pressure degradation and total outage with `LOCAL_MODEL_UNAVAILABLE` rather than remote/paid fallback.
-- Static zero-paid/remote-fallback regression against the local runtime/router/orchestrator.
-- Deterministic Lovable ↔ Local Agent ↔ GitHub ↔ Supabase integration contract plus cumulative Build 48→69 regression gates.
+## Build 70 — Account Integration Gate ✅
 
-Build 69 also hardens the central repository path canonicalizer used by coding/write primitives. Benchmarks, tests, docs, runtime and Supabase sources remain excluded from the extension runtime package.
+**Goal:** make GitHub and Supabase account authorization part of the authoritative project-mutation boundary rather than an optional UI preference.
+
+Implemented contracts:
+- After Decrypter KEY/device login, the extension requires both official integrations before project mutation.
+- GitHub requires the Lovable Decrypter GitHub App to be configured, installed, connected and the current repository to be explicitly authorized/mapped.
+- Supabase requires the Lovable Decrypter OAuth App to be configured, the user account connected, required scopes granted and the current Supabase project explicitly authorized/mapped.
+- A blocking onboarding gate reuses the existing GitHub/Supabase integration screens; it does not ask for PATs, service-role keys or database passwords.
+- Production service-worker boot installs a mandatory remote integration write guard before Guarded Commit.
+- Every Git `atomicCommit`, including legacy branch/PR flows, revalidates provider state and fails closed if the account guard is missing, revoked, stale, ambiguous or mapped to a different repository.
+- The extension stores only mapping metadata. GitHub installation tokens/private keys and Supabase OAuth client/refresh secrets remain server-side/Vault.
+- App bootstrap remains owner-only; ordinary users only authorize their own GitHub/Supabase accounts and choose resources they grant to the Decrypter.
 
 ## Authority model
 
@@ -86,4 +84,4 @@ The LLM is never the source of truth for task continuity. The Decrypter runtime 
 
 ## Post-roadmap gate
 
-Build 69 closes the v2.6 local-first AI implementation roadmap, but **does not authorize merge to `main`, OTA metadata, GitHub Release, store publication or production rollout**. Those remain separate release decisions after homologation evidence is reviewed.
+Build 70 extends the homologated v2.6 baseline but **does not authorize merge to `main`, OTA metadata, GitHub Release, store publication or production rollout**. Those remain separate release decisions after homologation evidence and the one-time external GitHub App / Supabase OAuth App bootstrap are reviewed.
