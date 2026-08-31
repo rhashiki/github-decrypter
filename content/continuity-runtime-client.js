@@ -56,6 +56,7 @@
     completeStep(payload = {}) { return request('complete_step', payload); },
     failStep(payload = {}) { return request('fail_step', payload); },
     resolveWrite(payload = {}) { return request('resolve_write', payload); },
+    verifyWrite(taskId, stepIdOrKey) { return request('verify_write', { taskId, stepId: stepIdOrKey }); },
     resume(taskId) { return request('resume', { taskId }); },
     cancel(taskId) { return request('cancel', { taskId }); },
     list(filters = {}) { return request('list', filters); },
