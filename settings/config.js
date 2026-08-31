@@ -1,4 +1,4 @@
-export const VERSION = '2.6.69';
+export const VERSION = '2.6.70';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -16,6 +16,7 @@ export const CONTINUITY_ENGINE_SCHEMA = 'ld-continuity-task/1';
 export const LOCAL_MODEL_ROUTER_SCHEMA = 'ld-local-model-router/1';
 export const LOCAL_AGENT_SCHEMA = 'ld-local-agent/1';
 export const DECRYPTER_BENCH_SCHEMA = 'ld-decrypterbench/2';
+export const ACCOUNT_INTEGRATION_SCHEMA = 'ld-account-integration-readiness/1';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
 export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
 export const DEFAULT_UPDATE_FEED_URL = `${DEFAULT_BACKEND_BASE}/ld-release-feed`;
