@@ -59,6 +59,7 @@ jobs:
       - run: node --check core/continuity-engine.js
       - run: node --check core/operation-journal.js
       - run: node --check ui/continuity-engine-v67.js
+      - run: node --check tests/build67-continuity-engine.test.mjs
       - run: node tests/build48-ui-kernel.test.mjs
       - run: node tests/build49-integrations.test.mjs
       - run: node tests/build50-project-intelligence.test.mjs
