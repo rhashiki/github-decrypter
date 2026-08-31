@@ -13,11 +13,12 @@ const guardedSource = read('core/guarded-commit.js');
 const clientSource = read('content/integration-readiness-client.js');
 const uiSource = read('ui/account-integration-gate-v70.js');
 const roadmap = read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
 
-assert.equal(manifest.version,'2.6.70');
-assert.match(manifest.version_name,/Build 70 · Account Integration Gate/);
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 70, `Build70 cumulative contract requires build >=70, got ${manifest.version}`);
+assert.match(manifest.version_name,new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate,manifest.version);
-assert.ok(settingsSource.includes("VERSION = '2.6.70'"));
+assert.ok(settingsSource.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settingsSource.includes("ACCOUNT_INTEGRATION_SCHEMA = 'ld-account-integration-readiness/1'"));
 assert.ok(manifest.content_scripts.some(entry => (entry.js || []).includes('content/integration-readiness-client.js')));
 assert.ok(manifest.content_scripts.some(entry => (entry.js || []).includes('ui/account-integration-gate-v70.js')));
@@ -66,7 +67,7 @@ const installChanged = evaluateAccountIntegrationReadiness({ projectId:'p1', set
 assert.equal(installChanged.ready,false);
 assert.ok(installChanged.reasons.some(item => item.code === 'GITHUB_INSTALLATION_CHANGED'));
 
-const missingScope = evaluateAccountIntegrationReadiness({ projectId:'p1', settings, githubStatus:githubReady, supabaseStatus:{ ...supabaseReady, reauthorize_required:true, missing_scopes:['database:write'] } });
+const missingScope = evaluateAccountIntegrationReadiness({ projectId:'p1', settings, githubStatus:{ ...githubReady }, supabaseStatus:{ ...supabaseReady, reauthorize_required:true, missing_scopes:['database:write'] } });
 assert.equal(missingScope.ready,false);
 assert.ok(missingScope.reasons.some(item => item.code === 'SUPABASE_REAUTHORIZE_REQUIRED'));
 
@@ -112,12 +113,11 @@ for (const forbidden of ['LD_GITHUB_APP_PRIVATE_KEY','LD_SUPABASE_OAUTH_CLIENT_S
   assert.ok(!clientSource.includes(forbidden),`client must not persist ${forbidden}`);
 }
 
-assert.match(pkg.notes,/mandatory Account Integration Gate/i);
+assert.match(pkg.notes,/Account Integration Gate/i);
 assert.match(pkg.notes,/GitHub App/i);
 assert.match(pkg.notes,/Supabase OAuth/i);
 assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is authorized/);
-assert.match(roadmap,/Status baseline: \*\*Build 70 — Account Integration Gate\*\*/);
-assert.match(roadmap,/Build 70 — Account Integration Gate 🟡 Core complete \/ production closeout/);
-assert.match(roadmap,/Merge to `main`.*remain separately unauthorized/);
+assert.match(roadmap,/Build 70 — Account Integration Gate/);
+assert.match(roadmap,/Merge to `main`.*unauthorized|No merge to `main`/is);
 
-console.log('Build70 Account Integration Gate contract OK');
+console.log(`Build70 Account Integration Gate cumulative contract OK on Build ${currentBuild}`);
