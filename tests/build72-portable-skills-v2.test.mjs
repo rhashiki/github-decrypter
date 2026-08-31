@@ -22,6 +22,7 @@ const core=read('core/portable-skills.js');
 const runtime=read('background/portable-skills-runtime.js');
 const client=read('content/portable-skills-client.js');
 const router=read('content/skill-router.js');
+const ui=read('ui/portable-skills-v72.js');
 const entry=read('background/service-worker-entry.js');
 const roadmap=read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
 
@@ -54,9 +55,7 @@ assert.throws(()=>canonicalSkillPath('assets/private.pem'),e=>e?.code==='SKILL_S
 assert.throws(()=>canonicalSkillPath('other/file.md'),e=>e?.code==='SKILL_PATH_ROOT_FORBIDDEN');
 
 assert.match(assertSafeRemoteSkillSource('https://github.com/acme/skills'),/^https:\/\/github\.com\//);
-for(const url of ['http://github.com/acme/skills','https://localhost/skill','https://127.0.0.1/skill','https://192.168.1.2/skill','https://example.com/skill']) {
-  assert.throws(()=>assertSafeRemoteSkillSource(url));
-}
+for(const url of ['http://github.com/acme/skills','https://localhost/skill','https://127.0.0.1/skill','https://192.168.1.2/skill','https://example.com/skill']) assert.throws(()=>assertSafeRemoteSkillSource(url));
 
 const imported=await buildPortableSkillPackage({
   files:[
@@ -109,21 +108,27 @@ assert.equal(routed.method,'portable-local-v2');
 assert.equal(routed.cloudUsed,false);
 assert.ok(routed.slugs.includes('payments-review'));
 
-assert.throws(()=>buildPortableSkillPackage({files:Array.from({length:PORTABLE_SKILL_LIMITS.files+1},(_,i)=>({path:i===0?'SKILL.md':`references/${i}.md`,content:i===0?skillMd:'x'}))}),e=>e?.code==='SKILL_FILE_COUNT_LIMIT');
+await assert.rejects(
+  buildPortableSkillPackage({files:Array.from({length:PORTABLE_SKILL_LIMITS.files+1},(_,i)=>({path:i===0?'SKILL.md':`references/${i}.md`,content:i===0?skillMd:'x'}))}),
+  e=>e?.code==='SKILL_FILE_COUNT_LIMIT'
+);
 
 for(const token of ['SKILL_FRONTMATTER_REQUIRED','SKILL_PATH_TRAVERSAL','SKILL_SOURCE_PRIVATE_NETWORK_FORBIDDEN','SKILL_TOTAL_SIZE_LIMIT','sourceImmutable:true','canExpandScope:false','writeAuthority:false'])assert.ok(core.includes(token),token);
 for(const token of ["PORT_NAME='ld2-portable-skills-v2'","STORAGE_KEY='ld72_portable_skills_v2'",'import_github_public','api.github.com','geminiRequired:false','cloudRequired:false'])assert.ok(runtime.includes(token),token);
 assert.ok(entry.includes('installPortableSkillsRuntime();'));
 assert.ok(client.includes('ld2-portable-skills-v2'));
 assert.ok(manifest.content_scripts.some(item=>(item.js||[]).includes('content/portable-skills-client.js')));
+assert.ok(manifest.content_scripts.some(item=>(item.js||[]).includes('ui/portable-skills-v72.js')));
 const scripts=manifest.content_scripts.find(item=>(item.js||[]).includes('content/skill-router.js')).js;
 assert.ok(scripts.indexOf('content/portable-skills-client.js')<scripts.indexOf('content/skill-router.js'));
+assert.ok(scripts.indexOf('ui/skills-engine.js')<scripts.indexOf('ui/portable-skills-v72.js'));
 assert.ok(router.includes('portable-local-v2'));
 assert.ok(router.includes('cloudRoutingRequired:false'));
 assert.ok(router.includes('geminiRoutingRequired:false'));
 assert.ok(!router.includes('x-gemini-key'));
 assert.ok(!router.includes("cloud(cfg, 'ld-skills', { action: 'route'"));
 assert.ok(!router.includes("cloud(cfg, 'ld-custom-skills', { action: 'route'"));
+for(const token of ['Importar Portable Skill','Importar do GitHub','router().importGithub','ld2:portable-skill-imported'])assert.ok(ui.includes(token),token);
 assert.match(pkg.notes,/Portable Skills v2/);
 assert.match(pkg.notes,/writeAuthority=false/);
 assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is authorized/);
