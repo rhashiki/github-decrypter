@@ -10,10 +10,10 @@ const runtime=read('background/agent-sandbox-runtime.js');
 const client=read('content/agent-sandbox-client.js');
 const entry=read('background/service-worker-entry.js');
 const roadmap=read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
-assert.equal(manifest.version,'2.6.73');
-assert.match(manifest.version_name,/Build 73 · Agent Sandbox \/ Shadow Worktree/);
+const build=Number(String(manifest.version).split('.').at(-1));
+assert.ok(build>=73,`expected Build >=73, got ${manifest.version}`);
 assert.equal(pkg.candidate,manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.73'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("AGENT_SANDBOX_SCHEMA = 'ld-agent-sandbox/1'"));
 
 const sandbox=createSandboxDescriptor({taskId:'task-1',runtimeId:'codex-cli',baseHeadSha:'abc123',projectId:'p1'});
@@ -22,13 +22,11 @@ assert.equal(sandbox.isolation.gitCredentials,false);
 assert.equal(sandbox.isolation.providerCredentials,false);
 assert.equal(sandbox.isolation.physicalWorktree,'bridge-required');
 assert.equal(sandbox.authority.writeAuthority,false);
-
 for(const bad of ['../secret','/etc/passwd','.git/config','.env','src/../../x','C:\\temp\\x'])assert.throws(()=>canonicalSandboxPath(bad));
 for(const entry of [{path:'src/link',kind:'symlink'},{path:'src/hard',kind:'file',linkCount:2},{path:'src/junction',kind:'junction'},{path:'src/link2',symlinkTarget:'../outside'}])assert.throws(()=>buildSandboxMaterialization({sandbox,files:[entry]}));
 const materialized=buildSandboxMaterialization({sandbox,files:[{path:'src/App.tsx',kind:'file',content:'export default 1;'}]});
 assert.equal(materialized.authoritativeCredentialsIncluded,false);
 assert.equal(materialized.readOnlySource,true);
-
 const running=transitionSandbox(sandbox,'running');
 const diff=await normalizeSandboxDiff({sandbox:running,taskId:'task-1',runtimeId:'codex-cli',baseHeadSha:'abc123',changes:[{action:'update',path:'src/App.tsx',content:'export default 2;'},{action:'create',path:'src/new.ts',content:'export const x=1;'}]});
 assert.equal(diff.proposalDigest.length,64);
@@ -42,7 +40,6 @@ await assert.rejects(normalizeSandboxDiff({sandbox:running,taskId:'task-1',runti
 await assert.rejects(normalizeSandboxDiff({sandbox:running,taskId:'task-1',runtimeId:'codex-cli',baseHeadSha:'abc123',changes:[{action:'update',path:'src/link',kind:'symlink',content:'x'}]}),e=>e?.code==='SANDBOX_DIFF_SPECIAL_FILE_FORBIDDEN');
 assert.equal(transitionSandbox(running,'sealed').status,'sealed');
 assert.throws(()=>transitionSandbox(sandbox,'sealed'),e=>e?.code==='SANDBOX_STATE_TRANSITION_INVALID');
-
 for(const token of ['SANDBOX_PATH_INVALID','SANDBOX_SENSITIVE_PATH','SANDBOX_LINK_OR_SPECIAL_FILE_FORBIDDEN','SANDBOX_HARDLINK_FORBIDDEN','SANDBOX_BASE_HEAD_MISMATCH','proposalOnly:true','writeAuthority:false','gitCredentials:false','providerCredentials:false'])assert.ok(core.includes(token),token);
 for(const token of ["PORT_NAME='ld2-agent-sandbox'","SESSION_KEY='ld73_agent_sandboxes_v1'",'chrome.storage.session','rawFileContentPersisted:false',"physicalWorktree:'bridge-required'",'gitCredentials:false','providerCredentials:false'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('chrome.storage.local'));
@@ -54,4 +51,4 @@ assert.match(pkg.notes,/GitHub App \+ Supabase OAuth/);
 assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is authorized/);
 assert.match(roadmap,/Build 73 — Agent Sandbox \/ Shadow Worktree/);
 assert.match(roadmap,/Build 74 — Multi-Agent Runtime UI \+ Native Sessions/);
-console.log('Build73 Agent Sandbox / Shadow Worktree contract OK');
+console.log(`Build73 Agent Sandbox / Shadow Worktree cumulative contract OK on Build ${build}`);
