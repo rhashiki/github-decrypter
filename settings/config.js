@@ -1,4 +1,4 @@
-export const VERSION = '2.6.74';
+export const VERSION = '2.6.75';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -24,6 +24,7 @@ export const AGENT_SANDBOX_SCHEMA = 'ld-agent-sandbox/1';
 export const AGENT_SANDBOX_DIFF_SCHEMA = 'ld-agent-sandbox-diff/1';
 export const NATIVE_AGENT_SESSION_SCHEMA = 'ld-native-agent-session/1';
 export const RUNTIME_SELECTION_SCHEMA = 'ld-runtime-selection/1';
+export const UNIVERSAL_AGENT_BENCH_SCHEMA = 'ld-universal-agent-bench/1';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
 export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
 export const DEFAULT_UPDATE_FEED_URL = `${DEFAULT_BACKEND_BASE}/ld-release-feed`;
