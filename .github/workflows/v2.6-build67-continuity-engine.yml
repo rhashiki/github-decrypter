@@ -1,0 +1,83 @@
+name: v2.6 Build 67 · Continuity Engine
+
+on:
+  push:
+    branches: [main, v2.6-build67-continuity-engine]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'background/service-worker-entry.js'
+      - 'background/continuity-runtime.js'
+      - 'background/tool-runtime.js'
+      - 'content/continuity-runtime-client.js'
+      - 'content/tool-runtime-client.js'
+      - 'core/continuity-engine.js'
+      - 'core/operation-journal.js'
+      - 'ui/continuity-engine-v67.js'
+      - 'ui/continuity-engine-v67.css'
+      - 'tests/build61-tool-runtime.test.mjs'
+      - 'tests/build66-smart-undo-redo.test.mjs'
+      - 'tests/build67-continuity-engine.test.mjs'
+      - '.github/workflows/v2.6-build67-continuity-engine.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'background/service-worker-entry.js'
+      - 'background/continuity-runtime.js'
+      - 'background/tool-runtime.js'
+      - 'content/continuity-runtime-client.js'
+      - 'content/tool-runtime-client.js'
+      - 'core/continuity-engine.js'
+      - 'core/operation-journal.js'
+      - 'ui/continuity-engine-v67.js'
+      - 'ui/continuity-engine-v67.css'
+      - 'tests/build61-tool-runtime.test.mjs'
+      - 'tests/build66-smart-undo-redo.test.mjs'
+      - 'tests/build67-continuity-engine.test.mjs'
+      - '.github/workflows/v2.6-build67-continuity-engine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check background/service-worker-entry.js
+      - run: node --check background/continuity-runtime.js
+      - run: node --check background/tool-runtime.js
+      - run: node --check content/continuity-runtime-client.js
+      - run: node --check content/tool-runtime-client.js
+      - run: node --check core/continuity-engine.js
+      - run: node --check core/operation-journal.js
+      - run: node --check ui/continuity-engine-v67.js
+      - run: node --check tests/build67-continuity-engine.test.mjs
+      - run: node tests/build48-ui-kernel.test.mjs
+      - run: node tests/build49-integrations.test.mjs
+      - run: node tests/build50-project-intelligence.test.mjs
+      - run: node tests/build51-engineering-suite.test.mjs
+      - run: node tests/build52-project-tools-zip.test.mjs
+      - run: node tests/build53-settings-preferences.test.mjs
+      - run: node tests/build54-update-recovery-center.test.mjs
+      - run: node tests/build55-backend-messaging-natural-voice.test.mjs
+      - run: node tests/build56-legacy-purge-performance.test.mjs
+      - run: node tests/build57-final-homologation.test.mjs
+      - run: node tests/build58-decrypter-ai-core.test.mjs
+      - run: node tests/build59-memory-engine-project-brain-v2.test.mjs
+      - run: node tests/build60-local-model-runtime.test.mjs
+      - run: node tests/build61-tool-runtime.test.mjs
+      - run: node tests/build62-mcp-trust-gateway.test.mjs
+      - run: node tests/build63-curated-mcp-marketplace.test.mjs
+      - run: node tests/build64-context-engine-v2.test.mjs
+      - run: node tests/build65-scope-intelligence-v2.test.mjs
+      - run: node tests/build66-smart-undo-redo.test.mjs
+      - run: node tests/build67-continuity-engine.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate

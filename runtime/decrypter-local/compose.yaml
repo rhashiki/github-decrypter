@@ -22,8 +22,17 @@ services:
         condition: service_healthy
     environment:
       OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL_LARGE: ${OLLAMA_MODEL_LARGE:-qwen3-coder:30b}
+      OLLAMA_MODEL_MEDIUM: ${OLLAMA_MODEL_MEDIUM:-qwen2.5-coder:14b}
+      OLLAMA_MODEL_SMALL: ${OLLAMA_MODEL_SMALL:-qwen2.5-coder:7b}
+      DECRYPTER_PRELOAD_TIERS: ${DECRYPTER_PRELOAD_TIERS:-large,medium,small}
     entrypoint: ["/bin/sh", "-lc"]
-    command: ["ollama pull '${OLLAMA_MODEL:-qwen3-coder:30b}'"]
+    command:
+      - |
+        set -eu
+        case ",$DECRYPTER_PRELOAD_TIERS," in *,large,*) ollama pull "$OLLAMA_MODEL_LARGE" ;; esac
+        case ",$DECRYPTER_PRELOAD_TIERS," in *,medium,*) ollama pull "$OLLAMA_MODEL_MEDIUM" ;; esac
+        case ",$DECRYPTER_PRELOAD_TIERS," in *,small,*) ollama pull "$OLLAMA_MODEL_SMALL" ;; esac
 
   decrypter-local:
     image: python:3.12-slim
@@ -37,7 +46,8 @@ services:
       - ./ollama-gateway.py:/opt/decrypter/ollama-gateway.py:ro
     environment:
       OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3-coder:30b}
+      OLLAMA_MODEL: ${OLLAMA_MODEL_LARGE:-qwen3-coder:30b}
+      OLLAMA_MODELS: ${OLLAMA_MODEL_LARGE:-qwen3-coder:30b},${OLLAMA_MODEL_MEDIUM:-qwen2.5-coder:14b},${OLLAMA_MODEL_SMALL:-qwen2.5-coder:7b}
       SERVED_MODEL_NAME: ${SERVED_MODEL_NAME:-decrypter-local}
       RUNTIME_TOKEN: ${RUNTIME_TOKEN}
       PORT: 8000
@@ -70,7 +80,7 @@ services:
       DECRYPTER_POOL_CODE: ${DECRYPTER_POOL_CODE:-decrypter-local-primary}
       DECRYPTER_RUNTIME_URL: http://decrypter-local:8000
       DECRYPTER_RUNTIME_KIND: ollama
-      DECRYPTER_RUNTIME_MODEL: ${OLLAMA_MODEL:-qwen3-coder:30b}
+      DECRYPTER_RUNTIME_MODEL: ${OLLAMA_MODEL_LARGE:-qwen3-coder:30b}
       DECRYPTER_MODEL_LABEL: ${DECRYPTER_MODEL_LABEL:-Qwen3-Coder 30B A3B · Ollama}
       RUNTIME_TOKEN: ${RUNTIME_TOKEN}
       SERVED_MODEL_NAME: ${SERVED_MODEL_NAME:-decrypter-local}

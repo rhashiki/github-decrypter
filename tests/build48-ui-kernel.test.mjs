@@ -20,8 +20,16 @@ if (!atLeast(manifest.version,'2.5.48')) throw new Error(`unexpected manifest ve
 if (!settings.includes(`VERSION = '${manifest.version}'`)) throw new Error('settings version mismatch');
 if (pkg.candidate !== manifest.version) throw new Error('runtime package candidate mismatch');
 
-const expectedPerms = ['storage', 'tabs', 'downloads', 'unlimitedStorage', 'alarms'];
+const basePerms = ['storage', 'tabs', 'downloads', 'unlimitedStorage', 'alarms'];
+const expectedPerms = atLeast(manifest.version, '2.6.62') ? [...basePerms, 'identity'] : basePerms;
 if (JSON.stringify(manifest.permissions) !== JSON.stringify(expectedPerms)) throw new Error('permissions boundary changed');
+if (atLeast(manifest.version, '2.6.62')) {
+  const allowedOptionalHosts = ['https://*/*', 'http://localhost/*', 'http://127.0.0.1/*'];
+  if (JSON.stringify(manifest.optional_host_permissions || []) !== JSON.stringify(allowedOptionalHosts)) {
+    throw new Error('Build62 optional MCP host permission boundary changed');
+  }
+  if (!app.js.includes('content/mcp-runtime-client.js')) throw new Error('identity permission requires Build62 MCP runtime client');
+}
 if (!js.includes('LovableDecrypterUIActions')) throw new Error('authoritative action registry missing');
 if (!js.includes("register('workspace'")) throw new Error('workspace direct provider missing');
 if (!js.includes("register('project-recovery'")) throw new Error('recovery direct provider missing');

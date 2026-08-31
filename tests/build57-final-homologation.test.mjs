@@ -53,8 +53,14 @@ gate(1, 'version-package-coherence', () => {
 });
 
 gate(2, 'permissions-and-host-boundary', () => {
-  assert.deepEqual(manifest.permissions, ['storage','tabs','downloads','unlimitedStorage','alarms']);
+  const basePerms = ['storage','tabs','downloads','unlimitedStorage','alarms'];
+  const expectedPerms = atLeast(manifest.version, '2.6.62') ? [...basePerms, 'identity'] : basePerms;
+  assert.deepEqual(manifest.permissions, expectedPerms);
   assert.ok(manifest.host_permissions.every(host => /^https:\/\//.test(host)));
+  if (atLeast(manifest.version, '2.6.62')) {
+    assert.deepEqual(manifest.optional_host_permissions || [], ['https://*/*','http://localhost/*','http://127.0.0.1/*']);
+    assert.ok(app.js.includes('content/mcp-runtime-client.js'));
+  }
   assert.ok(!manifest.permissions.includes('debugger'));
   assert.ok(!manifest.permissions.includes('webRequestBlocking'));
 });

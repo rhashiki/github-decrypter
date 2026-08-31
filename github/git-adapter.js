@@ -127,6 +127,22 @@ export class GitAdapter {
     return this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/git/commits/${encodeURIComponent(sha)}`);
   }
 
+  async listCommits(branch = this.branch, { path = '', limit = 12 } = {}) {
+    const safeLimit = Math.max(1, Math.min(50, Number(limit || 12)));
+    const params = new URLSearchParams({ sha: String(branch || this.branch), per_page: String(safeLimit) });
+    if (path) params.set('path', assertSafeRepoPath(path));
+    const rows = await this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/commits?${params}`);
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async compareCommits(base, head) {
+    const from = String(base || '').trim();
+    const to = String(head || '').trim();
+    if (!from || !to) throw new Error('Base e head são obrigatórios para comparar commits.');
+    const range = `${encodeURIComponent(from)}...${encodeURIComponent(to)}`;
+    return this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/compare/${range}`);
+  }
+
   async getTree(ref = this.branch, recursive = true) {
     const suffix = recursive ? '?recursive=1' : '';
     return this.request(`/repos/${encodeURIComponent(this.owner)}/${encodeURIComponent(this.repo)}/git/trees/${encodeURIComponent(ref)}${suffix}`);

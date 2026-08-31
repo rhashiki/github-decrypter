@@ -14,10 +14,12 @@ const command = read('supabase/functions/ld-command/index.ts');
 const gateway = read('supabase/functions/ld-model-gateway/index.ts');
 const migration = read('supabase/migrations/20260830094418_build60_local_model_runtime.sql');
 
-assert.equal(manifest.version, '2.6.60');
-assert.match(manifest.version_name, /Build 60 · Local Model Runtime/);
+const versionParts = String(manifest.version || '').split('.').map(Number);
+const currentBuild = versionParts.length === 3 && versionParts.every(Number.isInteger) ? versionParts[2] : 0;
+assert.ok(currentBuild >= 60, `Build 60 contract requires authoritative build >= 60, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.60'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("DECRYPTER_LOCAL_RECOMMENDED_MODEL = 'qwen3-coder:30b'"));
 assert.ok(pkg.forbidden_roots.includes('runtime'), 'worker runtime must never ship inside the browser extension package');
 
@@ -29,11 +31,14 @@ for (const token of [
   'DECRYPTER_RUNTIME_KIND: ollama',
   'DECRYPTER_WORKER_MAX_INFLIGHT: ${DECRYPTER_WORKER_MAX_INFLIGHT:-1}'
 ]) assert.ok(compose.includes(token), token);
+if (currentBuild >= 68) {
+  for (const token of ['qwen2.5-coder:14b','qwen2.5-coder:7b','DECRYPTER_PRELOAD_TIERS','OLLAMA_MODELS']) assert.ok(`${compose}\n${ollama}`.includes(token), token);
+}
 assert.ok(vllm.includes('vllm/vllm-openai'));
 assert.ok(vllm.includes('DECRYPTER_RUNTIME_KIND: vllm'));
 
 for (const token of [
-  'DecrypterOllamaGateway/2.6.60',
+  currentBuild >= 68 ? 'DecrypterOllamaGateway/2.6.68' : 'DecrypterOllamaGateway/2.6.60',
   'hmac.compare_digest',
   '/v1/models',
   '/v1/chat/completions',
@@ -81,4 +86,4 @@ assert.ok(gateway.includes('paid_mode_allowed:false'));
 assert.ok(gateway.includes('cross_provider_fallback:false'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build60 Local Model Runtime contract OK');
+console.log(`Build60 Local Model Runtime contract OK on authoritative Build ${currentBuild}`);
