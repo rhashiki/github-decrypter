@@ -25,11 +25,12 @@ const css = read('ui/local-agent-orchestrator-v68.css');
 const gateway = read('runtime/decrypter-local/ollama-gateway.py');
 const compose = read('runtime/decrypter-local/compose.yaml');
 const roadmap = read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
 
-assert.equal(manifest.version, '2.6.68');
-assert.match(manifest.version_name, /Build 68 · Local Agent Orchestrator \+ Model Router/);
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 68, `Build68 contract requires authoritative build >=68, got ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.68'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("LOCAL_MODEL_ROUTER_SCHEMA = 'ld-local-model-router/1'"));
 assert.ok(settings.includes("LOCAL_AGENT_SCHEMA = 'ld-local-agent/1'"));
 assert.equal(LOCAL_MODEL_ROUTER_SCHEMA, 'ld-local-model-router/1');
@@ -48,35 +49,19 @@ assert.ok(entry.includes('installLocalAgentOrchestrator();'));
 
 const tiers = { large:'qwen3-coder:30b', medium:'qwen2.5-coder:14b', small:'qwen2.5-coder:7b' };
 const loaded = Object.values(tiers);
-const complex = routeLocalModel({
-  command:'Refactor the architecture and authentication security across multiple files',
-  contextFileCount:12,
-  tiers,
-  loadedModels:loaded
-});
+const complex = routeLocalModel({ command:'Refactor the architecture and authentication security across multiple files', contextFileCount:12, tiers, loadedModels:loaded });
 assert.equal(complex.ok, true);
 assert.equal(complex.tier, 'large');
 assert.equal(complex.model, tiers.large);
 assert.equal(complex.paidFallbackAllowed, false);
 assert.equal(complex.remoteFallbackAllowed, false);
 
-const degraded = routeLocalModel({
-  command:'Refactor the architecture and authentication security across multiple files',
-  contextFileCount:12,
-  tiers,
-  loadedModels:[tiers.medium, tiers.small]
-});
+const degraded = routeLocalModel({ command:'Refactor the architecture and authentication security across multiple files', contextFileCount:12, tiers, loadedModels:[tiers.medium, tiers.small] });
 assert.equal(degraded.ok, true);
 assert.equal(degraded.tier, 'medium');
 assert.equal(degraded.degraded, true);
 
-const pressure = routeLocalModel({
-  command:'Refactor the architecture and authentication security across multiple files',
-  contextFileCount:12,
-  tiers,
-  loadedModels:loaded,
-  metrics:{inflight:2}
-});
+const pressure = routeLocalModel({ command:'Refactor the architecture and authentication security across multiple files', contextFileCount:12, tiers, loadedModels:loaded, metrics:{inflight:2} });
 assert.equal(pressure.ok, true);
 assert.equal(pressure.tier, 'medium');
 assert.equal(pressure.pressureDegraded, true);
@@ -92,9 +77,7 @@ assert.equal(unavailable.remoteFallbackAllowed, false);
 assert.equal(classifyLocalTask({ role:'router' }).tier, 'small');
 
 const proposal = normalizeLocalAgentWriteProposal('repo.patch_apply', {
-  branch:'main',
-  message:'fix: width',
-  patches:[{ path:'src/App.tsx', expectedBlobSha:'abc123', edits:[{ search:'const width = 360;', replace:'const width = 420;' }] }]
+  branch:'main', message:'fix: width', patches:[{ path:'src/App.tsx', expectedBlobSha:'abc123', edits:[{ search:'const width = 360;', replace:'const width = 420;' }] }]
 });
 const digest1 = await localAgentProposalDigest(proposal);
 const digest2 = await localAgentProposalDigest(proposal);
@@ -118,66 +101,30 @@ const localhost = mergeSettings({ localAI:{ endpoint:'http://localhost:9000' } }
 assert.equal(localhost.localAI.endpoint, 'http://localhost:9000');
 
 for (const token of [
-  "SESSION_TOKEN_KEY = 'ld68_local_runtime_token_v1'",
-  'chrome.storage.session.set',
-  "credentials: 'omit'",
-  "redirect: 'error'",
-  "provider: 'decrypter-local'",
-  "modelRouter: 'large->medium->small'",
-  'paidFallbackAllowed: false',
-  'remoteFallbackAllowed: false',
-  'rawPromptPersistence: false',
-  'rawResponsePersistence: false',
-  "LOCAL_RUNTIME_LOOPBACK_REQUIRED"
+  "SESSION_TOKEN_KEY = 'ld68_local_runtime_token_v1'", 'chrome.storage.session.set', "credentials: 'omit'", "redirect: 'error'",
+  "provider: 'decrypter-local'", "modelRouter: 'large->medium->small'", 'paidFallbackAllowed: false', 'remoteFallbackAllowed: false',
+  'rawPromptPersistence: false', 'rawResponsePersistence: false', "LOCAL_RUNTIME_LOOPBACK_REQUIRED"
 ]) assert.ok(localRuntime.includes(token), token);
 
 for (const token of [
-  "DEFAULT_LOCAL_MODEL_TIERS",
-  "qwen3-coder:30b",
-  "qwen2.5-coder:14b",
-  "qwen2.5-coder:7b",
-  "degradation: 'large->medium->small'",
-  "code: 'LOCAL_MODEL_UNAVAILABLE'",
-  'paidFallbackAllowed: false',
-  'remoteFallbackAllowed: false'
+  'DEFAULT_LOCAL_MODEL_TIERS','qwen3-coder:30b','qwen2.5-coder:14b','qwen2.5-coder:7b',"degradation: 'large->medium->small'",
+  "code: 'LOCAL_MODEL_UNAVAILABLE'",'paidFallbackAllowed: false','remoteFallbackAllowed: false'
 ]) assert.ok(router.includes(token), token);
 
 for (const token of [
-  "PORT_NAME = 'ld2-local-agent-orchestrator'",
-  "loop:'plan->context->local-model->tools->approval->write->diff->diagnostics->repair'",
-  'buildProjectContextV2',
-  'executeLocalChat',
-  'materializeProposal',
-  'applyTextPatch',
-  'assertScopeIntelligence',
-  'scopeIntelligenceFingerprint',
-  'localAgentProposalDigest',
-  "source:'local-agent-v68'",
-  'humanDecision!==true',
-  "kind:'approval',mode:'read'",
-  "tool:'repo.git_diff'",
-  "tool:'diagnostics.run'",
-  "LOCAL_AGENT_REHYDRATION_REQUIRED",
-  'rawPromptDurablePersistence:false',
-  'rawModelOutputDurablePersistence:false',
-  'noPaidFallback:true',
-  'noRemoteFallback:true'
+  "PORT_NAME = 'ld2-local-agent-orchestrator'", "loop:'plan->context->local-model->tools->approval->write->diff->diagnostics->repair'",
+  'buildProjectContextV2','executeLocalChat','materializeProposal','applyTextPatch','assertScopeIntelligence','scopeIntelligenceFingerprint',
+  'localAgentProposalDigest',"source:'local-agent-v68'",'humanDecision!==true',"kind:'approval',mode:'read'", "tool:'repo.git_diff'",
+  "tool:'diagnostics.run'","LOCAL_AGENT_REHYDRATION_REQUIRED",'rawPromptDurablePersistence:false','rawModelOutputDurablePersistence:false',
+  'noPaidFallback:true','noRemoteFallback:true'
 ]) assert.ok(orchestrator.includes(token), token);
 
 for (const token of [
-  'localAgentProposalDigest: text(tx.localAgentProposalDigest)',
-  'assertLocalAgentProposalBinding',
-  'LOCAL_AGENT_PROPOSAL_DIGEST_MISMATCH',
-  'localAgentProposalDigestBinding: true',
-  "writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency'"
+  'localAgentProposalDigest: text(tx.localAgentProposalDigest)','assertLocalAgentProposalBinding','LOCAL_AGENT_PROPOSAL_DIGEST_MISMATCH',
+  'localAgentProposalDigestBinding: true',"writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency'"
 ]) assert.ok(toolRuntime.includes(token), token);
 
-for (const token of [
-  'normalizeLocalAgentWriteProposal',
-  'localAgentProposalDigest',
-  "repo.patch_apply",
-  "repo.write_file"
-]) assert.ok(approval.includes(token), token);
+for (const token of ['normalizeLocalAgentWriteProposal','localAgentProposalDigest','repo.patch_apply','repo.write_file']) assert.ok(approval.includes(token), token);
 
 const localSources = `${router}\n${localRuntime}\n${orchestrator}`.toLowerCase();
 for (const forbidden of ['api.openai.com','anthropic.com','generativelanguage.googleapis.com','together.ai','runpod.io']) assert.ok(!localSources.includes(forbidden), forbidden);
@@ -193,14 +140,18 @@ for (const token of ['DecrypterOllamaGateway/2.6.68','OLLAMA_MODELS','MODEL_NOT_
 for (const token of ['OLLAMA_MODEL_LARGE','OLLAMA_MODEL_MEDIUM','OLLAMA_MODEL_SMALL','DECRYPTER_PRELOAD_TIERS','qwen2.5-coder:14b','qwen2.5-coder:7b']) assert.ok(compose.includes(token), token);
 
 assert.match(pkg.notes, /Build68/);
-assert.match(pkg.notes, /large->medium->small/);
+assert.match(pkg.notes, /paid\/remote fallback|paid and remote fallback|zero paid\/remote fallback/i);
 assert.match(pkg.notes, /proposal digest/i);
-assert.match(pkg.notes, /Paid and remote fallback are disabled/);
 assert.match(pkg.notes, /MCP 2026-07-28 Trust Gateway/);
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
-assert.match(roadmap, /Status baseline: Build 68/);
-assert.match(roadmap, /Build 69 — DecrypterBench v2 \/ Hardening is next/);
+assert.match(roadmap, /Build 68 — Local Agent Orchestrator \+ Model Router/);
+if (currentBuild >= 68) {
+  const baseline = roadmap.match(/Status baseline: Build (\d+)/);
+  assert.ok(baseline && Number(baseline[1]) >= 68, `roadmap baseline must be >=68, got ${baseline?.[1] || 'missing'}`);
+}
+if (currentBuild === 68) assert.match(roadmap, /Build 69 — DecrypterBench v2 \/ Hardening is next/);
+else assert.match(roadmap, /Build 69 — DecrypterBench v2 \/ Hardening/);
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build68 Local Agent Orchestrator + Model Router contract OK');
+console.log(`Build68 Local Agent Orchestrator + Model Router cumulative contract OK on authoritative Build ${currentBuild}`);
