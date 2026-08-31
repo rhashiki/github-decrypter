@@ -31,11 +31,14 @@ for (const token of [
   'DECRYPTER_RUNTIME_KIND: ollama',
   'DECRYPTER_WORKER_MAX_INFLIGHT: ${DECRYPTER_WORKER_MAX_INFLIGHT:-1}'
 ]) assert.ok(compose.includes(token), token);
+if (currentBuild >= 68) {
+  for (const token of ['qwen2.5-coder:14b','qwen2.5-coder:7b','DECRYPTER_PRELOAD_TIERS','OLLAMA_MODELS']) assert.ok(`${compose}\n${ollama}`.includes(token), token);
+}
 assert.ok(vllm.includes('vllm/vllm-openai'));
 assert.ok(vllm.includes('DECRYPTER_RUNTIME_KIND: vllm'));
 
 for (const token of [
-  'DecrypterOllamaGateway/2.6.60',
+  currentBuild >= 68 ? 'DecrypterOllamaGateway/2.6.68' : 'DecrypterOllamaGateway/2.6.60',
   'hmac.compare_digest',
   '/v1/models',
   '/v1/chat/completions',
