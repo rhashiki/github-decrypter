@@ -32,30 +32,61 @@ async function backendStatus(endpoint, action, settings) {
   }
 }
 
-export async function loadAccountIntegrationReadiness(projectId = '') {
-  const settings = await getSettings();
-  const [githubStatus, supabaseStatus] = await Promise.all([
+function resolveProjectIdForRepository(settings, context = {}) {
+  const explicit = text(context?.projectId);
+  if (explicit) return explicit.slice(0,120);
+  const owner = text(context?.owner).toLowerCase();
+  const repo = text(context?.repo).toLowerCase();
+  if (!owner || !repo) return '';
+  const matches = Object.entries(settings?.projectMappings || {}).filter(([, mapping]) =>
+    text(mapping?.owner).toLowerCase() === owner && text(mapping?.repo).toLowerCase() === repo
+  );
+  if (matches.length === 1) return text(matches[0][0]).slice(0,120);
+  if (matches.length > 1) {
+    const error = new Error('ACCOUNT_INTEGRATION_PROJECT_MAPPING_AMBIGUOUS');
+    error.code = 'ACCOUNT_INTEGRATION_PROJECT_MAPPING_AMBIGUOUS';
+    throw error;
+  }
+  return '';
+}
+
+async function loadStatuses(settings) {
+  return Promise.all([
     backendStatus('ld-github-app','status',settings),
     backendStatus('ld-supabase-manager','status',settings)
   ]);
+}
+
+export async function loadAccountIntegrationReadiness(projectId = '') {
+  const settings = await getSettings();
+  const [githubStatus, supabaseStatus] = await loadStatuses(settings);
   const readiness = evaluateAccountIntegrationReadiness({ projectId:text(projectId).slice(0,120), settings, githubStatus, supabaseStatus });
   return { ...readiness, checkedAt:new Date().toISOString() };
 }
 
 export async function assertRemoteAccountIntegrationReadiness(projectId = '') {
   const settings = await getSettings();
-  const [githubStatus, supabaseStatus] = await Promise.all([
-    backendStatus('ld-github-app','status',settings),
-    backendStatus('ld-supabase-manager','status',settings)
-  ]);
+  const [githubStatus, supabaseStatus] = await loadStatuses(settings);
   return assertAccountIntegrationReadiness({ projectId:text(projectId).slice(0,120), settings, githubStatus, supabaseStatus });
 }
 
+async function assertWriteContext(context = {}) {
+  const settings = await getSettings();
+  const projectId = resolveProjectIdForRepository(settings, context);
+  const [githubStatus, supabaseStatus] = await loadStatuses(settings);
+  const readiness = assertAccountIntegrationReadiness({ projectId, settings, githubStatus, supabaseStatus });
+  const expected = `${text(context?.owner)}/${text(context?.repo)}`.toLowerCase();
+  if (expected && readiness.github.repository.toLowerCase() !== expected) {
+    const error = new Error('GITHUB_REPOSITORY_MAPPING_MISMATCH');
+    error.code = 'GITHUB_REPOSITORY_MAPPING_MISMATCH';
+    error.readiness = readiness;
+    throw error;
+  }
+  return readiness;
+}
+
 export function installIntegrationWriteGuard() {
-  globalThis[WRITE_GUARD] = async context => {
-    const projectId = text(context?.projectId || globalThis.__LD2_ACTIVE_PROJECT_ID__ || '').slice(0,120);
-    return assertRemoteAccountIntegrationReadiness(projectId);
-  };
+  globalThis[WRITE_GUARD] = assertWriteContext;
   return true;
 }
 
