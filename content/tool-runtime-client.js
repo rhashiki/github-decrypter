@@ -49,21 +49,31 @@
   }
 
   window.LovableDecrypterTools = Object.freeze({
-    build: 61,
+    build: 67,
     schema: 'ld-tool-runtime/1',
     list(projectId = '') {
       return request('list', { projectId });
     },
     invoke(tool, input = {}, options = {}) {
+      const continuity = options.continuity && typeof options.continuity === 'object'
+        ? {
+            taskId: options.continuity.taskId || options.taskId || '',
+            idempotencyKey: options.continuity.idempotencyKey || '',
+            workerId: options.continuity.workerId || 'content-tool-client',
+            inputDigest: options.continuity.inputDigest || '',
+            leaseMs: options.continuity.leaseMs || 120000
+          }
+        : null;
       return request('invoke', {
         tool,
         input,
         projectId: options.projectId || '',
-        taskId: options.taskId || '',
+        taskId: options.taskId || continuity?.taskId || '',
         parentOperationId: options.parentOperationId || '',
         origin: options.origin || 'tool',
         transactionId: options.transactionId || '',
-        authorization: options.transactionId ? { transactionId: options.transactionId } : {}
+        authorization: options.transactionId ? { transactionId: options.transactionId } : {},
+        continuity
       }, options.timeoutMs || DEFAULT_TIMEOUT);
     },
     journal(filters = {}) {
