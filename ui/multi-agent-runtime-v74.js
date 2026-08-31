@@ -3,7 +3,7 @@
   if(window.__LD74_MULTI_AGENT_UI__)return;
   window.__LD74_MULTI_AGENT_UI__=true;
   const $=(s,r=document)=>r.querySelector(s);
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   let overlay=null,state={runtimes:[],selected:'decrypter-local',probe:null,task:null,session:null,busy:false};
   let mountRetryTimer=null,mountRetryIndex=0;
   const MOUNT_RETRY_DELAYS=[0,100,250,500,1000,2000,4000];
