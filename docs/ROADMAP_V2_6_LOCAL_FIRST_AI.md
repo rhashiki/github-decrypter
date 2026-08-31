@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 71 — Universal Agent Runtime Registry is the current engineering baseline. Builds 60→71 are implemented with cumulative CI green. Build 70 provider-side validation is complete; the final Chrome homologation is intentionally deferred until Builds 71→75 are complete. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
+Status baseline: Build 72 — Portable Skills v2 is the current engineering baseline. Builds 60→72 are implemented with cumulative CI green. Build 70 provider-side validation is complete; the final Chrome homologation is intentionally deferred until Builds 71→75 are complete. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
 
 ## Product invariants
 
@@ -69,39 +69,27 @@ External/local runtimes propose changes. The Decrypter remains the authority thr
 
 ## Build 71 — Universal Agent Runtime Registry ✅
 
-Implemented and cumulatively green. Registry schema: `ld-agent-runtime-registry/1`.
+Registry schema `ld-agent-runtime-registry/1` is implemented for `decrypter-local`, OpenHands Agent Server, Codex CLI, OpenCode and Aider. Every runtime is proposal-only (`writeAuthority:false`), process transports are bridge-required, direct HTTP/loopback probes are bounded, runtime credentials are session-only, prompt transport is guarded, normalized events omit raw reasoning and watchdogs cover first output, inactivity and total timeout. The final Build 71 cumulative run was `33435818371`.
 
-Initial adapters:
-- `decrypter-local`
-- OpenHands Agent Server
-- Codex CLI
-- OpenCode
-- Aider
+## Build 72 — Portable Skills v2 ✅
 
-Contracts:
-- normalized runtime definitions, capabilities, versions and events;
-- every runtime reports `writeAuthority:false` and remains proposal-only;
-- safe direct HTTP/loopback probing where the browser can connect;
-- process-oriented transports are explicitly bridge-required;
-- runtime auth/endpoints are session-only;
-- prompt delivery prefers stdin/file and enforces bounded argument transport;
-- first-output, inactivity and total timeout watchdogs;
-- existing Build 58 server Agent Runtime remains background-only and compatible;
-- cumulative Builds 48→71, DecrypterBench v2 and release-preflight passed on workflow run `33435295443`.
+Portable Skills are now a local-first authority with schemas `ld-portable-skill/2`, `ld-portable-skill-registry/2` and `ld-portable-skill-stage/1`.
 
-## Build 72 — Portable Skills v2 ⏳ NEXT
+Implemented contracts:
+- `SKILL.md` YAML frontmatter + Markdown body with optional `references/`, `assets/` and trust-controlled `scripts/`;
+- built-in, custom, legacy-cloud and imported Skills normalized into one package model;
+- canonical SHA-256 content hash, provenance, source revision and optional signature metadata;
+- bounded file/package/context budgets, sensitive-file filtering, path traversal rejection and private-network/non-GitHub source rejection for public imports;
+- local Auto Skill routing (`portable-local-v2`) with no mandatory Gemini/cloud route;
+- existing `ld-skills` and `ld-custom-skills` retained only as optional synchronization sources;
+- legacy user preferences such as enabled/pinned/auto-activation preserved during migration;
+- per-run immutable staging; scripts excluded by default and only eligible for builtin/verified trust plus explicit script approval;
+- all Skills remain advisory: `writeAuthority:false`, `canExpandScope:false` and no Skill can override Project Rules, Scope Intelligence or Human Intent;
+- GitHub public import UI parses owner/repo/ref/path and validates the package before adding it to the local registry.
 
-Goal: portable, local-first, provenance-aware Skills usable by local and external agents.
+Cumulative Builds 48→72, DecrypterBench v2 and release-preflight passed on workflow run `33439467368`.
 
-Target package:
-- `SKILL.md`
-- optional `references/`
-- optional `assets/`
-- optional trust-controlled `scripts/`
-
-Required contracts: YAML frontmatter + Markdown body; local Skill registry default authority; built-in/custom/imported normalization; hashes/provenance/source revision; bounded safe imports; explicit trust/tool permissions; Skills never expand user intent or bypass Rules/Scope Intelligence; immutable source plus per-run staging; optional remote routing only; Context Engine v2 budget integration.
-
-## Build 73 — Agent Sandbox / Shadow Worktree ⏳
+## Build 73 — Agent Sandbox / Shadow Worktree ⏳ NEXT
 
 Disposable isolated workspace for external agents, no authoritative project credentials inside the sandbox, canonical diff import, sensitive-file filtering, escape/link defenses, controlled teardown and authoritative Decrypter write path.
 
