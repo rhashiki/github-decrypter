@@ -48,7 +48,13 @@ for (const token of [
 ]) assert.ok(`${tools}\n${patch}`.includes(token), token);
 
 assert.ok(bg.includes("tx.status !== 'validated'"));
-if (currentBuild >= 65) {
+if (currentBuild >= 67) {
+  assert.ok(bg.includes("writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency'"));
+  assert.ok(bg.includes('scopeIntelligenceValidated: true'));
+  assert.ok(bg.includes('scopeIntelligenceHash'));
+  assert.ok(bg.includes('continuityAware: true'));
+  assert.ok(bg.includes('ambiguousWriteRetryRequiresVerification: true'));
+} else if (currentBuild >= 65) {
   assert.ok(bg.includes("writePolicy: 'validated-approval+scope-intelligence-v2'"));
   assert.ok(bg.includes('scopeIntelligenceValidated: true'));
   assert.ok(bg.includes('scopeIntelligenceHash'));
