@@ -103,8 +103,9 @@ assert.ok(integrationsUi.includes('patch.projectMappings = { [projectId()]'));
 assert.ok(integrationsUi.includes("await supabase('project_test', { project_ref:project.ref })"));
 assert.ok(integrationsUi.includes('patch.supabaseMappings = { [projectId()]:selected }'));
 
-// Successor-roadmap formatting must not break the cumulative Continuity contract.
-const continuityTest = read('tests/build67-continuity-engine.test.mjs');
-assert.ok(continuityTest.includes('Status baseline:\\s*(?:\\*\\*)?Build\\s+(\\d+)'));
+// Successor-roadmap formatting must not break cumulative Build 67/68 contracts.
+for (const path of ['tests/build67-continuity-engine.test.mjs','tests/build68-local-agent-orchestrator.test.mjs']) {
+  assert.ok(read(path).includes('Status baseline:\\s*(?:\\*\\*)?Build\\s+(\\d+)'), path);
+}
 
 console.log('Build70 production closeout contract OK');
