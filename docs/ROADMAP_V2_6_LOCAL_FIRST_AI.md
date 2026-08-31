@@ -103,7 +103,7 @@ Covered gates:
 
 Cumulative Builds 48→75, DecrypterBench v2, Universal Agent Bench and release-preflight passed on workflow run `33444039786` before this roadmap promotion.
 
-## Final cumulative homologation — NEXT GATE
+## Final cumulative homologation after Build 75 — NEXT GATE
 
 Run the user-controlled Chrome/provider suite on the final Build 75 branch:
 - callback UI for GitHub and Supabase;
