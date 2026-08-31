@@ -2,6 +2,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2.112.4";
 
 const PUBLIC_SPKI_B64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/suDKmZG7B52xCVkCooS5MZfvVu+GjYTIfeOvlfi9tz29TQNN4uea318Nn2xf5uf/cm0bpaCADPwkqWSZV2MIA==";
 const API_BASE = "https://api.supabase.com/v1";
+const CALLBACK_SURFACE = "https://lovable.dev/";
 const REQUIRED_SCOPES = Object.freeze([
   "organizations:read",
   "projects:read",
@@ -32,29 +33,43 @@ function json(body: unknown, status = 200) {
     headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" }
   });
 }
-function html(body: string, status = 200) {
-  return new Response(body, {
-    status,
-    headers: { ...cors, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
-  });
+function redirect(location: string) {
+  return new Response(null, { status: 303, headers: { ...cors, Location: location, "Cache-Control": "no-store" } });
+}
+function callbackRedirect(status: "connected" | "error", detail: Record<string, string | number> = {}) {
+  const target = new URL(CALLBACK_SURFACE);
+  target.searchParams.set("ld2_integration_callback", "supabase");
+  target.searchParams.set("status", status);
+  for (const [key, value] of Object.entries(detail)) {
+    if (value !== "" && value !== null && value !== undefined) target.searchParams.set(key, String(value).slice(0, 180));
+  }
+  return redirect(target.toString());
 }
 function b64url(bytes: Uint8Array) {
-  let s = "";
-  for (const b of bytes) s += String.fromCharCode(b);
-  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  let value = "";
+  for (const byte of bytes) value += String.fromCharCode(byte);
+  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 function unb64url(value: string) {
-  const s = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
-  return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const raw = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return Uint8Array.from(atob(raw), char => char.charCodeAt(0));
 }
 function randomValue(size = 48) { return b64url(crypto.getRandomValues(new Uint8Array(size))); }
 async function shaHex(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", enc.encode(value));
-  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
 async function pkceChallenge(verifier: string) {
   const digest = await crypto.subtle.digest("SHA-256", enc.encode(verifier));
   return b64url(new Uint8Array(digest));
+}
+function canonicalScope(value: string) {
+  const parts = [...new Set(String(value || "").split(/[\s,]+/).map(item => item.trim()).filter(Boolean))];
+  return (parts.length ? parts : REQUIRED_SCOPES).join(" ");
+}
+function missingScopes(scope: string) {
+  const granted = new Set(String(scope || "").split(/[\s,]+/).filter(Boolean));
+  return REQUIRED_SCOPES.filter(value => !granted.has(value));
 }
 function serviceKey() {
   const current = Deno.env.get("SUPABASE_SECRET_KEYS");
@@ -75,7 +90,7 @@ function supabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 async function publicKey() {
-  const der = Uint8Array.from(atob(PUBLIC_SPKI_B64), c => c.charCodeAt(0));
+  const der = Uint8Array.from(atob(PUBLIC_SPKI_B64), char => char.charCodeAt(0));
   return crypto.subtle.importKey("spki", der, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
 }
 async function verifyLicenseToken(token: string) {
@@ -111,12 +126,12 @@ async function authorize(req: Request, sb: any) {
   const creditActive = !timeActive && Number(license.credit_debt || 0) === 0 && Number(license.credit_balance || 0) > 0;
   if (!timeActive && !creditActive) throw new Error("ENTITLEMENT_EXHAUSTED");
   const deviceHash = await shaHex(deviceId);
-  const { data: device, error: de } = await sb.from("ld_license_devices")
+  const { data: device, error: deviceError } = await sb.from("ld_license_devices")
     .select("id,revoked_at")
     .eq("license_id", license.id)
     .eq("device_hash", deviceHash)
     .maybeSingle();
-  if (de) throw new Error("DB_ERROR");
+  if (deviceError) throw new Error("DB_ERROR");
   if (!device) throw new Error("DEVICE_NOT_BOUND");
   if (device.revoked_at) throw new Error("DEVICE_REVOKED");
   return { license, deviceHash };
@@ -145,22 +160,17 @@ function selfUrl(url: URL) { return `${url.origin}${url.pathname}`; }
 function refreshSecretName(licenseId: string, deviceHash: string) {
   return `LD_SUPABASE_REFRESH_${licenseId.replace(/-/g, "")}_${deviceHash.slice(0, 24)}`;
 }
-function missingScopes(scope: string) {
-  const granted = new Set(String(scope || "").split(/[\s,]+/).filter(Boolean));
-  return REQUIRED_SCOPES.filter(value => !granted.has(value));
-}
 async function createState(sb: any, licenseId: string, deviceHash: string) {
   await sb.from("ld_supabase_oauth_states").delete().lt("expires_at", new Date().toISOString());
   const state = randomValue(32);
   const verifier = randomValue(64);
-  const row = {
+  const { error } = await sb.from("ld_supabase_oauth_states").insert({
     state_hash: await shaHex(state),
     license_id: licenseId,
     device_hash: deviceHash,
     code_verifier: verifier,
     expires_at: new Date(Date.now() + 20 * 60 * 1000).toISOString()
-  };
-  const { error } = await sb.from("ld_supabase_oauth_states").insert(row);
+  });
   if (error) throw new Error("STATE_CREATE_FAILED");
   return { state, challenge: await pkceChallenge(verifier) };
 }
@@ -217,7 +227,11 @@ async function refreshAccessToken(sb: any, config: any, connection: any) {
   if (data.refresh_token && String(data.refresh_token) !== refresh) {
     await storeSecret(sb, String(connection.refresh_secret_name), String(data.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
   }
-  return { accessToken: String(data.access_token), scope: String(data.scope || connection.granted_scope || ""), tokenType: String(data.token_type || "Bearer") };
+  return {
+    accessToken: String(data.access_token),
+    scope: canonicalScope(String(data.scope || connection.granted_scope || "")),
+    tokenType: String(data.token_type || "Bearer")
+  };
 }
 async function managementRequest(accessToken: string, path: string, options: RequestInit = {}) {
   const controller = new AbortController();
@@ -274,19 +288,14 @@ async function verifyProject(accessToken: string, projectRef: string) {
   if (!project) throw new Error("PROJECT_NOT_AUTHORIZED");
   return { project, projects };
 }
-function escapeHtml(value: string) {
-  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-function successPage(title: string, detail: string) {
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{margin:0;background:#050b08;color:#eafff2;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh}.card{max-width:520px;margin:24px;padding:28px;border:1px solid #3ecf8e77;border-radius:18px;background:#07140e;box-shadow:0 20px 70px #0008,0 0 30px #3ecf8e18}.ok{color:#3ecf8e;font-size:38px}.card h1{font-size:22px}.card p{color:#a9bdb3;line-height:1.5}.card small{color:#70877b}</style></head><body><div class="card"><div class="ok">✓</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p><small>Esta janela pode ser fechada.</small></div><script>try{window.opener&&window.opener.postMessage({type:'LD2_SUPABASE_CONNECTED'},'*')}catch(e){};setTimeout(()=>window.close(),1200)</script></body></html>`;
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   const url = new URL(req.url);
+  const flow = url.searchParams.get("flow") || "";
   const sb = supabaseAdmin();
   try {
-    if (req.method === "GET" && url.searchParams.get("flow") === "callback") {
+    if (req.method === "GET" && flow === "callback") {
       const code = url.searchParams.get("code") || "";
       const rawState = url.searchParams.get("state") || "";
       if (!code) throw new Error("AUTH_CODE_REQUIRED");
@@ -297,18 +306,19 @@ Deno.serve(async (req: Request) => {
       const projects = await listProjects(String(token.access_token));
       const secretName = refreshSecretName(String(state.license_id), String(state.device_hash));
       await storeSecret(sb, secretName, String(token.refresh_token), "Lovable Decrypter Supabase OAuth refresh token");
+      const grantedScope = canonicalScope(String(token.scope || ""));
       const { error } = await sb.from("ld_supabase_connections").upsert({
         license_id: state.license_id,
         device_hash: state.device_hash,
         refresh_secret_name: secretName,
-        granted_scope: String(token.scope || ""),
+        granted_scope: grantedScope,
         token_type: String(token.token_type || "Bearer"),
         connected_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, { onConflict: "license_id,device_hash" });
       if (error) throw new Error("CONNECTION_STORE_FAILED");
       await consumeState(sb, state.state_hash);
-      return html(successPage("Supabase conectado", `${projects.length} projeto(s) autorizado(s). Volte ao Lovable Decrypter para escolher o projeto.`));
+      return callbackRedirect("connected", { count: projects.length });
     }
     if (req.method !== "POST") return json({ ok: false, code: "METHOD_NOT_ALLOWED" }, 405);
 
@@ -402,7 +412,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error("ld-supabase-oauth", error);
     const code = String((error as Error)?.message || "INTERNAL_ERROR");
-    if (req.method === "GET") return html(successPage("Falha ao conectar Supabase", code), 400);
+    if (req.method === "GET" && flow === "callback") return callbackRedirect("error", { code: code.split(":")[0] });
     const status = /KEY_|DEVICE_|ENTITLEMENT/.test(code) ? 403 : 500;
     return json({ ok: false, code }, status);
   }

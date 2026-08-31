@@ -1,89 +1,122 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 69 — DecrypterBench v2 / Hardening is the current homologation baseline. Builds 60→69 are implemented; release/OTA remains separately unauthorized.
+Status baseline: Build 75 — Universal Agent Bench / External-Agent Hardening is the current engineering baseline. Builds 60→75 are implemented with cumulative CI green. The Universal Agent Control Plane automated phase is complete. Build 70 provider-side validation is complete; the remaining gate is the final cumulative Chrome/provider homologation. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
 
 ## Product invariants
 
-1. **No paid GPU server is required.** Local inference is the default and authoritative path.
-2. **No commercial token quota is required.** Technical context-window/RAM/VRAM limits still exist and are handled by Context Packs instead of provider quotas.
-3. **Work must survive model/runtime interruption.** Operations are journaled and checkpointed outside the LLM.
-4. **No automatic paid-AI fallback.** Remote providers are opt-in only and must never be silently selected when local inference is unavailable.
-5. **Human edits outrank previous AI edits.** Manual user changes become durable context and are protected from accidental regression.
-6. **Writes are fail-closed.** Read-only tools may run automatically; mutating tools require scope checks and the established approval/trust path.
-7. **Hardening is executable.** Security and continuity guarantees must be represented by adversarial CI cases, not documentation alone.
+1. **No paid GPU server is required.** Local inference remains the default path.
+2. **No commercial token quota is required.** Context budgeting handles technical limits without making a paid provider mandatory.
+3. **Work must survive model/runtime interruption.** Continuity and checkpoints remain outside model reasoning.
+4. **No automatic paid-AI fallback.** Remote providers remain explicit opt-in only.
+5. **Human edits outrank previous AI edits.** `USER_EDIT > AI_EDIT`; Human Intent and Scope Intelligence remain authoritative.
+6. Writes are fail-closed behind approval, Tool Runtime, Continuity, Account Integration Gate and Guarded Commit.
+7. GitHub App + authorized repository and Supabase OAuth + authorized project are required for project mutation.
+8. External agents can analyze and propose but never become authoritative writers.
+9. Provider/runtime credentials are server-side or session-only and are not durable project state.
+10. Security claims require executable adversarial CI plus final browser/provider homologation.
 
 ## Build 60 — Local Model Runtime ✅
 
-Ollama/vLLM + Qwen, authenticated OpenAI-compatible local gateway, worker registration/health, pool contract, fail-closed zero-cost policy and physical-host homologation probe. `runtime/decrypter-local` remains outside the browser package.
+Ollama/vLLM + Qwen local runtime, health/pool contract, local-only routing and zero paid/remote fallback.
 
 ## Build 61 — Tool Runtime / Coding Tools ✅
 
-Provider-neutral Tool Registry, repository read/list/grep, patch preview/application, Git diff, capability-gated diagnostics/LSP, Operation Journal and change origins. Reads may execute automatically; writes remain fail-closed behind approval/scope.
+Provider-neutral repository/file tools, patch engine, grep/glob, Git diff, diagnostics/LSP gates and Operation Journal.
 
 ## Build 62 — MCP Core + MCP Trust Gateway ✅
 
-Native MCP transport with server identity, authentication, allowlists, Scope Lock, explicit write approval, one-shot write tickets and Operation Journal integration. Unknown/untrusted capabilities fail closed.
+MCP authentication, allowlists, Scope Lock, explicit write approval, one-shot tickets and Operation Journal integration. MCP baseline: 2026-07-28.
 
 ## Build 63 — Curated MCP Marketplace ✅
 
-Controlled MCP catalog for GitHub, Supabase, code/workspace, memory/context, security and observability. Entries carry provenance, permissions, trust/write capabilities and revocation state. Browser-incompatible stdio entries remain bridge-required rather than pretending support.
+Controlled MCP catalog with provenance, permissions, trust/write capabilities and revocation state.
 
 ## Build 64 — Context Engine v2 ✅
 
-Budgeted minimal Context Packs from relevant code, Git history, schemas/signals, Rules, Skills, Impact Maps, docs, Operation Journal, diagnostics and recent manual edits. Raw repetitive keystrokes are not persisted or sent as context events.
+Budgeted Context Packs from code, Git history, schemas/signals, Rules, Skills, Impact Maps, docs, diagnostics and recent manual edits.
 
 ## Build 65 — Scope Intelligence v2 + Human Intent ✅
 
-Request → plan → diff comparison, unauthorized-file/action detection, broad-rewrite detection, recent user-edit protection, soft/strong Human Intent Locks and precedence `USER_EDIT > PREVIOUS_AI_EDIT`. Scope is re-evaluated immediately before writes.
+Request → plan → diff checks, unauthorized-file/action detection, broad rewrite detection and user-edit protection. `USER_EDIT > AI_EDIT`.
 
 ## Build 66 — Smart Undo/Redo + Reversible Operations ✅
 
-Git-reconstructed BASE / OPERATION / CURRENT states, operation inversion, three-way hunk merge, later manual-edit preservation, symmetric Redo, preview-before-write, one-shot HEAD-locked confirmation and explicit destructive replace-target/cascade modes. Conflicting manual changes are never silently discarded.
+Three-way preservation of later user edits, symmetric Redo, one-shot HEAD-locked confirmation and explicit destructive modes.
 
 ## Build 67 — Continuity Engine ✅
 
-Durable local task/step state machine with leases, idempotency keys, checkpoints and restart recovery. Read/inference steps may resume. Writes with unknown outcome enter `verification_required`; retry requires proof from Operation Journal and/or pre-write Git HEAD. Raw prompts/model outputs/file contents are not stored in Continuity state.
+Durable tasks/steps with leases, idempotency keys and checkpoints. Ambiguous writes require verification before retry.
 
 ## Build 68 — Local Agent Orchestrator + Model Router ✅
 
-Browser-side local-only coding loop using `decrypter-local` directly. Default local routing is `qwen3-coder:30b → qwen2.5-coder:14b → qwen2.5-coder:7b`, with health/pressure-aware local degradation. No paid/remote fallback exists inside Local Model Router or Local Agent Orchestrator.
-
-The loop integrates Context Engine → local inference → provider-neutral tools → exact proposal digest → explicit human write approval → fresh Scope/Human Intent evaluation → Tool Runtime + Continuity → Git diff → capability-gated diagnostics → repair iteration. Runtime token is session-only and durable orchestration state contains digests/metadata rather than raw reasoning payloads.
+Local coding loop with model degradation, proposal digest, approval, Scope Intelligence, Tool Runtime, Continuity, diff and diagnostics/repair.
 
 ## Build 69 — DecrypterBench v2 / Hardening ✅
 
-**Goal:** validate and adversarially harden the complete local-first stack before any release decision.
+Adversarial gates cover repository path safety, path traversal, stale/ambiguous patches, scope creep, Human Intent, Undo/Redo conflicts, proposal tampering, MCP trust, Continuity and zero-cost policy. This roadmap does not authorize merge to `main`.
 
-Implemented gates:
-- Repository path traversal/canonicalization: absolute paths, URI-like paths, control characters, dot segments, empty segments, `.git` case variants and percent-encoded transformations.
-- Sensitive-path blocklist regression.
-- Stale blob and ambiguous patch rejection.
-- Scope-creep extra-file and broad-rewrite attacks.
-- Strong Human Intent lock and explicit-path authority tests.
-- Smart Undo preservation when manual edits are outside the target hunk and conflict when they overlap it.
-- Local-agent SHA-256 proposal tamper detection.
-- MCP insecure/credential/query/fragment endpoint attacks.
-- MCP write ticket exact binding and one-shot consumption.
-- Continuity inference crash/resume, ambiguous-write fail-closed retry and expired write-lease recovery.
-- Local model large→medium→small routing, pressure degradation and total outage with `LOCAL_MODEL_UNAVAILABLE` rather than remote/paid fallback.
-- Static zero-paid/remote-fallback regression against the local runtime/router/orchestrator.
-- Deterministic Lovable ↔ Local Agent ↔ GitHub ↔ Supabase integration contract plus cumulative Build 48→69 regression gates.
+## Build 70 — Account Integration Gate ✅
 
-Build 69 also hardens the central repository path canonicalizer used by coding/write primitives. Benchmarks, tests, docs, runtime and Supabase sources remain excluded from the extension runtime package.
+Mandatory GitHub App + Supabase OAuth readiness, project mappings, remote write revalidation, GitHub key-format compatibility, callback bridge, canonical Supabase scopes, safe refresh rotation and no-secret durable settings are implemented. Live provider validation covered real GitHub permissions, temporary-branch create/delete and real Supabase OAuth database-write capability. Browser homologation remains part of the final cumulative test.
 
-## Authority model
+## Build 71 — Universal Agent Runtime Registry ✅
 
-```text
-User instruction
-  > explicit user manual edit / explicit approval
-  > Scope Lock + Human Intent Lock
-  > authoritative project state
-  > current AI plan
-  > historical AI output
-```
+Registry `ld-agent-runtime-registry/1` supports `decrypter-local`, OpenHands Agent Server, Codex CLI, OpenCode and Aider. Every runtime is proposal-only (`writeAuthority:false`), process transports are bridge-required, HTTP/loopback probes are bounded, credentials are session-only, prompt transport is guarded and watchdogs cover first output/inactivity/total timeout. Final cumulative run: `33435818371`.
 
-The LLM is never the source of truth for task continuity. The Decrypter runtime owns operation state, tool results, checkpoints and change provenance.
+## Build 72 — Portable Skills v2 ✅
 
-## Post-roadmap gate
+Portable `SKILL.md` packages are local-first with provenance/hash, bounded imports, path traversal/private-network defenses, immutable per-run staging and local routing (`portable-local-v2`). Legacy/cloud catalogs remain optional synchronization sources. Skills cannot expand user intent or gain write authority. Final cumulative run: `33439609216`.
 
-Build 69 closes the v2.6 local-first AI implementation roadmap, but **does not authorize merge to `main`, OTA metadata, GitHub Release, store publication or production rollout**. Those remain separate release decisions after homologation evidence is reviewed.
+## Build 73 — Agent Sandbox / Shadow Worktree ✅
+
+Sandbox identity binds `taskId + runtimeId + baseHeadSha`; materialization rejects path traversal, `.git`, environment/credential files, secret key formats, symlinks, hardlinks, junctions and special files. External runtimes receive no authoritative GitHub/Supabase credentials. Imported diffs are canonicalized, bounded and digest-bound, and require fresh Scope Intelligence/Human Intent before write. Physical worktree creation remains honestly `bridge-required` under MV3. Final cumulative run: `33440231905`.
+
+## Build 74 — Multi-Agent Runtime UI + Native Sessions ✅
+
+Explicit runtime picker, health/model/capability state and native-session continuity metadata are implemented. Decrypter/Continuity `taskId` remains authoritative. Proposals bind digest + generation; runtime switching increments generation, clears the old proposal and invalidates prior approval. Task/runtime/session/generation mismatch and replay fail closed. Session state remains in `chrome.storage.session`; `replayAllowed:false`, `replayAuthority:false` and `writeAuthority:false`. Final promoted cumulative run: `33443366826`.
+
+## Build 75 — Universal Agent Bench / External-Agent Hardening ✅
+
+Schema: `ld-universal-agent-bench/1`.
+
+The final automated adversarial suite exercises the real Builds 65→74 components. Final corrected benchmark result: **24/24 probes passed**.
+
+Covered gates:
+- malformed agent actions;
+- sandbox path traversal and sensitive-path escape;
+- symlink/hardlink/special-file attacks;
+- stale base HEAD and stale approvals;
+- cross-agent runtime mismatch;
+- sandbox authority tampering / Tool Runtime bypass attempts;
+- proposal digest mismatch;
+- native-session generation mismatch and replay prevention;
+- closed/crashed session resume rejection;
+- unauthorized create/update/delete/rename and out-of-plan changes;
+- `USER_EDIT > AI_EDIT` Human Intent locks;
+- durable credential sanitization;
+- Windows command/environment-expansion prompt transport attacks and prompt size bounds;
+- external runtime event normalization without raw reasoning;
+- all registered adapters remain proposal-only and non-authoritative;
+- GitHub account/repository revocation fail-closed simulation;
+- Supabase OAuth/scope revocation fail-closed simulation;
+- real Local Model Router proof of `zeroCostApi:true`, `paidFallbackAllowed:false`, `remoteFallbackAllowed:false`.
+
+Cumulative Builds 48→75, DecrypterBench v2, Universal Agent Bench and release-preflight passed on workflow run `33444039786` before this roadmap promotion.
+
+## Final cumulative homologation after Build 75 — NEXT GATE
+
+Run the user-controlled Chrome/provider suite on the final Build 75 branch:
+- callback UI for GitHub and Supabase;
+- Lovable project → GitHub repo + Supabase project mapping;
+- runtime picker, probe/health and native-session UI;
+- runtime switching with visible invalidation of previous approval/proposal;
+- approved frontend mutation through agent → sandbox → diff → approval → authoritative Decrypter write;
+- approved backend mutation through the Supabase OAuth mapping;
+- GitHub revocation during active use → immediate fail-closed;
+- Supabase revocation/scope loss during active use → immediate fail-closed;
+- `chrome.storage.local` / `chrome.storage.session` inspection for credential leakage;
+- final confirmation that external agents never bypass Scope Intelligence, Human Intent, Tool Runtime, Account Integration Gate or Guarded Commit.
+
+## Release gate
+
+No build in this roadmap authorizes merge to `main`, OTA metadata, GitHub Release, store publication or production rollout. Release requires the final browser/provider homologation above and separate explicit user authorization.

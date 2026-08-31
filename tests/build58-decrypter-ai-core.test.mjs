@@ -15,7 +15,8 @@ const serviceWorker = read('background/service-worker.js');
 const gatewayBootstrap = read('background/model-gateway-bootstrap.js');
 
 const version = manifest.version.match(/^2\.6\.(\d+)$/);
-assert.ok(version && Number(version[1]) >= 58, 'Build58 contract must survive successor versions');
+const currentBuild = Number(version?.[1] || 0);
+assert.ok(version && currentBuild >= 58, 'Build58 contract must survive successor versions');
 assert.equal(pkg.candidate, manifest.version);
 assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 
@@ -81,7 +82,13 @@ assert.ok(fixMigration.includes('security invoker'));
 
 const app = manifest.content_scripts.find(item => Array.isArray(item.js) && item.js.includes('ui/ui-kernel-v48.js'));
 assert.ok(app);
-assert.ok(!app.js.some(path => /agent-runtime/i.test(path)), 'Agent Runtime must remain background/server-only');
+assert.ok(!app.js.includes('content/agent-runtime-client.js'), 'Build58 server Agent Runtime client must remain background-only');
+if (currentBuild >= 71) {
+  assert.ok(app.js.includes('content/agent-runtime-registry-client.js'), 'Build71 registry may expose only the proposal/runtime catalog client');
+  const registry = read('core/agent-runtime-registry.js');
+  assert.ok(registry.includes('canWriteAuthoritative:false'));
+  assert.ok(registry.includes('writeAuthority: false'));
+}
 assert.ok(!serviceWorker.includes('ld-agent-runtime'), 'existing Plan/Build switch must not be silently redirected by Agent Runtime');
 assert.ok(gatewayBootstrap.includes('GeminiAgent.prototype.backendCommand'));
 assert.ok(gatewayBootstrap.includes('/ld-model-gateway'));
@@ -92,4 +99,4 @@ assert.ok(!client.includes('user_paid'));
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
 assert.ok(!read('release/homologation-v2.5.57.json').includes('"release_authorized": true'));
 
-console.log('Build58 Decrypter AI Core cumulative contract OK');
+console.log(`Build58 Decrypter AI Core cumulative contract OK on Build ${currentBuild}`);

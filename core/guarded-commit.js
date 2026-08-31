@@ -12,12 +12,33 @@ import {
 
 const INSTALLED = Symbol.for('ld2.guardedCommit.installed');
 const LAST_REFS = Symbol.for('ld2.guardedCommit.lastRefs');
+const ACCOUNT_WRITE_GUARD = Symbol.for('ld2.accountIntegration.writeGuard');
+const ACCOUNT_GATE_REQUIRED = Symbol.for('ld2.accountIntegration.required');
 
 function rememberRef(adapter, branch, ref) {
   const sha = String(ref?.object?.sha || '');
   if (!sha) return;
   if (!adapter[LAST_REFS]) adapter[LAST_REFS] = new Map();
   adapter[LAST_REFS].set(String(branch || adapter.branch || 'main'), sha);
+}
+
+async function assertAccountWriteGuard(adapter, branch, options = {}) {
+  const guard = globalThis[ACCOUNT_WRITE_GUARD];
+  if (typeof guard !== 'function') {
+    if (globalThis[ACCOUNT_GATE_REQUIRED] === true) {
+      const error = new Error('ACCOUNT_INTEGRATION_GUARD_UNAVAILABLE');
+      error.code = 'ACCOUNT_INTEGRATION_GUARD_UNAVAILABLE';
+      throw error;
+    }
+    return { testOnlyGuardBypass:true };
+  }
+  return guard({
+    owner: String(adapter.owner || ''),
+    repo: String(adapter.repo || ''),
+    branch: String(branch || adapter.branch || 'main'),
+    projectId: String(options.projectId || ''),
+    fileCount: Array.isArray(options.files) ? options.files.length : 0
+  });
 }
 
 export function installGuardedCommit() {
@@ -37,12 +58,16 @@ export function installGuardedCommit() {
   proto.atomicCommit = async function guardedAtomicCommit(options = {}) {
     const createBranch = options.createBranch !== undefined ? Boolean(options.createBranch) : true;
     const createPr = options.createPr !== undefined ? Boolean(options.createPr) : true;
+    const branch = String(options.baseBranch || this.branch || 'main');
 
-    // Preserve legacy branch/PR behavior for flows that explicitly request it.
+    // Build70 account gate is mandatory in the production service-worker
+    // bootstrap for every mutating Git path, including legacy branch/PR flows.
+    await assertAccountWriteGuard(this, branch, options);
+
+    // Preserve legacy branch/PR behavior only after the account gate passes.
     // The authoritative Lovable Decrypter Build/Approve path uses false/false.
     if (createBranch || createPr) return originalAtomicCommit.call(this, options);
 
-    const branch = String(options.baseBranch || this.branch || 'main');
     let expectedHeadSha = this[LAST_REFS]?.get(branch) || '';
     if (!expectedHeadSha) {
       const ref = await originalGetRef.call(this, branch);
@@ -107,6 +132,7 @@ export function installGuardedCommit() {
       return {
         ...result,
         guarded: true,
+        accountIntegrationGuarded: true,
         checkpoint: {
           id: checkpoint.id,
           baseHeadSha: checkpoint.baseHeadSha,

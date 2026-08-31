@@ -37,10 +37,7 @@ const atLeast = (value, floor) => {
 };
 
 const gates = [];
-const gate = (id, name, fn) => {
-  fn();
-  gates.push({ id, name });
-};
+const gate = (id, name, fn) => { fn(); gates.push({ id, name }); };
 
 gate(1, 'version-package-coherence', () => {
   assert.ok(atLeast(manifest.version, '2.5.57'), `unexpected successor version ${manifest.version}`);
@@ -106,9 +103,16 @@ gate(9, 'decrypter-chat-protected-runtime', () => {
 
 gate(10, 'auto-skill-and-project-rules-order', () => {
   assert.ok(app.js.indexOf('content/skill-router.js') < app.js.indexOf('content/project-rules-cache.js'));
-  assert.ok(skillRouter.includes('Project Rules hydrate first'));
-  assert.ok(skillRouter.includes('NÃO alteram o pedido original do usuário'));
   assert.ok(skillRouter.includes('MAX_SKILLS = 8'));
+  if (atLeast(manifest.version, '2.6.72')) {
+    assert.ok(app.js.indexOf('content/portable-skills-client.js') < app.js.indexOf('content/skill-router.js'));
+    assert.ok(skillRouter.includes('portable-local-v2'));
+    assert.ok(skillRouter.includes('NÃO ampliam o pedido original'));
+    assert.ok(skillRouter.includes('Project Rules'));
+  } else {
+    assert.ok(skillRouter.includes('Project Rules hydrate first'));
+    assert.ok(skillRouter.includes('NÃO alteram o pedido original do usuário'));
+  }
 });
 
 gate(11, 'github-app-oauth-backend-contract', () => {
