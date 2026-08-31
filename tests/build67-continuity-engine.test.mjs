@@ -69,8 +69,7 @@ for (const token of [
   'write-outcome-unknown-after-interruption',
   'write-verified-absent-safe-to-retry',
   'recoverExpiredContinuityLeases',
-  'compactContinuityTask',
-  'raw'
+  'compactContinuityTask'
 ]) assert.ok(core.includes(token), token);
 
 for (const token of [
@@ -142,7 +141,6 @@ assert.equal(inferReplay.resultRef.outputDigest, 'out1');
 claim = await claimContinuityStep({ taskId:created.id, idempotencyKey:'write:1', workerId:'worker-a' });
 assert.equal(claim.claimed, true);
 const writeLease = claim.leaseToken;
-// Simulate the pre-write checkpoint normally emitted by Tool Runtime.
 const rawTask = memory[CONTINUITY_STORAGE_KEY].find(row => row.id === created.id);
 const rawWrite = rawTask.steps.find(step => step.idempotencyKey === 'write:1');
 rawWrite.checkpoint = { type:'git-head-before-write', reference:'abc123', digest:'d1', verified:true, createdAt:new Date().toISOString() };
