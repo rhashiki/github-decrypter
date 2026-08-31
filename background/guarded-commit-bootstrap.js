@@ -1,8 +1,10 @@
 import { installIntegrationWriteGuard } from './integration-readiness-runtime.js';
 import { installGuardedCommit } from '../core/guarded-commit.js';
 
-// Build70: install the remote GitHub + Supabase account guard before the
-// authoritative Git adapter is patched. No mutating commit may execute without it.
+// Build70: production service-worker boot marks the account gate mandatory.
+// Isolated unit tests can exercise Guarded Commit without network by omitting
+// this bootstrap, but the real extension fails closed if the guard is absent.
+globalThis[Symbol.for('ld2.accountIntegration.required')] = true;
 installIntegrationWriteGuard();
 
 // Side-effect bootstrap: this module is imported before service-worker.js so
