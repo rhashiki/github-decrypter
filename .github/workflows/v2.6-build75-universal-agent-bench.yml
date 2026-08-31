@@ -13,9 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: node --check benchmark/universal-agent-bench-v1.mjs
+      - run: node --check benchmark/universal-agent-bench.mjs
       - run: node --check core/agent-sandbox.js
       - run: node --check core/native-agent-sessions.js
       - run: node --check core/agent-runtime-registry.js
+      - run: node --check core/local-model-router.js
       - run: node --check core/scope-intelligence-v2.js
       - run: node --check core/account-integration-readiness.js
       - run: node --check storage/secret-sanitizer.js
@@ -50,6 +52,6 @@ jobs:
       - run: node tests/build72-portable-skills-v2.test.mjs
       - run: node tests/build73-agent-sandbox-shadow-worktree.test.mjs
       - run: node tests/build74-multi-agent-runtime-ui-native-sessions.test.mjs
-      - run: node benchmark/universal-agent-bench-v1.mjs
+      - run: node benchmark/universal-agent-bench.mjs
       - run: node tests/build75-universal-agent-bench.test.mjs
       - run: node scripts/release-preflight.mjs --candidate
