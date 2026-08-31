@@ -28,6 +28,7 @@ import { installReversibleOperationsRuntime } from './reversible-operations-runt
 import { installContinuityRuntime } from './continuity-runtime.js';
 import { installLocalModelRuntime } from './local-model-runtime.js';
 import { installLocalAgentOrchestrator } from './local-agent-orchestrator.js';
+import { installAgentRuntimeRegistryRuntime } from './agent-runtime-registry-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -57,3 +58,4 @@ installReversibleOperationsRuntime();
 installContinuityRuntime();
 installLocalModelRuntime();
 installLocalAgentOrchestrator();
+installAgentRuntimeRegistryRuntime();
