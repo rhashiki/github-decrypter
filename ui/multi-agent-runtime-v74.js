@@ -3,8 +3,10 @@
   if(window.__LD74_MULTI_AGENT_UI__)return;
   window.__LD74_MULTI_AGENT_UI__=true;
   const $=(s,r=document)=>r.querySelector(s);
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
   let overlay=null,state={runtimes:[],selected:'decrypter-local',probe:null,task:null,session:null,busy:false};
+  let mountRetryTimer=null,mountRetryIndex=0;
+  const MOUNT_RETRY_DELAYS=[0,100,250,500,1000,2000,4000];
   const registry=()=>window.LovableDecrypterAgentRuntimeRegistryClient;
   const sessions=()=>window.LovableDecrypterNativeAgentSessions;
   const continuity=()=>window.LovableDecrypterContinuity;
@@ -41,8 +43,26 @@
   function status(message,error=false){const el=$('[data-agent-status]',overlay||ensure());el.textContent=message||'';el.classList.toggle('error',error);}
   async function open(){ensure();overlay.classList.add('open');await refresh();}
   function close(){overlay?.classList.remove('open');}
-  function installTrigger(){const root=document.querySelector('#ld2-root');if(!root||root.querySelector('[data-action="agent-runtime-v74"]'))return;const btn=document.createElement('button');btn.type='button';btn.className='ld74-agent-trigger';btn.dataset.action='agent-runtime-v74';btn.textContent='Agente';btn.title='Selecionar Agent Runtime';btn.onclick=e=>{e.preventDefault();e.stopPropagation();open();};root.appendChild(btn);}
-  const observer=new MutationObserver(()=>installTrigger());observer.observe(document.documentElement,{childList:true,subtree:true});installTrigger();
+  function installTrigger(){
+    const root=document.querySelector('#ld2-root');
+    if(!root)return false;
+    if(root.querySelector('[data-action="agent-runtime-v74"]'))return true;
+    const btn=document.createElement('button');btn.type='button';btn.className='ld74-agent-trigger';btn.dataset.action='agent-runtime-v74';btn.textContent='Agente';btn.title='Selecionar Agent Runtime';btn.onclick=e=>{e.preventDefault();e.stopPropagation();open();};root.appendChild(btn);return true;
+  }
+  function scheduleTriggerMount(reset=false){
+    if(reset)mountRetryIndex=0;
+    if(mountRetryTimer)return;
+    const attempt=()=>{
+      mountRetryTimer=null;
+      if(installTrigger()){mountRetryIndex=0;return;}
+      if(mountRetryIndex>=MOUNT_RETRY_DELAYS.length-1)return;
+      mountRetryIndex+=1;
+      mountRetryTimer=setTimeout(attempt,MOUNT_RETRY_DELAYS[mountRetryIndex]);
+    };
+    mountRetryTimer=setTimeout(attempt,MOUNT_RETRY_DELAYS[mountRetryIndex]);
+  }
+  window.addEventListener('ld2:ui-mounted',()=>scheduleTriggerMount(true));
+  scheduleTriggerMount(true);
   addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay?.classList.contains('open'))close();});
-  window.LovableDecrypterMultiAgentUI=Object.freeze({build:74,open,refresh,explicitSwitchOnly:true,writeAuthority:false});
+  window.LovableDecrypterMultiAgentUI=Object.freeze({build:74,open,refresh,explicitSwitchOnly:true,writeAuthority:false,globalDomObserver:false});
 })();
