@@ -10,6 +10,7 @@
   let overlay = null;
   let checking = false;
   let lastReady = false;
+  let started = false;
 
   function root() { return document.getElementById(ROOT_ID); }
   function projectId() { return String(window.LovableDecrypterV2?.getProjectId?.() || ''); }
@@ -117,6 +118,8 @@
   }
 
   function start() {
+    if (started) return;
+    started = true;
     check().catch(() => {});
     setInterval(() => {
       const providerModalOpen = Boolean(document.querySelector('#ld2-root .ld49-overlay.open'));
