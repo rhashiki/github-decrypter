@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import {runUniversalAgentBench,UNIVERSAL_AGENT_BENCH_SCHEMA,UNIVERSAL_AGENT_BENCH_BUILD} from '../benchmark/universal-agent-bench-v1.mjs';
+import {runUniversalAgentBench,UNIVERSAL_AGENT_BENCH_SCHEMA,UNIVERSAL_AGENT_BENCH_BUILD} from '../benchmark/universal-agent-bench.mjs';
 const read=p=>fs.readFileSync(p,'utf8');
 const manifest=JSON.parse(read('manifest.json'));
 const pkg=JSON.parse(read('release/runtime-package.json'));
 const settings=read('settings/config.js');
 const roadmap=read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
-const benchmark=read('benchmark/universal-agent-bench-v1.mjs');
+const benchmark=`${read('benchmark/universal-agent-bench-v1.mjs')}\n${read('benchmark/universal-agent-bench.mjs')}`;
 
 assert.equal(manifest.version,'2.6.75');
 assert.match(manifest.version_name,/Build 75 · Universal Agent Bench \/ External-Agent Hardening/);
@@ -26,7 +26,7 @@ for(const category of ['malformed-actions','sandbox-escape','stale-approval','cr
   assert.ok(result.categories[category]?.passed>0,`missing passing category ${category}`);
   assert.equal(result.categories[category]?.failed,0,`category failed ${category}`);
 }
-for(const token of ['SANDBOX_DIFF_ACTION_INVALID','SANDBOX_BASE_HEAD_MISMATCH','NATIVE_SESSION_PROPOSAL_MISMATCH','USER_EDIT > AI_EDIT','GITHUB_REPOSITORY_NOT_AUTHORIZED','SUPABASE_REAUTHORIZE_REQUIRED','AGENT_PROMPT_ENV_EXPANSION_RISK','writeAuthority===false'])assert.ok(benchmark.includes(token),token);
+for(const token of ['SANDBOX_DIFF_ACTION_INVALID','SANDBOX_BASE_HEAD_MISMATCH','NATIVE_SESSION_PROPOSAL_MISMATCH','USER_EDIT > AI_EDIT','GITHUB_REPOSITORY_NOT_AUTHORIZED','SUPABASE_REAUTHORIZE_REQUIRED','AGENT_PROMPT_ENV_EXPANSION_RISK','writeAuthority===false','paidFallbackAllowed!==false','remoteFallbackAllowed!==false'])assert.ok(benchmark.includes(token),token);
 assert.match(pkg.notes,/Universal Agent Bench \/ External-Agent Hardening/);
 assert.match(pkg.notes,/GitHub App\/repository revocation/);
 assert.match(pkg.notes,/Supabase OAuth\/scope revocation/);
