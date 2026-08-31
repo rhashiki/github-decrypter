@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 74 — Multi-Agent Runtime UI + Native Sessions is the current engineering baseline. Builds 60→74 are implemented with cumulative CI green. Build 70 provider-side validation is complete; the final Chrome homologation is intentionally deferred until Build 75 is complete. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
+Status baseline: Build 75 — Universal Agent Bench / External-Agent Hardening is the current engineering baseline. Builds 60→75 are implemented with cumulative CI green. The Universal Agent Control Plane automated phase is complete. Build 70 provider-side validation is complete; the remaining gate is the final cumulative Chrome/provider homologation. Merge to `main`, OTA metadata, GitHub Release, store publication and production rollout remain separately unauthorized.
 
 ## Product invariants
 
@@ -13,7 +13,7 @@ Status baseline: Build 74 — Multi-Agent Runtime UI + Native Sessions is the cu
 7. GitHub App + authorized repository and Supabase OAuth + authorized project are required for project mutation.
 8. External agents can analyze and propose but never become authoritative writers.
 9. Provider/runtime credentials are server-side or session-only and are not durable project state.
-10. Security claims require executable adversarial CI; final browser/provider tests are cumulative after Build 75.
+10. Security claims require executable adversarial CI plus final browser/provider homologation.
 
 ## Build 60 — Local Model Runtime ✅
 
@@ -57,46 +57,66 @@ Adversarial gates cover repository path safety, path traversal, stale/ambiguous 
 
 ## Build 70 — Account Integration Gate ✅
 
-Technical closeout completed. Mandatory GitHub App + Supabase OAuth readiness, project mappings, remote write revalidation, GitHub key-format compatibility, callback bridge, canonical Supabase scopes, safe refresh rotation and no-secret durable settings are implemented. Live provider validation covered real GitHub permissions, temporary-branch create/delete and real Supabase OAuth database-write capability. Browser homologation remains deferred to the final cumulative test.
+Mandatory GitHub App + Supabase OAuth readiness, project mappings, remote write revalidation, GitHub key-format compatibility, callback bridge, canonical Supabase scopes, safe refresh rotation and no-secret durable settings are implemented. Live provider validation covered real GitHub permissions, temporary-branch create/delete and real Supabase OAuth database-write capability. Browser homologation remains part of the final cumulative test.
 
 ## Build 71 — Universal Agent Runtime Registry ✅
 
-Registry schema `ld-agent-runtime-registry/1` supports `decrypter-local`, OpenHands Agent Server, Codex CLI, OpenCode and Aider. Every runtime is proposal-only (`writeAuthority:false`), process transports are bridge-required, HTTP/loopback probes are bounded, credentials are session-only, prompt transport is guarded and watchdogs cover first output/inactivity/total timeout. Final Build 71 cumulative run: `33435818371`.
+Registry `ld-agent-runtime-registry/1` supports `decrypter-local`, OpenHands Agent Server, Codex CLI, OpenCode and Aider. Every runtime is proposal-only (`writeAuthority:false`), process transports are bridge-required, HTTP/loopback probes are bounded, credentials are session-only, prompt transport is guarded and watchdogs cover first output/inactivity/total timeout. Final cumulative run: `33435818371`.
 
 ## Build 72 — Portable Skills v2 ✅
 
-Portable `SKILL.md` packages are local-first with provenance/hash, bounded imports, traversal/private-network defenses, immutable per-run staging and local routing (`portable-local-v2`). Legacy/cloud catalogs remain optional synchronization sources. Skills cannot expand user intent or gain write authority. Final Build 72 cumulative run: `33439609216`.
+Portable `SKILL.md` packages are local-first with provenance/hash, bounded imports, path traversal/private-network defenses, immutable per-run staging and local routing (`portable-local-v2`). Legacy/cloud catalogs remain optional synchronization sources. Skills cannot expand user intent or gain write authority. Final cumulative run: `33439609216`.
 
 ## Build 73 — Agent Sandbox / Shadow Worktree ✅
 
-Schemas `ld-agent-sandbox/1`, `ld-agent-sandbox-diff/1` and `ld-agent-sandbox-materialization/1` establish an isolated proposal boundary for external agents. Sandbox identity binds `taskId + runtimeId + baseHeadSha`; materialization rejects path traversal, `.git`, environment/credential files, secret key formats, symlinks, hardlinks, junctions and special files. External runtimes receive no authoritative GitHub/Supabase credentials. Imported diffs are canonicalized, bounded, digest-bound and require fresh Scope Intelligence/Human Intent before the Decrypter can write. Physical worktree creation remains honestly `bridge-required` under MV3. Final Build 73 cumulative run: `33440231905`.
+Sandbox identity binds `taskId + runtimeId + baseHeadSha`; materialization rejects path traversal, `.git`, environment/credential files, secret key formats, symlinks, hardlinks, junctions and special files. External runtimes receive no authoritative GitHub/Supabase credentials. Imported diffs are canonicalized, bounded and digest-bound, and require fresh Scope Intelligence/Human Intent before write. Physical worktree creation remains honestly `bridge-required` under MV3. Final cumulative run: `33440231905`.
 
 ## Build 74 — Multi-Agent Runtime UI + Native Sessions ✅
 
-Schemas `ld-native-agent-session/1` and the Build 71 runtime registry now support an explicit multi-agent control plane in the browser.
+Explicit runtime picker, health/model/capability state and native-session continuity metadata are implemented. Decrypter/Continuity `taskId` remains authoritative. Proposals bind digest + generation; runtime switching increments generation, clears the old proposal and invalidates prior approval. Task/runtime/session/generation mismatch and replay fail closed. Session state remains in `chrome.storage.session`; `replayAllowed:false`, `replayAuthority:false` and `writeAuthority:false`. Final promoted cumulative run: `33443366826`.
 
-Implemented contracts:
-- runtime picker shows registered runtimes, health/probe state, capabilities and available models where the runtime exposes them;
-- runtime changes are explicit user actions; there is no silent agent switch;
-- Decrypter/Continuity `taskId` remains authoritative across runtimes;
-- native session metadata binds task, runtime, strategy, native session id and a monotonically increasing `generation`;
-- every proposal binds `proposalDigest + proposalGeneration`;
-- switching runtime increments generation, clears the previous proposal digest and sets `approvalInvalidated:true`;
-- proposal/session checks fail closed on task mismatch, runtime mismatch, generation mismatch, stale proposal digest or native-session mismatch;
-- `replayAllowed:false`, `replayAuthority:false` and `writeAuthority:false` remain explicit session invariants;
-- session state is stored only in `chrome.storage.session`, not durable project state;
-- UI reiterates the trust boundary: the agent proposes and the Decrypter writes.
+## Build 75 — Universal Agent Bench / External-Agent Hardening ✅
 
-Cumulative Builds 48→74, DecrypterBench v2 and release-preflight passed on workflow run `33440844724`.
+Schema: `ld-universal-agent-bench/1`.
 
-## Build 75 — Universal Agent Bench / External-Agent Hardening ⏳ NEXT
+The final automated adversarial suite exercises the real Builds 65→74 components. Final corrected benchmark result: **24/24 probes passed**.
 
-Final adversarial phase for malformed actions, digest mismatch, stale approvals, unauthorized create/update/delete/rename, credential persistence, sandbox escape, symlink/hardlink attacks, runtime crashes/disconnects, native-session mismatch/replay, prompt transport abuse, Tool Runtime bypass, cross-agent scope creep, provider revocation during active work and zero paid/remote fallback.
+Covered gates:
+- malformed agent actions;
+- sandbox path traversal and sensitive-path escape;
+- symlink/hardlink/special-file attacks;
+- stale base HEAD and stale approvals;
+- cross-agent runtime mismatch;
+- sandbox authority tampering / Tool Runtime bypass attempts;
+- proposal digest mismatch;
+- native-session generation mismatch and replay prevention;
+- closed/crashed session resume rejection;
+- unauthorized create/update/delete/rename and out-of-plan changes;
+- `USER_EDIT > AI_EDIT` Human Intent locks;
+- durable credential sanitization;
+- Windows command/environment-expansion prompt transport attacks and prompt size bounds;
+- external runtime event normalization without raw reasoning;
+- all registered adapters remain proposal-only and non-authoritative;
+- GitHub account/repository revocation fail-closed simulation;
+- Supabase OAuth/scope revocation fail-closed simulation;
+- real Local Model Router proof of `zeroCostApi:true`, `paidFallbackAllowed:false`, `remoteFallbackAllowed:false`.
 
-## Final cumulative homologation after Build 75
+Cumulative Builds 48→75, DecrypterBench v2, Universal Agent Bench and release-preflight passed on workflow run `33444039786` before this roadmap promotion.
 
-Run the user-controlled Chrome/provider suite once Builds 71→75 are cumulatively green: callback UI, project mapping, approved frontend mutation, approved backend mutation, runtime/session behavior, GitHub revocation fail-closed, Supabase revocation fail-closed and final secret/storage inspection.
+## Final cumulative homologation — NEXT GATE
+
+Run the user-controlled Chrome/provider suite on the final Build 75 branch:
+- callback UI for GitHub and Supabase;
+- Lovable project → GitHub repo + Supabase project mapping;
+- runtime picker, probe/health and native-session UI;
+- runtime switching with visible invalidation of previous approval/proposal;
+- approved frontend mutation through agent → sandbox → diff → approval → authoritative Decrypter write;
+- approved backend mutation through the Supabase OAuth mapping;
+- GitHub revocation during active use → immediate fail-closed;
+- Supabase revocation/scope loss during active use → immediate fail-closed;
+- `chrome.storage.local` / `chrome.storage.session` inspection for credential leakage;
+- final confirmation that external agents never bypass Scope Intelligence, Human Intent, Tool Runtime, Account Integration Gate or Guarded Commit.
 
 ## Release gate
 
-No build in this roadmap authorizes merge to `main`, OTA metadata, GitHub Release, store publication or production rollout. Release requires Builds 71→75 green, final browser/provider homologation and separate explicit user authorization.
+No build in this roadmap authorizes merge to `main`, OTA metadata, GitHub Release, store publication or production rollout. Release requires the final browser/provider homologation above and separate explicit user authorization.
