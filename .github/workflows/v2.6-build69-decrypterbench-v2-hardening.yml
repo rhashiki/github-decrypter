@@ -1,0 +1,96 @@
+name: v2.6 Build 69 · DecrypterBench v2 / Hardening
+
+on:
+  push:
+    branches: [main, v2.6-build69-decrypterbench-v2-hardening]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'core/utils.js'
+      - 'core/patch-engine.js'
+      - 'core/local-model-router.js'
+      - 'core/local-agent-approval.js'
+      - 'core/scope-intelligence-v2.js'
+      - 'core/reversible-operations.js'
+      - 'core/mcp-protocol.js'
+      - 'core/mcp-trust-gateway.js'
+      - 'core/continuity-engine.js'
+      - 'background/local-model-runtime.js'
+      - 'background/local-agent-orchestrator.js'
+      - 'background/tool-runtime.js'
+      - 'benchmark/decrypterbench-v2.mjs'
+      - 'tests/build69-decrypterbench-v2.test.mjs'
+      - '.github/workflows/v2.6-build69-decrypterbench-v2-hardening.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'settings/config.js'
+      - 'release/runtime-package.json'
+      - 'docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md'
+      - 'core/utils.js'
+      - 'core/patch-engine.js'
+      - 'core/local-model-router.js'
+      - 'core/local-agent-approval.js'
+      - 'core/scope-intelligence-v2.js'
+      - 'core/reversible-operations.js'
+      - 'core/mcp-protocol.js'
+      - 'core/mcp-trust-gateway.js'
+      - 'core/continuity-engine.js'
+      - 'background/local-model-runtime.js'
+      - 'background/local-agent-orchestrator.js'
+      - 'background/tool-runtime.js'
+      - 'benchmark/decrypterbench-v2.mjs'
+      - 'tests/build69-decrypterbench-v2.test.mjs'
+      - '.github/workflows/v2.6-build69-decrypterbench-v2-hardening.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check core/utils.js
+      - run: node --check core/patch-engine.js
+      - run: node --check core/local-model-router.js
+      - run: node --check core/local-agent-approval.js
+      - run: node --check core/scope-intelligence-v2.js
+      - run: node --check core/reversible-operations.js
+      - run: node --check core/mcp-protocol.js
+      - run: node --check core/mcp-trust-gateway.js
+      - run: node --check core/continuity-engine.js
+      - run: node --check background/local-model-runtime.js
+      - run: node --check background/local-agent-orchestrator.js
+      - run: node --check background/tool-runtime.js
+      - run: node --check benchmark/decrypterbench-v2.mjs
+      - run: node --check tests/build69-decrypterbench-v2.test.mjs
+      - run: python -m py_compile runtime/decrypter-local/ollama-gateway.py
+      - run: node tests/build48-ui-kernel.test.mjs
+      - run: node tests/build49-integrations.test.mjs
+      - run: node tests/build50-project-intelligence.test.mjs
+      - run: node tests/build51-engineering-suite.test.mjs
+      - run: node tests/build52-project-tools-zip.test.mjs
+      - run: node tests/build53-settings-preferences.test.mjs
+      - run: node tests/build54-update-recovery-center.test.mjs
+      - run: node tests/build55-backend-messaging-natural-voice.test.mjs
+      - run: node tests/build56-legacy-purge-performance.test.mjs
+      - run: node tests/build57-final-homologation.test.mjs
+      - run: node tests/build58-decrypter-ai-core.test.mjs
+      - run: node tests/build59-memory-engine-project-brain-v2.test.mjs
+      - run: node tests/build60-local-model-runtime.test.mjs
+      - run: node tests/build61-tool-runtime.test.mjs
+      - run: node tests/build62-mcp-trust-gateway.test.mjs
+      - run: node tests/build63-curated-mcp-marketplace.test.mjs
+      - run: node tests/build64-context-engine-v2.test.mjs
+      - run: node tests/build65-scope-intelligence-v2.test.mjs
+      - run: node tests/build66-smart-undo-redo.test.mjs
+      - run: node tests/build67-continuity-engine.test.mjs
+      - run: node tests/build68-local-agent-orchestrator.test.mjs
+      - run: node benchmark/decrypterbench-v2.mjs
+      - run: node tests/build69-decrypterbench-v2.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
