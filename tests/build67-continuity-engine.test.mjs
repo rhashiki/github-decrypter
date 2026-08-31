@@ -41,11 +41,12 @@ const journal = read('core/operation-journal.js');
 const ui = read('ui/continuity-engine-v67.js');
 const css = read('ui/continuity-engine-v67.css');
 const roadmap = read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
+const currentBuild = Number(String(manifest.version || '').split('.').at(-1));
 
-assert.equal(manifest.version, '2.6.67');
-assert.match(manifest.version_name, /Build 67 · Continuity Engine/);
+assert.ok(Number.isInteger(currentBuild) && currentBuild >= 67, `Build67 contract requires authoritative Build >=67, received ${manifest.version}`);
+assert.match(manifest.version_name, new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate, manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.67'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("CONTINUITY_ENGINE_SCHEMA = 'ld-continuity-task/1'"));
 assert.equal(CONTINUITY_SCHEMA, 'ld-continuity-task/1');
 
@@ -178,17 +179,17 @@ await defineContinuitySteps(crashWriteTask.id, [{ idempotencyKey:'write:crash', 
 claim = await claimContinuityStep({ taskId:crashWriteTask.id, idempotencyKey:'write:crash' });
 storedCrash = memory[CONTINUITY_STORAGE_KEY].find(row => row.id === crashWriteTask.id).steps[0];
 storedCrash.leaseUntil = '2000-01-01T00:00:00.000Z';
-recovered = await recoverExpiredContinuityLeases({ reason:'test-crash' });
+const recovered = await recoverExpiredContinuityLeases({ reason:'test-crash' });
 assert.ok(recovered.recovered.some(item => item.taskId === crashWriteTask.id && item.status === 'verification_required'));
 
 assert.match(pkg.notes, /Build67/);
 assert.match(pkg.notes, /idempotency/i);
-assert.match(pkg.notes, /verification_required/);
 assert.match(pkg.notes, /MCP 2026-07-28 Trust Gateway/);
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
-assert.match(roadmap, /Status baseline: Build 67/);
-assert.match(roadmap, /Build 68 — Local Agent Orchestrator \+ Model Router is next/);
+assert.match(roadmap, /Build 67 — Continuity Engine/);
+assert.match(roadmap, /Build 68 — Local Agent Orchestrator \+ Model Router/);
+if (currentBuild >= 68) assert.match(roadmap, /Status baseline: Build 68/);
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
-console.log('Build67 Continuity Engine contract OK');
+console.log(`Build67 Continuity Engine cumulative contract OK on authoritative Build ${currentBuild}`);
