@@ -21,6 +21,8 @@ on:
       - 'background/local-agent-orchestrator.js'
       - 'background/tool-runtime.js'
       - 'benchmark/decrypterbench-v2.mjs'
+      - 'tests/build67-continuity-engine.test.mjs'
+      - 'tests/build68-local-agent-orchestrator.test.mjs'
       - 'tests/build69-decrypterbench-v2.test.mjs'
       - '.github/workflows/v2.6-build69-decrypterbench-v2-hardening.yml'
   pull_request:
@@ -43,6 +45,8 @@ on:
       - 'background/local-agent-orchestrator.js'
       - 'background/tool-runtime.js'
       - 'benchmark/decrypterbench-v2.mjs'
+      - 'tests/build67-continuity-engine.test.mjs'
+      - 'tests/build68-local-agent-orchestrator.test.mjs'
       - 'tests/build69-decrypterbench-v2.test.mjs'
       - '.github/workflows/v2.6-build69-decrypterbench-v2-hardening.yml'
   workflow_dispatch:
@@ -68,6 +72,8 @@ jobs:
       - run: node --check background/local-agent-orchestrator.js
       - run: node --check background/tool-runtime.js
       - run: node --check benchmark/decrypterbench-v2.mjs
+      - run: node --check tests/build67-continuity-engine.test.mjs
+      - run: node --check tests/build68-local-agent-orchestrator.test.mjs
       - run: node --check tests/build69-decrypterbench-v2.test.mjs
       - run: python -m py_compile runtime/decrypter-local/ollama-gateway.py
       - run: node tests/build48-ui-kernel.test.mjs
