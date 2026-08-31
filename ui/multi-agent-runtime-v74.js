@@ -3,8 +3,9 @@
   if(window.__LD74_MULTI_AGENT_UI__)return;
   window.__LD74_MULTI_AGENT_UI__=true;
   const $=(s,r=document)=>r.querySelector(s);
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
   let overlay=null,state={runtimes:[],selected:'decrypter-local',probe:null,task:null,session:null,busy:false};
+  let remountTimer=0;
   const registry=()=>window.LovableDecrypterAgentRuntimeRegistryClient;
   const sessions=()=>window.LovableDecrypterNativeAgentSessions;
   const continuity=()=>window.LovableDecrypterContinuity;
@@ -41,8 +42,15 @@
   function status(message,error=false){const el=$('[data-agent-status]',overlay||ensure());el.textContent=message||'';el.classList.toggle('error',error);}
   async function open(){ensure();overlay.classList.add('open');await refresh();}
   function close(){overlay?.classList.remove('open');}
-  function installTrigger(){const root=document.querySelector('#ld2-root');if(!root||root.querySelector('[data-action="agent-runtime-v74"]'))return;const btn=document.createElement('button');btn.type='button';btn.className='ld74-agent-trigger';btn.dataset.action='agent-runtime-v74';btn.textContent='Agente';btn.title='Selecionar Agent Runtime';btn.onclick=e=>{e.preventDefault();e.stopPropagation();open();};root.appendChild(btn);}
-  const observer=new MutationObserver(()=>installTrigger());observer.observe(document.documentElement,{childList:true,subtree:true});installTrigger();
+  function installTrigger(){const root=document.querySelector('#ld2-root');if(!root)return false;if(root.querySelector('[data-action="agent-runtime-v74"]'))return true;const btn=document.createElement('button');btn.type='button';btn.className='ld74-agent-trigger';btn.dataset.action='agent-runtime-v74';btn.textContent='Agente';btn.title='Selecionar Agent Runtime';btn.onclick=e=>{e.preventDefault();e.stopPropagation();open();};root.appendChild(btn);return true;}
+  function scheduleTriggerMount(delay=0){
+    clearTimeout(remountTimer);
+    remountTimer=setTimeout(()=>{if(document.hidden)return;if(installTrigger())return;let attempts=0;const retry=()=>{if(document.hidden||installTrigger()||++attempts>=12)return;remountTimer=setTimeout(retry,750);};retry();},delay);
+  }
+  window.addEventListener('ld2:ui-mounted',()=>scheduleTriggerMount(0));
+  window.addEventListener('ld2:ui-remounted',()=>scheduleTriggerMount(0));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleTriggerMount(100);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>scheduleTriggerMount(0),{once:true});else scheduleTriggerMount(0);
   addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay?.classList.contains('open'))close();});
-  window.LovableDecrypterMultiAgentUI=Object.freeze({build:74,open,refresh,explicitSwitchOnly:true,writeAuthority:false});
+  window.LovableDecrypterMultiAgentUI=Object.freeze({build:74,open,refresh,explicitSwitchOnly:true,writeAuthority:false,globalDomObserver:false});
 })();
