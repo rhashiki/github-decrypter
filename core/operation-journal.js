@@ -86,6 +86,7 @@ export async function beginOperation({ tool, mode = 'read', origin = 'tool', inp
       repo: text(context?.repo, 240),
       branch: text(context?.branch, 240),
       taskId: text(context?.taskId, 160),
+      idempotencyKey: text(context?.idempotencyKey, 240),
       parentOperationId: text(context?.parentOperationId, 160)
     },
     changes: [],
@@ -148,7 +149,7 @@ export async function getOperationJournalEntry(operationId = '') {
   return entries.find(entry => entry?.id === id) || null;
 }
 
-export async function listOperationJournal({ tool = '', status = '', origin = '', mode = '', projectId = '', limit = 100 } = {}) {
+export async function listOperationJournal({ tool = '', status = '', origin = '', mode = '', projectId = '', taskId = '', idempotencyKey = '', limit = 100 } = {}) {
   const safeLimit = Math.max(1, Math.min(500, Number(limit || 100)));
   const entries = await loadJournal();
   return entries.filter(entry => {
@@ -157,6 +158,8 @@ export async function listOperationJournal({ tool = '', status = '', origin = ''
     if (origin && entry?.origin !== normalizedOrigin(origin)) return false;
     if (mode && entry?.mode !== mode) return false;
     if (projectId && entry?.context?.projectId !== projectId) return false;
+    if (taskId && entry?.context?.taskId !== taskId) return false;
+    if (idempotencyKey && entry?.context?.idempotencyKey !== idempotencyKey) return false;
     return true;
   }).slice(0, safeLimit);
 }
