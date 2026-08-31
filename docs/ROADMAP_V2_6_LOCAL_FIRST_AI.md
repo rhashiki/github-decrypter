@@ -4,14 +4,16 @@ Status baseline: Build 71 — Universal Agent Runtime Registry is the current en
 
 ## Product invariants
 
-1. Local inference remains the default path and there is no automatic paid/remote fallback.
-2. `USER_EDIT > AI_EDIT`; Human Intent and Scope Intelligence remain authoritative.
-3. Writes are fail-closed behind approval, Tool Runtime, Continuity, Account Integration Gate and Guarded Commit.
-4. GitHub App + authorized repository and Supabase OAuth + authorized project are required for project mutation.
-5. External agents can analyze and propose but never become authoritative writers.
-6. Provider/runtime credentials are server-side or session-only and are not durable project state.
-7. Security claims require executable adversarial CI.
-8. Final browser/provider tests are cumulative after Build 75.
+1. **No paid GPU server is required.** Local inference remains the default path.
+2. **No commercial token quota is required.** Context budgeting handles technical limits without making a paid provider mandatory.
+3. **Work must survive model/runtime interruption.** Continuity and checkpoints remain outside model reasoning.
+4. **No automatic paid-AI fallback.** Remote providers remain explicit opt-in only.
+5. **Human edits outrank previous AI edits.** `USER_EDIT > AI_EDIT`; Human Intent and Scope Intelligence remain authoritative.
+6. Writes are fail-closed behind approval, Tool Runtime, Continuity, Account Integration Gate and Guarded Commit.
+7. GitHub App + authorized repository and Supabase OAuth + authorized project are required for project mutation.
+8. External agents can analyze and propose but never become authoritative writers.
+9. Provider/runtime credentials are server-side or session-only and are not durable project state.
+10. Security claims require executable adversarial CI; final browser/provider tests are cumulative after Build 75.
 
 ## Build 60 — Local Model Runtime ✅
 
