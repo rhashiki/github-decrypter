@@ -6,5 +6,5 @@
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"v2.6.76 hotfix removes the unbounded whole-document MutationObserver introduced by the Build74 Multi-Agent Runtime UI. Agent trigger mounting is now event-driven with a bounded retry schedule, preserving explicit runtime selection without continuously scanning Lovable DOM mutations. All Build70-75 authority, sandbox, integration, zero paid/remote fallback and release-hardening guarantees remain unchanged."
+  "notes":"v2.6.76 hotfix removes the unbounded whole-document MutationObserver introduced by the Build74 Multi-Agent Runtime UI. Agent trigger mounting is now event-driven with a bounded retry schedule, preserving explicit runtime selection without continuously scanning Lovable DOM mutations. All Build70-75 authority, sandbox, integration, zero paid/remote fallback and release-hardening guarantees remain unchanged. No OTA metadata, GitHub Release or store publication is authorized."
 }
