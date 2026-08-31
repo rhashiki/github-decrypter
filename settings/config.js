@@ -1,4 +1,4 @@
-export const VERSION = '2.6.65';
+export const VERSION = '2.6.66';
 export const TRUST_PROTOCOL_VERSION = '2.4.21';
 export const STORAGE_KEY = 'ld2_settings';
 export const HISTORY_KEY = 'ld2_history';
@@ -11,6 +11,7 @@ export const MCP_PROTOCOL_VERSION = '2026-07-28';
 export const CONTEXT_ENGINE_SCHEMA = 'ld-context-pack/2';
 export const USER_EDIT_CONTEXT_SCHEMA = 'ld-user-edit-context/1';
 export const SCOPE_INTELLIGENCE_SCHEMA = 'ld-scope-intelligence/2';
+export const REVERSIBLE_OPERATIONS_SCHEMA = 'ld-reversible-operation/1';
 export const DEFAULT_BACKEND_BASE = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1';
 export const DEFAULT_VAULT_API_BASE = `${DEFAULT_BACKEND_BASE}/ld-vault`;
 export const DEFAULT_UPDATE_FEED_URL = `${DEFAULT_BACKEND_BASE}/ld-release-feed`;
