@@ -1,6 +1,7 @@
 import { getSettings } from '../storage/settings-store.js';
 import { GitAdapter } from '../github/git-adapter.js';
 import { ToolRuntime, toolJournal } from '../core/tool-runtime.js';
+import { localAgentProposalDigest } from '../core/local-agent-approval.js';
 import {
   claimContinuityStep,
   completeContinuityStep,
@@ -40,7 +41,8 @@ async function resolveWriteAuthorization(payload = {}, projectId = '') {
     baseHeadSha: text(tx.baseHeadSha),
     scopeIntelligenceHash,
     scopeIntelligenceValidated: true,
-    humanIntentOverrides: Array.isArray(tx.humanIntentOverrides) ? tx.humanIntentOverrides : []
+    humanIntentOverrides: Array.isArray(tx.humanIntentOverrides) ? tx.humanIntentOverrides : [],
+    localAgentProposalDigest: text(tx.localAgentProposalDigest)
   };
 }
 
@@ -126,6 +128,18 @@ async function checkpointWriteHead(runtime, github, continuity) {
   return headSha;
 }
 
+async function assertLocalAgentProposalBinding(toolName, input, authorization) {
+  const expected = text(authorization?.localAgentProposalDigest);
+  if (!expected) return true;
+  const actual = await localAgentProposalDigest({ tool: toolName, input: input || {} });
+  if (actual !== expected) {
+    throw Object.assign(new Error('LOCAL_AGENT_PROPOSAL_DIGEST_MISMATCH'), {
+      code: 'LOCAL_AGENT_PROPOSAL_DIGEST_MISMATCH'
+    });
+  }
+  return true;
+}
+
 async function handle(action, payload = {}) {
   const op = text(action || 'list').toLowerCase();
   if (op === 'journal') return { schema: 'ld-operation-journal/1', entries: await toolJournal(payload?.filters || {}) };
@@ -142,6 +156,7 @@ async function handle(action, payload = {}) {
       writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
       continuityAware: true,
       localOrchestratorAware: true,
+      localAgentProposalDigestBinding: true,
       preWriteHeadCheckpoint: true,
       ambiguousWriteRetry: 'verification-required',
       fakeDiagnostics: false,
@@ -156,6 +171,7 @@ async function handle(action, payload = {}) {
   const authorization = tool.mode === 'write'
     ? await resolveWriteAuthorization(payload, projectId)
     : { writeApproved: false, allowedPaths: [], scopeIntelligenceValidated: false };
+  if (tool.mode === 'write') await assertLocalAgentProposalBinding(toolName, payload?.input || {}, authorization);
 
   const continuity = continuityRequest(payload);
   let lease = null;
@@ -252,6 +268,7 @@ export function installToolRuntime() {
     scopeIntelligenceRequiredForWrites: true,
     continuityAware: true,
     localOrchestratorAware: true,
+    localAgentProposalDigestBinding: true,
     preWriteHeadCheckpoint: true,
     duplicateWritesPreventedByIdempotency: true,
     ambiguousWriteRetryRequiresVerification: true,
