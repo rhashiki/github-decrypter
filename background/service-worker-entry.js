@@ -22,6 +22,7 @@ import { installMcpRuntime } from './mcp-runtime.js';
 import { installMcpMarketplaceRuntime } from './mcp-marketplace-runtime.js';
 import { installContextEngineRuntime } from './context-engine-runtime.js';
 import { installScopeIntelligenceRuntime } from './scope-intelligence-runtime.js';
+import { installReversibleOperationsRuntime } from './reversible-operations-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -45,3 +46,4 @@ installMcpRuntime();
 installMcpMarketplaceRuntime();
 installContextEngineRuntime();
 installScopeIntelligenceRuntime();
+installReversibleOperationsRuntime();
