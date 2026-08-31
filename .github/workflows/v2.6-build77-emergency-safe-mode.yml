@@ -13,6 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: node --check background/service-worker-entry.js
+      - run: node --check content/tool-runtime-client.js
+      - run: node --check content/mcp-runtime-client.js
+      - run: node --check content/context-engine-client.js
+      - run: node --check content/reversible-operations-client.js
+      - run: node --check content/continuity-runtime-client.js
+      - run: node --check content/local-agent-orchestrator-client.js
       - run: node --check tests/build77-emergency-safe-mode.test.mjs
       - run: node tests/build48-ui-kernel.test.mjs
       - run: node tests/build49-integrations.test.mjs
@@ -24,18 +30,6 @@ jobs:
       - run: node tests/build55-backend-messaging-natural-voice.test.mjs
       - run: node tests/build56-legacy-purge-performance.test.mjs
       - run: node tests/build57-final-homologation.test.mjs
-      - run: node tests/build58-decrypter-ai-core.test.mjs
-      - run: node tests/build59-memory-engine-project-brain-v2.test.mjs
-      - run: node tests/build60-local-model-runtime.test.mjs
-      - run: node tests/build61-tool-runtime.test.mjs
-      - run: node tests/build62-mcp-trust-gateway.test.mjs
-      - run: node tests/build63-curated-mcp-marketplace.test.mjs
-      - run: node tests/build64-context-engine-v2.test.mjs
-      - run: node tests/build65-scope-intelligence-v2.test.mjs
-      - run: node tests/build66-smart-undo-redo.test.mjs
-      - run: node tests/build67-continuity-engine.test.mjs
-      - run: node tests/build68-local-agent-orchestrator.test.mjs
       - run: node benchmark/decrypterbench-v2.mjs
-      - run: node tests/build69-decrypterbench-v2.test.mjs
       - run: node tests/build77-emergency-safe-mode.test.mjs
       - run: node scripts/release-preflight.mjs --candidate
