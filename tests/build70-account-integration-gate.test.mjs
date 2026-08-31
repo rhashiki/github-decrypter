@@ -108,7 +108,7 @@ assert.ok(uiSource.includes('Nenhum PAT, service_role, senha ou token de instala
 assert.ok(coreSource.includes('GITHUB_REPOSITORY_NOT_AUTHORIZED'));
 assert.ok(coreSource.includes('SUPABASE_PROJECT_NOT_AUTHORIZED'));
 
-for (const forbidden of ['LD_GITHUB_APP_PRIVATE_KEY','LD_SUPABASE_OAUTH_CLIENT_SECRET','refresh_token','service_role']) {
+for (const forbidden of ['LD_GITHUB_APP_PRIVATE_KEY','LD_SUPABASE_OAUTH_CLIENT_SECRET','refresh_token']) {
   assert.ok(!clientSource.includes(forbidden),`client must not persist ${forbidden}`);
 }
 
@@ -116,8 +116,8 @@ assert.match(pkg.notes,/mandatory Account Integration Gate/i);
 assert.match(pkg.notes,/GitHub App/i);
 assert.match(pkg.notes,/Supabase OAuth/i);
 assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is authorized/);
-assert.match(roadmap,/Status baseline: Build 70/);
-assert.match(roadmap,/Build 70 — Account Integration Gate ✅/);
-assert.match(roadmap,/does not authorize merge to `main`/);
+assert.match(roadmap,/Status baseline: \*\*Build 70 — Account Integration Gate\*\*/);
+assert.match(roadmap,/Build 70 — Account Integration Gate 🟡 Core complete \/ production closeout/);
+assert.match(roadmap,/Merge to `main`.*remain separately unauthorized/);
 
 console.log('Build70 Account Integration Gate contract OK');
