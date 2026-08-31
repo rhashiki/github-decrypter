@@ -1,6 +1,7 @@
 import { getSettings } from '../storage/settings-store.js';
 import { GitAdapter } from '../github/git-adapter.js';
 import { isSensitivePath, isTextPath } from '../core/utils.js';
+import { HISTORY_KEY } from '../settings/config.js';
 import { loadRecentUserEdits } from '../core/context-engine-v2.js';
 import {
   beginOperation,
@@ -68,8 +69,42 @@ function operationPaths(operation = {}, compare = null) {
   return unique((Array.isArray(compare?.files) ? compare.files : []).map(file => file?.filename));
 }
 
-async function sourceOperation(operationId) {
-  const operation = await getOperationJournalEntry(operationId);
+function journalPaths(entry = {}) {
+  return unique([
+    ...(Array.isArray(entry?.changes) ? entry.changes.map(change => change?.path) : []),
+    ...(Array.isArray(entry?.input?.paths) ? entry.input.paths : [])
+  ]);
+}
+
+async function approvalHistoryOperations(projectId, github) {
+  const stored = await chrome.storage.local.get(HISTORY_KEY);
+  const rows = Array.isArray(stored[HISTORY_KEY]) ? stored[HISTORY_KEY] : [];
+  const repoKey = `${github.owner}/${github.repo}`;
+  return rows.filter(row => row?.type === 'approval-auto-repair' && row?.repo === repoKey && text(row?.result?.commitSha)).slice(0, 200).map(row => ({
+    id: `approval:${text(row.transactionId || row.id, 120)}`,
+    schema: 'ld-operation-journal/1',
+    tool: 'agent.approved_commit',
+    mode: 'write',
+    origin: 'ai',
+    status: 'ok',
+    startedAt: text(row.at, 80),
+    finishedAt: text(row.at, 80),
+    durationMs: 0,
+    input: { branch: text(row?.result?.branch || github.branch, 240), paths: [], query: '', glob: '', action: 'approved-commit' },
+    context: { projectId, owner: github.owner, repo: github.repo, branch: text(row?.result?.branch || github.branch, 240), taskId: '', parentOperationId: '' },
+    changes: [],
+    result: { code: 'OK', branch: text(row?.result?.branch || github.branch, 240), commitSha: text(row?.result?.commitSha, 128), fileCount: Number(row?.result?.fileCount || 0) || 0 },
+    error: null,
+    syntheticFromHistory: true
+  }));
+}
+
+async function sourceOperation(operationId, projectId, github) {
+  let operation = await getOperationJournalEntry(operationId);
+  if (!operation && String(operationId || '').startsWith('approval:')) {
+    const history = await approvalHistoryOperations(projectId, github);
+    operation = history.find(item => item.id === operationId) || null;
+  }
   if (!operation) throw Object.assign(new Error('REVERSAL_OPERATION_NOT_FOUND'), { code: 'REVERSAL_OPERATION_NOT_FOUND' });
   if (operation.status !== 'ok' || operation.mode !== 'write' || !text(operation?.result?.commitSha)) {
     throw Object.assign(new Error('REVERSAL_OPERATION_NOT_REVERSIBLE'), { code: 'REVERSAL_OPERATION_NOT_REVERSIBLE' });
@@ -104,19 +139,15 @@ function assertDirectionState(direction, state = {}, strategy = 'preserve') {
   }
 }
 
-function journalPaths(entry = {}) {
-  return unique([
-    ...(Array.isArray(entry?.changes) ? entry.changes.map(change => change?.path) : []),
-    ...(Array.isArray(entry?.input?.paths) ? entry.input.paths : [])
-  ]);
-}
-
-async function dependentOperations(operation, targetPaths) {
+async function dependentOperations(operation, targetPaths, projectId, github) {
   const finishedAt = Date.parse(operation?.finishedAt || operation?.startedAt || '') || 0;
-  const all = await listOperationJournal({ status: 'ok', mode: 'write', projectId: operation?.context?.projectId || '', limit: 500 });
+  const all = await listOperationJournal({ status: 'ok', mode: 'write', limit: 500 });
   const target = new Set(targetPaths);
   return all.filter(entry => {
     if (entry.id === operation.id) return false;
+    if (entry?.context?.projectId && projectId && entry.context.projectId !== projectId) return false;
+    if (entry?.context?.owner && entry.context.owner !== github.owner) return false;
+    if (entry?.context?.repo && entry.context.repo !== github.repo) return false;
     const at = Date.parse(entry?.finishedAt || entry?.startedAt || '') || 0;
     if (at <= finishedAt) return false;
     return journalPaths(entry).some(path => target.has(path));
@@ -186,14 +217,18 @@ async function cascadePlan({ adapter, operation, direction, state, currentHead, 
 async function computePreview({ projectId, operationId, direction, strategy }) {
   const normalizedDirection = normalizeReversalDirection(direction);
   const normalizedStrategy = normalizeReversalStrategy(strategy);
-  const operation = await sourceOperation(operationId);
-  if (projectId && operation?.context?.projectId && projectId !== operation.context.projectId) {
-    throw Object.assign(new Error('REVERSAL_PROJECT_MISMATCH'), { code: 'REVERSAL_PROJECT_MISMATCH' });
-  }
   const settings = await getSettings();
-  const effectiveProjectId = projectId || operation?.context?.projectId || '';
+  const effectiveProjectId = text(projectId, 160);
+  if (!effectiveProjectId) throw Object.assign(new Error('REVERSAL_PROJECT_REQUIRED'), { code: 'REVERSAL_PROJECT_REQUIRED' });
   const github = activeGithub(settings, effectiveProjectId);
   if (!github?.owner || !github?.repo) throw Object.assign(new Error('REVERSAL_GITHUB_MAPPING_REQUIRED'), { code: 'REVERSAL_GITHUB_MAPPING_REQUIRED' });
+  const operation = await sourceOperation(operationId, effectiveProjectId, github);
+  if (operation?.context?.projectId && operation.context.projectId !== effectiveProjectId) {
+    throw Object.assign(new Error('REVERSAL_PROJECT_MISMATCH'), { code: 'REVERSAL_PROJECT_MISMATCH' });
+  }
+  if (operation?.context?.owner && operation.context.owner !== github.owner) throw Object.assign(new Error('REVERSAL_REPO_MISMATCH'), { code: 'REVERSAL_REPO_MISMATCH' });
+  if (operation?.context?.repo && operation.context.repo !== github.repo) throw Object.assign(new Error('REVERSAL_REPO_MISMATCH'), { code: 'REVERSAL_REPO_MISMATCH' });
+
   const branch = operation?.context?.branch || github.branch || 'main';
   const adapter = new GitAdapter({ ...github, branch });
   const currentHead = await headSha(adapter, branch);
@@ -211,7 +246,11 @@ async function computePreview({ projectId, operationId, direction, strategy }) {
   if (!paths.length || paths.length > MAX_REVERSIBLE_FILES) {
     throw Object.assign(new Error(`REVERSAL_PATH_COUNT_INVALID:${paths.length}`), { code: 'REVERSAL_PATH_COUNT_INVALID' });
   }
-  const dependent = await dependentOperations(operation, paths);
+  if (normalizedStrategy !== 'cascade') {
+    const nonText = paths.filter(path => !isTextPath(path));
+    if (nonText.length) throw Object.assign(new Error(`REVERSAL_NON_TEXT_USE_CASCADE:${nonText.join(',')}`), { code: 'REVERSAL_NON_TEXT_USE_CASCADE', paths: nonText });
+  }
+  const dependent = await dependentOperations(operation, paths, effectiveProjectId, github);
 
   if (normalizedStrategy === 'cascade') {
     const plan = await cascadePlan({ adapter, operation, direction: normalizedDirection, state, currentHead, parentSha, dependent });
@@ -225,19 +264,8 @@ async function computePreview({ projectId, operationId, direction, strategy }) {
   ]);
   const frames = [];
   for (const path of paths) {
-    if (isSensitivePath(path)) {
-      frames.push({ path, base: { exists: baseTree.map.has(path) }, applied: { exists: appliedTree.map.has(path) }, current: { exists: currentTree.map.has(path) } });
-      continue;
-    }
-    if (!isTextPath(path)) {
-      frames.push({ path,
-        base: await fileState(adapter, baseTree.map, path),
-        applied: await fileState(adapter, appliedTree.map, path),
-        current: await fileState(adapter, currentTree.map, path)
-      });
-      continue;
-    }
-    frames.push({ path,
+    frames.push({
+      path,
       base: await fileState(adapter, baseTree.map, path),
       applied: await fileState(adapter, appliedTree.map, path),
       current: await fileState(adapter, currentTree.map, path)
@@ -324,9 +352,6 @@ async function markTicketUsed(key, ticket) {
 
 async function applyCascade(computed, previewId) {
   const plan = computed.plan;
-  const currentCommit = await computed.adapter.getCommit(computed.currentHead);
-  const currentTreeSha = text(currentCommit?.tree?.sha, 128);
-  if (!currentTreeSha) throw Object.assign(new Error('REVERSAL_CURRENT_TREE_MISSING'), { code: 'REVERSAL_CURRENT_TREE_MISSING' });
   const destinationTreeSha = text(plan?.cascade?.destinationTreeSha, 128);
   if (!destinationTreeSha) throw Object.assign(new Error('REVERSAL_DESTINATION_TREE_MISSING'), { code: 'REVERSAL_DESTINATION_TREE_MISSING' });
   const commit = await computed.adapter.createCommit(
@@ -340,6 +365,8 @@ async function applyCascade(computed, previewId) {
     throw Object.assign(new Error('REVERSAL_COMMIT_INTEGRITY_MISMATCH'), { code: 'REVERSAL_COMMIT_INTEGRITY_MISMATCH' });
   }
   await computed.adapter.updateBranch(computed.branch, commit.sha);
+  const branchHead = await headSha(computed.adapter, computed.branch);
+  if (branchHead !== commit.sha) throw Object.assign(new Error('REVERSAL_POST_WRITE_VERIFY_FAILED'), { code: 'REVERSAL_POST_WRITE_VERIFY_FAILED' });
   return { branch: computed.branch, commitSha: commit.sha, commitUrl: `https://github.com/${computed.adapter.owner}/${computed.adapter.repo}/commit/${commit.sha}`, previewId };
 }
 
@@ -457,25 +484,45 @@ async function applyPreview(payload = {}) {
 
 async function listReversible(payload = {}) {
   const projectId = text(payload?.projectId, 160);
+  if (!projectId) return [];
   const limit = Math.max(1, Math.min(100, Number(payload?.limit || 30)));
-  const [entries, states] = await Promise.all([
-    listOperationJournal({ status: 'ok', mode: 'write', projectId, limit: 300 }),
+  const settings = await getSettings();
+  const github = activeGithub(settings, projectId);
+  if (!github?.owner || !github?.repo) return [];
+  const [entries, historyEntries, states] = await Promise.all([
+    listOperationJournal({ status: 'ok', mode: 'write', limit: 500 }),
+    approvalHistoryOperations(projectId, github),
     loadStates()
   ]);
-  return entries
-    .filter(entry => text(entry?.result?.commitSha) && !['undo', 'redo'].includes(entry.origin) && !/^reversible\./.test(String(entry.tool || '')))
-    .slice(0, limit)
-    .map(entry => ({
-      id: entry.id,
-      tool: entry.tool,
-      origin: entry.origin,
-      finishedAt: entry.finishedAt,
-      commitSha: entry.result.commitSha,
-      paths: journalPaths(entry),
-      state: states[entry.id] || null,
-      canUndo: states[entry.id]?.lastDirection !== 'undo',
-      canRedo: states[entry.id]?.lastDirection === 'undo'
-    }));
+  const journalEntries = entries.filter(entry => {
+    if (!text(entry?.result?.commitSha) || ['undo', 'redo'].includes(entry.origin) || /^reversible\./.test(String(entry.tool || ''))) return false;
+    if (entry?.context?.projectId && entry.context.projectId !== projectId) return false;
+    if (entry?.context?.owner && entry.context.owner !== github.owner) return false;
+    if (entry?.context?.repo && entry.context.repo !== github.repo) return false;
+    return true;
+  });
+  const combined = [...journalEntries, ...historyEntries]
+    .sort((a, b) => (Date.parse(b.finishedAt || '') || 0) - (Date.parse(a.finishedAt || '') || 0));
+  const seenCommits = new Set();
+  const deduped = [];
+  for (const entry of combined) {
+    const commit = text(entry?.result?.commitSha, 128);
+    if (!commit || seenCommits.has(commit)) continue;
+    seenCommits.add(commit);
+    deduped.push(entry);
+  }
+  return deduped.slice(0, limit).map(entry => ({
+    id: entry.id,
+    tool: entry.tool,
+    origin: entry.origin,
+    finishedAt: entry.finishedAt,
+    commitSha: entry.result.commitSha,
+    paths: journalPaths(entry),
+    pathsResolvedFromCommitWhenEmpty: journalPaths(entry).length === 0,
+    state: states[entry.id] || null,
+    canUndo: states[entry.id]?.lastDirection !== 'undo',
+    canRedo: states[entry.id]?.lastDirection === 'undo'
+  }));
 }
 
 async function handle(action, payload = {}) {
@@ -487,9 +534,11 @@ async function handle(action, payload = {}) {
     snapshotUndoPrimary: false,
     defaultStrategy: 'preserve',
     threeWayMerge: true,
+    approvedAgentCommitsSupported: true,
     conflictingManualChangesSilentlyDiscarded: false,
     destructiveStrategies: ['replace-target', 'cascade'],
     cascadeMeaning: 'restore-entire-branch-tree-to-before-target-operation',
+    nonTextPolicy: 'cascade-only',
     previewRequired: true,
     oneShotHumanConfirmation: true,
     headLock: true,
@@ -532,6 +581,7 @@ export function installReversibleOperationsRuntime() {
     defaultStrategy: 'preserve',
     failClosed: true,
     humanIntentPreserving: true,
-    operationJournalAuthoritative: true
+    operationJournalAuthoritative: true,
+    approvedAgentHistoryBridge: true
   });
 }
