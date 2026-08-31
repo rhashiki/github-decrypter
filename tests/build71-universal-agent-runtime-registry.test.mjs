@@ -23,11 +23,12 @@ const runtime = read('background/agent-runtime-registry-runtime.js');
 const client = read('content/agent-runtime-registry-client.js');
 const entry = read('background/service-worker-entry.js');
 const roadmap = read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
+const currentBuild=Number(String(manifest.version||'').split('.').at(-1));
 
-assert.equal(manifest.version,'2.6.71');
-assert.match(manifest.version_name,/Build 71 · Universal Agent Runtime Registry/);
+assert.ok(Number.isInteger(currentBuild)&&currentBuild>=71,`Build71 cumulative contract requires build >=71, got ${manifest.version}`);
+assert.match(manifest.version_name,new RegExp(`Build ${currentBuild}\\b`));
 assert.equal(pkg.candidate,manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.71'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("AGENT_RUNTIME_REGISTRY_SCHEMA = 'ld-agent-runtime-registry/1'"));
 assert.equal(AGENT_RUNTIME_REGISTRY_SCHEMA,'ld-agent-runtime-registry/1');
 assert.equal(AGENT_RUNTIME_EVENT_SCHEMA,'ld-agent-runtime-event/1');
@@ -107,4 +108,4 @@ assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is 
 assert.match(roadmap,/Build 71 — Universal Agent Runtime Registry/);
 assert.match(roadmap,/Build 72 — Portable Skills v2/);
 
-console.log('Build71 Universal Agent Runtime Registry contract OK');
+console.log(`Build71 Universal Agent Runtime Registry cumulative contract OK on Build ${currentBuild}`);
