@@ -14,6 +14,7 @@ on:
       - 'content/portable-skills-client.js'
       - 'content/skill-router.js'
       - 'ui/portable-skills-v72.js'
+      - 'tests/build57-final-homologation.test.mjs'
       - 'tests/build71-universal-agent-runtime-registry.test.mjs'
       - 'tests/build72-portable-skills-v2.test.mjs'
       - '.github/workflows/v2.6-build72-portable-skills-v2.yml'
