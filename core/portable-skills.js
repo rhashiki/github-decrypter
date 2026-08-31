@@ -40,9 +40,7 @@ function parseScalar(raw = '') {
   if (value === 'false') return false;
   if (value === 'null') return null;
   if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
-  if (value.startsWith('[') && value.endsWith(']')) {
-    return value.slice(1,-1).split(',').map(item=>parseScalar(item)).filter(item=>item!==''&&item!=null);
-  }
+  if (value.startsWith('[') && value.endsWith(']')) return value.slice(1,-1).split(',').map(item=>parseScalar(item)).filter(item=>item!==''&&item!=null);
   return value;
 }
 
@@ -55,7 +53,6 @@ export function parseSkillMarkdown(source = '') {
   const body = input.slice(end+5).trim();
   if (!body) throw skillError('SKILL_BODY_REQUIRED');
   if (bytes(body) > PORTABLE_SKILL_LIMITS.bodyBytes) throw skillError('SKILL_BODY_TOO_LARGE');
-
   const meta = {};
   const lines = yaml.split('\n');
   for (let i=0;i<lines.length;i++) {
@@ -76,7 +73,6 @@ export function parseSkillMarkdown(source = '') {
     }
     meta[key] = parseScalar(raw);
   }
-
   const name = text(meta.name,PORTABLE_SKILL_LIMITS.nameChars+1).toLowerCase();
   const description = text(meta.description,PORTABLE_SKILL_LIMITS.descriptionChars+1);
   if (!name || name.length > PORTABLE_SKILL_LIMITS.nameChars || !NAME_RE.test(name) || name.includes('--')) throw skillError('SKILL_NAME_INVALID',{ name });
@@ -84,25 +80,10 @@ export function parseSkillMarkdown(source = '') {
   const compatibility = text(meta.compatibility,PORTABLE_SKILL_LIMITS.compatibilityChars+1);
   if (compatibility.length > PORTABLE_SKILL_LIMITS.compatibilityChars) throw skillError('SKILL_COMPATIBILITY_INVALID');
   const allowedToolsRaw = meta['allowed-tools'] ?? meta.allowed_tools ?? '';
-  const allowedTools = Array.isArray(allowedToolsRaw)
-    ? allowedToolsRaw.map(item=>text(item,160)).filter(Boolean)
-    : String(allowedToolsRaw||'').split(/[\s,]+/).map(item=>text(item,160)).filter(Boolean);
+  const allowedTools = Array.isArray(allowedToolsRaw) ? allowedToolsRaw.map(item=>text(item,160)).filter(Boolean) : String(allowedToolsRaw||'').split(/[\s,]+/).map(item=>text(item,160)).filter(Boolean);
   const tagsRaw = meta.tags;
   const tags = (Array.isArray(tagsRaw) ? tagsRaw : String(tagsRaw||'').split(',')).map(item=>text(item,80).toLowerCase()).filter(Boolean).slice(0,24);
-  return {
-    metadata:{
-      name,
-      description,
-      license:text(meta.license,240)||null,
-      compatibility:compatibility||null,
-      allowedTools:[...new Set(allowedTools)].slice(0,64),
-      owner:text(meta.owner,240)||null,
-      tags:[...new Set(tags)],
-      metadata:meta.metadata && typeof meta.metadata === 'object' ? clone(meta.metadata) : {}
-    },
-    body,
-    rawFrontmatter:yaml
-  };
+  return { metadata:{ name, description, license:text(meta.license,240)||null, compatibility:compatibility||null, allowedTools:[...new Set(allowedTools)].slice(0,64), owner:text(meta.owner,240)||null, tags:[...new Set(tags)], metadata:meta.metadata && typeof meta.metadata === 'object' ? clone(meta.metadata) : {} }, body, rawFrontmatter:yaml };
 }
 
 export function canonicalSkillPath(input = '') {
@@ -153,10 +134,8 @@ function normalizeBundleFiles(files = []) {
     let content = '';
     if (typeof file?.content === 'string') content = file.content;
     else if (typeof file?.base64 === 'string') {
-      try {
-        const raw = atob(file.base64);
-        content = td.decode(Uint8Array.from(raw,c=>c.charCodeAt(0)));
-      } catch { throw skillError('SKILL_FILE_ENCODING_INVALID',{ path }); }
+      try { const raw = atob(file.base64); content = td.decode(Uint8Array.from(raw,c=>c.charCodeAt(0))); }
+      catch { throw skillError('SKILL_FILE_ENCODING_INVALID',{ path }); }
     } else throw skillError('SKILL_FILE_CONTENT_REQUIRED',{ path });
     const size = bytes(content);
     if (size > PORTABLE_SKILL_LIMITS.singleFileBytes) throw skillError('SKILL_FILE_TOO_LARGE',{ path,size });
@@ -179,18 +158,7 @@ export function normalizeSkillPermissions(metadata = {}, { trust = 'imported', s
   const requestedWrites = requestedTools.filter(tool=>WRITE_TOOL_RE.test(tool));
   const scriptsRequested = requestedTools.some(tool=>/script|shell|terminal|execute/i.test(tool));
   const scriptsAllowed = scriptExecutionApproved === true && ['builtin','verified'].includes(trust);
-  return {
-    requestedTools,
-    requestedWrites,
-    scriptsRequested,
-    scriptsAllowed,
-    canRead:true,
-    canPropose:true,
-    canWriteAuthoritative:false,
-    canExpandScope:false,
-    requiresDecrypterApproval:requestedWrites.length>0 || scriptsRequested,
-    writeAuthority:false
-  };
+  return { requestedTools, requestedWrites, scriptsRequested, scriptsAllowed, canRead:true, canPropose:true, canWriteAuthoritative:false, canExpandScope:false, requiresDecrypterApproval:requestedWrites.length>0 || scriptsRequested, writeAuthority:false };
 }
 
 export async function buildPortableSkillPackage({ files = [], source = {}, trust = 'imported', enabled = true, pinned = false, scriptExecutionApproved = false } = {}) {
@@ -203,35 +171,8 @@ export async function buildPortableSkillPackage({ files = [], source = {}, trust
   const contentHash = await sha256Hex(digestInput);
   const sourceRevision = text(source?.revision,160)||null;
   const sourceKind = ['builtin','custom','github','bundle','legacy-cloud'].includes(String(source?.kind||'')) ? String(source.kind) : 'bundle';
-  const provenance = {
-    sourceKind,
-    sourceUrl,
-    sourceRevision,
-    importedAt:new Date().toISOString(),
-    contentHash,
-    signature:text(source?.signature,2000)||null,
-    signatureVerified:source?.signatureVerified===true
-  };
-  return {
-    schema:PORTABLE_SKILL_SCHEMA,
-    id:parsed.metadata.name,
-    slug:parsed.metadata.name,
-    display_name:text(source?.displayName,120)||parsed.metadata.name,
-    description:parsed.metadata.description,
-    metadata:parsed.metadata,
-    body:parsed.body,
-    files:normalizedFiles.map(file=>({ path:file.path, size:file.size, content:file.content })),
-    contentHash,
-    provenance,
-    trust:trustLevel,
-    permissions:normalizeSkillPermissions(parsed.metadata,{ trust:trustLevel, scriptExecutionApproved }),
-    enabled:enabled!==false,
-    pinned:Boolean(pinned),
-    auto_activation:source?.autoActivation!==false,
-    sourceImmutable:true,
-    cloudRequired:false,
-    writeAuthority:false
-  };
+  const provenance = { sourceKind, sourceUrl, sourceRevision, importedAt:new Date().toISOString(), contentHash, signature:text(source?.signature,2000)||null, signatureVerified:source?.signatureVerified===true };
+  return { schema:PORTABLE_SKILL_SCHEMA, id:parsed.metadata.name, slug:parsed.metadata.name, display_name:text(source?.displayName,120)||parsed.metadata.name, description:parsed.metadata.description, metadata:parsed.metadata, body:parsed.body, files:normalizedFiles.map(file=>({ path:file.path, size:file.size, content:file.content })), contentHash, provenance, trust:trustLevel, permissions:normalizeSkillPermissions(parsed.metadata,{ trust:trustLevel, scriptExecutionApproved }), enabled:enabled!==false, pinned:Boolean(pinned), auto_activation:source?.autoActivation!==false, sourceImmutable:true, cloudRequired:false, writeAuthority:false };
 }
 
 function legacyName(skill = {}) {
@@ -242,39 +183,18 @@ function legacyName(skill = {}) {
 function yamlQuote(value='') { return JSON.stringify(String(value??'')); }
 
 export async function portableSkillFromLegacy(skill = {}) {
+  const user = skill?.user && typeof skill.user === 'object' ? skill.user : {};
   const base = legacyName(skill);
   const custom = skill.custom===true || String(skill.slug||'').startsWith('custom-');
   const name = custom ? `custom-${base}`.slice(0,64).replace(/-+$/,'') : base;
   const description = text(skill.description || skill.use_when || `Use ${skill.display_name || name} when relevant to the request.`,PORTABLE_SKILL_LIMITS.descriptionChars).replace(/[<>]/g,'');
   const body = text(skill.content_md || skill.definition || skill.body || '',PORTABLE_SKILL_LIMITS.bodyBytes);
   const allowed = Array.isArray(skill.allowed_tools) ? skill.allowed_tools.join(' ') : text(skill.allowed_tools || '',1000);
-  const skillMd = [
-    '---',
-    `name: ${name}`,
-    `description: ${yamlQuote(description)}`,
-    ...(allowed ? [`allowed-tools: ${yamlQuote(allowed)}`] : []),
-    '---',
-    '',
-    `# ${text(skill.display_name || name,120)}`,
-    '',
-    body || `Use this skill only when its description matches the current request.`,
-    '',
-    skill.use_when ? `## Use When\n${text(skill.use_when,4000)}` : '',
-    skill.avoid_when ? `## Avoid When\n${text(skill.avoid_when,4000)}` : ''
-  ].filter(Boolean).join('\n');
-  return buildPortableSkillPackage({
-    files:[{path:'SKILL.md',content:skillMd}],
-    trust:skill.official!==false && !custom ? 'builtin' : 'custom',
-    enabled:skill.enabled!==false,
-    pinned:Boolean(skill.pinned),
-    source:{
-      kind:'legacy-cloud',
-      displayName:skill.display_name || name,
-      revision:text(skill.updated_at || skill.revision || '',160)||null,
-      autoActivation:skill.auto_activation!==false,
-      githubOnly:false
-    }
-  });
+  const skillMd = ['---',`name: ${name}`,`description: ${yamlQuote(description)}`,...(allowed ? [`allowed-tools: ${yamlQuote(allowed)}`] : []),'---','',`# ${text(skill.display_name || name,120)}`,'',body || `Use this skill only when its description matches the current request.`,'',skill.use_when ? `## Use When\n${text(skill.use_when,4000)}` : '',skill.avoid_when ? `## Avoid When\n${text(skill.avoid_when,4000)}` : ''].filter(Boolean).join('\n');
+  const enabled = (skill.enabled ?? user.enabled) !== false;
+  const pinned = Boolean(skill.pinned ?? user.pinned);
+  const autoActivation = (skill.auto_activation ?? user.auto_activation) !== false;
+  return buildPortableSkillPackage({ files:[{path:'SKILL.md',content:skillMd}], trust:skill.official!==false && !custom ? 'builtin' : 'custom', enabled, pinned, source:{ kind:'legacy-cloud', displayName:skill.display_name || name, revision:text(skill.updated_at || skill.revision || '',160)||null, autoActivation, githubOnly:false } });
 }
 
 function tokenSet(input='') {
@@ -295,12 +215,8 @@ export function routePortableSkills(command, skills = [], { explicit = [], limit
     if (score>0) scored.push({ skill, score });
   }
   scored.sort((a,b)=>b.score-a.score || String(a.skill.slug).localeCompare(String(b.skill.slug)));
-  return {
-    method:'portable-local-v2',
-    cloudUsed:false,
-    skills:scored.slice(0,Math.max(1,Math.min(16,Number(limit)||PORTABLE_SKILL_LIMITS.routeSkills))).map(item=>({ slug:item.skill.slug, score:item.score, contentHash:item.skill.contentHash })),
-    slugs:scored.slice(0,Math.max(1,Math.min(16,Number(limit)||PORTABLE_SKILL_LIMITS.routeSkills))).map(item=>item.skill.slug)
-  };
+  const selected = scored.slice(0,Math.max(1,Math.min(16,Number(limit)||PORTABLE_SKILL_LIMITS.routeSkills)));
+  return { method:'portable-local-v2', cloudUsed:false, skills:selected.map(item=>({ slug:item.skill.slug, score:item.score, contentHash:item.skill.contentHash })), slugs:selected.map(item=>item.skill.slug) };
 }
 
 export async function stagePortableSkillForRun(skill, { contextBytes = PORTABLE_SKILL_LIMITS.contextBytes, includeReferences = true, allowScripts = false } = {}) {
@@ -310,10 +226,7 @@ export async function stagePortableSkillForRun(skill, { contextBytes = PORTABLE_
   let used = 0;
   const ordered = skill.files.filter(file=>file.path==='SKILL.md' || (includeReferences && file.path.startsWith('references/')) || file.path.startsWith('assets/') || (allowScripts && skill.permissions.scriptsAllowed && file.path.startsWith('scripts/')));
   for (const file of ordered) {
-    if (file.path.startsWith('assets/')) {
-      stagedFiles.push({ path:file.path, size:file.size, contentOmitted:true });
-      continue;
-    }
+    if (file.path.startsWith('assets/')) { stagedFiles.push({ path:file.path, size:file.size, contentOmitted:true }); continue; }
     const remaining = max-used;
     if (remaining<=0) break;
     const content = String(file.content||'');
@@ -324,35 +237,9 @@ export async function stagePortableSkillForRun(skill, { contextBytes = PORTABLE_
     stagedFiles.push({ path:file.path, size:bytes(chunk), content:chunk, truncated:chunk.length<content.length });
   }
   const fingerprint = await sha256Hex(`${skill.contentHash}\0${stagedFiles.map(file=>`${file.path}:${file.size}`).join('|')}`);
-  return {
-    schema:PORTABLE_SKILL_STAGE_SCHEMA,
-    skill:{ slug:skill.slug, display_name:skill.display_name, description:skill.description, trust:skill.trust, contentHash:skill.contentHash },
-    files:clone(stagedFiles),
-    budget:{ maxBytes:max, usedBytes:used },
-    permissions:{ ...skill.permissions, canWriteAuthoritative:false, writeAuthority:false },
-    sourceImmutable:true,
-    stageFingerprint:fingerprint,
-    createdAt:new Date().toISOString()
-  };
+  return { schema:PORTABLE_SKILL_STAGE_SCHEMA, skill:{ slug:skill.slug, display_name:skill.display_name, description:skill.description, trust:skill.trust, contentHash:skill.contentHash }, files:clone(stagedFiles), budget:{ maxBytes:max, usedBytes:used }, permissions:{ ...skill.permissions, canWriteAuthoritative:false, writeAuthority:false }, sourceImmutable:true, stageFingerprint:fingerprint, createdAt:new Date().toISOString() };
 }
 
 export function skillPublicRecord(skill) {
-  return {
-    schema:PORTABLE_SKILL_SCHEMA,
-    slug:skill.slug,
-    display_name:skill.display_name,
-    description:skill.description,
-    category:skill.metadata?.tags?.[0] || (skill.trust==='custom'?'custom':'portable'),
-    official:skill.trust==='builtin'||skill.trust==='verified',
-    custom:skill.trust==='custom',
-    enabled:skill.enabled!==false,
-    pinned:Boolean(skill.pinned),
-    auto_activation:skill.auto_activation!==false,
-    trust:skill.trust,
-    contentHash:skill.contentHash,
-    provenance:clone(skill.provenance),
-    permissions:clone(skill.permissions),
-    cloudRequired:false,
-    writeAuthority:false
-  };
+  return { schema:PORTABLE_SKILL_SCHEMA, slug:skill.slug, display_name:skill.display_name, description:skill.description, category:skill.metadata?.tags?.[0] || (skill.trust==='custom'?'custom':'portable'), official:skill.trust==='builtin'||skill.trust==='verified', custom:skill.trust==='custom', enabled:skill.enabled!==false, pinned:Boolean(skill.pinned), auto_activation:skill.auto_activation!==false, trust:skill.trust, contentHash:skill.contentHash, provenance:clone(skill.provenance), permissions:clone(skill.permissions), cloudRequired:false, writeAuthority:false };
 }
