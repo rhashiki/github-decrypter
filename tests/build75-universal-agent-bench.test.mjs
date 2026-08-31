@@ -7,11 +7,13 @@ const pkg=JSON.parse(read('release/runtime-package.json'));
 const settings=read('settings/config.js');
 const roadmap=read('docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md');
 const benchmark=`${read('benchmark/universal-agent-bench-v1.mjs')}\n${read('benchmark/universal-agent-bench.mjs')}`;
+const currentBuild=Number(String(manifest.version||'').split('.')[2]||0);
 
-assert.equal(manifest.version,'2.6.75');
-assert.match(manifest.version_name,/Build 75 · Universal Agent Bench \/ External-Agent Hardening/);
+assert.ok(currentBuild>=75,`Build75 contract requires successor >=75, got ${manifest.version}`);
+if(currentBuild===75)assert.match(manifest.version_name,/Build 75 · Universal Agent Bench \/ External-Agent Hardening/);
+else assert.match(manifest.version_name,new RegExp(`Build ${currentBuild}`));
 assert.equal(pkg.candidate,manifest.version);
-assert.ok(settings.includes("VERSION = '2.6.75'"));
+assert.ok(settings.includes(`VERSION = '${manifest.version}'`));
 assert.ok(settings.includes("UNIVERSAL_AGENT_BENCH_SCHEMA = 'ld-universal-agent-bench/1'"));
 assert.equal(UNIVERSAL_AGENT_BENCH_SCHEMA,'ld-universal-agent-bench/1');
 assert.equal(UNIVERSAL_AGENT_BENCH_BUILD,75);
@@ -37,4 +39,4 @@ assert.match(pkg.notes,/No OTA metadata, GitHub Release or store publication is 
 assert.match(roadmap,/Build 75 — Universal Agent Bench \/ External-Agent Hardening/);
 assert.match(roadmap,/Final cumulative homologation after Build 75/);
 
-console.log(`Build75 Universal Agent Bench contract OK · ${result.passed}/${result.total} adversarial probes passed`);
+console.log(`Build75 Universal Agent Bench cumulative contract OK on Build ${currentBuild} · ${result.passed}/${result.total} adversarial probes passed`);
