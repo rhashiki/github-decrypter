@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.67",
+  "candidate":"2.6.68",
   "paths":["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build67 adds the durable local Continuity Engine with task/step state machines, leases, idempotency keys, restart recovery, compact state reconstruction, pre-write Git HEAD checkpoints, Operation Journal correlation and fail-closed verification of ambiguous writes before retry. Read/inference steps may resume after interruption; writes with unknown outcome enter verification_required and are never repeated automatically. Completed write steps replay references instead of duplicating commits. Raw prompts, raw model outputs and raw file contents are not persisted by Continuity Engine. Build66 Smart Undo/Redo, USER_EDIT > AI_EDIT, Build65 Scope Intelligence, Context Engine v2, MCP 2026-07-28 Trust Gateway, curated MCP marketplace, Shadow Build, Validation Gate and Guarded Commit guarantees remain cumulative. No OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build68 adds the direct loopback Local Agent Orchestrator and local-only Model Router. Decrypter can route among configurable local tiers using large->medium->small degradation, call Context Engine v2 and provider-neutral read tools automatically, pause every write for explicit human approval bound to the exact SHA-256 proposal digest, re-evaluate Scope Intelligence v2 and Human Intent at approval time, execute protected writes through Tool Runtime + Build67 Continuity idempotency, then verify Git diff and attempt capability-gated diagnostics before repair iterations. RUNTIME_TOKEN is session-only; durable agent state stores digests/metadata rather than raw prompts or raw model output. Paid and remote fallback are disabled in the local runtime/router/orchestrator. Build67 Continuity Engine, Build66 Smart Undo/Redo, USER_EDIT > AI_EDIT, Build65 Scope Intelligence, Context Engine v2, MCP 2026-07-28 Trust Gateway, curated MCP marketplace, Shadow Build, Validation Gate and Guarded Commit guarantees remain cumulative. No OTA metadata, GitHub Release or store publication is authorized."
 }
