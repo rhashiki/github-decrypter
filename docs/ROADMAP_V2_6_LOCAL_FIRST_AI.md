@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 66 is the current Smart Undo/Redo + Reversible Operations baseline. Build 67 — Continuity Engine is next.
+Status baseline: Build 67 is the current Continuity Engine baseline. Build 68 — Local Agent Orchestrator + Model Router is next.
 
 ## Product invariants
 
@@ -124,14 +124,22 @@ Core components:
 
 **Goal:** make work independent of one LLM request/process lifetime.
 
+**Current baseline:** implemented as a durable local task/step state machine in the Decrypter runtime. Every resumable step has an idempotency key, bounded attempts and a lease. Service-worker/browser restarts recover expired leases. Read/inference steps can resume from the last verified step. A write whose outcome becomes unknown is moved to `verification_required` and cannot be repeated until the runtime proves either that the operation already completed or that no write happened.
+
+Write crash verification uses two independent signals:
+- Operation Journal correlation by `taskId + idempotencyKey` to recover a confirmed `operationId` / `commitSha`.
+- A pre-write Git HEAD checkpoint. If no successful journal entry exists and HEAD is unchanged, the write is proven absent and retry becomes safe. If HEAD changed without conclusive correlation, the engine remains fail-closed.
+
 Scope:
-- Durable operation journal.
+- Durable operation journal integration.
 - Step checkpoints.
 - Resumable task state machine.
 - Worker/model crash recovery.
 - Idempotency keys for tool steps.
 - Resume from last verified step rather than restarting the task.
 - Compact state reconstruction for the local model.
+- One-minute lease recovery alarm plus recovery on service-worker/browser startup.
+- No raw prompt, raw model-output or raw file-content persistence in the Continuity state.
 
 ## Build 68 — Local Agent Orchestrator + Model Router
 
@@ -144,6 +152,7 @@ Scope:
 - No paid fallback.
 - Plan → context → tools → diagnostics → repair loop.
 - Stop conditions, iteration budgets based on safety/quality rather than paid-token quotas.
+- Consume the Build 67 Continuity Engine so an orchestration run can restart from the next verified step after worker/model/runtime interruption.
 
 ## Build 69 — DecrypterBench v2 / Hardening
 
