@@ -29,6 +29,7 @@ import { installContinuityRuntime } from './continuity-runtime.js';
 import { installLocalModelRuntime } from './local-model-runtime.js';
 import { installLocalAgentOrchestrator } from './local-agent-orchestrator.js';
 import { installAgentRuntimeRegistryRuntime } from './agent-runtime-registry-runtime.js';
+import { installPortableSkillsRuntime } from './portable-skills-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -59,3 +60,4 @@ installContinuityRuntime();
 installLocalModelRuntime();
 installLocalAgentOrchestrator();
 installAgentRuntimeRegistryRuntime();
+installPortableSkillsRuntime();
