@@ -93,7 +93,7 @@ assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is
 assert.match(roadmap, /Build 67 — Continuity Engine/);
 assert.match(roadmap, /Build 68 — Local Agent Orchestrator \+ Model Router/);
 if (currentBuild >= 68) {
-  const baseline = roadmap.match(/Status baseline: Build (\d+)/);
+  const baseline = roadmap.match(/Status baseline:\s*(?:\*\*)?Build\s+(\d+)/);
   assert.ok(baseline && Number(baseline[1]) >= 68, `roadmap baseline must be >=68 for successor builds, got ${baseline?.[1] || 'missing'}`);
 }
 assert.ok(pkg.forbidden_roots.includes('runtime'));
