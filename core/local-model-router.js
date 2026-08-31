@@ -34,7 +34,8 @@ export function classifyLocalTask({ command = '', role = '', iteration = 0, fail
   }
 
   let score = 2;
-  if (/\b(arquitet|architecture|refactor|migrat|multi[- ]?file|security|auth|schema|database|concurrency|race|performance|debug complex|root cause)\b/i.test(prompt)) score += 3;
+  if (/\b(arquitet(?:ura|ural)?|architecture|refactor|migrat|multi[- ]?file|security|auth|schema|database|concurrency|race|performance|debug complex|root cause)\b/i.test(prompt)) score += 3;
+  if (/\b(vários|varios|múltiplos|multiplos)\s+arquivos\b/i.test(prompt)) score += 2;
   if (/\b(fix|corrig|implement|build|feature|patch|repair|diagnostic)\b/i.test(prompt)) score += 1;
   if (Number(contextFileCount || 0) >= 6) score += 2;
   if (Number(contextFileCount || 0) >= 12) score += 1;
