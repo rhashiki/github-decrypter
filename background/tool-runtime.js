@@ -5,6 +5,7 @@ import {
   claimContinuityStep,
   completeContinuityStep,
   failContinuityStep,
+  checkpointContinuityStep,
   continuityDigest
 } from '../core/continuity-engine.js';
 
@@ -107,6 +108,24 @@ function continuityReplay(tool, ref = {}) {
   };
 }
 
+async function checkpointWriteHead(runtime, github, continuity) {
+  if (!continuity) return null;
+  const ref = await runtime.adapter.getRef(github.branch || 'main');
+  const headSha = text(ref?.object?.sha || ref?.sha).toLowerCase();
+  if (!headSha) throw Object.assign(new Error('CONTINUITY_PREWRITE_HEAD_REQUIRED'), { code: 'CONTINUITY_PREWRITE_HEAD_REQUIRED' });
+  await checkpointContinuityStep({
+    taskId: continuity.taskId,
+    idempotencyKey: continuity.idempotencyKey,
+    checkpoint: {
+      type: 'git-head-before-write',
+      reference: headSha,
+      digest: await continuityDigest(`${github.owner}/${github.repo}:${github.branch || 'main'}:${headSha}`),
+      verified: true
+    }
+  });
+  return headSha;
+}
+
 async function handle(action, payload = {}) {
   const op = text(action || 'list').toLowerCase();
   if (op === 'journal') return { schema: 'ld-operation-journal/1', entries: await toolJournal(payload?.filters || {}) };
@@ -121,6 +140,7 @@ async function handle(action, payload = {}) {
       tools: runtime.list(),
       writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
       continuityAware: true,
+      preWriteHeadCheckpoint: true,
       ambiguousWriteRetry: 'verification-required',
       fakeDiagnostics: false,
       fakeLsp: false
@@ -141,6 +161,7 @@ async function handle(action, payload = {}) {
     lease = await claimContinuityStep(continuity);
     if (lease.replay) return continuityReplay(tool, lease.resultRef || {});
     if (!lease.claimed) throw Object.assign(new Error('CONTINUITY_STEP_BUSY'), { code: 'CONTINUITY_STEP_BUSY' });
+    if (tool.mode === 'write') await checkpointWriteHead(runtime, github, continuity);
   }
 
   try {
@@ -149,6 +170,7 @@ async function handle(action, payload = {}) {
       authorization,
       context: {
         taskId: text(payload?.taskId || continuity?.taskId).slice(0, 160),
+        idempotencyKey: text(continuity?.idempotencyKey).slice(0, 240),
         parentOperationId: text(payload?.parentOperationId).slice(0, 160)
       }
     });
@@ -222,6 +244,7 @@ export function installToolRuntime() {
     writePolicy: 'validated-approval+scope-intelligence-v2+continuity-idempotency',
     scopeIntelligenceRequiredForWrites: true,
     continuityAware: true,
+    preWriteHeadCheckpoint: true,
     duplicateWritesPreventedByIdempotency: true,
     ambiguousWriteRetryRequiresVerification: true,
     operationJournal: true,
