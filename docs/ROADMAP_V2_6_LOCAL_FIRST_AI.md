@@ -1,6 +1,6 @@
 # Lovable Decrypter v2.6 — Local-First AI Roadmap
 
-Status baseline: Build 60 is the current Local Model Runtime baseline.
+Status baseline: Build 66 is the current Smart Undo/Redo + Reversible Operations baseline. Build 67 — Continuity Engine is next.
 
 ## Product invariants
 
@@ -98,6 +98,8 @@ Scope:
 ## Build 66 — Smart Undo/Redo + Reversible Operations
 
 **Goal:** move from snapshot undo to operation-based inversion.
+
+**Current baseline:** implemented with Git-reconstructed `BASE / OPERATION / CURRENT` states, exact operation inversion, three-way hunk merge, default preservation of later manual edits, symmetric Redo, preview-before-write, one-shot HEAD-locked confirmation tickets, approved-agent history bridge, and explicit destructive `replace-target` / `cascade` paths. Conflicting manual changes are never silently discarded. Cascade restores the whole branch tree to the snapshot before the target operation and is intentionally separated by a destructive warning/confirmation.
 
 When a target AI operation has later user edits, offer safe choices such as:
 - Undo only the AI operation while preserving later user edits.
