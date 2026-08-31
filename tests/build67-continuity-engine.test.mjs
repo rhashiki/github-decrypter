@@ -92,7 +92,10 @@ assert.match(pkg.notes, /MCP 2026-07-28 Trust Gateway/);
 assert.match(pkg.notes, /No OTA metadata, GitHub Release or store publication is authorized/);
 assert.match(roadmap, /Build 67 — Continuity Engine/);
 assert.match(roadmap, /Build 68 — Local Agent Orchestrator \+ Model Router/);
-if (currentBuild >= 68) assert.match(roadmap, /Status baseline: Build 68/);
+if (currentBuild >= 68) {
+  const baseline = roadmap.match(/Status baseline: Build (\d+)/);
+  assert.ok(baseline && Number(baseline[1]) >= 68, `roadmap baseline must be >=68 for successor builds, got ${baseline?.[1] || 'missing'}`);
+}
 assert.ok(pkg.forbidden_roots.includes('runtime'));
 assert.ok(!JSON.stringify(manifest).includes('runtime/decrypter-local'));
 
