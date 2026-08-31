@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.66",
+  "candidate":"2.6.67",
   "paths":["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build66 adds operation-based Smart Undo/Redo with Git-reconstructed BASE/OPERATION/CURRENT states, three-way hunk inversion, default preservation of later human edits, conflict-first behavior, symmetric redo, one-shot preview tickets locked to HEAD, destructive replace-target and cascade strategies with separate human confirmation, and reversal events recorded back into the Operation Journal. USER_EDIT > AI_EDIT and Build65 Scope Intelligence guarantees remain cumulative. Existing Context Engine v2, MCP 2026-07-28 Trust Gateway, curated MCP marketplace, Shadow Build, Validation Gate and Guarded Commit guarantees remain cumulative. No raw project file contents are persisted in the Operation Journal. No OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build67 adds the durable local Continuity Engine with task/step state machines, leases, idempotency keys, restart recovery, compact state reconstruction, pre-write Git HEAD checkpoints, Operation Journal correlation and fail-closed verification of ambiguous writes before retry. Read/inference steps may resume after interruption; writes with unknown outcome enter verification_required and are never repeated automatically. Completed write steps replay references instead of duplicating commits. Raw prompts, raw model outputs and raw file contents are not persisted by Continuity Engine. Build66 Smart Undo/Redo, USER_EDIT > AI_EDIT, Build65 Scope Intelligence, Context Engine v2, MCP 2026-07-28 Trust Gateway, curated MCP marketplace, Shadow Build, Validation Gate and Guarded Commit guarantees remain cumulative. No OTA metadata, GitHub Release or store publication is authorized."
 }
