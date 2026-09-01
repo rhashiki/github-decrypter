@@ -57,8 +57,6 @@ assert.equal(app.all_frames, false);
 assert.match(launcher, /canonical-v11/);
 assert.ok(client.includes("type: 'ld84.runtime.command'"));
 assert.ok(client.includes('function integrationModal('));
-assert.ok(client.includes("manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'"));
-assert.ok(client.includes('manageResources.dataset.ldResourceManage = moduleId'));
 assert.ok(account.includes("type: 'ld84.account.activate'"));
 assert.ok(polish.includes("MONITOR_KEY = 'ld84_monitor_enabled'"));
 assert.ok(polish.includes("parityButton('editor-direct', 'Editor Direto'"));
@@ -67,13 +65,23 @@ assert.ok(resourceManager.includes("type: 'ld84.integration.resources.status'"))
 assert.ok(resourceManager.includes("type: 'ld84.integration.resources.save'"));
 assert.ok(resourceManager.includes('Gerenciar acesso no GitHub'));
 assert.ok(resourceManager.includes('Salvar seleção'));
+assert.ok(!resourceManager.includes('function injectAction('), 'resource manager must not inject a second detail action');
+assert.ok(!resourceManager.includes('refreshInjection'), 'resource manager must not own UI injection');
 
-assert.ok(resourceEntrypoints.includes("title !== 'Integrações'"));
-assert.ok(resourceEntrypoints.includes("makeFlyEntry('github', 'GitHub · Gerenciar repositórios')"));
-assert.ok(resourceEntrypoints.includes("makeFlyEntry('supabase', 'Supabase · Gerenciar projetos')"));
-assert.ok(resourceEntrypoints.includes('data-ld-resource-entrypoint'));
+assert.ok(resourceEntrypoints.includes('function removeTopLevelResourceEntries('));
+assert.ok(resourceEntrypoints.includes("flyout.querySelectorAll('[data-ld-resource-entrypoint],.ld84-resource-entry')"));
+assert.ok(resourceEntrypoints.includes('function ensureSingleNestedEntry('));
+assert.ok(resourceEntrypoints.includes("for (const node of actions.querySelectorAll('[data-ld-resource-manage]')) node.remove()"));
+assert.ok(resourceEntrypoints.includes("button.dataset.ldResourceCanonicalDetail = integration"));
+assert.ok(resourceEntrypoints.includes("label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'"));
+assert.ok(resourceEntrypoints.includes('button.append(actionIcon(integration), label)'));
+assert.ok(resourceEntrypoints.includes("['M5 4h14v16H5z','M8 8h8','M8 12h8','M8 16h5']"));
+assert.ok(resourceEntrypoints.includes("'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z'"));
+assert.ok(!resourceEntrypoints.includes('GitHub · Gerenciar repositórios'), 'resource action must not remain top-level in integrations');
+assert.ok(!resourceEntrypoints.includes('Supabase · Gerenciar projetos'), 'resource action must not remain top-level in integrations');
+assert.ok(!resourceEntrypoints.includes('makeFlyEntry('), 'top-level resource entry builder must be removed');
+assert.ok(resourceEntrypoints.includes('fitDetail(shadow, detail)'));
 assert.ok(resourceEntrypoints.includes('queueMicrotask'));
-assert.ok(resourceEntrypoints.includes('ensureDetailEntry'));
 
 assert.ok(runtime.includes("mode: 'event-driven'"));
 assert.ok(runtime.includes('activeHeavyRuntimes: 0'));
@@ -90,9 +98,7 @@ assert.ok(supabaseBackend.includes('project_discovery:listed.diagnostics'));
 assert.ok(selectionBackend.includes('selected_repositories'));
 assert.ok(selectionBackend.includes('selected_projects'));
 
-for (const [name, source] of Object.entries({
-  launcher, client, account, polish, resourceManager, resourceEntrypoints, runtime, runtimeWrapper
-})) {
+for (const [name, source] of Object.entries({ launcher, client, account, polish, resourceManager, resourceEntrypoints, runtime, runtimeWrapper })) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
   assert.ok(!/setInterval\s*\(/.test(source), `${name}: setInterval forbidden`);
   assert.ok(!/\.inert\s*=|setAttribute\(\s*['\"]inert/.test(source), `${name}: inert takeover forbidden`);
@@ -142,13 +148,13 @@ for (const token of ['ui-mount-guardian','composer-guardian','composer-bridge-v3
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/7',
+  schema: 'ld-build84-clean-foundation/8',
   version: manifest.version,
   visualAuthorities: 1,
   globalObservers: 0,
   continuousPolling: 0,
   activeHeavyRuntimesAtBoot: 0,
-  resourceEntryVisibility: 'integrations-flyout+detail+modal',
+  resourceEntryVisibility: 'single-nested-detail-action',
   resourceSelection: 'server-side-allowlist',
   legacyDomStackShipped: false,
   functionalLossAllowed: false
