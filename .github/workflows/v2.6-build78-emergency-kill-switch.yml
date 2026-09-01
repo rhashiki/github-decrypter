@@ -1,0 +1,16 @@
+name: v2.6 Build 78 · Emergency Kill Switch
+on:
+  push:
+    branches: [main, v2.6.78-emergency-kill-switch]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node tests/build78-emergency-kill-switch.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
