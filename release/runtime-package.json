@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.79",
+  "candidate":"2.6.80",
   "paths":["manifest.json","assets","diagnostic","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build79 Diagnostic Minimal Runtime is the first controlled reactivation after the Chrome-wide freeze incident. The shipped extension has no background service worker, no permissions, no host_permissions, no optional permissions, no network runtime, no storage runtime, no polling, no MutationObserver, no Composer Guardian, no Composer Bridge, and no Builds70-76 execution modules. A single document_idle content script runs only on lovable.dev and subdomains, mounts one Shadow DOM host with a local FAB and diagnostic panel, and registers only one click listener plus an optional one-shot DOMContentLoaded listener. The dormant update-manager artifact remains unreferenced by the manifest and cannot execute. This build exists solely to test whether minimal DOM injection is stable before any functional module is restored."
+  "notes":"Build80 Diagnostic FAB Injection keeps the Build79 minimal runtime but makes Lovable injection explicit and Trusted-Types-safe. The shipped extension still has no background service worker, no general permissions, no optional permissions, no network runtime, no storage runtime, no polling, no MutationObserver, no Composer Guardian, no Composer Bridge, and no functional Builds70-76 runtime. Host access is limited explicitly to lovable.dev and its subdomains. The single document_start content script mounts one fixed Shadow DOM FAB using createElement/textContent only, never innerHTML, and registers only one click listener plus a one-shot DOMContentLoaded fallback if documentElement is not yet available. The dormant update-manager artifact remains unreferenced by the manifest and cannot execute. This build exists solely to prove visible FAB injection while preserving the stable no-leak diagnostic baseline."
 }
