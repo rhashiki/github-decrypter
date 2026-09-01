@@ -46,7 +46,6 @@
       #ld84-resource-manager-modal .ld84-rm-meta{display:block;margin-top:3px;color:#8391aa;font:11px/1.35 Arial,sans-serif;overflow-wrap:anywhere}
       #ld84-resource-manager-modal .ld84-rm-empty{padding:18px;border:1px dashed rgba(255,255,255,.10);border-radius:13px;color:#8391aa;text-align:center;font:12px/1.45 Arial,sans-serif}
       #ld84-resource-manager-modal .ld84-rm-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:9px;margin-top:16px}
-      #detail .action[data-ld-resource-manage]{margin-top:2px!important}
     `;
   }
 
@@ -102,7 +101,6 @@
 
   async function openManager(shadow, integration) {
     const modal = createManager(shadow, integration);
-    let snapshot = null;
 
     const load = async () => {
       modal.status.textContent = 'Atualizando recursos autorizados…';
@@ -114,7 +112,7 @@
         modal.status.textContent = result?.message || result?.code || 'Falha ao consultar recursos.';
         return;
       }
-      snapshot = result;
+
       const available = Array.isArray(result.available) ? result.available : [];
       const selected = new Set(Array.isArray(result.selected) ? result.selected : []);
       modal.status.textContent = `${selected.size} de ${available.length} ${integration === 'github' ? 'repositório(s)' : 'projeto(s)'} disponíveis ao Decrypter.`;
@@ -176,33 +174,12 @@
           modal.status.textContent = saved?.message || saved?.code || 'Não foi possível salvar.';
           return;
         }
-        snapshot = saved;
         modal.status.textContent = `${selectedValues.length} de ${(saved.available || []).length} ${integration === 'github' ? 'repositório(s)' : 'projeto(s)'} disponíveis ao Decrypter. Seleção salva.`;
       });
       modal.actions.append(cancel, save);
     };
 
     await load();
-    return snapshot;
-  }
-
-  function injectAction(shadow) {
-    const detail = shadow.getElementById('detail');
-    if (!detail?.classList.contains('show')) return;
-    const integration = String(detail.dataset.module || '');
-    if (!['github', 'supabase'].includes(integration)) return;
-    const actions = detail.querySelector('.actions');
-    if (!actions || actions.querySelector('[data-ld-resource-manage]')) return;
-    const node = document.createElement('button');
-    node.type = 'button';
-    node.className = 'action';
-    node.dataset.ldResourceManage = integration;
-    const label = document.createElement('span');
-    label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos';
-    const arrow = document.createElement('strong');
-    arrow.textContent = '›';
-    node.append(label, arrow);
-    actions.appendChild(node);
   }
 
   function bind() {
@@ -212,24 +189,13 @@
     if (shadow.__ld84IntegrationResourceManagerBound) return true;
     Object.defineProperty(shadow, '__ld84IntegrationResourceManagerBound', { value: true, configurable: false });
 
-    const style = document.createElement('style');
-    style.id = 'ld84-resource-manager-detail-style';
-    style.textContent = '#detail .action[data-ld-resource-manage]{display:flex!important}';
-    shadow.appendChild(style);
-
-    const refreshInjection = () => queueMicrotask(() => injectAction(shadow));
     shadow.addEventListener('click', event => {
       const manage = event.target?.closest?.('[data-ld-resource-manage]');
-      if (manage) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        openManager(shadow, String(manage.dataset.ldResourceManage || '')).catch(() => {});
-        return;
-      }
-      refreshInjection();
+      if (!manage) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openManager(shadow, String(manage.dataset.ldResourceManage || '')).catch(() => {});
     });
-    shadow.addEventListener('mouseover', refreshInjection);
-    injectAction(shadow);
     return true;
   }
 
