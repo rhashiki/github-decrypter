@@ -1,0 +1,18 @@
+name: v2.6 Build 81 · Diagnostic UI Shell
+on:
+  push:
+    branches: [main, v2.6.81-diagnostic-ui-shell]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check diagnostic/ui-shell-runtime.js
+      - run: node --check tests/build81-diagnostic-ui-shell.test.mjs
+      - run: node tests/build81-diagnostic-ui-shell.test.mjs
+      - run: node scripts/release-preflight.mjs --candidate
