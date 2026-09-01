@@ -2,9 +2,9 @@
   "schema":"ld-runtime-package/1",
   "candidate":"2.6.82",
   "paths":["manifest.json","assets","launcher"],
-  "excluded_paths":["assets/fab.png"],
+  "excluded_paths":[],
   "forbidden_roots":[".github","ai","background","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build82 establishes launcher/launcher-runtime.js as the only shipped UI authority. The runtime package contains only manifest.json, extension icons and the canonical launcher. Legacy ui/, diagnostic shells, fab artwork, fallback mount guardians, extension-owned chat, update-manager runtime, background/service-worker code, provider runtimes, storage, network, polling, timers and MutationObserver are excluded from the shipped surface. Functional Builds60-75 engines remain source-only for controlled future reattachment through the canonical launcher."
+  "notes":"Build82 establishes launcher/launcher-runtime.js as the only shipped UI authority. The runtime package contains only manifest.json, extension icons and the canonical launcher. Legacy ui/, diagnostic shells, fab artwork, fallback mount guardians, extension-owned chat, update-manager runtime, background/service-worker code, provider runtimes, storage, network, polling, timers and MutationObserver are absent from the shipped surface. Functional Builds60-75 engines remain source-only for controlled future reattachment through the canonical launcher."
 }
