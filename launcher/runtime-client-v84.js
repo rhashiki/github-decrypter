@@ -61,7 +61,9 @@
         try {
           const link = new URL(projectLink.href, location.href);
           const parts = link.pathname.split('/').filter(Boolean);
-          const index = Math.max(parts.indexOf('projects'), parts.indexOf('project'));
+          const projectIndex = parts.indexOf('projects');
+          const singularIndex = parts.indexOf('project');
+          const index = projectIndex >= 0 ? projectIndex : singularIndex;
           if (index >= 0 && parts[index + 1]) projectId = parts[index + 1];
         } catch (_) {}
       }
@@ -90,6 +92,25 @@
     }
   }
 
+  function integrationWindow(moduleId, action) {
+    if (action !== 'open' || !['github', 'supabase'].includes(moduleId)) return null;
+    try {
+      const popup = window.open('about:blank', '_blank');
+      if (popup) {
+        try { popup.opener = null; } catch (_) {}
+        try { popup.document.title = 'Lovable Decrypter · Conectando'; } catch (_) {}
+      }
+      return popup;
+    } catch {
+      return null;
+    }
+  }
+
+  function closePendingWindow(popup) {
+    if (!popup) return;
+    try { if (!popup.closed) popup.close(); } catch (_) {}
+  }
+
   async function handleAction(shadow, button) {
     const detail = shadow.getElementById('detail');
     const moduleId = String(detail?.dataset?.module || '');
@@ -97,6 +118,7 @@
     const action = ACTIONS[label];
     if (!moduleId || !action) return;
 
+    const popup = integrationWindow(moduleId, action);
     window.dispatchEvent(new CustomEvent('ld84:module-action', { detail: { module: moduleId, action, label } }));
     setFoot(shadow, moduleId, `Build 84 · ${label} · consultando Runtime Bus…`);
 
@@ -105,12 +127,26 @@
 
     const result = await send(message);
     if (!result?.ok) {
+      closePendingWindow(popup);
       setFoot(shadow, moduleId, `Build 84 · ${label} · ${result?.code || 'RUNTIME_ERROR'}${result?.message ? ` · ${result.message}` : ''}`);
       return;
     }
 
     if (result.openUrl) {
-      try { window.open(String(result.openUrl), '_blank', 'noopener,noreferrer'); } catch (_) {}
+      let navigated = false;
+      if (popup) {
+        try {
+          if (!popup.closed) {
+            popup.location.replace(String(result.openUrl));
+            navigated = true;
+          }
+        } catch (_) {}
+      }
+      if (!navigated) {
+        try { window.open(String(result.openUrl), '_blank', 'noopener,noreferrer'); } catch (_) {}
+      }
+    } else {
+      closePendingWindow(popup);
     }
 
     if (result.summary) {
