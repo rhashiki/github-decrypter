@@ -1,0 +1,5 @@
+.ld2-composer-guardian-badge{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 8px;border:1px solid rgba(57,255,132,.28);border-radius:999px;font:700 10px/1 Arial,sans-serif;letter-spacing:.04em;white-space:nowrap;background:rgba(0,0,0,.24);backdrop-filter:blur(10px)}
+.ld2-composer-guardian-badge[data-state="ok"]{color:#39ff84;border-color:rgba(57,255,132,.48);box-shadow:0 0 14px rgba(57,255,132,.12)}
+.ld2-composer-guardian-badge[data-state="degraded"]{color:#ffd166;border-color:rgba(255,209,102,.48);box-shadow:0 0 14px rgba(255,209,102,.10)}
+.ld2-composer-guardian-badge[data-state="inactive"]{color:#ff6577;border-color:rgba(255,101,119,.48);box-shadow:0 0 14px rgba(255,101,119,.10)}
+@media(max-width:720px){.ld2-composer-guardian-badge{font-size:9px;padding:3px 6px}}

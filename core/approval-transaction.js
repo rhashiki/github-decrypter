@@ -3,12 +3,11 @@ export const APPROVAL_TTL_MS = 30 * 60 * 1000;
 
 const text = value => String(value ?? '').trim();
 const unique = values => [...new Set((values || []).map(text).filter(Boolean))];
-const normalizePath = value => text(value).replace(/\\/g, '/').replace(/^\/+/, '');
 
 export function normalizeApprovalPlan(plan = {}) {
   const files = (Array.isArray(plan?.files) ? plan.files : [])
     .map(file => ({
-      path: normalizePath(file?.path || file),
+      path: text(file?.path || file).replace(/^\/+/, ''),
       reason: text(file?.reason || file?.explanation).slice(0, 2000)
     }))
     .filter(file => file.path)
@@ -25,10 +24,8 @@ export function approvalFileWhitelist(plan = {}) {
   return unique(normalizeApprovalPlan(plan).files.map(file => file.path)).slice(0, 30);
 }
 
-export function canonicalApprovalPayload({ projectId = '', command = '', plan = {}, baseHeadSha = '', stateRevision = '', decision = 'approve', source = 'decrypter-chat', humanIntentOverrides = [] } = {}) {
+export function canonicalApprovalPayload({ projectId = '', command = '', plan = {}, baseHeadSha = '', stateRevision = '', decision = 'approve', source = 'decrypter-chat' } = {}) {
   const normalized = normalizeApprovalPlan(plan);
-  const approvedPaths = new Set(normalized.files.map(file => file.path));
-  const overrides = unique(humanIntentOverrides).map(normalizePath).filter(path => approvedPaths.has(path)).slice(0, 30);
   return {
     schema: APPROVAL_SCHEMA,
     projectId: text(projectId).slice(0, 120),
@@ -37,8 +34,7 @@ export function canonicalApprovalPayload({ projectId = '', command = '', plan = 
     baseHeadSha: text(baseHeadSha).toLowerCase(),
     stateRevision: text(stateRevision).slice(0, 160),
     decision: decision === 'skip' ? 'skip' : 'approve',
-    source: text(source).slice(0, 120) || 'decrypter-chat',
-    humanIntentOverrides: overrides
+    source: text(source).slice(0, 120) || 'decrypter-chat'
   };
 }
 
@@ -48,7 +44,7 @@ export function validatePreparedFiles(files = [], authorizedPaths = []) {
   const violations = [];
   const normalized = [];
   for (const file of Array.isArray(files) ? files : []) {
-    const path = normalizePath(file?.path);
+    const path = text(file?.path).replace(/^\/+/, '');
     const action = text(file?.action).toLowerCase();
     if (!path) { violations.push('prepared_file_without_path'); continue; }
     if (seen.has(path)) violations.push(`duplicate:${path}`);
@@ -87,8 +83,6 @@ export function publicApproval(tx = {}) {
     baseHeadSha: text(tx.baseHeadSha),
     stateRevision: text(tx.stateRevision),
     authorizedFiles: unique(tx.authorizedFiles || []),
-    humanIntentOverrides: unique(tx.humanIntentOverrides || []),
-    scopeIntelligenceHash: text(tx.scopeIntelligenceHash),
     status: text(tx.status || 'frozen'),
     createdAt: text(tx.createdAt),
     expiresAt: text(tx.expiresAt),
@@ -99,9 +93,6 @@ export function publicApproval(tx = {}) {
       shadowBuild: true,
       validationGate: true,
       scopeLock: true,
-      scopeIntelligenceV2: true,
-      humanIntentLocks: true,
-      genericPlanApprovalOverridesHumanIntent: false,
       guardedCommit: true,
       baseHeadLock: true,
       stateRevisionLock: true,

@@ -20,28 +20,11 @@ export function decodeBase64Utf8(b64) {
 
 export function assertSafeRepoPath(path) {
   if (!path || typeof path !== 'string') throw new Error('Caminho de arquivo inválido.');
-  const raw = String(path);
-  if (raw !== raw.trim() || /[\u0000-\u001f\u007f]/.test(raw)) {
+  const p = path.replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!p || p.includes('../') || p.startsWith('.git/') || p === '.git') {
     throw new Error(`Caminho não permitido: ${path}`);
   }
-  const slash = raw.replace(/\\/g, '/');
-  if (!slash || slash.startsWith('/') || /^\/{2}/.test(slash) || /^[a-z]:\//i.test(slash) || /^[a-z][a-z0-9+.-]*:\/\//i.test(slash)) {
-    throw new Error(`Caminho não permitido: ${path}`);
-  }
-  let decoded = slash;
-  try { decoded = decodeURIComponent(slash); }
-  catch { throw new Error(`Caminho não permitido: ${path}`); }
-  if (decoded !== slash || decoded.includes('\\') || decoded.startsWith('/') || /^[a-z]:\//i.test(decoded)) {
-    throw new Error(`Caminho não permitido: ${path}`);
-  }
-  const segments = decoded.split('/');
-  if (!segments.length || segments.some(segment => !segment || segment === '.' || segment === '..')) {
-    throw new Error(`Caminho não permitido: ${path}`);
-  }
-  if (segments[0].toLowerCase() === '.git') {
-    throw new Error(`Caminho não permitido: ${path}`);
-  }
-  return segments.join('/');
+  return p;
 }
 
 export function slugify(value, max = 42) {
