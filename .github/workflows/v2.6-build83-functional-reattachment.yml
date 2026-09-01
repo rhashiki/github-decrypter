@@ -42,3 +42,33 @@ jobs:
         run: node scripts/release-preflight.mjs --candidate
       - name: Build75 adversarial bench
         run: node benchmark/universal-agent-bench.mjs
+      - name: Package validated test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="Lovable-Decrypter-v2.6.83-test.zip"
+          mapfile -t RUNTIME_PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          mapfile -t EXCLUDED_PATHS < <(node -e "(require('./release/runtime-package.json').excluded_paths||[]).forEach(p=>console.log(p))")
+          ZIP_ARGS=("$ZIP" "${RUNTIME_PATHS[@]}")
+          if [ "${#EXCLUDED_PATHS[@]}" -gt 0 ]; then
+            zip -qr "${ZIP_ARGS[@]}" -x "${EXCLUDED_PATHS[@]}"
+          else
+            zip -qr "${ZIP_ARGS[@]}"
+          fi
+          unzip -Z1 "$ZIP" > /tmp/build83-test-files.txt
+          grep -qx 'manifest.json' /tmp/build83-test-files.txt
+          grep -qx 'launcher/launcher-runtime.js' /tmp/build83-test-files.txt
+          grep -qx 'launcher/canonical-runtime-client.js' /tmp/build83-test-files.txt
+          grep -qx 'background/canonical-runtime-entry.js' /tmp/build83-test-files.txt
+          ! grep -qx 'background/service-worker-entry.js' /tmp/build83-test-files.txt
+          ! grep -E '^(ui|content|diagnostic|updates)/' /tmp/build83-test-files.txt
+          sha256sum "$ZIP" | tee "${ZIP}.sha256"
+      - name: Upload validated test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.6.83-test
+          path: |
+            Lovable-Decrypter-v2.6.83-test.zip
+            Lovable-Decrypter-v2.6.83-test.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
