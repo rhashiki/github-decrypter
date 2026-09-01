@@ -26,7 +26,7 @@ assert.equal(block.run_at, 'document_idle');
 assert.equal(block.all_frames, false);
 
 for (const forbidden of [
-  'MutationObserver', 'setInterval(', 'setTimeout(', 'requestAnimationFrame(',
+  'new MutationObserver', '.observe(', 'setInterval(', 'setTimeout(', 'requestAnimationFrame(',
   'chrome.runtime', 'chrome.storage', 'fetch(', 'XMLHttpRequest', 'WebSocket',
   'EventSource', 'BroadcastChannel', 'SharedWorker', 'Worker(',
   'querySelectorAll(', 'getBoundingClientRect(', 'getComputedStyle('
