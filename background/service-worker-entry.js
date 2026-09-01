@@ -25,6 +25,12 @@ import { installReversibleOperationsRuntime } from './reversible-operations-runt
 import { installContinuityRuntime } from './continuity-runtime.js';
 import { installLocalModelRuntime } from './local-model-runtime.js';
 import { installLocalAgentOrchestrator } from './local-agent-orchestrator.js';
+import { installIntegrationReadinessRuntime } from './integration-readiness-runtime.js';
+import { installIntegrationCallbackRuntime } from './integration-callback-runtime.js';
+import { installAgentRuntimeRegistryRuntime } from './agent-runtime-registry-runtime.js';
+import { installPortableSkillsRuntime } from './portable-skills-runtime.js';
+import { installAgentSandboxRuntime } from './agent-sandbox-runtime.js';
+import { installNativeAgentSessionRuntime } from './native-agent-session-runtime.js';
 import './service-worker.js';
 
 installCheckpointRuntime();
@@ -51,3 +57,9 @@ installReversibleOperationsRuntime();
 installContinuityRuntime();
 installLocalModelRuntime();
 installLocalAgentOrchestrator();
+installIntegrationReadinessRuntime();
+installIntegrationCallbackRuntime();
+installAgentRuntimeRegistryRuntime();
+installPortableSkillsRuntime();
+installAgentSandboxRuntime();
+installNativeAgentSessionRuntime();

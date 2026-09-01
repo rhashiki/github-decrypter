@@ -52,23 +52,29 @@ for (const rootName of ['background', 'content', 'core', 'runtime', 'benchmark']
 }
 
 const entry = read('background/service-worker-entry.js');
-for (const token of [
-  "./tool-runtime.js",
-  "./mcp-runtime.js",
-  "./mcp-marketplace-runtime.js",
-  "./context-engine-runtime.js",
-  "./scope-intelligence-runtime.js",
-  "./reversible-operations-runtime.js",
-  "./continuity-runtime.js",
-  "./local-agent-orchestrator.js",
-  "./integration-readiness-runtime.js",
-  "./agent-runtime-registry-runtime.js",
-  "./portable-skills-runtime.js",
-  "./agent-sandbox-runtime.js",
-  "./native-agent-session-runtime.js"
-]) assert.ok(entry.includes(token), `service-worker source assembly lost modern engine import ${token}`);
+const sourceAssembly = Object.freeze([
+  ['./tool-runtime.js', 'installToolRuntime();'],
+  ['./mcp-runtime.js', 'installMcpRuntime();'],
+  ['./mcp-marketplace-runtime.js', 'installMcpMarketplaceRuntime();'],
+  ['./context-engine-runtime.js', 'installContextEngineRuntime();'],
+  ['./scope-intelligence-runtime.js', 'installScopeIntelligenceRuntime();'],
+  ['./reversible-operations-runtime.js', 'installReversibleOperationsRuntime();'],
+  ['./continuity-runtime.js', 'installContinuityRuntime();'],
+  ['./local-model-runtime.js', 'installLocalModelRuntime();'],
+  ['./local-agent-orchestrator.js', 'installLocalAgentOrchestrator();'],
+  ['./integration-readiness-runtime.js', 'installIntegrationReadinessRuntime();'],
+  ['./integration-callback-runtime.js', 'installIntegrationCallbackRuntime();'],
+  ['./agent-runtime-registry-runtime.js', 'installAgentRuntimeRegistryRuntime();'],
+  ['./portable-skills-runtime.js', 'installPortableSkillsRuntime();'],
+  ['./agent-sandbox-runtime.js', 'installAgentSandboxRuntime();'],
+  ['./native-agent-session-runtime.js', 'installNativeAgentSessionRuntime();']
+]);
+for (const [importToken, installToken] of sourceAssembly) {
+  assert.ok(entry.includes(importToken), `service-worker source assembly lost modern engine import ${importToken}`);
+  assert.ok(entry.includes(installToken), `service-worker source assembly lost modern engine install ${installToken}`);
+}
 
-for (const token of ['decrypter-chat-runtime', 'multi-agent-runtime-v74', 'ui/']) {
+for (const token of ['decrypter-chat-runtime', 'multi-agent-runtime-v74', 'ui/', 'diagnostic/']) {
   assert.ok(!entry.includes(token), `service-worker source assembly must not reference legacy visual layer: ${token}`);
 }
 
@@ -96,6 +102,7 @@ console.log(JSON.stringify({
   schema: 'ld-build82-modern-engine-preservation/1',
   builds: Object.keys(builds).map(Number),
   preservedEnginePaths: preserved.length,
+  sourceAssemblyEntries: sourceAssembly.length,
   activeEnginePaths: 0,
   canonicalActiveScript: 'launcher/launcher-runtime.js'
 }, null, 2));
