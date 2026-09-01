@@ -11,6 +11,7 @@
     "launcher/ux-polish-v84.js",
     "launcher/integration-resource-manager-v84.js",
     "launcher/integration-resource-entrypoints-v84.js",
+    "launcher/gemini-integration-v84.js",
     "background/runtime-entry-v84.js",
     "background/runtime-entry-v84-integrations.js",
     "background/editor-direct-runtime-v84.js"
@@ -27,5 +28,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build84 clean runtime starts from stable Build82. The validated integrations/stability checkpoint is preserved. Editor Direct is reattached as an isolated event-driven surface: local AI is invoked only on explicit Plan/Build actions; GitHub context is read with short-lived GitHub App installation tokens; Plan and Shadow Build are zero-write; Apply requires explicit human approval, valid cached Trust and HEAD revalidation; GitHub ref updates are non-force. If Supabase apply is required, Apply fails closed until the Supabase write runtime is separately reattached. Lovable remains Preview/dev environment and does not receive the prompt as AI authority. No composer interception, global MutationObserver, continuous polling, mount guardian, transport monkeypatch, heavy provider engine at boot, OTA metadata or release publication is shipped."
+  "notes":"Build84 clean runtime starts from stable Build82. The validated integrations/stability checkpoint is preserved. GitHub and Supabase resource management are browser-validated and nested once under their own integration menus. Gemini integration is reattached independently as an optional on-demand provider configuration surface: API key material is encrypted at rest, status/details never expose the secret, model discovery uses the official Gemini models endpoint, and connection validation does not generate a prompt. Gemini does not become the central orchestrator and does not activate at browser boot. Editor Direct remains isolated and local-AI-first: GitHub context is read with short-lived GitHub App installation tokens; Plan and Shadow Build are zero-write; Apply requires explicit human approval, valid cached Trust and HEAD revalidation; GitHub ref updates are non-force. If Supabase apply is required, Apply fails closed until the Supabase write runtime is separately reattached. Lovable remains Preview/dev environment and does not receive the prompt as AI authority. No composer interception, global MutationObserver, continuous polling, mount guardian, transport monkeypatch, heavy provider engine at boot, OTA metadata or release publication is shipped."
 }
