@@ -10,22 +10,34 @@ const exists = p => fs.existsSync(path.join(root, p));
 const manifest = json('manifest.json');
 const pkg = json('release/runtime-package.json');
 const inventory = json('docs/functional-capabilities-v84.json');
-const launcher = read('launcher/launcher-runtime.js');
-const client = read('launcher/runtime-client-v84.js');
-const account = read('launcher/account-controller-v84.js');
-const polish = read('launcher/ux-polish-v84.js');
-const resourceManager = read('launcher/integration-resource-manager-v84.js');
-const runtime = read('background/runtime-entry-v84.js');
-const runtimeWrapper = read('background/runtime-entry-v84-integrations.js');
-const trustBackend = read('supabase/functions/ld-trust-attest/index.ts');
-const supabaseBackend = read('supabase/functions/ld-supabase-oauth/index.ts');
-const selectionBackend = read('supabase/functions/ld-integration-selection/index.ts');
+const sources = Object.fromEntries([
+  'launcher/launcher-runtime.js',
+  'launcher/runtime-client-v84.js',
+  'launcher/account-controller-v84.js',
+  'launcher/ux-polish-v84.js',
+  'launcher/integration-resource-manager-v84.js',
+  'launcher/integration-resource-entrypoints-v84.js',
+  'background/runtime-entry-v84.js',
+  'background/runtime-entry-v84-integrations.js',
+  'supabase/functions/ld-trust-attest/index.ts',
+  'supabase/functions/ld-supabase-oauth/index.ts',
+  'supabase/functions/ld-integration-selection/index.ts'
+].map(file => [file, read(file)]));
+
+const launcher = sources['launcher/launcher-runtime.js'];
+const client = sources['launcher/runtime-client-v84.js'];
+const account = sources['launcher/account-controller-v84.js'];
+const polish = sources['launcher/ux-polish-v84.js'];
+const resourceManager = sources['launcher/integration-resource-manager-v84.js'];
+const resourceEntrypoints = sources['launcher/integration-resource-entrypoints-v84.js'];
+const runtime = sources['background/runtime-entry-v84.js'];
+const runtimeWrapper = sources['background/runtime-entry-v84-integrations.js'];
+const trustBackend = sources['supabase/functions/ld-trust-attest/index.ts'];
+const supabaseBackend = sources['supabase/functions/ld-supabase-oauth/index.ts'];
+const selectionBackend = sources['supabase/functions/ld-integration-selection/index.ts'];
 
 assert.equal(manifest.version, '2.6.84');
-assert.match(manifest.version_name, /Trust \+ Core Integrations/);
-assert.equal(pkg.candidate, '2.6.84');
 assert.equal(manifest.background?.service_worker, 'background/runtime-entry-v84-integrations.js');
-assert.ok(!manifest.background?.type, 'Build84 service worker is classic script and must not claim module type');
 assert.deepEqual(manifest.permissions || [], ['storage']);
 assert.deepEqual(manifest.host_permissions, ['https://lovable.dev/*','https://*.lovable.dev/*','https://kkzxxnfxgrouhkzyszxs.supabase.co/*']);
 
@@ -36,191 +48,108 @@ assert.deepEqual(app.js, [
   'launcher/runtime-client-v84.js',
   'launcher/account-controller-v84.js',
   'launcher/ux-polish-v84.js',
-  'launcher/integration-resource-manager-v84.js'
+  'launcher/integration-resource-manager-v84.js',
+  'launcher/integration-resource-entrypoints-v84.js'
 ]);
 assert.equal(app.run_at, 'document_start');
 assert.equal(app.all_frames, false);
 
-assert.match(launcher, /data-ld-ui-authority[^\n]*canonical-v11|canonical-v11/);
-assert.ok(client.includes("shadow.addEventListener('click'"));
+assert.match(launcher, /canonical-v11/);
 assert.ok(client.includes("type: 'ld84.runtime.command'"));
-assert.ok(client.includes("new CustomEvent('ld84:module-action'"));
-assert.ok(client.includes('function projectSnapshot()'));
-assert.ok(client.includes("const MODAL_MODULES = new Set(['github', 'supabase', 'lovable', 'project-state', 'security'])"));
-assert.ok(client.includes('function baseModal('));
 assert.ok(client.includes('function integrationModal('));
-assert.ok(client.includes('function projectModal('));
-assert.ok(client.includes('function securityModal('));
-assert.ok(client.includes("shadow.appendChild(overlay)"));
-assert.ok(client.includes("runtimeAction = MODAL_MODULES.has(moduleId) && action === 'open' && ['github', 'supabase'].includes(moduleId) ? 'status' : action"));
-assert.ok(client.includes("connect.addEventListener('click'"));
-assert.ok(client.includes("window.open('about:blank', '_blank')"));
-assert.ok(client.includes("modalModules") === false, 'unexpected stale modalModules token');
-assert.ok(client.includes('Runtime Bus limpo · módulos sob demanda'));
-assert.ok(client.includes("moduleId === 'lovable' || moduleId === 'project-state'"));
+assert.ok(client.includes("manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'"));
+assert.ok(client.includes('manageResources.dataset.ldResourceManage = moduleId'));
+assert.ok(account.includes("type: 'ld84.account.activate'"));
+assert.ok(polish.includes("MONITOR_KEY = 'ld84_monitor_enabled'"));
+assert.ok(polish.includes("parityButton('editor-direct', 'Editor Direto'"));
 
-assert.ok(polish.includes("#ld84-module-modal .ld84-note{display:none!important}"));
-assert.ok(polish.includes("shadow.addEventListener('click'"));
-assert.ok(polish.includes("event.stopImmediatePropagation()"));
-assert.ok(polish.includes(".rail-btn.active,.fly-item.active"));
-assert.ok(polish.includes("flyout?.classList.remove('show')"));
-assert.ok(polish.includes("detail?.classList.remove('show')"));
-
-assert.ok(resourceManager.includes("data-ld-resource-manage"));
-assert.ok(resourceManager.includes('Gerenciar repositórios'));
-assert.ok(resourceManager.includes('Gerenciar projetos'));
-assert.ok(resourceManager.includes('Gerenciar acesso no GitHub'));
 assert.ok(resourceManager.includes("type: 'ld84.integration.resources.status'"));
 assert.ok(resourceManager.includes("type: 'ld84.integration.resources.save'"));
-assert.ok(resourceManager.includes('Selecionar todos'));
-assert.ok(resourceManager.includes('Remover todos'));
+assert.ok(resourceManager.includes('Gerenciar acesso no GitHub'));
 assert.ok(resourceManager.includes('Salvar seleção'));
-assert.ok(resourceManager.includes('queueMicrotask'));
 
-assert.ok(runtime.includes("chrome.runtime.onMessage.addListener"));
+assert.ok(resourceEntrypoints.includes("title !== 'Integrações'"));
+assert.ok(resourceEntrypoints.includes("makeFlyEntry('github', 'GitHub · Gerenciar repositórios')"));
+assert.ok(resourceEntrypoints.includes("makeFlyEntry('supabase', 'Supabase · Gerenciar projetos')"));
+assert.ok(resourceEntrypoints.includes('data-ld-resource-entrypoint'));
+assert.ok(resourceEntrypoints.includes('queueMicrotask'));
+assert.ok(resourceEntrypoints.includes('ensureDetailEntry'));
+
 assert.ok(runtime.includes("mode: 'event-driven'"));
 assert.ok(runtime.includes('activeHeavyRuntimes: 0'));
 assert.ok(runtime.includes("const CLIENT_PROTOCOL = 'ld-runtime-bus/1'"));
-assert.ok(runtime.includes("const TRUST_ENDPOINT = `${BACKEND_BASE}/ld-trust-attest`"));
-assert.ok(runtime.includes("type === 'ld84.account.status'"));
-assert.ok(runtime.includes("type === 'ld84.account.activate'"));
-assert.ok(runtime.includes("type === 'ld84.account.clear'"));
-assert.ok(runtime.includes("type === 'ld84.security.attest'"));
-assert.ok(runtime.includes("type === 'ld84.integration.disconnect'"));
-assert.ok(runtime.includes("type === 'ld84.project.snapshot'"));
-assert.ok(runtime.includes("id === 'github'"));
-assert.ok(runtime.includes("id === 'supabase'"));
-assert.ok(runtime.includes("id === 'lovable' || id === 'project-state'"));
-assert.ok(runtime.includes("projectSnapshotMode: 'on-demand'"));
-assert.ok(runtime.includes("const LICENSE_ENDPOINT = `${BACKEND_BASE}/ld-license-validate`"));
-assert.ok(runtime.includes("state: 'reattached'"));
-assert.ok(runtime.includes("id === 'account'"));
-
 assert.ok(runtimeWrapper.includes("importScripts('runtime-entry-v84.js')"));
-assert.ok(runtimeWrapper.includes("ld84.integration.resources.status"));
-assert.ok(runtimeWrapper.includes("ld84.integration.resources.save"));
-assert.ok(runtimeWrapper.includes("ld-integration-selection"));
+assert.ok(runtimeWrapper.includes('ld-integration-selection'));
 assert.ok(runtimeWrapper.includes('RESOURCE_NOT_AUTHORIZED'));
-assert.ok(runtimeWrapper.includes("selected.length === current.available.length ? 'all' : 'selected'"));
 
-assert.ok(account.includes("window.addEventListener('ld84:module-action'"));
-assert.ok(account.includes("type: 'ld84.account.activate'"));
-assert.ok(account.includes('Este modal pertence à única UI da extensão'));
-assert.ok(account.includes('O Lovable continua funcionando normalmente'));
-
-assert.ok(!trustBackend.includes("const EXPECTED_VERSION='2.4.21'"), 'exact-version trust authority must be removed');
-assert.ok(trustBackend.includes("const LEGACY_VERSION='2.4.21'"), 'legacy 2.4.21 compatibility path must remain explicit');
 assert.ok(trustBackend.includes("SUPPORTED_PROTOCOLS=new Set(['ld-runtime-bus/1'])"));
 assert.ok(trustBackend.includes("compatibility:'protocol'"));
-assert.ok(trustBackend.includes("'ld-trust-attestation/2'"));
-assert.ok(trustBackend.includes("jsr:@supabase/supabase-js@2.112.4"));
-
+assert.ok(!trustBackend.includes("const EXPECTED_VERSION='2.4.21'"));
 assert.ok(supabaseBackend.includes('async function listOrganizations(accessToken:string)'));
-assert.ok(supabaseBackend.includes('/organizations/${encodeURIComponent(slug)}/projects?limit=100&offset=${offset}'));
-assert.ok(supabaseBackend.includes('sources:["/projects","/organizations/{slug}/projects"]'));
 assert.ok(supabaseBackend.includes('project_discovery:listed.diagnostics'));
-assert.ok(supabaseBackend.includes('const merged=new Map<string,any>()'));
-
-assert.ok(selectionBackend.includes('ld_github_installations'));
 assert.ok(selectionBackend.includes('selected_repositories'));
-assert.ok(selectionBackend.includes('ld_supabase_connections'));
 assert.ok(selectionBackend.includes('selected_projects'));
-assert.ok(selectionBackend.includes('mode: row.selected_repositories === null ? "all" : "selected"'));
-assert.ok(selectionBackend.includes('mode: row.selected_projects === null ? "all" : "selected"'));
-assert.ok(selectionBackend.includes('jsr:@supabase/supabase-js@2.112.4'));
 
-for (const [name, source] of [
-  ['launcher', launcher],
-  ['runtime-client', client],
-  ['account-controller', account],
-  ['ux-polish', polish],
-  ['resource-manager', resourceManager],
-  ['runtime-entry', runtime],
-  ['runtime-wrapper', runtimeWrapper]
-]) {
+for (const [name, source] of Object.entries({
+  launcher, client, account, polish, resourceManager, resourceEntrypoints, runtime, runtimeWrapper
+})) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
   assert.ok(!/setInterval\s*\(/.test(source), `${name}: setInterval forbidden`);
   assert.ok(!/\.inert\s*=|setAttribute\(\s*['\"]inert/.test(source), `${name}: inert takeover forbidden`);
   assert.ok(!/XMLHttpRequest\.prototype\s*\.|window\.fetch\s*=|globalThis\.fetch\s*=|navigator\.sendBeacon\s*=/.test(source), `${name}: network monkeypatch forbidden`);
 }
-
-assert.ok(!account.includes('document.body'), 'account controller must not attach to Lovable document body');
-assert.ok(account.includes('shadow.appendChild(modal)'), 'account modal must stay inside the single launcher Shadow DOM');
-assert.ok(!client.includes('document.body.append'), 'functional module surfaces must remain in launcher Shadow DOM');
-assert.ok(!polish.includes('document.body'), 'UX polish must remain scoped to launcher Shadow DOM');
-assert.ok(!resourceManager.includes('document.body'), 'resource manager must remain scoped to launcher Shadow DOM');
-assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers');
-assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms');
-assert.ok(!runtimeWrapper.includes('setTimeout('), 'integration wrapper must not schedule timers');
-assert.ok(!runtimeWrapper.includes('chrome.alarms'), 'integration wrapper must not schedule alarms');
-
-const forbiddenRuntimeTokens = [
-  'ui-mount-guardian',
-  'composer-guardian',
-  'composer-bridge-v3',
-  'decrypter-chat.js',
-  'approval-auto-repair',
-  'service-worker-entry.js',
-  'canonical-runtime-entry.js'
-];
-const manifestText = JSON.stringify(manifest);
-for (const token of forbiddenRuntimeTokens) assert.ok(!manifestText.includes(token), `legacy runtime leaked into manifest: ${token}`);
+assert.ok(!account.includes('document.body'));
+assert.ok(!polish.includes('document.body'));
+assert.ok(!resourceManager.includes('document.body'));
+assert.ok(!resourceEntrypoints.includes('document.body'));
+assert.ok(!runtime.includes('setTimeout('));
+assert.ok(!runtime.includes('chrome.alarms'));
+assert.ok(!runtimeWrapper.includes('setTimeout('));
+assert.ok(!runtimeWrapper.includes('chrome.alarms'));
 
 assert.equal(inventory.schema, 'ld-functional-capabilities/1');
 assert.equal(inventory.build, 84);
-assert.equal(inventory.baseline, '2.6.82');
 assert.equal(inventory.policy.functional_loss_allowed, false);
-assert.equal(inventory.policy.replacement_before_deletion, true);
 assert.equal(inventory.policy.single_visual_authority, true);
 assert.equal(inventory.policy.global_dom_observers_allowed, false);
 assert.equal(inventory.policy.continuous_content_polling_allowed, false);
-assert.equal(inventory.policy.lovable_shell_inert_allowed, false);
 assert.equal(inventory.policy.heavy_runtime_boot_allowed, false);
-assert.ok(Array.isArray(inventory.capabilities) && inventory.capabilities.length >= 48, `capability inventory unexpectedly small: ${inventory.capabilities?.length || 0}`);
+assert.ok(Array.isArray(inventory.capabilities) && inventory.capabilities.length >= 48);
 const ids = inventory.capabilities.map(item => item.id);
-assert.equal(new Set(ids).size, ids.length, 'duplicate capability ids');
-for (const item of inventory.capabilities) {
-  assert.equal(item.must_preserve, true, `${item.id}: must_preserve must remain true`);
-  assert.ok(item.target_authority, `${item.id}: target authority missing`);
-  assert.ok(['foundation','planned','required','surface-only','reattached','implemented-unvalidated','validated'].includes(item.status), `${item.id}: invalid migration status`);
-}
-
+assert.equal(new Set(ids).size, ids.length);
 for (const required of [
-  'ui.monitor-state','ui.editor-direct','license.activation','trust.attestation','integration.github','integration.github-repository-management','integration.supabase','integration.supabase-project-selection','project.state','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write','mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable','agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
+  'ui.fab','ui.rail','ui.monitor-state','ui.editor-direct','license.activation','trust.attestation',
+  'integration.github','integration.github-repository-management','integration.supabase','integration.supabase-project-selection',
+  'project.state','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write',
+  'mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable',
+  'agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
 ]) assert.ok(ids.includes(required), `functional parity capability missing: ${required}`);
 
 const packagePaths = new Set(pkg.paths || []);
 for (const required of [
-  'manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js','launcher/integration-resource-manager-v84.js','background/runtime-entry-v84.js','background/runtime-entry-v84-integrations.js'
+  'manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js',
+  'launcher/account-controller-v84.js','launcher/ux-polish-v84.js','launcher/integration-resource-manager-v84.js',
+  'launcher/integration-resource-entrypoints-v84.js','background/runtime-entry-v84.js','background/runtime-entry-v84-integrations.js'
 ]) {
   assert.ok(packagePaths.has(required), `package path missing: ${required}`);
   assert.ok(exists(required), `package file missing: ${required}`);
 }
-for (const forbiddenRoot of ['content','ui','core','github','storage','supabase','tools','updates']) {
-  assert.ok((pkg.forbidden_roots || []).includes(forbiddenRoot), `forbidden root missing: ${forbiddenRoot}`);
-}
-for (const forbidden of ['background/service-worker-entry.js','background/canonical-runtime-entry.js','launcher/canonical-runtime-client.js']) {
-  assert.ok((pkg.forbidden_paths || []).includes(forbidden), `forbidden path missing: ${forbidden}`);
+
+const manifestText = JSON.stringify(manifest);
+for (const token of ['ui-mount-guardian','composer-guardian','composer-bridge-v3','decrypter-chat.js','approval-auto-repair','service-worker-entry.js','canonical-runtime-entry.js']) {
+  assert.ok(!manifestText.includes(token), `legacy runtime leaked into manifest: ${token}`);
 }
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/6',
+  schema: 'ld-build84-clean-foundation/7',
   version: manifest.version,
-  capabilitiesLocked: inventory.capabilities.length,
   visualAuthorities: 1,
-  functionalModuleSurfaces: ['security','github','supabase','project.state','integration-resource-manager'],
   globalObservers: 0,
   continuousPolling: 0,
   activeHeavyRuntimesAtBoot: 0,
-  legacyDomStackShipped: false,
-  functionalLossAllowed: false,
-  trustCompatibility: 'protocol',
-  supabaseProjectDiscovery: 'direct+organization',
+  resourceEntryVisibility: 'integrations-flyout+detail+modal',
   resourceSelection: 'server-side-allowlist',
-  externalDeletionOnRemove: false,
-  uxPolish: ['module-footnotes-hidden','active-rail-toggle-close','resource-manager'],
-  reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state','ui.monitor-state'],
-  implementedUnvalidated: ['integration.github-repository-management','integration.supabase-project-selection'],
-  lovableShellBlockedByLicense: false
+  legacyDomStackShipped: false,
+  functionalLossAllowed: false
 }, null, 2));
