@@ -40,6 +40,7 @@
     const action = ACTIONS[label];
     if (!moduleId || !action) return;
 
+    window.dispatchEvent(new CustomEvent('ld84:module-action', { detail: { module: moduleId, action, label } }));
     setFoot(shadow, moduleId, `Build 84 · ${label} · consultando Runtime Bus…`);
     const result = await send({ type: 'ld84.runtime.command', module: moduleId, action });
     if (!result?.ok) {
