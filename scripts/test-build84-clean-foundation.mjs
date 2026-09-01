@@ -71,7 +71,9 @@ assert.ok(!resourceManager.includes('refreshInjection'), 'resource manager must 
 assert.ok(resourceEntrypoints.includes('function removeTopLevelResourceEntries('));
 assert.ok(resourceEntrypoints.includes("flyout.querySelectorAll('[data-ld-resource-entrypoint],.ld84-resource-entry')"));
 assert.ok(resourceEntrypoints.includes('function ensureSingleNestedEntry('));
-assert.ok(resourceEntrypoints.includes("for (const node of actions.querySelectorAll('[data-ld-resource-manage]')) node.remove()"));
+assert.ok(resourceEntrypoints.includes("const existing = [...actions.querySelectorAll('[data-ld-resource-manage]')]"));
+assert.ok(resourceEntrypoints.includes('if (existing.length === 1 && canonical && canonical.querySelector(\'svg\') && canonical.querySelector(\'span\')) return'));
+assert.ok(resourceEntrypoints.includes('for (const node of existing) node.remove()'));
 assert.ok(resourceEntrypoints.includes("button.dataset.ldResourceCanonicalDetail = integration"));
 assert.ok(resourceEntrypoints.includes("label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'"));
 assert.ok(resourceEntrypoints.includes('button.append(actionIcon(integration), label)'));
@@ -148,13 +150,13 @@ for (const token of ['ui-mount-guardian','composer-guardian','composer-bridge-v3
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/8',
+  schema: 'ld-build84-clean-foundation/9',
   version: manifest.version,
   visualAuthorities: 1,
   globalObservers: 0,
   continuousPolling: 0,
   activeHeavyRuntimesAtBoot: 0,
-  resourceEntryVisibility: 'single-nested-detail-action',
+  resourceEntryVisibility: 'single-nested-detail-action-idempotent',
   resourceSelection: 'server-side-allowlist',
   legacyDomStackShipped: false,
   functionalLossAllowed: false
