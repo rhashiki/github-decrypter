@@ -2,18 +2,26 @@
   "manifest_version": 3,
   "name": "Lovable Decrypter",
   "version": "2.6.83",
-  "version_name": "2.6 Build 83 · Functional Reattachment Phase 1",
-  "description": "Canonical v11 launcher with explicit-user-action-only lazy reattachment of Tool Runtime, Context Engine v2 and Scope Intelligence v2. No legacy UI, polling, observers or automatic engine activation.",
+  "version_name": "2.6 Build 83 · Modern Runtime Restoration",
+  "description": "Canonical v11 with Builds 60–75 restored through explicit runtime activation, without the eliminated legacy UI layer.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms", "identity"],
   "host_permissions": [
     "https://lovable.dev/*",
-    "https://*.lovable.dev/*"
+    "https://*.lovable.dev/*",
+    "https://api.github.com/*",
+    "https://*.supabase.co/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "http://[::1]/*"
   ],
   "background": {
     "service_worker": "background/canonical-runtime-entry.js",
@@ -37,6 +45,6 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.6.83 · Functional Reattachment"
+    "default_title": "Lovable Decrypter v2.6.83 · Modern Runtime Restoration"
   }
 }
