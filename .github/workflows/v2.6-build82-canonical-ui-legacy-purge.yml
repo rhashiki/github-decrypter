@@ -19,9 +19,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Syntax
-        run: node --check launcher/launcher-runtime.js
-      - name: Canonical UI authority
-        run: node tests/build82-canonical-ui-legacy-purge.test.mjs
+
+      - name: Syntax checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          find launcher content background core benchmark scripts tests -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 \
+            | xargs -0 -n1 node --check
+
+      - name: Canonical UI structural gate
+        run: node scripts/test-build82-canonical-ui.mjs
+
+      - name: Modern Builds 60-75 preservation gate
+        run: node scripts/test-build82-modern-engines.mjs
+
+      - name: Build 74 Native Sessions contract
+        run: node tests/build74-multi-agent-runtime-ui-native-sessions.test.mjs
+
+      - name: Universal Agent Bench / Build 75 hardening
+        run: node benchmark/universal-agent-bench.mjs
+
       - name: Release preflight candidate
         run: node scripts/release-preflight.mjs --candidate
