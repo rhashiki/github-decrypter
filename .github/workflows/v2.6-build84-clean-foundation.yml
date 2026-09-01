@@ -27,7 +27,9 @@ jobs:
           node --check launcher/runtime-client-v84.js
           node --check launcher/account-controller-v84.js
           node --check launcher/ux-polish-v84.js
+          node --check launcher/integration-resource-manager-v84.js
           node --check background/runtime-entry-v84.js
+          node --check background/runtime-entry-v84-integrations.js
           node --check scripts/test-build84-clean-foundation.mjs
 
       - name: Build84 clean runtime, trust and integrations gate
@@ -58,6 +60,27 @@ jobs:
           ! grep -q 'MutationObserver' launcher/ux-polish-v84.js
           ! grep -q 'setInterval' launcher/ux-polish-v84.js
 
+      - name: Verify integration resource management contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Gerenciar repositórios' launcher/integration-resource-manager-v84.js
+          grep -q 'Gerenciar projetos' launcher/integration-resource-manager-v84.js
+          grep -q 'Gerenciar acesso no GitHub' launcher/integration-resource-manager-v84.js
+          grep -q 'Selecionar todos' launcher/integration-resource-manager-v84.js
+          grep -q 'Remover todos' launcher/integration-resource-manager-v84.js
+          grep -q 'Salvar seleção' launcher/integration-resource-manager-v84.js
+          grep -q 'ld84.integration.resources.status' launcher/integration-resource-manager-v84.js
+          grep -q 'ld84.integration.resources.save' launcher/integration-resource-manager-v84.js
+          grep -q "importScripts('runtime-entry-v84.js')" background/runtime-entry-v84-integrations.js
+          grep -q 'ld-integration-selection' background/runtime-entry-v84-integrations.js
+          grep -q 'selected_repositories' supabase/functions/ld-integration-selection/index.ts
+          grep -q 'selected_projects' supabase/functions/ld-integration-selection/index.ts
+          ! grep -q 'MutationObserver' launcher/integration-resource-manager-v84.js
+          ! grep -q 'setInterval' launcher/integration-resource-manager-v84.js
+          ! grep -q 'setInterval' background/runtime-entry-v84-integrations.js
+          ! grep -q 'chrome.alarms' background/runtime-entry-v84-integrations.js
+
       - name: Verify protocol-based trust source
         shell: bash
         run: |
@@ -81,7 +104,9 @@ jobs:
             launcher/runtime-client-v84.js \
             launcher/account-controller-v84.js \
             launcher/ux-polish-v84.js \
-            background/runtime-entry-v84.js; do
+            launcher/integration-resource-manager-v84.js \
+            background/runtime-entry-v84.js \
+            background/runtime-entry-v84-integrations.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
 
