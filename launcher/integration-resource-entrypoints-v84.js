@@ -4,111 +4,89 @@
   window.__LD84_INTEGRATION_RESOURCE_ENTRYPOINTS__ = true;
 
   const HOST_ID = 'lovable-decrypter-launcher';
+  const NS = 'http://www.w3.org/2000/svg';
 
-  function textNode(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    node.textContent = text;
-    return node;
+  function actionIcon(integration) {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '18');
+    svg.setAttribute('height', '18');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('aria-hidden', 'true');
+
+    const paths = integration === 'github'
+      ? ['M5 4h14v16H5z','M8 8h8','M8 12h8','M8 16h5']
+      : ['M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z','M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6','M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6'];
+
+    for (const d of paths) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', 'currentColor');
+      path.setAttribute('stroke-width', '1.75');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+    }
+    return svg;
   }
 
-  function makeFlyEntry(integration, label) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'fly-item ld84-resource-entry';
-    button.dataset.ldResourceManage = integration;
-    button.dataset.ldResourceEntrypoint = integration;
-
-    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    icon.setAttribute('viewBox', '0 0 24 24');
-    icon.setAttribute('width', '19');
-    icon.setAttribute('height', '19');
-    icon.setAttribute('fill', 'none');
-    icon.setAttribute('aria-hidden', 'true');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', integration === 'github'
-      ? 'M5 4h14v16H5z M8 8h8 M8 12h8 M8 16h5'
-      : 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6');
-    path.setAttribute('stroke', 'currentColor');
-    path.setAttribute('stroke-width', '1.75');
-    path.setAttribute('stroke-linecap', 'round');
-    path.setAttribute('stroke-linejoin', 'round');
-    icon.appendChild(path);
-
-    button.append(icon, textNode('b', '', label), textNode('span', 'chev', '‹'));
-    return button;
-  }
-
-  function fitPanel(shadow, panel) {
-    if (!panel?.classList.contains('show')) return;
+  function fitDetail(shadow, detail) {
+    if (!detail?.classList.contains('show')) return;
     const rail = shadow.getElementById('rail');
     const maxH = Math.max(240, Math.floor(rail?.getBoundingClientRect?.().height || 0));
     if (!maxH) return;
 
-    panel.style.height = 'auto';
-    panel.style.maxHeight = 'none';
-    panel.style.overflowY = 'hidden';
+    detail.style.height = 'auto';
+    detail.style.maxHeight = 'none';
+    detail.style.overflowY = 'hidden';
 
-    const natural = Math.max(panel.scrollHeight || 0, 1);
+    const natural = Math.max(detail.scrollHeight || 0, 1);
     const height = Math.min(natural, maxH);
-    let top = Number.parseFloat(panel.style.top || '8');
+    let top = Number.parseFloat(detail.style.top || '8');
     if (!Number.isFinite(top)) top = 8;
     if (top + height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - height - 8);
 
-    panel.style.top = `${Math.round(top)}px`;
-    panel.style.height = `${Math.round(height)}px`;
-    panel.style.maxHeight = `${Math.round(height)}px`;
-    panel.style.overflowY = natural > height ? 'auto' : 'hidden';
+    detail.style.top = `${Math.round(top)}px`;
+    detail.style.height = `${Math.round(height)}px`;
+    detail.style.maxHeight = `${Math.round(height)}px`;
+    detail.style.overflowY = natural > height ? 'auto' : 'hidden';
   }
 
-  function ensureFlyoutEntries(shadow) {
+  function removeTopLevelResourceEntries(shadow) {
     const flyout = shadow.getElementById('flyout');
-    if (!flyout?.classList.contains('show')) return false;
+    if (!flyout?.classList.contains('show')) return;
     const title = String(flyout.querySelector('.fly-title span')?.textContent || '').trim();
-    if (title !== 'Integrações') return false;
-    const list = flyout.querySelector('.fly-list');
-    if (!list) return false;
-
-    let changed = false;
-    if (!list.querySelector('[data-ld-resource-entrypoint="github"]')) {
-      list.appendChild(makeFlyEntry('github', 'GitHub · Gerenciar repositórios'));
-      changed = true;
-    }
-    if (!list.querySelector('[data-ld-resource-entrypoint="supabase"]')) {
-      list.appendChild(makeFlyEntry('supabase', 'Supabase · Gerenciar projetos'));
-      changed = true;
-    }
-    if (changed) fitPanel(shadow, flyout);
-    return changed;
+    if (title !== 'Integrações') return;
+    for (const node of flyout.querySelectorAll('[data-ld-resource-entrypoint],.ld84-resource-entry')) node.remove();
   }
 
-  function ensureDetailEntry(shadow) {
+  function ensureSingleNestedEntry(shadow) {
     const detail = shadow.getElementById('detail');
-    if (!detail?.classList.contains('show')) return false;
+    if (!detail?.classList.contains('show')) return;
     const integration = String(detail.dataset.module || '');
-    if (!['github', 'supabase'].includes(integration)) return false;
+    if (!['github', 'supabase'].includes(integration)) return;
     const actions = detail.querySelector('.actions');
-    if (!actions || actions.querySelector('[data-ld-resource-entrypoint-detail]')) return false;
+    if (!actions) return;
+
+    for (const node of actions.querySelectorAll('[data-ld-resource-manage]')) node.remove();
 
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'action';
     button.dataset.ldResourceManage = integration;
-    button.dataset.ldResourceEntrypointDetail = integration;
+    button.dataset.ldResourceCanonicalDetail = integration;
+
     const label = document.createElement('span');
     label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos';
-    const arrow = document.createElement('strong');
-    arrow.textContent = '›';
-    button.append(label, arrow);
+    button.append(actionIcon(integration), label);
     actions.appendChild(button);
-    fitPanel(shadow, detail);
-    return true;
+    fitDetail(shadow, detail);
   }
 
   function scheduleEnsure(shadow) {
     queueMicrotask(() => {
-      ensureFlyoutEntries(shadow);
-      ensureDetailEntry(shadow);
+      removeTopLevelResourceEntries(shadow);
+      ensureSingleNestedEntry(shadow);
     });
   }
 
@@ -118,15 +96,6 @@
     if (!shadow) return false;
     if (shadow.__ld84IntegrationResourceEntrypointsBound) return true;
     Object.defineProperty(shadow, '__ld84IntegrationResourceEntrypointsBound', { value: true, configurable: false });
-
-    const style = document.createElement('style');
-    style.id = 'ld84-resource-entrypoints-style';
-    style.textContent = `
-      #flyout .ld84-resource-entry{border-top:1px solid rgba(255,255,255,.055)!important;margin-top:2px!important;color:#b9d9ff!important}
-      #flyout .ld84-resource-entry b{font-weight:600!important}
-      #detail [data-ld-resource-entrypoint-detail]{color:#cce9ff!important}
-    `;
-    shadow.appendChild(style);
 
     shadow.addEventListener('mouseover', () => scheduleEnsure(shadow));
     shadow.addEventListener('click', () => scheduleEnsure(shadow));
