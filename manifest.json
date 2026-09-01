@@ -25,7 +25,8 @@
       "js": [
         "launcher/launcher-runtime.js",
         "launcher/runtime-client-v84.js",
-        "launcher/account-controller-v84.js"
+        "launcher/account-controller-v84.js",
+        "launcher/ux-polish-v84.js"
       ],
       "run_at": "document_start",
       "all_frames": false
