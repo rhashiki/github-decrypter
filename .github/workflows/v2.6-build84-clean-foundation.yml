@@ -33,7 +33,7 @@ jobs:
       - name: Build84 clean runtime, trust and integrations gate
         run: node scripts/test-build84-clean-foundation.mjs
 
-      - name: Verify compact launcher UX contract
+      - name: Verify compact launcher UX and parity controls
         shell: bash
         run: |
           set -euo pipefail
@@ -42,7 +42,14 @@ jobs:
           grep -q '#ld84-module-modal .ld84-note' launcher/ux-polish-v84.js
           grep -q 'width:58px!important' launcher/ux-polish-v84.js
           grep -q 'width:52px!important' launcher/ux-polish-v84.js
+          grep -q 'height:min(74vh,610px)!important' launcher/ux-polish-v84.js
           grep -q 'gap:4px!important' launcher/ux-polish-v84.js
+          grep -q "MONITOR_KEY = 'ld84_monitor_enabled'" launcher/ux-polish-v84.js
+          grep -q "parityButton('monitor', 'Monitor ON'" launcher/ux-polish-v84.js
+          grep -q "parityButton('editor-direct', 'Editor Direto'" launcher/ux-polish-v84.js
+          grep -q "label === 'Ver estado' || label === 'Detalhes'" launcher/ux-polish-v84.js
+          grep -q "showLoadingModal(shadow, moduleId" launcher/ux-polish-v84.js
+          grep -q "new CustomEvent('ld84:monitor-changed'" launcher/ux-polish-v84.js
           ! grep -q 'MutationObserver' launcher/ux-polish-v84.js
           ! grep -q 'setInterval' launcher/ux-polish-v84.js
 
