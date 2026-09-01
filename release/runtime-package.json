@@ -1,10 +1,38 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.82",
-  "paths":["manifest.json","assets","launcher"],
+  "candidate":"2.6.83",
+  "paths":[
+    "manifest.json",
+    "assets",
+    "launcher/launcher-runtime.js",
+    "launcher/canonical-runtime-client.js",
+    "background/canonical-runtime-entry.js",
+    "background/tool-runtime.js",
+    "background/context-engine-runtime.js",
+    "background/scope-intelligence-runtime.js",
+    "background/knowledge-client.js",
+    "core/tool-runtime.js",
+    "core/local-agent-approval.js",
+    "core/continuity-engine.js",
+    "core/utils.js",
+    "core/operation-journal.js",
+    "core/patch-engine.js",
+    "core/context-engine-v2.js",
+    "core/repo-cache.js",
+    "core/scope-intelligence-v2.js",
+    "core/scope-lock.js",
+    "storage/settings-store.js",
+    "storage/secret-sanitizer.js",
+    "github/git-adapter.js",
+    "settings/config.js"
+  ],
   "excluded_paths":[],
-  "forbidden_roots":[".github","ai","background","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
-  "forbidden_paths":["updates/latest.json","updates/release.json"],
+  "forbidden_roots":[".github","ai","benchmark","content","diagnostic","docs","release","runtime","scripts","security","supabase","tests","tools","ui","updates"],
+  "forbidden_paths":[
+    "background/service-worker-entry.js",
+    "updates/latest.json",
+    "updates/release.json"
+  ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build82 establishes launcher/launcher-runtime.js as the only shipped UI authority. The runtime package contains only manifest.json, extension icons and the canonical launcher. Legacy ui/, diagnostic shells, fab artwork, fallback mount guardians, extension-owned chat, update-manager runtime, background/service-worker code, provider runtimes, storage, network, polling, timers and MutationObserver are absent from the shipped surface. Functional Builds60-75 engines remain source-only for controlled future reattachment through the canonical launcher."
+  "notes":"Build83 keeps canonical v11 as the only visual authority and reattaches only Tool Runtime, Context Engine v2 and Scope Intelligence v2 through an explicit-user-action-only lazy bridge. The package contains the exact nonvisual dependency closure for those engines; legacy UI, old service-worker entry, polling/observer shells and unrelated background runtimes remain excluded."
 }
