@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.6.81",
-  "version_name": "2.6 Build 81 · Diagnostic UI Shell",
-  "description": "Diagnostic UI-shell restoration: real Decrypter FAB, panel and local navigation only. No background worker, storage, network, polling, observers, Composer, AI or backend execution.",
+  "version": "2.6.82",
+  "version_name": "2.6 Build 82 · Canonical Launcher / Legacy UI Purge",
+  "description": "Canonical v11 launcher as the single visual authority. Legacy UI, diagnostic shells, fallback mounts, polling, observers, background execution and provider runtimes remain absent from the shipped surface.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -17,15 +17,9 @@
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
-      "js": ["diagnostic/ui-shell-runtime.js"],
+      "js": ["launcher/launcher-runtime.js"],
       "run_at": "document_start",
       "all_frames": false
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["assets/fab.png"],
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"]
     }
   ],
   "browser_specific_settings": {
@@ -38,6 +32,6 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.6.81 · Diagnostic UI Shell"
+    "default_title": "Lovable Decrypter v2.6.82 · Canonical Launcher"
   }
 }
