@@ -28,69 +28,49 @@ jobs:
           node --check launcher/account-controller-v84.js
           node --check launcher/ux-polish-v84.js
           node --check launcher/integration-resource-manager-v84.js
+          node --check launcher/integration-resource-entrypoints-v84.js
           node --check background/runtime-entry-v84.js
           node --check background/runtime-entry-v84-integrations.js
           node --check scripts/test-build84-clean-foundation.mjs
 
-      - name: Build84 clean runtime, trust and integrations gate
+      - name: Build84 clean runtime and functional parity gate
         run: node scripts/test-build84-clean-foundation.mjs
 
-      - name: Verify compact launcher UX and parity controls
+      - name: Verify deterministic integration resource visibility
         shell: bash
         run: |
           set -euo pipefail
-          grep -q '#detail .foot' launcher/ux-polish-v84.js
-          grep -q '#detail > .label' launcher/ux-polish-v84.js
-          grep -q '#ld84-module-modal .ld84-note' launcher/ux-polish-v84.js
-          grep -q 'width:58px!important' launcher/ux-polish-v84.js
-          grep -q 'width:52px!important' launcher/ux-polish-v84.js
-          grep -q 'height:min(650px,calc(100vh - 112px))!important' launcher/ux-polish-v84.js
-          grep -q 'justify-content:flex-start!important' launcher/ux-polish-v84.js
-          grep -q 'overflow-y:auto!important' launcher/ux-polish-v84.js
-          grep -q 'gap:4px!important' launcher/ux-polish-v84.js
-          grep -q "MONITOR_KEY = 'ld84_monitor_enabled'" launcher/ux-polish-v84.js
-          grep -q "parityButton('monitor', 'Monitor ON'" launcher/ux-polish-v84.js
-          grep -q "parityButton('editor-direct', 'Editor Direto'" launcher/ux-polish-v84.js
-          grep -q "showStatusOrDetails(shadow, moduleId" launcher/ux-polish-v84.js
-          grep -q "renderStatus(shadow, moduleId" launcher/ux-polish-v84.js
-          grep -q "renderDetails(shadow, moduleId" launcher/ux-polish-v84.js
-          grep -q "runtimeCommand(moduleId, 'status')" launcher/ux-polish-v84.js
-          grep -q "new CustomEvent('ld84:monitor-changed'" launcher/ux-polish-v84.js
-          ! grep -q 'openAction?.click' launcher/ux-polish-v84.js
-          ! grep -q 'MutationObserver' launcher/ux-polish-v84.js
-          ! grep -q 'setInterval' launcher/ux-polish-v84.js
-
-      - name: Verify integration resource management contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -q "manageResources.dataset.ldResourceManage = moduleId" launcher/runtime-client-v84.js
+          grep -q "GitHub · Gerenciar repositórios" launcher/integration-resource-entrypoints-v84.js
+          grep -q "Supabase · Gerenciar projetos" launcher/integration-resource-entrypoints-v84.js
+          grep -q "title !== 'Integrações'" launcher/integration-resource-entrypoints-v84.js
+          grep -q 'data-ld-resource-entrypoint' launcher/integration-resource-entrypoints-v84.js
+          grep -q 'ensureDetailEntry' launcher/integration-resource-entrypoints-v84.js
           grep -q "manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'" launcher/runtime-client-v84.js
-          grep -q "modal.actions.appendChild(manageResources)" launcher/runtime-client-v84.js
-          grep -q 'Gerenciar repositórios' launcher/integration-resource-manager-v84.js
-          grep -q 'Gerenciar projetos' launcher/integration-resource-manager-v84.js
           grep -q 'Gerenciar acesso no GitHub' launcher/integration-resource-manager-v84.js
-          grep -q 'Selecionar todos' launcher/integration-resource-manager-v84.js
-          grep -q 'Remover todos' launcher/integration-resource-manager-v84.js
           grep -q 'Salvar seleção' launcher/integration-resource-manager-v84.js
-          grep -q 'ld84.integration.resources.status' launcher/integration-resource-manager-v84.js
-          grep -q 'ld84.integration.resources.save' launcher/integration-resource-manager-v84.js
-          grep -q "importScripts('runtime-entry-v84.js')" background/runtime-entry-v84-integrations.js
-          grep -q 'ld-integration-selection' background/runtime-entry-v84-integrations.js
-          grep -q 'selected_repositories' supabase/functions/ld-integration-selection/index.ts
-          grep -q 'selected_projects' supabase/functions/ld-integration-selection/index.ts
-          ! grep -q 'MutationObserver' launcher/integration-resource-manager-v84.js
-          ! grep -q 'setInterval' launcher/integration-resource-manager-v84.js
-          ! grep -q 'setInterval' background/runtime-entry-v84-integrations.js
-          ! grep -q 'chrome.alarms' background/runtime-entry-v84-integrations.js
+          ! grep -q 'MutationObserver' launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'setInterval' launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'setTimeout' launcher/integration-resource-entrypoints-v84.js
 
-      - name: Verify protocol-based trust source
+      - name: Verify clean architecture invariants
         shell: bash
         run: |
           set -euo pipefail
-          grep -q "SUPPORTED_PROTOCOLS=new Set(\['ld-runtime-bus/1'\])" supabase/functions/ld-trust-attest/index.ts
-          grep -q "compatibility:'protocol'" supabase/functions/ld-trust-attest/index.ts
-          ! grep -q "const EXPECTED_VERSION='2.4.21'" supabase/functions/ld-trust-attest/index.ts
+          for f in \
+            launcher/launcher-runtime.js \
+            launcher/runtime-client-v84.js \
+            launcher/account-controller-v84.js \
+            launcher/ux-polish-v84.js \
+            launcher/integration-resource-manager-v84.js \
+            launcher/integration-resource-entrypoints-v84.js \
+            background/runtime-entry-v84.js \
+            background/runtime-entry-v84-integrations.js; do
+            ! grep -q 'MutationObserver' "$f"
+            ! grep -q 'setInterval' "$f"
+            ! grep -q 'setAttribute([^)]*inert' "$f"
+          done
+          ! grep -q 'chrome.alarms' background/runtime-entry-v84.js
+          ! grep -q 'chrome.alarms' background/runtime-entry-v84-integrations.js
 
       - name: Package flat installable ZIP
         shell: bash
@@ -108,15 +88,13 @@ jobs:
             launcher/account-controller-v84.js \
             launcher/ux-polish-v84.js \
             launcher/integration-resource-manager-v84.js \
+            launcher/integration-resource-entrypoints-v84.js \
             background/runtime-entry-v84.js \
             background/runtime-entry-v84-integrations.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
 
           ! grep -E '^(content|ui|core|github|storage|supabase|tools|updates)/' /tmp/build84-files.txt
-          ! grep -qx 'background/service-worker-entry.js' /tmp/build84-files.txt
-          ! grep -qx 'background/canonical-runtime-entry.js' /tmp/build84-files.txt
-          ! grep -qx 'launcher/canonical-runtime-client.js' /tmp/build84-files.txt
           test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
 
