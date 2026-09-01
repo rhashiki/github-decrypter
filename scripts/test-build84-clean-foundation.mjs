@@ -13,6 +13,7 @@ const inventory = json('docs/functional-capabilities-v84.json');
 const launcher = read('launcher/launcher-runtime.js');
 const client = read('launcher/runtime-client-v84.js');
 const account = read('launcher/account-controller-v84.js');
+const polish = read('launcher/ux-polish-v84.js');
 const runtime = read('background/runtime-entry-v84.js');
 const trustBackend = read('supabase/functions/ld-trust-attest/index.ts');
 const supabaseBackend = read('supabase/functions/ld-supabase-oauth/index.ts');
@@ -27,7 +28,7 @@ assert.deepEqual(manifest.host_permissions, ['https://lovable.dev/*','https://*.
 
 const app = (manifest.content_scripts || []).find(item => Array.isArray(item.js) && item.js.includes('launcher/launcher-runtime.js'));
 assert.ok(app, 'canonical launcher content script missing');
-assert.deepEqual(app.js, ['launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js']);
+assert.deepEqual(app.js, ['launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js']);
 assert.equal(app.run_at, 'document_start');
 assert.equal(app.all_frames, false);
 
@@ -48,6 +49,13 @@ assert.ok(client.includes("window.open('about:blank', '_blank')"));
 assert.ok(client.includes("modalModules") === false, 'unexpected stale modalModules token');
 assert.ok(client.includes('Runtime Bus limpo · módulos sob demanda'));
 assert.ok(client.includes("moduleId === 'lovable' || moduleId === 'project-state'"));
+
+assert.ok(polish.includes("#ld84-module-modal .ld84-note{display:none!important}"));
+assert.ok(polish.includes("shadow.addEventListener('click'"));
+assert.ok(polish.includes("event.stopImmediatePropagation()"));
+assert.ok(polish.includes(".rail-btn.active,.fly-item.active"));
+assert.ok(polish.includes("flyout?.classList.remove('show')"));
+assert.ok(polish.includes("detail?.classList.remove('show')"));
 
 assert.ok(runtime.includes("chrome.runtime.onMessage.addListener"));
 assert.ok(runtime.includes("mode: 'event-driven'"));
@@ -86,7 +94,7 @@ assert.ok(supabaseBackend.includes('sources:["/projects","/organizations/{slug}/
 assert.ok(supabaseBackend.includes('project_discovery:listed.diagnostics'));
 assert.ok(supabaseBackend.includes('const merged=new Map<string,any>()'));
 
-for (const [name, source] of [['launcher', launcher], ['runtime-client', client], ['account-controller', account], ['runtime-entry', runtime]]) {
+for (const [name, source] of [['launcher', launcher], ['runtime-client', client], ['account-controller', account], ['ux-polish', polish], ['runtime-entry', runtime]]) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
   assert.ok(!/setInterval\s*\(/.test(source), `${name}: setInterval forbidden`);
   assert.ok(!/\.inert\s*=|setAttribute\(\s*['\"]inert/.test(source), `${name}: inert takeover forbidden`);
@@ -96,6 +104,7 @@ for (const [name, source] of [['launcher', launcher], ['runtime-client', client]
 assert.ok(!account.includes('document.body'), 'account controller must not attach to Lovable document body');
 assert.ok(account.includes('shadow.appendChild(modal)'), 'account modal must stay inside the single launcher Shadow DOM');
 assert.ok(!client.includes('document.body.append'), 'functional module surfaces must remain in launcher Shadow DOM');
+assert.ok(!polish.includes('document.body'), 'UX polish must remain scoped to launcher Shadow DOM');
 assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers');
 assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms');
 
@@ -135,7 +144,7 @@ for (const required of [
 ]) assert.ok(ids.includes(required), `functional parity capability missing: ${required}`);
 
 const packagePaths = new Set(pkg.paths || []);
-for (const required of ['manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','background/runtime-entry-v84.js']) {
+for (const required of ['manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js','background/runtime-entry-v84.js']) {
   assert.ok(packagePaths.has(required), `package path missing: ${required}`);
   assert.ok(exists(required), `package file missing: ${required}`);
 }
@@ -148,7 +157,7 @@ for (const forbidden of ['background/service-worker-entry.js','background/canoni
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/4',
+  schema: 'ld-build84-clean-foundation/5',
   version: manifest.version,
   capabilitiesLocked: inventory.capabilities.length,
   visualAuthorities: 1,
@@ -160,6 +169,7 @@ console.log(JSON.stringify({
   functionalLossAllowed: false,
   trustCompatibility: 'protocol',
   supabaseProjectDiscovery: 'direct+organization',
+  uxPolish: ['module-footnotes-hidden','active-rail-toggle-close'],
   reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state'],
   lovableShellBlockedByLicense: false
 }, null, 2));
