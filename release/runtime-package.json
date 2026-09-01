@@ -1,10 +1,22 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.82",
-  "paths":["manifest.json","assets","launcher"],
+  "candidate":"2.6.84",
+  "paths":[
+    "manifest.json",
+    "assets",
+    "launcher/launcher-runtime.js",
+    "launcher/runtime-client-v84.js",
+    "background/runtime-entry-v84.js"
+  ],
   "excluded_paths":[],
-  "forbidden_roots":[".github","ai","background","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
-  "forbidden_paths":["updates/latest.json","updates/release.json"],
+  "forbidden_roots":[".github","ai","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
+  "forbidden_paths":[
+    "background/service-worker-entry.js",
+    "background/canonical-runtime-entry.js",
+    "launcher/canonical-runtime-client.js",
+    "updates/latest.json",
+    "updates/release.json"
+  ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build82 establishes launcher/launcher-runtime.js as the only shipped UI authority. The runtime package contains only manifest.json, extension icons and the canonical launcher. Legacy ui/, diagnostic shells, fab artwork, fallback mount guardians, extension-owned chat, update-manager runtime, background/service-worker code, provider runtimes, storage, network, polling, timers and MutationObserver are absent from the shipped surface. Functional Builds60-75 engines remain source-only for controlled future reattachment through the canonical launcher."
+  "notes":"Build84.0/84.1 foundation starts from stable Build82. Shipped surface is allowlisted to the canonical launcher, event-driven runtime client and minimal runtime bus only. All functional capabilities are locked in docs/functional-capabilities-v84.json and remain source-preserved for controlled replacement. No legacy ui/content stack, mount guardian, global MutationObserver, composer guardian/bridge, Decrypter Chat DOM takeover, polling runtime, provider engine, OTA metadata or release publication is shipped in this candidate."
 }
