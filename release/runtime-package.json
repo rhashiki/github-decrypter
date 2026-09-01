@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.78",
-  "paths":["manifest.json","assets","updates/update-manager.js"],
+  "candidate":"2.6.79",
+  "paths":["manifest.json","assets","diagnostic","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build78 Emergency Kill Switch is a diagnostic containment release for the Chrome-wide freeze/memory incident. The shipped extension has no background service worker, no content scripts, no permissions, no host permissions, and no web-accessible runtime resources. The ZIP contains only manifest.json, icons, and the dormant update-manager artifact required by the release packager; update-manager.js is not referenced by the manifest and cannot execute. This release intentionally disables all Decrypter functionality so browser stability can be isolated from extension runtime execution."
+  "notes":"Build79 Diagnostic Minimal Runtime is the first controlled reactivation after the Chrome-wide freeze incident. The shipped extension has no background service worker, no permissions, no host_permissions, no optional permissions, no network runtime, no storage runtime, no polling, no MutationObserver, no Composer Guardian, no Composer Bridge, and no Builds70-76 execution modules. A single document_idle content script runs only on lovable.dev and subdomains, mounts one Shadow DOM host with a local FAB and diagnostic panel, and registers only one click listener plus an optional one-shot DOMContentLoaded listener. The dormant update-manager artifact remains unreferenced by the manifest and cannot execute. This build exists solely to test whether minimal DOM injection is stable before any functional module is restored."
 }
