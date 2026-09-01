@@ -6,7 +6,24 @@
 
   const VERSION = '2.6.83';
   const HOST_ID = 'lovable-decrypter-launcher';
-  const SUPPORTED = Object.freeze(new Set(['tool-runtime', 'context-pack', 'scope-intelligence']));
+  const SUPPORTED = Object.freeze(new Set([
+    'local-agent',
+    'tool-runtime',
+    'mcp-runtime',
+    'context-pack',
+    'scope-intelligence',
+    'smart-undo',
+    'continuity',
+    'account',
+    'agent-sandbox'
+  ]));
+  const GROUPED = Object.freeze(new Set(['local-agent', 'mcp-runtime', 'account']));
+  const ASSOCIATED = Object.freeze({
+    'local-agent': Object.freeze(['local-model','tool-runtime','context-pack','scope-intelligence','continuity','local-agent','agent-runtime-registry','portable-skills','agent-sandbox','native-agent-sessions']),
+    'mcp-runtime': Object.freeze(['mcp-runtime','mcp-marketplace']),
+    'account': Object.freeze(['account','integration-callback']),
+    'agent-sandbox': Object.freeze(['agent-sandbox','native-agent-sessions'])
+  });
 
   function runtimeMessage(type, payload = {}) {
     return new Promise((resolve, reject) => {
@@ -29,6 +46,7 @@
 
   function portRequest(portName, action, payload = {}) {
     return new Promise((resolve, reject) => {
+      if (!portName) return reject(new Error('RUNTIME_PORT_UNAVAILABLE'));
       const id = `ld83-${Date.now()}-${Math.random().toString(16).slice(2)}`;
       let settled = false;
       let port;
@@ -66,6 +84,29 @@
     });
   }
 
+  async function catalog() {
+    return runtimeMessage('ld83.runtime.catalog');
+  }
+
+  async function activate(moduleId, { group = false } = {}) {
+    const id = String(moduleId || '').trim();
+    if (!id) throw new Error('RUNTIME_MODULE_REQUIRED');
+    if (group || GROUPED.has(id)) return runtimeMessage('ld83.runtime.activate_group', { groupId: id });
+    return runtimeMessage('ld83.runtime.activate', { moduleId: id });
+  }
+
+  async function status(moduleId, payload = {}) {
+    const id = String(moduleId || '').trim();
+    const activated = await activate(id, { group: GROUPED.has(id) });
+    const modules = Array.isArray(activated?.modules) ? activated.modules : [activated];
+    const definition = modules.find(item => item?.id === id) || modules[0];
+    if (!definition?.port || !definition?.statusAction) return { definition, status: null };
+    return {
+      definition,
+      status: await portRequest(definition.port, definition.statusAction, payload)
+    };
+  }
+
   function compactStatus(moduleId, data = {}) {
     if (moduleId === 'tool-runtime') {
       const tools = Array.isArray(data?.tools) ? data.tools : [];
@@ -78,9 +119,13 @@
       const sources = Array.isArray(data?.sources) ? data.sources.length : 0;
       return `ATIVO · Context Engine v2 · ${sources} fontes · sem persistência de prompt bruto`;
     }
-    if (moduleId === 'scope-intelligence') {
-      return `ATIVO · fail-closed antes de escrita · USER_EDIT > AI_EDIT`;
-    }
+    if (moduleId === 'scope-intelligence') return 'ATIVO · fail-closed antes de escrita · USER_EDIT > AI_EDIT';
+    if (moduleId === 'mcp-runtime') return 'ATIVO · MCP Trust Gateway + marketplace curado · escrita exige política/aprovação';
+    if (moduleId === 'smart-undo') return 'ATIVO · undo/redo reversível · preview antes da aplicação';
+    if (moduleId === 'continuity') return 'ATIVO · continuidade e recuperação habilitadas sob demanda';
+    if (moduleId === 'local-agent') return 'ATIVO · agente local + runtime registry + skills + sandbox + sessões nativas';
+    if (moduleId === 'account') return 'ATIVO · readiness gate + callback confiável';
+    if (moduleId === 'agent-sandbox') return 'ATIVO · alterações isoladas até aprovação';
     return 'ATIVO';
   }
 
@@ -108,7 +153,7 @@
     if (!detail) return;
     const moduleId = String(detail.dataset.module || '');
     if (SUPPORTED.has(moduleId)) {
-      setDetailState(shadow, 'runtime disponível sob demanda · sem polling · sem observers', 'ON-DEMAND');
+      setDetailState(shadow, 'runtime moderno disponível · ativação explícita · sem UI/observers legados', 'ON-DEMAND');
     } else {
       const strong = detail.querySelector('.foot strong');
       if (strong) strong.textContent = `Build ${VERSION}`;
@@ -116,15 +161,22 @@
   }
 
   async function activateModule(shadow, moduleId, inspect = false) {
-    setDetailState(shadow, 'ativando somente por ação explícita do usuário…', 'ATIVANDO');
-    const definition = await runtimeMessage('ld83.runtime.activate', { moduleId });
+    setDetailState(shadow, 'ativando somente a capacidade solicitada…', 'ATIVANDO');
+    const activated = await activate(moduleId, { group: GROUPED.has(moduleId) });
+    const modules = Array.isArray(activated?.modules) ? activated.modules : [activated];
+    const definition = modules.find(item => item?.id === moduleId) || modules[0];
+    const count = modules.filter(Boolean).length;
     if (!inspect) {
-      setDetailState(shadow, `${definition.title} ativado sob demanda · nenhuma ativação automática`, 'ATIVO');
-      return definition;
+      setDetailState(shadow, `${definition?.title || moduleId} ativado${count > 1 ? ` · ${count} runtimes do grupo` : ''} · sem ativação automática no boot`, 'ATIVO');
+      return activated;
     }
-    const status = await portRequest(definition.port, definition.statusAction || 'status', {});
-    setDetailState(shadow, compactStatus(moduleId, status), 'ATIVO');
-    return { definition, status };
+    if (!definition?.port || !definition?.statusAction) {
+      setDetailState(shadow, `${definition?.title || moduleId} ativo · sem porta de status dedicada`, 'ATIVO');
+      return { definition, status: null };
+    }
+    const data = await portRequest(definition.port, definition.statusAction, {});
+    setDetailState(shadow, compactStatus(moduleId, data), 'ATIVO');
+    return { definition, status: data };
   }
 
   function install() {
@@ -164,16 +216,32 @@
         return;
       }
       if (label.includes('Detalhes')) {
-        runtimeMessage('ld83.runtime.catalog').then(catalog => {
-          const entry = (catalog?.modules || []).find(item => item.id === moduleId);
-          const mode = entry?.active ? 'ATIVO' : 'ON-DEMAND';
-          setDetailState(shadow, `${entry?.title || moduleId} · origem Build ${entry?.sourceBuild || '?'} · política ${entry?.writePolicy || 'read-only'} · ativação explícita`, mode);
+        catalog().then(data => {
+          const ids = ASSOCIATED[moduleId] || [moduleId];
+          const entries = (data?.modules || []).filter(item => ids.includes(item.id));
+          const activeCount = entries.filter(item => item.active).length;
+          const builds = [...new Set(entries.map(item => item.sourceBuild).filter(Boolean))].sort((a, b) => a - b);
+          const state = activeCount ? 'ATIVO' : 'ON-DEMAND';
+          setDetailState(shadow, `${entries.length || 1} runtime(s) · Build(s) ${builds.join(', ') || '?'} · ${activeCount} ativo(s) · installers somente por ação explícita`, state);
         }).catch(error => {
           setDetailState(shadow, `${error?.code || 'ERRO'} · ${error?.message || 'falha ao consultar catálogo'}`, 'ERRO');
         });
       }
     });
   }
+
+  window.LovableDecrypterRuntimeV83 = Object.freeze({
+    version: VERSION,
+    catalog,
+    activate: moduleId => activate(moduleId, { group: false }),
+    activateGroup: groupId => activate(groupId, { group: true }),
+    status,
+    request: async (moduleId, action, payload = {}) => {
+      const activated = await activate(moduleId, { group: false });
+      if (!activated?.port) throw new Error('RUNTIME_PORT_UNAVAILABLE');
+      return portRequest(activated.port, action, payload);
+    }
+  });
 
   if (document.getElementById(HOST_ID)?.shadowRoot) install();
   else document.addEventListener('DOMContentLoaded', install, { once: true });
