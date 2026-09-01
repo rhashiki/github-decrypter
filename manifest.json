@@ -1,20 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.6.79",
-  "version_name": "2.6 Build 79 · Diagnostic Minimal Runtime",
-  "description": "Diagnostic minimal runtime: renders only a local FAB and panel on Lovable with no background worker, network, storage, polling, observers, or Decrypter execution engine.",
+  "version": "2.6.80",
+  "version_name": "2.6 Build 80 · Diagnostic FAB Injection",
+  "description": "Diagnostic minimal runtime with explicit Lovable host access and Trusted-Types-safe FAB injection. No background worker, storage, network, polling, observers, or Decrypter execution engine.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
+  "host_permissions": [
+    "https://lovable.dev/*",
+    "https://*.lovable.dev/*"
+  ],
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
       "js": ["diagnostic/minimal-runtime.js"],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "all_frames": false
     }
   ],
@@ -28,6 +32,6 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.6.79 · Diagnostic Minimal Runtime"
+    "default_title": "Lovable Decrypter v2.6.80 · Diagnostic FAB Injection"
   }
 }
