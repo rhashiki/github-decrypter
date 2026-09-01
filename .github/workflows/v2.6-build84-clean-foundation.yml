@@ -1,0 +1,66 @@
+name: v2.6 Build 84 · Clean Functional Runtime Foundation
+
+on:
+  push:
+    branches: [v2.6.84-clean-functional-runtime]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check clean shipped runtime
+        run: |
+          node --check launcher/launcher-runtime.js
+          node --check launcher/runtime-client-v84.js
+          node --check background/runtime-entry-v84.js
+          node --check scripts/test-build84-clean-foundation.mjs
+
+      - name: Build84 clean foundation and functional parity gate
+        run: node scripts/test-build84-clean-foundation.mjs
+
+      - name: Package flat installable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="Lovable-Decrypter-v2.6.84-foundation-test.zip"
+          mapfile -t PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          zip -qr "$ZIP" "${PATHS[@]}"
+          unzip -Z1 "$ZIP" > /tmp/build84-files.txt
+
+          for required in \
+            manifest.json \
+            launcher/launcher-runtime.js \
+            launcher/runtime-client-v84.js \
+            background/runtime-entry-v84.js; do
+            grep -qx "$required" /tmp/build84-files.txt
+          done
+
+          ! grep -E '^(content|ui|core|github|storage|supabase|tools|updates)/' /tmp/build84-files.txt
+          ! grep -qx 'background/service-worker-entry.js' /tmp/build84-files.txt
+          ! grep -qx 'background/canonical-runtime-entry.js' /tmp/build84-files.txt
+          ! grep -qx 'launcher/canonical-runtime-client.js' /tmp/build84-files.txt
+          test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
+          sha256sum "$ZIP" | tee "${ZIP}.sha256"
+
+      - name: Upload flat Build84 test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.6.84-foundation-test
+          path: |
+            Lovable-Decrypter-v2.6.84-foundation-test.zip
+            Lovable-Decrypter-v2.6.84-foundation-test.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
