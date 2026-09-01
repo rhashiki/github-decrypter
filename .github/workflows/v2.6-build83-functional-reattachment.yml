@@ -1,0 +1,44 @@
+name: v2.6 Build 83 · Functional Reattachment Phase 1
+
+on:
+  push:
+    branches: [main, v2.6.83-functional-reattachment]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check launcher/launcher-runtime.js
+          node --check launcher/canonical-runtime-client.js
+          node --check background/canonical-runtime-entry.js
+          node --check background/tool-runtime.js
+          node --check background/context-engine-runtime.js
+          node --check background/scope-intelligence-runtime.js
+      - name: Build83 lazy reattachment gate
+        run: node scripts/test-build83-functional-reattachment.mjs
+      - name: Canonical visual authority regression checks
+        run: |
+          test ! -e ui
+          test ! -e diagnostic
+          test ! -e content/ui-shell-bootstrap.js
+          test ! -e content/ui-mount-guardian.js
+          test ! -e background/decrypter-chat-runtime.js
+          ! grep -R -n -E 'ld2-root|ld2-native-bridge|nexus-parity|MutationObserver' launcher background/canonical-runtime-entry.js
+      - name: Release preflight candidate
+        run: node scripts/release-preflight.mjs --candidate
+      - name: Build75 adversarial bench
+        run: node benchmark/universal-agent-bench.mjs
