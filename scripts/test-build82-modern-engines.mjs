@@ -73,7 +73,6 @@ for (const [importToken, installToken] of sourceAssembly) {
   assert.ok(entry.includes(importToken), `service-worker source assembly lost modern engine import ${importToken}`);
   assert.ok(entry.includes(installToken), `service-worker source assembly lost modern engine install ${installToken}`);
 }
-
 for (const token of ['decrypter-chat-runtime', 'multi-agent-runtime-v74', 'ui/', 'diagnostic/']) {
   assert.ok(!entry.includes(token), `service-worker source assembly must not reference legacy visual layer: ${token}`);
 }
@@ -81,14 +80,19 @@ for (const token of ['decrypter-chat-runtime', 'multi-agent-runtime-v74', 'ui/',
 const settings = read('settings/config.js');
 for (const schema of [
   'ld-tool-runtime/1',
-  'ld-mcp-trust-gateway/1',
-  'ld-mcp-marketplace/1',
-  'ld-context-engine/2',
-  'ld-scope-intelligence/2',
   'ld-operation-journal/1',
-  'ld-continuity-engine/1',
+  'ld-mcp-runtime/1',
+  'ld-mcp-marketplace/1',
+  'ld-context-pack/2',
+  'ld-scope-intelligence/2',
+  'ld-reversible-operation/1',
+  'ld-continuity-task/1',
+  'ld-local-model-router/1',
+  'ld-local-agent/1',
+  'ld-decrypterbench/2',
+  'ld-account-integration-readiness/1',
   'ld-agent-runtime-registry/1',
-  'ld-portable-skills/2',
+  'ld-portable-skill/2',
   'ld-agent-sandbox/1',
   'ld-native-agent-session/1',
   'ld-universal-agent-bench/1'
