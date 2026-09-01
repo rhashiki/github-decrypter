@@ -3,7 +3,7 @@
   "name": "Lovable Decrypter",
   "version": "2.6.84",
   "version_name": "2.6 Build 84 · Trust + Core Integrations",
-  "description": "Stable Build 84 clean runtime with event-driven license/trust, GitHub App, Supabase OAuth and on-demand Lovable project snapshot. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
+  "description": "Stable Build 84 clean runtime with event-driven license/trust, GitHub App, Supabase OAuth, resource selection and on-demand Lovable project snapshot. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -17,7 +17,7 @@
     "https://kkzxxnfxgrouhkzyszxs.supabase.co/*"
   ],
   "background": {
-    "service_worker": "background/runtime-entry-v84.js"
+    "service_worker": "background/runtime-entry-v84-integrations.js"
   },
   "content_scripts": [
     {
@@ -26,7 +26,8 @@
         "launcher/launcher-runtime.js",
         "launcher/runtime-client-v84.js",
         "launcher/account-controller-v84.js",
-        "launcher/ux-polish-v84.js"
+        "launcher/ux-polish-v84.js",
+        "launcher/integration-resource-manager-v84.js"
       ],
       "run_at": "document_start",
       "all_frames": false
