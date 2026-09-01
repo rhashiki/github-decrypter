@@ -26,7 +26,9 @@
     icon.setAttribute('fill', 'none');
     icon.setAttribute('aria-hidden', 'true');
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', integration === 'github' ? 'M5 4h14v16H5z M8 8h8 M8 12h8 M8 16h5' : 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6');
+    path.setAttribute('d', integration === 'github'
+      ? 'M5 4h14v16H5z M8 8h8 M8 12h8 M8 16h5'
+      : 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6');
     path.setAttribute('stroke', 'currentColor');
     path.setAttribute('stroke-width', '1.75');
     path.setAttribute('stroke-linecap', 'round');
@@ -37,29 +39,56 @@
     return button;
   }
 
+  function fitPanel(shadow, panel) {
+    if (!panel?.classList.contains('show')) return;
+    const rail = shadow.getElementById('rail');
+    const maxH = Math.max(240, Math.floor(rail?.getBoundingClientRect?.().height || 0));
+    if (!maxH) return;
+
+    panel.style.height = 'auto';
+    panel.style.maxHeight = 'none';
+    panel.style.overflowY = 'hidden';
+
+    const natural = Math.max(panel.scrollHeight || 0, 1);
+    const height = Math.min(natural, maxH);
+    let top = Number.parseFloat(panel.style.top || '8');
+    if (!Number.isFinite(top)) top = 8;
+    if (top + height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - height - 8);
+
+    panel.style.top = `${Math.round(top)}px`;
+    panel.style.height = `${Math.round(height)}px`;
+    panel.style.maxHeight = `${Math.round(height)}px`;
+    panel.style.overflowY = natural > height ? 'auto' : 'hidden';
+  }
+
   function ensureFlyoutEntries(shadow) {
     const flyout = shadow.getElementById('flyout');
-    if (!flyout?.classList.contains('show')) return;
+    if (!flyout?.classList.contains('show')) return false;
     const title = String(flyout.querySelector('.fly-title span')?.textContent || '').trim();
-    if (title !== 'Integrações') return;
+    if (title !== 'Integrações') return false;
     const list = flyout.querySelector('.fly-list');
-    if (!list) return;
+    if (!list) return false;
 
+    let changed = false;
     if (!list.querySelector('[data-ld-resource-entrypoint="github"]')) {
       list.appendChild(makeFlyEntry('github', 'GitHub · Gerenciar repositórios'));
+      changed = true;
     }
     if (!list.querySelector('[data-ld-resource-entrypoint="supabase"]')) {
       list.appendChild(makeFlyEntry('supabase', 'Supabase · Gerenciar projetos'));
+      changed = true;
     }
+    if (changed) fitPanel(shadow, flyout);
+    return changed;
   }
 
   function ensureDetailEntry(shadow) {
     const detail = shadow.getElementById('detail');
-    if (!detail?.classList.contains('show')) return;
+    if (!detail?.classList.contains('show')) return false;
     const integration = String(detail.dataset.module || '');
-    if (!['github', 'supabase'].includes(integration)) return;
+    if (!['github', 'supabase'].includes(integration)) return false;
     const actions = detail.querySelector('.actions');
-    if (!actions || actions.querySelector('[data-ld-resource-entrypoint-detail]')) return;
+    if (!actions || actions.querySelector('[data-ld-resource-entrypoint-detail]')) return false;
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -72,6 +101,8 @@
     arrow.textContent = '›';
     button.append(label, arrow);
     actions.appendChild(button);
+    fitPanel(shadow, detail);
+    return true;
   }
 
   function scheduleEnsure(shadow) {
