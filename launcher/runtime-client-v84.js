@@ -260,6 +260,13 @@
     modal.actions.appendChild(refresh);
 
     if (data.connected === true) {
+      const manageResources = document.createElement('button');
+      manageResources.className = 'ld84-btn';
+      manageResources.type = 'button';
+      manageResources.dataset.ldResourceManage = moduleId;
+      manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos';
+      modal.actions.appendChild(manageResources);
+
       const disconnect = document.createElement('button');
       disconnect.className = 'ld84-btn danger';
       disconnect.type = 'button';
