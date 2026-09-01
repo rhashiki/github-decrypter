@@ -63,5 +63,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build83 restores the preserved modern runtime family from Builds 60-74 behind the canonical v11 bridge. Build69 and Build75 remain validation benchmarks. The package intentionally excludes the eliminated legacy UI/content bootstraps, old service-worker assemblies, diagnostics, update metadata and external local-runtime deployment sources. Runtime installers remain inactive at boot and are enabled only by explicit user action."
+  "notes":"Build83 restores the preserved modern runtime family from Builds 60-74 behind the canonical v11 bridge. Build69 DecrypterBench v2 / Hardening and Build75 Universal Agent Bench / External-Agent Hardening remain cumulative validation benchmarks. Hardening coverage includes path traversal defenses, one-shot write authority, GitHub App/repository revocation, Supabase OAuth/scope revocation, and zero paid/remote fallback. The package intentionally excludes the eliminated legacy UI/content bootstraps, old service-worker assemblies, diagnostics, update metadata and external local-runtime deployment sources. Runtime installers remain inactive at boot and are enabled only by explicit user action. No OTA metadata, GitHub Release or store publication is authorized."
 }
