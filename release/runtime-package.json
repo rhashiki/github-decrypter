@@ -9,6 +9,7 @@
     "launcher/account-controller-v84.js",
     "launcher/ux-polish-v84.js",
     "launcher/integration-resource-manager-v84.js",
+    "launcher/integration-resource-entrypoints-v84.js",
     "background/runtime-entry-v84.js",
     "background/runtime-entry-v84-integrations.js"
   ],
@@ -22,5 +23,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build84 clean runtime starts from stable Build82. Shipped surface is allowlisted to the canonical launcher, event-driven runtime client, clean account controller, UX polish, isolated integration resource manager, minimal runtime bus and a small integration-selection service-worker wrapper. License activation, protocol-based Trust, GitHub, Supabase, resource allowlists and on-demand project state are reattached without the legacy DOM stack. GitHub repository access remains authoritative in the GitHub App installation; the Decrypter stores only which already-authorized repositories are enabled. Supabase OAuth remains authoritative for visible projects; the Decrypter stores only which OAuth-visible projects are enabled. No external repository/project is deleted when removed from the Decrypter. No legacy ui/content stack, mount guardian, global MutationObserver, continuous polling, heavy provider engine, OTA metadata or release publication is shipped."
+  "notes":"Build84 clean runtime starts from stable Build82. Shipped surface is allowlisted to the canonical launcher, event-driven runtime client, clean account controller, UX polish, isolated integration resource manager, deterministic integration resource entrypoints, minimal runtime bus and a small integration-selection service-worker wrapper. GitHub repository access remains authoritative in the GitHub App installation; the Decrypter stores only which already-authorized repositories are enabled. Supabase OAuth remains authoritative for visible projects; the Decrypter stores only which OAuth-visible projects are enabled. Resource management entrypoints are rendered deterministically inside the Integrations flyout and integration detail surface without MutationObserver, polling or timers. No external repository/project is deleted when removed from the Decrypter. No legacy ui/content stack, mount guardian, global MutationObserver, continuous polling, heavy provider engine, OTA metadata or release publication is shipped."
 }
