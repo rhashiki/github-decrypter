@@ -3,131 +3,17 @@
   "name": "Lovable Decrypter",
   "version": "2.6.83",
   "version_name": "2.6 Build 83 · Functional Runtime Reattachment",
-  "description": "Restores the homologated functional activation, FAB/rail UI and feature handlers while preserving the modern Builds 58–74 runtime family.",
-  "icons": {
-    "16": "assets/icon16.png",
-    "32": "assets/icon32.png",
-    "48": "assets/icon48.png",
-    "128": "assets/icon128.png"
-  },
-  "permissions": ["storage", "tabs", "downloads", "unlimitedStorage", "alarms", "identity"],
-  "host_permissions": [
-    "https://lovable.dev/*",
-    "https://*.lovable.dev/*",
-    "https://api.github.com/*",
-    "https://codeload.github.com/*",
-    "https://generativelanguage.googleapis.com/*",
-    "https://api.supabase.com/*",
-    "https://*.supabase.co/*"
+  "description": "Functional Lovable Decrypter runtime restored from the final homologated v2.5 authority stack, with Decrypter Chat activation, UI Kernel and feature handlers reattached to the modern v2.6 engine family.",
+  "icons":{"16":"assets/icon16.png","32":"assets/icon32.png","48":"assets/icon48.png","128":"assets/icon128.png"},
+  "permissions":["storage","tabs","downloads","unlimitedStorage","alarms","identity"],
+  "host_permissions":["https://lovable.dev/*","https://*.lovable.dev/*","https://api.github.com/*","https://codeload.github.com/*","https://generativelanguage.googleapis.com/*","https://api.supabase.com/*","https://*.supabase.co/*"],
+  "optional_host_permissions":["https://*/*","http://localhost/*","http://127.0.0.1/*"],
+  "background":{"service_worker":"background/service-worker-entry.js","type":"module"},
+  "browser_specific_settings":{"gecko":{"id":"lovable-decrypter@rhashiki.dev","strict_min_version":"121.0","data_collection_permissions":{"required":["authenticationInfo","websiteContent"]}}},
+  "action":{"default_title":"Lovable Decrypter v2.6 Build 83 · Functional Runtime Reattachment"},
+  "content_scripts":[
+    {"matches":["https://lovable.dev/*","https://*.lovable.dev/*"],"js":["content/early-boot-sentinel.js"],"run_at":"document_start","all_frames":true,"match_about_blank":true},
+    {"matches":["https://lovable.dev/*","https://*.lovable.dev/*"],"js":["content/ui-shell-bootstrap.js","content/content.js","content/ui-mount-guardian.js","content/error-intelligence-core.js","ui/ui.js","content/zero-cost-runtime-guard.js","ui/error-intelligence-center.js","ui/license-gate-premium.js","content/credential-ui-guard.js","content/lovable-project-runtime.js","content/lovable-workspace-deep-read.js","content/project-state-graph-core.js","content/unified-project-state-graph.js","content/project-recovery-doctor-core.js","content/project-recovery-doctor.js","content/lovable-project-creator.js","content/cloud-migrator-runtime-v2.js","content/project-intelligence.js","content/skill-router.js","content/project-rules-cache.js","ui/skills-engine.js","ui/control-center.js","content/checkpoint-ui.js","content/batch-mode.js","content/queue-project-context.js","content/queue-atomic-skip.js","content/queue-executor.js","ui/project-context.js","ui/premium-workspace.js","ui/github-autosync.js","ui/project-migration.js","ui/project-creator.js","ui/supabase-project-manager.js","ui/cloud-migrator-complete.js","content/lovable-sync-verifier.js","content/composer-bridge-v3.js","content/composer-guardian.js","content/decrypter-chat-core.js","content/decrypter-chat.js","content/approval-auto-repair.js","content/hardening-core.js","content/capability-registry.js","content/runtime-integrity-guard.js","content/hardening-sentinel.js","content/build11-reconciliation.js","content/commercial-runtime.js","content/build12-reconciliation.js","content/live-operations.js","content/activity-cloud-sync.js","ui/activity-center.js","content/build13-reconciliation.js","ui/update-recovery.js","ui/lightweight-runtime-delivery.js","ui/chat-activation-premium-v45.js","ui/ui-kernel-v48.js","ui/integrations-v49.js","ui/project-intelligence-v50.js","ui/engineering-suite-v51.js","ui/project-tools-v52.js","ui/settings-v53.js","ui/update-center-v54.js","ui/backend-messaging-v55.js","ui/productivity-suite.js","ui/branding-white-label.js","ui/decrypter-marketplace.js","content/tool-runtime-client.js","content/mcp-runtime-client.js","content/mcp-marketplace-client.js","content/context-engine-client.js","content/reversible-operations-client.js","content/continuity-runtime-client.js","content/local-agent-orchestrator-client.js","content/integration-readiness-client.js","content/integration-callback-bridge.js","content/agent-runtime-registry-client.js","content/portable-skills-client.js","content/agent-sandbox-client.js","content/native-agent-session-client.js","content/build14-reconciliation.js","content/build15-reconciliation.js","content/build16-reconciliation.js","content/build17-reconciliation.js","content/build18-reconciliation.js"],"css":["ui/matrix.css","ui/error-intelligence-center.css","ui/license-gate-premium.css","ui/control-center.css","ui/composer-bridge.css","ui/composer-guardian.css","ui/editor-direct-v3.css","ui/github-app.css","ui/project-context.css","ui/premium-workspace.css","ui/project-migration.css","ui/project-creator.css","ui/supabase-project-manager.css","ui/cloud-migrator-core.css","ui/skills-engine.css","ui/activity-center.css","ui/update-recovery.css","ui/recovery-doctor.css","ui/design-system-v3.css","ui/productivity-suite.css","ui/branding-white-label.css","ui/decrypter-marketplace.css","ui/chat-activation-premium-v45.css","ui/ui-kernel-v48.css","ui/integrations-v49.css","ui/project-intelligence-v50.css","ui/engineering-suite-v51.css","ui/project-tools-v52.css","ui/settings-v53.css","ui/update-center-v54.css"],"run_at":"document_idle","all_frames":false}
   ],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*",
-    "http://[::1]/*"
-  ],
-  "background": {
-    "service_worker": "background/service-worker-entry.js",
-    "type": "module"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
-      "js": ["content/early-boot-sentinel.js"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
-      "css": [
-        "ui/ui.css",
-        "ui/design-system-v3.css",
-        "ui/premium-final.css",
-        "ui/premium-engineering.css",
-        "ui/premium-project-tools.css",
-        "ui/premium-productivity.css",
-        "ui/premium-marketplace.css",
-        "ui/voice-toast.css",
-        "ui/integrations-v49.css",
-        "ui/project-intelligence-v50.css",
-        "ui/engineering-suite-v51.css",
-        "ui/project-tools-v52.css",
-        "ui/premium-settings.css",
-        "ui/settings-v53.css",
-        "ui/update-center-v54.css"
-      ],
-      "js": [
-        "content/zero-cost-runtime-guard.js",
-        "content/credential-ui-guard.js",
-        "content/ui-shell-bootstrap.js",
-        "content/user-edit-context.js",
-        "content/lovable-project-creator.js",
-        "content/cloud-migrator-runtime.js",
-        "content/cloud-migrator-runtime-v2.js",
-        "content/skill-router.js",
-        "content/content.js",
-        "content/live-operations.js",
-        "content/ui-mount-guardian.js",
-        "content/activity-cloud-sync.js",
-        "content/error-intelligence-core.js",
-        "content/project-state-graph-core.js",
-        "content/unified-project-state-graph.js",
-        "content/project-recovery-doctor-core.js",
-        "content/lovable-project-runtime.js",
-        "content/lovable-sync-verifier.js",
-        "ui/ui.js",
-        "ui/license-gate-premium.js",
-        "ui/design-system-v3.js",
-        "ui/workspace-premium.js",
-        "ui/premium-engineering.js",
-        "ui/premium-project-tools.js",
-        "ui/productivity-premium.js",
-        "ui/branding-white-label.js",
-        "ui/marketplace-premium.js",
-        "ui/chat-activation-premium-v45.js",
-        "ui/ui-kernel-v48.js",
-        "ui/integrations-v49.js",
-        "ui/project-intelligence-v50.js",
-        "ui/engineering-suite-v51.js",
-        "ui/project-tools-v52.js",
-        "ui/settings-v53.js",
-        "ui/update-center-v54.js",
-        "ui/backend-messaging-v55.js",
-        "content/tool-runtime-client.js",
-        "content/mcp-runtime-client.js",
-        "content/mcp-marketplace-client.js",
-        "content/context-engine-client.js",
-        "content/reversible-operations-client.js",
-        "content/continuity-runtime-client.js",
-        "content/local-agent-orchestrator-client.js",
-        "content/integration-readiness-client.js",
-        "content/integration-callback-bridge.js",
-        "content/agent-runtime-registry-client.js",
-        "content/portable-skills-client.js",
-        "content/agent-sandbox-client.js",
-        "content/native-agent-session-client.js",
-        "content/core-reconciliation.js"
-      ],
-      "run_at": "document_start",
-      "all_frames": false
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["assets/fab.png"],
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"]
-    }
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "lovable-decrypter@rhashiki.dev",
-      "strict_min_version": "121.0",
-      "data_collection_permissions": {
-        "required": ["authenticationInfo", "websiteContent"]
-      }
-    }
-  },
-  "action": {
-    "default_title": "Lovable Decrypter v2.6.83 · Functional Runtime Reattachment"
-  }
+  "web_accessible_resources":[{"resources":["assets/fab.png","assets/icon128.png"],"matches":["https://lovable.dev/*","https://*.lovable.dev/*"]}]
 }
