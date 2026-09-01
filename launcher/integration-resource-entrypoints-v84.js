@@ -68,7 +68,11 @@
     const actions = detail.querySelector('.actions');
     if (!actions) return;
 
-    for (const node of actions.querySelectorAll('[data-ld-resource-manage]')) node.remove();
+    const existing = [...actions.querySelectorAll('[data-ld-resource-manage]')];
+    const canonical = existing.find(node => node.dataset.ldResourceCanonicalDetail === integration);
+    if (existing.length === 1 && canonical && canonical.querySelector('svg') && canonical.querySelector('span')) return;
+
+    for (const node of existing) node.remove();
 
     const button = document.createElement('button');
     button.type = 'button';
