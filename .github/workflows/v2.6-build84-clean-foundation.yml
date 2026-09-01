@@ -26,11 +26,25 @@ jobs:
           node --check launcher/launcher-runtime.js
           node --check launcher/runtime-client-v84.js
           node --check launcher/account-controller-v84.js
+          node --check launcher/ux-polish-v84.js
           node --check background/runtime-entry-v84.js
           node --check scripts/test-build84-clean-foundation.mjs
 
       - name: Build84 clean runtime, trust and integrations gate
         run: node scripts/test-build84-clean-foundation.mjs
+
+      - name: Verify compact launcher UX contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '#detail .foot' launcher/ux-polish-v84.js
+          grep -q '#detail > .label' launcher/ux-polish-v84.js
+          grep -q '#ld84-module-modal .ld84-note' launcher/ux-polish-v84.js
+          grep -q 'width:58px!important' launcher/ux-polish-v84.js
+          grep -q 'width:52px!important' launcher/ux-polish-v84.js
+          grep -q 'gap:4px!important' launcher/ux-polish-v84.js
+          ! grep -q 'MutationObserver' launcher/ux-polish-v84.js
+          ! grep -q 'setInterval' launcher/ux-polish-v84.js
 
       - name: Verify protocol-based trust source
         shell: bash
@@ -54,6 +68,7 @@ jobs:
             launcher/launcher-runtime.js \
             launcher/runtime-client-v84.js \
             launcher/account-controller-v84.js \
+            launcher/ux-polish-v84.js \
             background/runtime-entry-v84.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
