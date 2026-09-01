@@ -7,11 +7,13 @@
     "launcher/launcher-runtime.js",
     "launcher/runtime-client-v84.js",
     "launcher/account-controller-v84.js",
+    "launcher/editor-direct-v84.js",
     "launcher/ux-polish-v84.js",
     "launcher/integration-resource-manager-v84.js",
     "launcher/integration-resource-entrypoints-v84.js",
     "background/runtime-entry-v84.js",
-    "background/runtime-entry-v84-integrations.js"
+    "background/runtime-entry-v84-integrations.js",
+    "background/editor-direct-runtime-v84.js"
   ],
   "excluded_paths":[],
   "forbidden_roots":[".github","ai","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
@@ -19,9 +21,11 @@
     "background/service-worker-entry.js",
     "background/canonical-runtime-entry.js",
     "launcher/canonical-runtime-client.js",
+    "content/composer-bridge-v3.js",
+    "content/composer-guardian.js",
     "updates/latest.json",
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build84 clean runtime starts from stable Build82. Shipped surface is allowlisted to the canonical launcher, event-driven runtime client, clean account controller, UX polish, isolated integration resource manager, deterministic integration resource entrypoints, minimal runtime bus and a small integration-selection service-worker wrapper. GitHub repository access remains authoritative in the GitHub App installation; the Decrypter stores only which already-authorized repositories are enabled. Supabase OAuth remains authoritative for visible projects; the Decrypter stores only which OAuth-visible projects are enabled. Resource management entrypoints are rendered deterministically inside the Integrations flyout and integration detail surface without MutationObserver, polling or timers. No external repository/project is deleted when removed from the Decrypter. No legacy ui/content stack, mount guardian, global MutationObserver, continuous polling, heavy provider engine, OTA metadata or release publication is shipped."
+  "notes":"Build84 clean runtime starts from stable Build82. The validated integrations/stability checkpoint is preserved. Editor Direct is reattached as an isolated event-driven surface: local AI is invoked only on explicit Plan/Build actions; GitHub context is read with short-lived GitHub App installation tokens; Plan and Shadow Build are zero-write; Apply requires explicit human approval, valid cached Trust and HEAD revalidation; GitHub ref updates are non-force. If Supabase apply is required, Apply fails closed until the Supabase write runtime is separately reattached. Lovable remains Preview/dev environment and does not receive the prompt as AI authority. No composer interception, global MutationObserver, continuous polling, mount guardian, transport monkeypatch, heavy provider engine at boot, OTA metadata or release publication is shipped."
 }
