@@ -1,4 +1,4 @@
-name: v2.6 Build 84 · Clean Functional Runtime Foundation
+name: v2.6 Build 84 · Clean Functional Runtime / Activation
 
 on:
   push:
@@ -25,17 +25,18 @@ jobs:
         run: |
           node --check launcher/launcher-runtime.js
           node --check launcher/runtime-client-v84.js
+          node --check launcher/account-controller-v84.js
           node --check background/runtime-entry-v84.js
           node --check scripts/test-build84-clean-foundation.mjs
 
-      - name: Build84 clean foundation and functional parity gate
+      - name: Build84 clean foundation, activation and functional parity gate
         run: node scripts/test-build84-clean-foundation.mjs
 
       - name: Package flat installable ZIP
         shell: bash
         run: |
           set -euo pipefail
-          ZIP="Lovable-Decrypter-v2.6.84-foundation-test.zip"
+          ZIP="Lovable-Decrypter-v2.6.84-activation-test.zip"
           mapfile -t PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
           zip -qr "$ZIP" "${PATHS[@]}"
           unzip -Z1 "$ZIP" > /tmp/build84-files.txt
@@ -44,6 +45,7 @@ jobs:
             manifest.json \
             launcher/launcher-runtime.js \
             launcher/runtime-client-v84.js \
+            launcher/account-controller-v84.js \
             background/runtime-entry-v84.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
@@ -55,12 +57,12 @@ jobs:
           test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
 
-      - name: Upload flat Build84 test ZIP
+      - name: Upload flat Build84 activation test ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Lovable-Decrypter-v2.6.84-foundation-test
+          name: Lovable-Decrypter-v2.6.84-activation-test
           path: |
-            Lovable-Decrypter-v2.6.84-foundation-test.zip
-            Lovable-Decrypter-v2.6.84-foundation-test.zip.sha256
+            Lovable-Decrypter-v2.6.84-activation-test.zip
+            Lovable-Decrypter-v2.6.84-activation-test.zip.sha256
           if-no-files-found: error
           retention-days: 14
