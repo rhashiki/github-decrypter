@@ -53,7 +53,8 @@
   async function bind() {
     const host = document.getElementById(HOST_ID);
     const shadow = host?.shadowRoot;
-    if (!shadow || shadow.__ld84RuntimeBound) return Boolean(shadow);
+    if (!shadow) return false;
+    if (shadow.__ld84RuntimeBound) return true;
     Object.defineProperty(shadow, '__ld84RuntimeBound', { value: true, configurable: false });
 
     shadow.addEventListener('click', event => {
@@ -70,7 +71,8 @@
     return true;
   }
 
-  if (!bind() && document.readyState === 'loading') {
+  bind().then(bound => {
+    if (bound || document.readyState !== 'loading') return;
     document.addEventListener('DOMContentLoaded', () => { bind().catch(() => {}); }, { once: true });
-  }
+  }).catch(() => {});
 })();
