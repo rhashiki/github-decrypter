@@ -37,8 +37,8 @@
     return true;
   }
 
-  bind().then?.(() => {}).catch?.(() => {});
-  if (!bind() && document.readyState === 'loading') {
+  const bound = bind();
+  if (!bound && document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
   }
 })();
