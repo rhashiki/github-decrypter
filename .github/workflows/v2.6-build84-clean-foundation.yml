@@ -64,6 +64,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          grep -q "manageResources.dataset.ldResourceManage = moduleId" launcher/runtime-client-v84.js
+          grep -q "manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'" launcher/runtime-client-v84.js
+          grep -q "modal.actions.appendChild(manageResources)" launcher/runtime-client-v84.js
           grep -q 'Gerenciar repositórios' launcher/integration-resource-manager-v84.js
           grep -q 'Gerenciar projetos' launcher/integration-resource-manager-v84.js
           grep -q 'Gerenciar acesso no GitHub' launcher/integration-resource-manager-v84.js
