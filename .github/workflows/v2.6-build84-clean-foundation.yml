@@ -42,14 +42,19 @@ jobs:
           grep -q '#ld84-module-modal .ld84-note' launcher/ux-polish-v84.js
           grep -q 'width:58px!important' launcher/ux-polish-v84.js
           grep -q 'width:52px!important' launcher/ux-polish-v84.js
-          grep -q 'height:min(74vh,610px)!important' launcher/ux-polish-v84.js
+          grep -q 'height:min(650px,calc(100vh - 112px))!important' launcher/ux-polish-v84.js
+          grep -q 'justify-content:flex-start!important' launcher/ux-polish-v84.js
+          grep -q 'overflow-y:auto!important' launcher/ux-polish-v84.js
           grep -q 'gap:4px!important' launcher/ux-polish-v84.js
           grep -q "MONITOR_KEY = 'ld84_monitor_enabled'" launcher/ux-polish-v84.js
           grep -q "parityButton('monitor', 'Monitor ON'" launcher/ux-polish-v84.js
           grep -q "parityButton('editor-direct', 'Editor Direto'" launcher/ux-polish-v84.js
-          grep -q "label === 'Ver estado' || label === 'Detalhes'" launcher/ux-polish-v84.js
-          grep -q "showLoadingModal(shadow, moduleId" launcher/ux-polish-v84.js
+          grep -q "showStatusOrDetails(shadow, moduleId" launcher/ux-polish-v84.js
+          grep -q "renderStatus(shadow, moduleId" launcher/ux-polish-v84.js
+          grep -q "renderDetails(shadow, moduleId" launcher/ux-polish-v84.js
+          grep -q "runtimeCommand(moduleId, 'status')" launcher/ux-polish-v84.js
           grep -q "new CustomEvent('ld84:monitor-changed'" launcher/ux-polish-v84.js
+          ! grep -q 'openAction?.click' launcher/ux-polish-v84.js
           ! grep -q 'MutationObserver' launcher/ux-polish-v84.js
           ! grep -q 'setInterval' launcher/ux-polish-v84.js
 
