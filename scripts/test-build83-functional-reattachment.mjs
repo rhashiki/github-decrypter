@@ -154,7 +154,7 @@ assert(unresolvedImports.length === 0, `runtime package has unresolved relative 
 for (const validationFile of [
   'benchmark/decrypterbench-v2.mjs',
   'benchmark/universal-agent-bench.mjs',
-  'tests/build69-decrypterbench-v2-hardening.test.mjs',
+  'tests/build69-decrypterbench-v2.test.mjs',
   'tests/build75-universal-agent-bench.test.mjs'
 ]) assert(exists(validationFile), `validation-only Build69/75 source missing: ${validationFile}`);
 
