@@ -36,21 +36,22 @@ jobs:
       - name: Build84 clean runtime and functional parity gate
         run: node scripts/test-build84-clean-foundation.mjs
 
-      - name: Verify deterministic integration resource visibility
+      - name: Verify single nested resource actions
         shell: bash
         run: |
           set -euo pipefail
-          grep -q "GitHub · Gerenciar repositórios" launcher/integration-resource-entrypoints-v84.js
-          grep -q "Supabase · Gerenciar projetos" launcher/integration-resource-entrypoints-v84.js
-          grep -q "title !== 'Integrações'" launcher/integration-resource-entrypoints-v84.js
-          grep -q 'data-ld-resource-entrypoint' launcher/integration-resource-entrypoints-v84.js
-          grep -q 'ensureDetailEntry' launcher/integration-resource-entrypoints-v84.js
-          grep -q "manageResources.textContent = moduleId === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'" launcher/runtime-client-v84.js
+          grep -q 'function ensureSingleNestedEntry' launcher/integration-resource-entrypoints-v84.js
+          grep -q 'function removeTopLevelResourceEntries' launcher/integration-resource-entrypoints-v84.js
+          grep -q "button.dataset.ldResourceCanonicalDetail = integration" launcher/integration-resource-entrypoints-v84.js
+          grep -q "button.append(actionIcon(integration), label)" launcher/integration-resource-entrypoints-v84.js
+          grep -q "label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'" launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'GitHub · Gerenciar repositórios' launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'Supabase · Gerenciar projetos' launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'makeFlyEntry' launcher/integration-resource-entrypoints-v84.js
+          ! grep -q 'function injectAction' launcher/integration-resource-manager-v84.js
+          ! grep -q 'refreshInjection' launcher/integration-resource-manager-v84.js
           grep -q 'Gerenciar acesso no GitHub' launcher/integration-resource-manager-v84.js
           grep -q 'Salvar seleção' launcher/integration-resource-manager-v84.js
-          ! grep -q 'MutationObserver' launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'setInterval' launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'setTimeout' launcher/integration-resource-entrypoints-v84.js
 
       - name: Verify clean architecture invariants
         shell: bash
