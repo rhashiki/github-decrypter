@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.80",
+  "candidate":"2.6.81",
   "paths":["manifest.json","assets","diagnostic","updates/update-manager.js"],
   "excluded_paths":[],
   "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build80 Diagnostic FAB Injection keeps the Build79 minimal runtime but makes Lovable injection explicit and Trusted-Types-safe. The shipped extension still has no background service worker, no general permissions, no optional permissions, no network runtime, no storage runtime, no polling, no MutationObserver, no Composer Guardian, no Composer Bridge, and no functional Builds70-76 runtime. Host access is limited explicitly to lovable.dev and its subdomains. The single document_start content script mounts one fixed Shadow DOM FAB using createElement/textContent only, never innerHTML, and registers only one click listener plus a one-shot DOMContentLoaded fallback if documentElement is not yet available. The dormant update-manager artifact remains unreferenced by the manifest and cannot execute. This build exists solely to prove visible FAB injection while preserving the stable no-leak diagnostic baseline."
+  "notes":"Build81 restores only the real visual shell of Lovable Decrypter on top of the stable Build80 injection baseline. The shipped extension still has no background service worker, no general permissions, no optional permissions, no storage runtime, no network runtime, no polling, no MutationObserver, no Composer Guardian, no Composer Bridge, no AI execution and no backend/provider execution. Host access remains limited to lovable.dev and subdomains. A single document_start content script mounts the original-style FAB artwork, panel, status cards, local navigation and disabled composer using createElement/textContent and Shadow DOM. Navigation changes only local diagnostic text. No runtime actions are dispatched. The dormant update-manager artifact remains unreferenced by the manifest and cannot execute."
 }
