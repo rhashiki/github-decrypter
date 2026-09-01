@@ -14,21 +14,30 @@ const launcher = read('launcher/launcher-runtime.js');
 const client = read('launcher/runtime-client-v84.js');
 const account = read('launcher/account-controller-v84.js');
 const polish = read('launcher/ux-polish-v84.js');
+const resourceManager = read('launcher/integration-resource-manager-v84.js');
 const runtime = read('background/runtime-entry-v84.js');
+const runtimeWrapper = read('background/runtime-entry-v84-integrations.js');
 const trustBackend = read('supabase/functions/ld-trust-attest/index.ts');
 const supabaseBackend = read('supabase/functions/ld-supabase-oauth/index.ts');
+const selectionBackend = read('supabase/functions/ld-integration-selection/index.ts');
 
 assert.equal(manifest.version, '2.6.84');
 assert.match(manifest.version_name, /Trust \+ Core Integrations/);
 assert.equal(pkg.candidate, '2.6.84');
-assert.equal(manifest.background?.service_worker, 'background/runtime-entry-v84.js');
+assert.equal(manifest.background?.service_worker, 'background/runtime-entry-v84-integrations.js');
 assert.ok(!manifest.background?.type, 'Build84 service worker is classic script and must not claim module type');
 assert.deepEqual(manifest.permissions || [], ['storage']);
 assert.deepEqual(manifest.host_permissions, ['https://lovable.dev/*','https://*.lovable.dev/*','https://kkzxxnfxgrouhkzyszxs.supabase.co/*']);
 
 const app = (manifest.content_scripts || []).find(item => Array.isArray(item.js) && item.js.includes('launcher/launcher-runtime.js'));
 assert.ok(app, 'canonical launcher content script missing');
-assert.deepEqual(app.js, ['launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js']);
+assert.deepEqual(app.js, [
+  'launcher/launcher-runtime.js',
+  'launcher/runtime-client-v84.js',
+  'launcher/account-controller-v84.js',
+  'launcher/ux-polish-v84.js',
+  'launcher/integration-resource-manager-v84.js'
+]);
 assert.equal(app.run_at, 'document_start');
 assert.equal(app.all_frames, false);
 
@@ -57,6 +66,17 @@ assert.ok(polish.includes(".rail-btn.active,.fly-item.active"));
 assert.ok(polish.includes("flyout?.classList.remove('show')"));
 assert.ok(polish.includes("detail?.classList.remove('show')"));
 
+assert.ok(resourceManager.includes("data-ld-resource-manage"));
+assert.ok(resourceManager.includes('Gerenciar repositórios'));
+assert.ok(resourceManager.includes('Gerenciar projetos'));
+assert.ok(resourceManager.includes('Gerenciar acesso no GitHub'));
+assert.ok(resourceManager.includes("type: 'ld84.integration.resources.status'"));
+assert.ok(resourceManager.includes("type: 'ld84.integration.resources.save'"));
+assert.ok(resourceManager.includes('Selecionar todos'));
+assert.ok(resourceManager.includes('Remover todos'));
+assert.ok(resourceManager.includes('Salvar seleção'));
+assert.ok(resourceManager.includes('queueMicrotask'));
+
 assert.ok(runtime.includes("chrome.runtime.onMessage.addListener"));
 assert.ok(runtime.includes("mode: 'event-driven'"));
 assert.ok(runtime.includes('activeHeavyRuntimes: 0'));
@@ -76,6 +96,13 @@ assert.ok(runtime.includes("const LICENSE_ENDPOINT = `${BACKEND_BASE}/ld-license
 assert.ok(runtime.includes("state: 'reattached'"));
 assert.ok(runtime.includes("id === 'account'"));
 
+assert.ok(runtimeWrapper.includes("importScripts('runtime-entry-v84.js')"));
+assert.ok(runtimeWrapper.includes("ld84.integration.resources.status"));
+assert.ok(runtimeWrapper.includes("ld84.integration.resources.save"));
+assert.ok(runtimeWrapper.includes("ld-integration-selection"));
+assert.ok(runtimeWrapper.includes('RESOURCE_NOT_AUTHORIZED'));
+assert.ok(runtimeWrapper.includes("selected.length === current.available.length ? 'all' : 'selected'"));
+
 assert.ok(account.includes("window.addEventListener('ld84:module-action'"));
 assert.ok(account.includes("type: 'ld84.account.activate'"));
 assert.ok(account.includes('Este modal pertence à única UI da extensão'));
@@ -94,7 +121,23 @@ assert.ok(supabaseBackend.includes('sources:["/projects","/organizations/{slug}/
 assert.ok(supabaseBackend.includes('project_discovery:listed.diagnostics'));
 assert.ok(supabaseBackend.includes('const merged=new Map<string,any>()'));
 
-for (const [name, source] of [['launcher', launcher], ['runtime-client', client], ['account-controller', account], ['ux-polish', polish], ['runtime-entry', runtime]]) {
+assert.ok(selectionBackend.includes('ld_github_installations'));
+assert.ok(selectionBackend.includes('selected_repositories'));
+assert.ok(selectionBackend.includes('ld_supabase_connections'));
+assert.ok(selectionBackend.includes('selected_projects'));
+assert.ok(selectionBackend.includes('mode: row.selected_repositories === null ? "all" : "selected"'));
+assert.ok(selectionBackend.includes('mode: row.selected_projects === null ? "all" : "selected"'));
+assert.ok(selectionBackend.includes('jsr:@supabase/supabase-js@2.112.4'));
+
+for (const [name, source] of [
+  ['launcher', launcher],
+  ['runtime-client', client],
+  ['account-controller', account],
+  ['ux-polish', polish],
+  ['resource-manager', resourceManager],
+  ['runtime-entry', runtime],
+  ['runtime-wrapper', runtimeWrapper]
+]) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
   assert.ok(!/setInterval\s*\(/.test(source), `${name}: setInterval forbidden`);
   assert.ok(!/\.inert\s*=|setAttribute\(\s*['\"]inert/.test(source), `${name}: inert takeover forbidden`);
@@ -105,8 +148,11 @@ assert.ok(!account.includes('document.body'), 'account controller must not attac
 assert.ok(account.includes('shadow.appendChild(modal)'), 'account modal must stay inside the single launcher Shadow DOM');
 assert.ok(!client.includes('document.body.append'), 'functional module surfaces must remain in launcher Shadow DOM');
 assert.ok(!polish.includes('document.body'), 'UX polish must remain scoped to launcher Shadow DOM');
+assert.ok(!resourceManager.includes('document.body'), 'resource manager must remain scoped to launcher Shadow DOM');
 assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers');
 assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms');
+assert.ok(!runtimeWrapper.includes('setTimeout('), 'integration wrapper must not schedule timers');
+assert.ok(!runtimeWrapper.includes('chrome.alarms'), 'integration wrapper must not schedule alarms');
 
 const forbiddenRuntimeTokens = [
   'ui-mount-guardian',
@@ -130,21 +176,23 @@ assert.equal(inventory.policy.global_dom_observers_allowed, false);
 assert.equal(inventory.policy.continuous_content_polling_allowed, false);
 assert.equal(inventory.policy.lovable_shell_inert_allowed, false);
 assert.equal(inventory.policy.heavy_runtime_boot_allowed, false);
-assert.ok(Array.isArray(inventory.capabilities) && inventory.capabilities.length >= 45, `capability inventory unexpectedly small: ${inventory.capabilities?.length || 0}`);
+assert.ok(Array.isArray(inventory.capabilities) && inventory.capabilities.length >= 48, `capability inventory unexpectedly small: ${inventory.capabilities?.length || 0}`);
 const ids = inventory.capabilities.map(item => item.id);
 assert.equal(new Set(ids).size, ids.length, 'duplicate capability ids');
 for (const item of inventory.capabilities) {
   assert.equal(item.must_preserve, true, `${item.id}: must_preserve must remain true`);
   assert.ok(item.target_authority, `${item.id}: target authority missing`);
-  assert.ok(['foundation','planned','reattached','validated'].includes(item.status), `${item.id}: invalid migration status`);
+  assert.ok(['foundation','planned','required','surface-only','reattached','implemented-unvalidated','validated'].includes(item.status), `${item.id}: invalid migration status`);
 }
 
 for (const required of [
-  'license.activation','trust.attestation','integration.github','integration.supabase','project.state','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write','mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable','agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
+  'ui.monitor-state','ui.editor-direct','license.activation','trust.attestation','integration.github','integration.github-repository-management','integration.supabase','integration.supabase-project-selection','project.state','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write','mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable','agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
 ]) assert.ok(ids.includes(required), `functional parity capability missing: ${required}`);
 
 const packagePaths = new Set(pkg.paths || []);
-for (const required of ['manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js','background/runtime-entry-v84.js']) {
+for (const required of [
+  'manifest.json','assets','launcher/launcher-runtime.js','launcher/runtime-client-v84.js','launcher/account-controller-v84.js','launcher/ux-polish-v84.js','launcher/integration-resource-manager-v84.js','background/runtime-entry-v84.js','background/runtime-entry-v84-integrations.js'
+]) {
   assert.ok(packagePaths.has(required), `package path missing: ${required}`);
   assert.ok(exists(required), `package file missing: ${required}`);
 }
@@ -157,11 +205,11 @@ for (const forbidden of ['background/service-worker-entry.js','background/canoni
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/5',
+  schema: 'ld-build84-clean-foundation/6',
   version: manifest.version,
   capabilitiesLocked: inventory.capabilities.length,
   visualAuthorities: 1,
-  functionalModuleSurfaces: ['security','github','supabase','project.state'],
+  functionalModuleSurfaces: ['security','github','supabase','project.state','integration-resource-manager'],
   globalObservers: 0,
   continuousPolling: 0,
   activeHeavyRuntimesAtBoot: 0,
@@ -169,7 +217,10 @@ console.log(JSON.stringify({
   functionalLossAllowed: false,
   trustCompatibility: 'protocol',
   supabaseProjectDiscovery: 'direct+organization',
-  uxPolish: ['module-footnotes-hidden','active-rail-toggle-close'],
-  reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state'],
+  resourceSelection: 'server-side-allowlist',
+  externalDeletionOnRemove: false,
+  uxPolish: ['module-footnotes-hidden','active-rail-toggle-close','resource-manager'],
+  reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state','ui.monitor-state'],
+  implementedUnvalidated: ['integration.github-repository-management','integration.supabase-project-selection'],
   lovableShellBlockedByLicense: false
 }, null, 2));
