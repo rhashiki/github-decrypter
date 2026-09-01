@@ -55,9 +55,11 @@ jobs:
           unzip -Z1 "$ZIP" > /tmp/ld-release-files.txt
           grep -qx 'manifest.json' /tmp/ld-release-files.txt
           grep -qx 'launcher/launcher-runtime.js' /tmp/ld-release-files.txt
-          test "$(grep -c '^launcher/.*\.js$' /tmp/ld-release-files.txt)" -eq 1
-          if grep -E '^(\.github|ai|background|benchmark|content|core|diagnostic|docs|github|release|runtime|scripts|security|settings|storage|supabase|tests|tools|ui|updates)/' /tmp/ld-release-files.txt; then
-            echo 'Forbidden development, backend, legacy UI, OTA, or provider runtime content leaked into extension ZIP'
+          grep -qx 'launcher/canonical-runtime-client.js' /tmp/ld-release-files.txt
+          grep -qx 'background/canonical-runtime-entry.js' /tmp/ld-release-files.txt
+          ! grep -qx 'background/service-worker-entry.js' /tmp/ld-release-files.txt
+          if grep -E '^(\.github|ai|benchmark|content|diagnostic|docs|release|runtime|scripts|security|supabase|tests|tools|ui|updates)/' /tmp/ld-release-files.txt; then
+            echo 'Forbidden development, legacy UI, OTA, or unrelated runtime content leaked into extension ZIP'
             exit 1
           fi
           if grep -Ei '(^|/)\.env($|\.)|\.(pem|key|p12|pfx)$' /tmp/ld-release-files.txt; then
