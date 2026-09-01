@@ -307,7 +307,7 @@
     const health = await send({ type: 'ld84.editor.health' });
     state.healthButton.disabled = false;
     const data = health?.health;
-    state.tokenConfigured = Boolean(saved?.local?.tokenConfigured ?? state.tokenConfigured || state.token.value);
+    state.tokenConfigured = Boolean(saved?.local?.tokenConfigured ?? (state.tokenConfigured || Boolean(state.token.value)));
     if (data?.ok) setStatus(state, `IA local pronta · ${data.runtime || 'local'} · ${data.model || data.servedModel || state.model.value} · ${data.latencyMs || 0} ms.`, 'success');
     else setStatus(state, `IA local indisponível: ${data?.code || health?.code || 'LOCAL_RUNTIME_UNAVAILABLE'}.`, 'error');
   }
