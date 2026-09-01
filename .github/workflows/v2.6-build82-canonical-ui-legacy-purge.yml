@@ -1,0 +1,27 @@
+name: v2.6 Build 82 · Canonical Launcher / Legacy UI Purge
+
+on:
+  push:
+    branches:
+      - v2.6.82-canonical-ui-legacy-purge
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: node --check launcher/launcher-runtime.js
+      - name: Canonical UI authority
+        run: node tests/build82-canonical-ui-legacy-purge.test.mjs
+      - name: Release preflight candidate
+        run: node scripts/release-preflight.mjs --candidate
