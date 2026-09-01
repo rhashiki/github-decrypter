@@ -1,25 +1,33 @@
 {
   "manifest_version": 3,
   "name": "Lovable Decrypter",
-  "version": "2.6.78",
-  "version_name": "2.6 Build 78 · Emergency Kill Switch",
-  "description": "Emergency diagnostic release: no Lovable content scripts and no background runtime are executed.",
+  "version": "2.6.79",
+  "version_name": "2.6 Build 79 · Diagnostic Minimal Runtime",
+  "description": "Diagnostic minimal runtime: renders only a local FAB and panel on Lovable with no background worker, network, storage, polling, observers, or Decrypter execution engine.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
+      "js": ["diagnostic/minimal-runtime.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "lovable-decrypter@rhashiki.dev",
       "strict_min_version": "121.0",
       "data_collection_permissions": {
-        "required": []
+        "required": ["websiteContent"]
       }
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.6.78 · Emergency Kill Switch"
+    "default_title": "Lovable Decrypter v2.6.79 · Diagnostic Minimal Runtime"
   }
 }
