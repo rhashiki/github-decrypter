@@ -14,11 +14,13 @@ const launcher = read('launcher/launcher-runtime.js');
 const client = read('launcher/runtime-client-v84.js');
 const account = read('launcher/account-controller-v84.js');
 const runtime = read('background/runtime-entry-v84.js');
+const trustBackend = read('supabase/functions/ld-trust-attest/index.ts');
 
 assert.equal(manifest.version, '2.6.84');
+assert.match(manifest.version_name, /Trust \+ Core Integrations/);
 assert.equal(pkg.candidate, '2.6.84');
 assert.equal(manifest.background?.service_worker, 'background/runtime-entry-v84.js');
-assert.ok(!manifest.background?.type, 'foundation service worker is classic script and must not claim module type');
+assert.ok(!manifest.background?.type, 'Build84 service worker is classic script and must not claim module type');
 assert.deepEqual(manifest.permissions || [], ['storage']);
 assert.deepEqual(manifest.host_permissions, ['https://lovable.dev/*','https://*.lovable.dev/*','https://kkzxxnfxgrouhkzyszxs.supabase.co/*']);
 
@@ -32,18 +34,40 @@ assert.match(launcher, /data-ld-ui-authority[^\n]*canonical-v11|canonical-v11/);
 assert.ok(client.includes("shadow.addEventListener('click'"));
 assert.ok(client.includes("type: 'ld84.runtime.command'"));
 assert.ok(client.includes("new CustomEvent('ld84:module-action'"));
+assert.ok(client.includes('function projectSnapshot()'));
+assert.ok(client.includes("window.open('about:blank', '_blank')"));
+assert.ok(client.includes("moduleId === 'lovable' || moduleId === 'project-state'"));
+
 assert.ok(runtime.includes("chrome.runtime.onMessage.addListener"));
 assert.ok(runtime.includes("mode: 'event-driven'"));
 assert.ok(runtime.includes('activeHeavyRuntimes: 0'));
+assert.ok(runtime.includes("const CLIENT_PROTOCOL = 'ld-runtime-bus/1'"));
+assert.ok(runtime.includes("const TRUST_ENDPOINT = `${BACKEND_BASE}/ld-trust-attest`"));
 assert.ok(runtime.includes("type === 'ld84.account.status'"));
 assert.ok(runtime.includes("type === 'ld84.account.activate'"));
 assert.ok(runtime.includes("type === 'ld84.account.clear'"));
-assert.ok(runtime.includes("const LICENSE_ENDPOINT = 'https://kkzxxnfxgrouhkzyszxs.supabase.co/functions/v1/ld-license-validate'"));
+assert.ok(runtime.includes("type === 'ld84.security.attest'"));
+assert.ok(runtime.includes("type === 'ld84.integration.disconnect'"));
+assert.ok(runtime.includes("type === 'ld84.project.snapshot'"));
+assert.ok(runtime.includes("id === 'github'"));
+assert.ok(runtime.includes("id === 'supabase'"));
+assert.ok(runtime.includes("id === 'lovable' || id === 'project-state'"));
+assert.ok(runtime.includes("projectSnapshotMode: 'on-demand'"));
+assert.ok(runtime.includes("const LICENSE_ENDPOINT = `${BACKEND_BASE}/ld-license-validate`"));
+assert.ok(runtime.includes("state: 'reattached'"));
 assert.ok(runtime.includes("id === 'account'"));
+
 assert.ok(account.includes("window.addEventListener('ld84:module-action'"));
 assert.ok(account.includes("type: 'ld84.account.activate'"));
 assert.ok(account.includes('Este modal pertence à única UI da extensão'));
 assert.ok(account.includes('O Lovable continua funcionando normalmente'));
+
+assert.ok(!trustBackend.includes("const EXPECTED_VERSION='2.4.21'"), 'exact-version trust authority must be removed');
+assert.ok(trustBackend.includes("const LEGACY_VERSION='2.4.21'"), 'legacy 2.4.21 compatibility path must remain explicit');
+assert.ok(trustBackend.includes("SUPPORTED_PROTOCOLS=new Set(['ld-runtime-bus/1'])"));
+assert.ok(trustBackend.includes("compatibility:'protocol'"));
+assert.ok(trustBackend.includes("'ld-trust-attestation/2'"));
+assert.ok(trustBackend.includes("jsr:@supabase/supabase-js@2.112.4"));
 
 for (const [name, source] of [['launcher', launcher], ['runtime-client', client], ['account-controller', account], ['runtime-entry', runtime]]) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
@@ -54,8 +78,8 @@ for (const [name, source] of [['launcher', launcher], ['runtime-client', client]
 
 assert.ok(!account.includes('document.body'), 'account controller must not attach to Lovable document body');
 assert.ok(account.includes('shadow.appendChild(modal)'), 'account modal must stay inside the single launcher Shadow DOM');
-assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers at boot');
-assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms at boot');
+assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers');
+assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms');
 
 const forbiddenRuntimeTokens = [
   'ui-mount-guardian',
@@ -89,7 +113,7 @@ for (const item of inventory.capabilities) {
 }
 
 for (const required of [
-  'license.activation','integration.github','integration.supabase','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write','mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable','agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
+  'license.activation','trust.attestation','integration.github','integration.supabase','project.state','ai.gateway','ai.local-model','ai.memory','context.pack','scope.intelligence','tools.read','tools.write','mcp.core','mcp.marketplace','recovery.undo-redo','continuity.engine','agent.local','agent.registry','skills.portable','agent.sandbox','agent.native-sessions','updates.center','project.zip-export'
 ]) assert.ok(ids.includes(required), `functional parity capability missing: ${required}`);
 
 const packagePaths = new Set(pkg.paths || []);
@@ -106,7 +130,7 @@ for (const forbidden of ['background/service-worker-entry.js','background/canoni
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/2',
+  schema: 'ld-build84-clean-foundation/3',
   version: manifest.version,
   capabilitiesLocked: inventory.capabilities.length,
   visualAuthorities: 1,
@@ -115,6 +139,7 @@ console.log(JSON.stringify({
   activeHeavyRuntimesAtBoot: 0,
   legacyDomStackShipped: false,
   functionalLossAllowed: false,
-  reattached: ['license.activation'],
+  trustCompatibility: 'protocol',
+  reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state'],
   lovableShellBlockedByLicense: false
 }, null, 2));
