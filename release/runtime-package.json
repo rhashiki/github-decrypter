@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
   "candidate":"2.6.78",
-  "paths":["manifest.json","assets"],
+  "paths":["manifest.json","assets","updates/update-manager.js"],
   "excluded_paths":[],
-  "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
-  "forbidden_paths":[],
+  "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui"],
+  "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build78 Emergency Kill Switch is a diagnostic containment release for the Chrome-wide freeze/memory incident. The shipped runtime package contains only manifest.json and icons. It has no background service worker, no content scripts, no permissions, no host permissions, no web accessible runtime resources, and therefore executes no Lovable Decrypter code in lovable.dev or in the extension background. This release intentionally disables all Decrypter functionality so browser stability can be isolated from extension runtime execution."
+  "notes":"Build78 Emergency Kill Switch is a diagnostic containment release for the Chrome-wide freeze/memory incident. The shipped extension has no background service worker, no content scripts, no permissions, no host permissions, and no web-accessible runtime resources. The ZIP contains only manifest.json, icons, and the dormant update-manager artifact required by the release packager; update-manager.js is not referenced by the manifest and cannot execute. This release intentionally disables all Decrypter functionality so browser stability can be isolated from extension runtime execution."
 }
