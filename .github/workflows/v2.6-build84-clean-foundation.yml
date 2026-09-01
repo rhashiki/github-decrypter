@@ -21,37 +21,54 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Syntax check clean shipped runtime
+      - name: Syntax check current Build84 runtime
         run: |
           node --check launcher/launcher-runtime.js
           node --check launcher/runtime-client-v84.js
           node --check launcher/account-controller-v84.js
+          node --check launcher/editor-direct-v84.js
           node --check launcher/ux-polish-v84.js
           node --check launcher/integration-resource-manager-v84.js
           node --check launcher/integration-resource-entrypoints-v84.js
+          node --check launcher/gemini-integration-v84.js
           node --check background/runtime-entry-v84.js
           node --check background/runtime-entry-v84-integrations.js
-          node --check scripts/test-build84-clean-foundation.mjs
+          node --check background/editor-direct-runtime-v84.js
+          node --check scripts/test-build84-gemini-integration.mjs
 
-      - name: Build84 clean runtime and functional parity gate
-        run: node scripts/test-build84-clean-foundation.mjs
+      - name: Build84 validated integrations + Gemini parity gate
+        run: node scripts/test-build84-gemini-integration.mjs
 
-      - name: Verify single nested resource actions
+      - name: Verify validated GitHub Supabase checkpoint
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'function ensureSingleNestedEntry' launcher/integration-resource-entrypoints-v84.js
-          grep -q 'function removeTopLevelResourceEntries' launcher/integration-resource-entrypoints-v84.js
-          grep -q "button.dataset.ldResourceCanonicalDetail = integration" launcher/integration-resource-entrypoints-v84.js
-          grep -q "button.append(actionIcon(integration), label)" launcher/integration-resource-entrypoints-v84.js
-          grep -q "label.textContent = integration === 'github' ? 'Gerenciar repositórios' : 'Gerenciar projetos'" launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'GitHub · Gerenciar repositórios' launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'Supabase · Gerenciar projetos' launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'makeFlyEntry' launcher/integration-resource-entrypoints-v84.js
-          ! grep -q 'function injectAction' launcher/integration-resource-manager-v84.js
-          ! grep -q 'refreshInjection' launcher/integration-resource-manager-v84.js
-          grep -q 'Gerenciar acesso no GitHub' launcher/integration-resource-manager-v84.js
-          grep -q 'Salvar seleção' launcher/integration-resource-manager-v84.js
+          grep -q '"status": "VALIDADO"' docs/checkpoints/build84-integrations-resource-management-validated.json
+          grep -q '"github_resource_manager_nested_once": true' docs/checkpoints/build84-integrations-resource-management-validated.json
+          grep -q '"supabase_resource_manager_nested_once": true' docs/checkpoints/build84-integrations-resource-management-validated.json
+          grep -q '"duplicate_resource_actions_removed": true' docs/checkpoints/build84-integrations-resource-management-validated.json
+          grep -q '"ram_stabilizes": true' docs/checkpoints/build84-integrations-resource-management-validated.json
+
+      - name: Verify Gemini integration contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "type: 'ld84.gemini.status'" launcher/gemini-integration-v84.js
+          grep -q "type: 'ld84.gemini.models'" launcher/gemini-integration-v84.js
+          grep -q "type: 'ld84.gemini.save'" launcher/gemini-integration-v84.js
+          grep -q "type: 'ld84.gemini.clear'" launcher/gemini-integration-v84.js
+          grep -q 'Atualizar modelos' launcher/gemini-integration-v84.js
+          grep -q 'Testar conexão' launcher/gemini-integration-v84.js
+          grep -q 'Remover chave' launcher/gemini-integration-v84.js
+          grep -q 'FREE ONLY' launcher/gemini-integration-v84.js
+          grep -q "LD84_GEMINI_CONFIG_KEY = 'ld84_gemini_config'" background/runtime-entry-v84-integrations.js
+          grep -q "https://generativelanguage.googleapis.com/v1beta" background/runtime-entry-v84-integrations.js
+          grep -q "x-goog-api-key" background/runtime-entry-v84-integrations.js
+          grep -q "AES-256-GCM" background/runtime-entry-v84-integrations.js
+          grep -q "models-list-no-generation" background/runtime-entry-v84-integrations.js
+          grep -q "centralOrchestrator: 'local-ai'" background/runtime-entry-v84-integrations.js
+          ! grep -q ':generateContent' background/runtime-entry-v84-integrations.js
+          ! grep -q '/interactions' background/runtime-entry-v84-integrations.js
 
       - name: Verify clean architecture invariants
         shell: bash
@@ -61,23 +78,26 @@ jobs:
             launcher/launcher-runtime.js \
             launcher/runtime-client-v84.js \
             launcher/account-controller-v84.js \
+            launcher/editor-direct-v84.js \
             launcher/ux-polish-v84.js \
             launcher/integration-resource-manager-v84.js \
             launcher/integration-resource-entrypoints-v84.js \
+            launcher/gemini-integration-v84.js \
             background/runtime-entry-v84.js \
-            background/runtime-entry-v84-integrations.js; do
+            background/runtime-entry-v84-integrations.js \
+            background/editor-direct-runtime-v84.js; do
             ! grep -q 'MutationObserver' "$f"
             ! grep -q 'setInterval' "$f"
             ! grep -q 'setAttribute([^)]*inert' "$f"
           done
-          ! grep -q 'chrome.alarms' background/runtime-entry-v84.js
           ! grep -q 'chrome.alarms' background/runtime-entry-v84-integrations.js
+          ! grep -q 'document.body' launcher/gemini-integration-v84.js
 
       - name: Package flat installable ZIP
         shell: bash
         run: |
           set -euo pipefail
-          ZIP="Lovable-Decrypter-v2.6.84-integrations-test.zip"
+          ZIP="Lovable-Decrypter-v2.6.84-gemini-test.zip"
           mapfile -t PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
           zip -qr "$ZIP" "${PATHS[@]}"
           unzip -Z1 "$ZIP" > /tmp/build84-files.txt
@@ -87,24 +107,28 @@ jobs:
             launcher/launcher-runtime.js \
             launcher/runtime-client-v84.js \
             launcher/account-controller-v84.js \
+            launcher/editor-direct-v84.js \
             launcher/ux-polish-v84.js \
             launcher/integration-resource-manager-v84.js \
             launcher/integration-resource-entrypoints-v84.js \
+            launcher/gemini-integration-v84.js \
             background/runtime-entry-v84.js \
-            background/runtime-entry-v84-integrations.js; do
+            background/runtime-entry-v84-integrations.js \
+            background/editor-direct-runtime-v84.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
 
           ! grep -E '^(content|ui|core|github|storage|supabase|tools|updates)/' /tmp/build84-files.txt
           test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
+          test "$(grep -Ec '^manifest\.json$' /tmp/build84-files.txt || true)" -eq 1
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
 
-      - name: Upload flat Build84 integrations test ZIP
+      - name: Upload flat Build84 Gemini test ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Lovable-Decrypter-v2.6.84-integrations-test
+          name: Lovable-Decrypter-v2.6.84-gemini-test
           path: |
-            Lovable-Decrypter-v2.6.84-integrations-test.zip
-            Lovable-Decrypter-v2.6.84-integrations-test.zip.sha256
+            Lovable-Decrypter-v2.6.84-gemini-test.zip
+            Lovable-Decrypter-v2.6.84-gemini-test.zip.sha256
           if-no-files-found: error
           retention-days: 14
