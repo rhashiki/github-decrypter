@@ -15,6 +15,7 @@ const client = read('launcher/runtime-client-v84.js');
 const account = read('launcher/account-controller-v84.js');
 const runtime = read('background/runtime-entry-v84.js');
 const trustBackend = read('supabase/functions/ld-trust-attest/index.ts');
+const supabaseBackend = read('supabase/functions/ld-supabase-oauth/index.ts');
 
 assert.equal(manifest.version, '2.6.84');
 assert.match(manifest.version_name, /Trust \+ Core Integrations/);
@@ -35,7 +36,17 @@ assert.ok(client.includes("shadow.addEventListener('click'"));
 assert.ok(client.includes("type: 'ld84.runtime.command'"));
 assert.ok(client.includes("new CustomEvent('ld84:module-action'"));
 assert.ok(client.includes('function projectSnapshot()'));
+assert.ok(client.includes("const MODAL_MODULES = new Set(['github', 'supabase', 'lovable', 'project-state', 'security'])"));
+assert.ok(client.includes('function baseModal('));
+assert.ok(client.includes('function integrationModal('));
+assert.ok(client.includes('function projectModal('));
+assert.ok(client.includes('function securityModal('));
+assert.ok(client.includes("shadow.appendChild(overlay)"));
+assert.ok(client.includes("runtimeAction = MODAL_MODULES.has(moduleId) && action === 'open' && ['github', 'supabase'].includes(moduleId) ? 'status' : action"));
+assert.ok(client.includes("connect.addEventListener('click'"));
 assert.ok(client.includes("window.open('about:blank', '_blank')"));
+assert.ok(client.includes("modalModules") === false, 'unexpected stale modalModules token');
+assert.ok(client.includes('Runtime Bus limpo · módulos sob demanda'));
 assert.ok(client.includes("moduleId === 'lovable' || moduleId === 'project-state'"));
 
 assert.ok(runtime.includes("chrome.runtime.onMessage.addListener"));
@@ -69,6 +80,12 @@ assert.ok(trustBackend.includes("compatibility:'protocol'"));
 assert.ok(trustBackend.includes("'ld-trust-attestation/2'"));
 assert.ok(trustBackend.includes("jsr:@supabase/supabase-js@2.112.4"));
 
+assert.ok(supabaseBackend.includes('async function listOrganizations(accessToken:string)'));
+assert.ok(supabaseBackend.includes('/organizations/${encodeURIComponent(slug)}/projects?limit=100&offset=${offset}'));
+assert.ok(supabaseBackend.includes('sources:["/projects","/organizations/{slug}/projects"]'));
+assert.ok(supabaseBackend.includes('project_discovery:listed.diagnostics'));
+assert.ok(supabaseBackend.includes('const merged=new Map<string,any>()'));
+
 for (const [name, source] of [['launcher', launcher], ['runtime-client', client], ['account-controller', account], ['runtime-entry', runtime]]) {
   assert.ok(!/MutationObserver\s*\(/.test(source), `${name}: MutationObserver forbidden`);
   assert.ok(!/setInterval\s*\(/.test(source), `${name}: setInterval forbidden`);
@@ -78,6 +95,7 @@ for (const [name, source] of [['launcher', launcher], ['runtime-client', client]
 
 assert.ok(!account.includes('document.body'), 'account controller must not attach to Lovable document body');
 assert.ok(account.includes('shadow.appendChild(modal)'), 'account modal must stay inside the single launcher Shadow DOM');
+assert.ok(!client.includes('document.body.append'), 'functional module surfaces must remain in launcher Shadow DOM');
 assert.ok(!runtime.includes('setTimeout('), 'runtime bus must not schedule timers');
 assert.ok(!runtime.includes('chrome.alarms'), 'runtime bus must not schedule alarms');
 
@@ -130,16 +148,18 @@ for (const forbidden of ['background/service-worker-entry.js','background/canoni
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-clean-foundation/3',
+  schema: 'ld-build84-clean-foundation/4',
   version: manifest.version,
   capabilitiesLocked: inventory.capabilities.length,
   visualAuthorities: 1,
+  functionalModuleSurfaces: ['security','github','supabase','project.state'],
   globalObservers: 0,
   continuousPolling: 0,
   activeHeavyRuntimesAtBoot: 0,
   legacyDomStackShipped: false,
   functionalLossAllowed: false,
   trustCompatibility: 'protocol',
+  supabaseProjectDiscovery: 'direct+organization',
   reattached: ['license.activation','trust.attestation','integration.github','integration.supabase','project.state'],
   lovableShellBlockedByLicense: false
 }, null, 2));
