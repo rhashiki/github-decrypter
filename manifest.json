@@ -2,17 +2,19 @@
   "manifest_version": 3,
   "name": "Lovable Decrypter",
   "version": "2.6.84",
-  "version_name": "2.6 Build 84 · Clean Functional Runtime Foundation",
-  "description": "Build 82 stable visual authority plus an event-driven Runtime Bus foundation. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
+  "version_name": "2.6 Build 84 · Clean Functional Runtime / Activation",
+  "description": "Build 82 stable visual authority plus an event-driven Runtime Bus and clean license activation. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
+  "permissions": ["storage"],
   "host_permissions": [
     "https://lovable.dev/*",
-    "https://*.lovable.dev/*"
+    "https://*.lovable.dev/*",
+    "https://kkzxxnfxgrouhkzyszxs.supabase.co/*"
   ],
   "background": {
     "service_worker": "background/runtime-entry-v84.js"
@@ -22,7 +24,8 @@
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*"],
       "js": [
         "launcher/launcher-runtime.js",
-        "launcher/runtime-client-v84.js"
+        "launcher/runtime-client-v84.js",
+        "launcher/account-controller-v84.js"
       ],
       "run_at": "document_start",
       "all_frames": false
@@ -33,7 +36,7 @@
       "id": "lovable-decrypter@rhashiki.dev",
       "strict_min_version": "121.0",
       "data_collection_permissions": {
-        "required": ["websiteContent"]
+        "required": ["authenticationInfo", "websiteContent"]
       }
     }
   },
