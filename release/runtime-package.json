@@ -1,10 +1,10 @@
 {
   "schema":"ld-runtime-package/1",
-  "candidate":"2.6.77",
-  "paths":["manifest.json","ai","assets","background","content","core","github","security","settings","storage","tools","ui","updates/update-manager.js"],
+  "candidate":"2.6.78",
+  "paths":["manifest.json","assets"],
   "excluded_paths":[],
-  "forbidden_roots":[".github","benchmark","docs","release","runtime","scripts","supabase","tests"],
-  "forbidden_paths":["updates/latest.json","updates/release.json"],
+  "forbidden_roots":[".github","ai","background","benchmark","content","core","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
+  "forbidden_paths":[],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build77 Emergency Safe Mode contains the Chrome-wide memory/freeze incident by restoring the exact Build69 Lovable page-injection and service-worker registration surface. Builds70–76 implementation files remain in the package but are not injected into lovable.dev and their new background runtimes are not installed in Safe Mode. Disabled page modules include integration-callback-bridge, account integration readiness UI/client, Universal Agent Runtime Registry client, Portable Skills v2 client/UI, Agent Sandbox client, Native Agent Session client, and Multi-Agent Runtime UI. Disabled post69 background registrations include Integration Readiness, Integration Callback, Agent Runtime Registry, Portable Skills, Agent Sandbox, and Native Agent Sessions. The protected Build69 core remains: Tool Runtime, MCP Trust Gateway, Context Engine v2, Scope Intelligence, Smart Undo/Redo, Continuity Engine, Local Agent Orchestrator and DecrypterBench hardening. This is a containment release, not a claim that the exact leak source is fully isolated. No paid or remote fallback is enabled."
+  "notes":"Build78 Emergency Kill Switch is a diagnostic containment release for the Chrome-wide freeze/memory incident. The shipped runtime package contains only manifest.json and icons. It has no background service worker, no content scripts, no permissions, no host permissions, no web accessible runtime resources, and therefore executes no Lovable Decrypter code in lovable.dev or in the extension background. This release intentionally disables all Decrypter functionality so browser stability can be isolated from extension runtime execution."
 }
