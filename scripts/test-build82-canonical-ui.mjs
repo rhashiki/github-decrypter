@@ -77,10 +77,12 @@ const legacyPaths = Object.freeze([
 ]);
 for (const legacyPath of legacyPaths) assert.ok(!exists(legacyPath), `legacy UI path must be physically absent: ${legacyPath}`);
 
-for (const token of ['canonical-v11', 'ld-canonical-v11-host', 'FAB', 'rail', 'flyout', 'detail']) {
-  assert.ok(launcher.includes(token), `canonical launcher contract missing ${token}`);
+assert.ok(launcher.includes("const HOST_ID = 'lovable-decrypter-launcher'"), 'canonical v11 host identity changed unexpectedly');
+assert.ok(launcher.includes("host.setAttribute('data-ld-ui-authority', 'canonical-v11')"), 'canonical-v11 authority marker is required');
+assert.match(launcher, /host\.attachShadow\s*\(\s*\{\s*mode\s*:\s*['"](?:open|closed)['"]\s*\}\s*\)/);
+for (const structuralToken of ["fab.id = 'fab'", "rail.id = 'rail'", "flyout.id = 'flyout'", "detail.id = 'detail'"]) {
+  assert.ok(launcher.includes(structuralToken), `canonical FAB → rail → flyout → detail contract missing ${structuralToken}`);
 }
-assert.match(launcher, /attachShadow\s*\(\s*\{\s*mode\s*:\s*['"]closed['"]\s*\}\s*\)/);
 for (const prohibited of [
   ['MutationObserver', /\bMutationObserver\b/],
   ['polling interval', /\bsetInterval\s*\(/],
@@ -182,6 +184,7 @@ console.log(JSON.stringify({
   schema: 'ld-build82-canonical-ui-gate/1',
   activeVisualRuntimes: 1,
   authority: 'canonical-v11',
+  host: 'lovable-decrypter-launcher',
   forbiddenRefs: 0,
   legacyPaths: 0,
   secondaryShadowRoots: 0,
