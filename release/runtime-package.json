@@ -63,5 +63,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build83 restores the preserved modern runtime family from Builds 60-74 behind the canonical v11 bridge, while Builds 69 and 75 remain validation benchmarks. The package intentionally excludes the eliminated legacy UI/content bootstraps, old service-worker assemblies, diagnostics, update metadata and external local-runtime deployment sources. Runtime installers remain inactive at boot and are enabled only by explicit user action."
+  "notes":"Build83 restores the preserved modern runtime family from Builds 60-74 behind the canonical v11 bridge. Build69 and Build75 remain validation benchmarks. The package intentionally excludes the eliminated legacy UI/content bootstraps, old service-worker assemblies, diagnostics, update metadata and external local-runtime deployment sources. Runtime installers remain inactive at boot and are enabled only by explicit user action."
 }
