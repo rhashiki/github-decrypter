@@ -1,0 +1,63 @@
+#ld2-root .ld2-cloud-card{width:min(720px,calc(100vw - 30px));max-height:min(82vh,760px);overflow:hidden;padding:0!important;background:linear-gradient(180deg,rgba(8,18,13,.98),rgba(3,9,6,.98))!important;border:1px solid rgba(66,255,158,.2)!important}
+#ld2-root .ld2-cloud-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px 18px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+#ld2-root .ld2-cloud-head small{display:block;color:#42ff9e;font:700 9px Arial,sans-serif;letter-spacing:.12em}
+#ld2-root .ld2-cloud-head h2{margin:4px 0 4px;color:#effff6;font:700 20px Arial,sans-serif}
+#ld2-root .ld2-cloud-head p{margin:0;color:#8da198;font:400 10.5px/1.4 Arial,sans-serif}
+#ld2-root .ld2-cloud-head>button{appearance:none;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);color:#92a79d;width:30px;height:30px;border-radius:9px;font:700 18px Arial,sans-serif;cursor:pointer}
+#ld2-root .ld2-cloud-loading,#ld2-root .ld2-cloud-empty{padding:28px 18px;color:#8da198;font:400 11px Arial,sans-serif;text-align:center}
+#ld2-root .ld2-cloud-toolbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+#ld2-root .ld2-cloud-toolbar input{flex:1;min-width:0;height:34px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#030906;color:#eafff2;padding:0 10px;outline:none;font:400 11px Arial,sans-serif}
+#ld2-root .ld2-cloud-toolbar input:focus{border-color:rgba(66,255,158,.35)}
+#ld2-root .ld2-cloud-toolbar span{flex:0 0 auto;color:#7f958b;font:700 9px Arial,sans-serif}
+#ld2-root .ld2-skill-list,#ld2-root .ld2-queue-list,#ld2-root .ld2-fragment-list{max-height:55vh;overflow:auto;padding:8px 10px 14px;scrollbar-width:thin;scrollbar-color:rgba(66,255,158,.35) rgba(255,255,255,.025)}
+#ld2-root .ld2-skill-row{display:grid;grid-template-columns:24px minmax(0,1fr) 30px 40px;align-items:center;gap:9px;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.045)}
+#ld2-root .ld2-skill-row:hover{background:rgba(66,255,158,.025)}
+#ld2-root .ld2-skill-select{display:grid;place-items:center}
+#ld2-root .ld2-skill-select input{position:absolute;opacity:0;pointer-events:none}
+#ld2-root .ld2-skill-select span{display:block;width:16px;height:16px;border:1px solid rgba(255,255,255,.15);border-radius:5px;background:#020704;cursor:pointer}
+#ld2-root .ld2-skill-select input:checked+span{border-color:#42ff9e;background:rgba(66,255,158,.14);box-shadow:inset 0 0 0 4px #07130d}
+#ld2-root .ld2-skill-select input:checked+span:after{content:'';display:block;width:6px;height:6px;margin:4px;border-radius:2px;background:#42ff9e}
+#ld2-root .ld2-skill-select input:disabled+span{opacity:.28;cursor:not-allowed}
+#ld2-root .ld2-skill-copy{min-width:0}
+#ld2-root .ld2-skill-copy>div{display:flex;align-items:center;gap:7px;min-width:0}
+#ld2-root .ld2-skill-copy b{color:#dff7e9;font:700 10.5px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ld2-root .ld2-skill-copy em{flex:0 0 auto;color:#6f847b;font:700 8px Arial,sans-serif;text-transform:uppercase;font-style:normal}
+#ld2-root .ld2-skill-copy small{display:block;margin-top:3px;color:#758b81;font:400 9px/1.3 Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ld2-root .ld2-skill-pin,#ld2-root .ld2-skill-enable{appearance:none;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.02);color:#65786f;height:26px;cursor:pointer;font:700 9px Arial,sans-serif}
+#ld2-root .ld2-skill-pin.active{color:#d6c565;border-color:rgba(214,197,101,.25);background:rgba(214,197,101,.05)}
+#ld2-root .ld2-skill-enable.active{color:#42ff9e;border-color:rgba(66,255,158,.22);background:rgba(66,255,158,.05)}
+#ld2-root .ld2-queue-counts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px}
+#ld2-root .ld2-queue-counts span{padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.018);color:#778c82;font:400 8.5px Arial,sans-serif;text-align:center}
+#ld2-root .ld2-queue-counts b{display:block;margin-bottom:2px;color:#e8fff1;font:700 13px Arial,sans-serif}
+#ld2-root .ld2-queue-controls{display:flex;gap:6px;padding:0 12px 10px;flex-wrap:wrap}
+#ld2-root .ld2-queue-controls button,#ld2-root .ld2-fragment-footer button{appearance:none;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.025);color:#9aafa5;padding:7px 9px;font:700 9px Arial,sans-serif;cursor:pointer}
+#ld2-root .ld2-queue-controls button:hover,#ld2-root .ld2-fragment-footer button:hover{border-color:rgba(66,255,158,.26);color:#dff8e9}
+#ld2-root .ld2-queue-controls .danger{color:#d8848b;border-color:rgba(216,132,139,.16)}
+#ld2-root .ld2-queue-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;padding:10px 6px;border-bottom:1px solid rgba(255,255,255,.045)}
+#ld2-root .ld2-queue-pos{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.025);color:#667a70;font:700 9px Arial,sans-serif}
+#ld2-root .ld2-queue-copy{min-width:0}
+#ld2-root .ld2-queue-copy>div{display:flex;gap:7px;align-items:center}
+#ld2-root .ld2-queue-copy b{color:#dcefe4;font:700 10px Arial,sans-serif}
+#ld2-root .status-running .ld2-queue-copy b,#ld2-root .status-completed .ld2-queue-copy b{color:#42ff9e}
+#ld2-root .status-failed .ld2-queue-copy b,#ld2-root .status-blocked .ld2-queue-copy b{color:#ff7f89}
+#ld2-root .status-paused .ld2-queue-copy b{color:#d6c565}
+#ld2-root .ld2-queue-copy em{font:700 8px Arial,sans-serif;color:#60756b;font-style:normal;text-transform:uppercase}
+#ld2-root .ld2-queue-copy p{margin:4px 0 0;color:#9badA4;font:400 9.5px/1.35 Arial,sans-serif;white-space:normal}
+#ld2-root .ld2-queue-copy small{display:block;margin-top:3px;color:#688076;font:400 8.5px Arial,sans-serif}
+#ld2-root .ld2-queue-copy small.error{color:#d87982}
+#ld2-root .ld2-queue-actions{display:flex;gap:4px}
+#ld2-root .ld2-queue-actions button{appearance:none;width:26px;height:26px;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.02);color:#81958b;cursor:pointer;font:700 12px Arial,sans-serif}
+#ld2-root .ld2-fragment-list{padding-top:12px}
+#ld2-root .ld2-fragment-row{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;gap:7px;align-items:start;margin-bottom:7px}
+#ld2-root .ld2-fragment-row>span{display:grid;place-items:center;width:26px;height:26px;margin-top:3px;border-radius:8px;background:rgba(66,255,158,.06);color:#42ff9e;font:700 9px Arial,sans-serif}
+#ld2-root .ld2-fragment-row textarea{width:100%;min-height:52px;resize:vertical;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#020704;color:#dff8e8;padding:8px;outline:none;font:400 10px/1.4 Arial,sans-serif}
+#ld2-root .ld2-fragment-row textarea:focus{border-color:rgba(66,255,158,.34)}
+#ld2-root .ld2-fragment-row>button{appearance:none;width:26px;height:26px;margin-top:3px;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.02);color:#8c756f;cursor:pointer}
+#ld2-root .ld2-fragment-footer{display:flex;align-items:center;gap:8px;padding:10px 12px 13px;border-top:1px solid rgba(255,255,255,.05)}
+#ld2-root .ld2-fragment-footer span{flex:1;text-align:center;color:#71867c;font:700 8.5px Arial,sans-serif}
+#ld2-root .ld2-fragment-footer button.primary{border-color:#42ff9e;background:#42ff9e;color:#03130b}
+.ld2-native-bridge .ld2-cloud-controls{display:flex;align-items:center;gap:4px}
+.ld2-native-bridge .ld2-cloud-controls button{appearance:none;height:27px;padding:0 7px;border:1px solid rgba(255,255,255,.075);border-radius:8px;background:rgba(255,255,255,.025);color:#90a59b;font:700 9px Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.ld2-native-bridge .ld2-cloud-controls button:hover{border-color:rgba(66,255,158,.24);color:#dffff0}
+.ld2-native-bridge .ld2-cloud-controls button.accent{border-color:rgba(66,255,158,.22);color:#4dffa6;background:rgba(66,255,158,.055)}
+@media(max-width:700px){#ld2-root .ld2-cloud-card{width:calc(100vw - 16px);max-height:90vh}#ld2-root .ld2-queue-counts{grid-template-columns:1fr 1fr}.ld2-native-bridge .ld2-cloud-controls [data-cloud-skills]{display:none}#ld2-root .ld2-fragment-footer{flex-wrap:wrap}#ld2-root .ld2-fragment-footer span{order:3;flex-basis:100%}}

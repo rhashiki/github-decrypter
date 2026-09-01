@@ -1,0 +1,104 @@
+name: v2.6 Build 83 · Functional Runtime Reattachment
+
+on:
+  push:
+    branches: [v2.6.83-functional-reattachment]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check packaged JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const { spawnSync } = require('child_process');
+          const spec = require('./release/runtime-package.json');
+          const files = [];
+          function walk(item) {
+            const stat = fs.statSync(item);
+            if (stat.isFile()) { if (/\.m?js$/i.test(item)) files.push(item); return; }
+            for (const name of fs.readdirSync(item)) walk(path.join(item, name));
+          }
+          for (const item of spec.paths || []) walk(item);
+          for (const file of files) {
+            const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
+            if (result.status !== 0) process.exit(result.status || 1);
+          }
+          console.log(`Syntax OK: ${files.length} packaged JavaScript files`);
+          NODE
+
+      - name: Build83 functional runtime authority gate
+        run: node scripts/test-build83-functional-reattachment.mjs
+
+      - name: Build57 homologated functional regression gate
+        run: node tests/build57-final-homologation.test.mjs
+
+      - name: Release preflight candidate
+        run: node scripts/release-preflight.mjs --candidate
+
+      - name: Package validated installable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="Lovable-Decrypter-v2.6.83-functional-test.zip"
+          mapfile -t RUNTIME_PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
+          mapfile -t EXCLUDED_PATHS < <(node -e "(require('./release/runtime-package.json').excluded_paths||[]).forEach(p=>console.log(p))")
+          if [ "${#EXCLUDED_PATHS[@]}" -gt 0 ]; then
+            zip -qr "$ZIP" "${RUNTIME_PATHS[@]}" -x "${EXCLUDED_PATHS[@]}"
+          else
+            zip -qr "$ZIP" "${RUNTIME_PATHS[@]}"
+          fi
+
+          unzip -Z1 "$ZIP" > /tmp/build83-functional-files.txt
+          for required in \
+            manifest.json \
+            assets/fab.png \
+            background/service-worker-entry.js \
+            background/decrypter-chat-runtime.js \
+            content/decrypter-chat.js \
+            ui/license-gate-premium.js \
+            ui/chat-activation-premium-v45.js \
+            ui/ui-kernel-v48.js \
+            background/local-model-runtime.js \
+            background/tool-runtime.js \
+            background/mcp-runtime.js \
+            background/context-engine-runtime.js \
+            background/native-agent-session-runtime.js \
+            content/mcp-runtime-client.js \
+            content/portable-skills-client.js \
+            content/native-agent-session-client.js; do
+            grep -qx "$required" /tmp/build83-functional-files.txt
+          done
+
+          ! grep -E '^launcher/' /tmp/build83-functional-files.txt
+          ! grep -qx 'updates/latest.json' /tmp/build83-functional-files.txt
+          ! grep -qx 'updates/release.json' /tmp/build83-functional-files.txt
+          test "$(unzip -Z1 "$ZIP" | grep -Ec '\.zip$' || true)" -eq 0
+          sha256sum "$ZIP" | tee "${ZIP}.sha256"
+
+      - name: Upload validated functional test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lovable-Decrypter-v2.6.83-functional-test
+          path: |
+            Lovable-Decrypter-v2.6.83-functional-test.zip
+            Lovable-Decrypter-v2.6.83-functional-test.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
