@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Lovable Decrypter",
   "version": "2.6.84",
-  "version_name": "2.6 Build 84 · Clean Functional Runtime / Activation",
-  "description": "Build 82 stable visual authority plus an event-driven Runtime Bus and clean license activation. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
+  "version_name": "2.6 Build 84 · Trust + Core Integrations",
+  "description": "Stable Build 84 clean runtime with event-driven license/trust, GitHub App, Supabase OAuth and on-demand Lovable project snapshot. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -41,6 +41,6 @@
     }
   },
   "action": {
-    "default_title": "Lovable Decrypter v2.6.84 · Clean Functional Runtime"
+    "default_title": "Lovable Decrypter v2.6.84 · Trust + Core Integrations"
   }
 }
