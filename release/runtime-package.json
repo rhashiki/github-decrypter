@@ -20,5 +20,5 @@
   "forbidden_roots":[".github","benchmark","diagnostic","docs","launcher","release","runtime","scripts","supabase","tests"],
   "forbidden_paths":["updates/latest.json","updates/release.json"],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build83 restores the Build57 homologated functional activation/UI/runtime stack and reattaches Builds58-74 modern engine clients/runtimes. Build69 and Build75 remain validation benchmarks. Canonical v11 launcher is not shipped in this test package. No OTA metadata, GitHub Release or store publication is authorized."
+  "notes":"Build83 restores the Build57 homologated functional activation/UI/runtime stack and reattaches the v2.6 modern engine family, including Local Model, Tool Runtime, MCP Core/Marketplace, Context, Scope, Undo/Redo, Continuity, Local Agent, integrations, registry, portable skills, sandbox and native sessions. Build69 and Build75 remain benchmark validation layers. Canonical v11 launcher is not shipped in this test package. No OTA metadata, GitHub Release or store publication is authorized."
 }
