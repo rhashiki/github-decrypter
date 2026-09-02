@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "policy": "docs/audit/EXTERNAL_SOURCE_MINING.md",
+  "entries": [
+    {
+      "repository": "huggingface/transformers",
+      "license": "Apache-2.0",
+      "strategy": "DEPENDENCY_OR_ADAPT",
+      "status": "candidate",
+      "planned_areas": ["local model metadata", "tokenizer/config compatibility"]
+    },
+    {
+      "repository": "n8n-io/n8n",
+      "license": "Sustainable Use License; separate Enterprise licensing also exists",
+      "strategy": "REFERENCE",
+      "status": "reference-only",
+      "planned_areas": ["workflow state semantics", "retry design", "credential boundaries", "observability"]
+    },
+    {
+      "repository": "continuedev/continue",
+      "license": "Apache-2.0",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": ["context providers", "tools", "MCP", "protocol", "model providers", "context mentions"]
+    },
+    {
+      "repository": "crewAIInc/crewAI",
+      "license": "MIT",
+      "strategy": "ADAPT_OR_REIMPLEMENT",
+      "status": "candidate",
+      "planned_areas": ["agent roles", "flows", "event hooks", "checkpoint/persistence patterns", "guardrails"]
+    },
+    {
+      "repository": "microsoft/monaco-editor",
+      "license": "MIT",
+      "strategy": "DEPENDENCY",
+      "status": "candidate",
+      "planned_areas": ["code editor", "diff editor", "models", "providers", "diagnostics"]
+    },
+    {
+      "repository": "assistant-ui/assistant-ui",
+      "license": "MIT",
+      "strategy": "DEPENDENCY_OR_ADAPT",
+      "status": "candidate",
+      "planned_areas": ["chat primitives", "streaming", "attachments", "tool calls", "human approvals"]
+    },
+    {
+      "repository": "freestyle-sh/Adorable",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": ["workspace shell", "chat-preview layout", "terminal UX", "publish/rollback UX"]
+    },
+    {
+      "repository": "ntegrals/december",
+      "license": "MIT",
+      "strategy": "ADAPT_OR_REIMPLEMENT",
+      "status": "candidate",
+      "planned_areas": ["local runtime", "preview", "container isolation", "file/editor integration"]
+    },
+    {
+      "repository": "SujalXplores/v0.diy",
+      "license": "MIT at repository level; nested skill licenses require separate review",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": ["project/chat UX", "preview UX", "portable agent skills"]
+    }
+  ]
+}
