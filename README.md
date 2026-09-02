@@ -1,149 +1,73 @@
-# Lovable Decrypter v2.1.1
+# GitHub Decrypter
 
-Extensão Chromium para trabalhar em projetos Lovable através do GitHub usando Google Gemini, com modos Planejar/Construir, anexos, patches mínimos e atualização visual pelo GitSync do próprio Lovable.
+GitHub Decrypter is a local-first, Git-native and GitHub-native AI Development Studio.
 
-## O que mudou na v2
+Its target workflow is:
 
-A v2 abandona completamente a interceptação/camuflagem de requisições do Lovable.
+`GitHub repository → local workspace → Plan → approved Build → live local preview → diff → commit → push → pull request → optional deploy/domain workflow`
 
-**Não existe na v2:**
-- interceptação de `fetch`/XHR do Lovable;
-- `fix_error` ou transformação de prompts;
-- captura de Bearer token/sessão do Lovable;
-- chamadas a APIs internas de chat do Lovable;
-- execução autoritativa via backend próprio do Decrypter para licença, créditos, Vault e comandos.
+The browser extension is intentionally a lightweight GitHub launcher/bridge. The main interface is a React + TypeScript + Vite PWA Studio, and privileged/durable execution belongs to an independent local runtime rather than to the browser.
 
-Fluxo:
+## Current implementation status
 
-`Planejar → contexto cacheado → plano`
+The project is being rebuilt through frozen numbered Builds. At Build 5 the inherited Lovable-specific runtime authority has already been removed, but the new Studio/local-runtime topology is not yet implemented. The extension package is therefore intentionally inert rather than pretending to provide the final product early.
 
-`Construir → contexto cacheado → patches mínimos → commit na branch atual → GitSync → preview real do Lovable`
+Completed:
 
-## Funcionalidades
+- Build 1 — Project Fork & Independence
+- Build 2 — Product Constitution & Scope Freeze
+- Build 3 — Full Legacy Inventory
+- Build 4 — Lovable Decoupling
+- Build 5 — GitHub Decrypter Rebrand
 
-- Chat IA para alterações de código em linguagem natural.
-- Leitura contextual do repositório GitHub.
-- Gemini Interactions API com saída JSON estruturada.
-- Modos **Planejar** e **Construir**.
-- Anexos multimodais no chat: imagens, PDFs, áudio, vídeo, textos e documentos/planilhas compatíveis.
-- Revisão Antes/Depois do código quando desejado; o preview visual é sempre o preview real do Lovable.
-- Edição de arquivos existentes por patches mínimos `search → replace`, com rejeição de substituições excessivamente amplas.
-- Guardrail interno: o agente não pode alterar nada fora do pedido explícito.
-- Commit atômico usando Git blobs/tree/commit/ref.
-- Branch de trabalho persistente: cada comando em Construir cria um novo commit na mesma branch.
-- Treinar Agente por repositório.
-- Histórico local.
-- Skills personalizadas.
-- Notas por projeto.
-- Download ZIP do projeto via GitHub.
-- Aplicação revisável de `supabase/migrations/*.sql` no Supabase configurado. O migrador Cloud → Supabase completo será um módulo separado.
-- Ação de remoção de badge/marca apenas quando ela estiver no código do próprio projeto.
-- Múltiplos projetos por associação `projectId → owner/repo/branch`.
+Next: Build 6 — Monorepo Foundation.
 
+## Product principles
 
-## Login, persistência e atualizações (v2.1.1)
+- Git is the source of truth for code.
+- The local filesystem is the working tree.
+- GitHub is the remote collaboration layer for repositories, branches, issues, pull requests, checks and Actions.
+- Local execution is first-class; paid AI APIs are optional rather than mandatory.
+- Browser/PWA state is never the security or durable-job authority.
+- Jobs, checkpoints, transactions and recovery must survive browser closure and resume from the last consistent durable checkpoint after runtime restart.
+- PLAN is backend-enforced read-only.
+- BUILD receives explicit capabilities and Scope Lock.
+- Backends, AI providers, deployment providers and domain providers use contracts/plugins instead of product lock-in.
+- Supabase is first-class but optional.
+- MCP and plugins pass through capability, scope and approval boundaries.
+- No Release, OTA, Chrome Store publication, production deploy or DNS mutation happens without explicit authorization.
 
-- A extensão exige uma **KEY LD2 assinada** pelo proprietário.
-- A chave privada de emissão **não faz parte da extensão**; somente a chave pública de verificação é distribuída.
-- `chrome.storage.local` continua sendo o cache local. Como o Chrome o apaga ao desinstalar, a persistência pós-reinstalação usa um **Vault API opcional**.
-- Quando o Vault estiver configurado, Gemini API Key, GitHub PAT e demais configurações são cifrados localmente com AES-256-GCM antes do upload. A KEY de licença não vai dentro do backup.
-- A própria KEY pode carregar, de forma assinada, `vault_api_base` e `update_feed_url`; assim, após reinstalar, basta entrar novamente com a mesma KEY para restaurar o backup.
-- Para builds da Chrome Web Store, o navegador realiza as atualizações do pacote. Para ZIP/unpacked, a extensão pode verificar um feed de release **assinado** e baixar a nova build, mas não tenta instalar código remotamente.
+## Target architecture
 
-## Instalação
+```text
+Chrome Extension
+  └─ GitHub repository detection + lightweight launcher/bridge
 
-1. Descompacte o ZIP da extensão.
-2. Abra `chrome://extensions/` (ou equivalente no Edge/Brave).
-3. Ative **Modo do desenvolvedor**.
-4. Clique em **Carregar sem compactação**.
-5. Selecione a pasta `lovable-decrypter-v2`.
-6. Abra um projeto no Lovable e clique no FAB.
+GitHub Decrypter Studio
+  └─ React + TypeScript + Vite PWA
+     Chat / Plan / Build / Preview / Code / Diff / Console / Git / Jobs
 
-## Configuração
+GitHub Decrypter Local Runtime
+  └─ workspace + Git + AI + tools + MCP + context + scope + jobs
+     preview/process manager + diagnostics/LSP + SQLite/checkpoints
+```
 
-### Gemini
+The detailed frozen constitution and V1 scope live under `docs/product/`.
 
-Crie sua própria API Key no Google AI Studio e cole em **Configurações → Google Gemini**.
+## Reuse policy
 
-Padrões da build:
-- Principal padrão ZERO COST: `gemini-3.6-flash`
-- Avançado padrão ZERO COST: `gemini-2.5-pro`
-- O catálogo real é carregado dinamicamente da Gemini API; modelos sem Free Tier verificado aparecem bloqueados.
-- API: `v1beta/interactions`
+GitHub Decrypter does not reinvent mature components unnecessarily. Compatible third-party implementations may be adopted or adapted with their required notices; incompatible implementations are used only as architectural/behavioral references and reimplemented independently.
 
-Os modelos são selecionados por dropdown; o catálogo disponível para a chave pode ser atualizado pela própria extensão.
+The audited source-mining policy and provenance ledger are stored in:
 
-### GitHub
+- `docs/audit/EXTERNAL_SOURCE_MINING.md`
+- `docs/legal/THIRD_PARTY_PROVENANCE.md`
+- `third-party-sources.json`
 
-A v2.0 utiliza Fine-grained Personal Access Token. Recomenda-se conceder acesso apenas ao repositório desejado e permissão `Contents: write`.
+## Historical lineage
 
-Configure:
-- token;
-- `owner/repo`;
-- branch de trabalho.
+GitHub Decrypter originated from a snapshot of `rhashiki/lovable-decrypter-extension`, but it is an independent project with an independent roadmap and release authority. The original project continues separately. Historical lineage is recorded in `GITHUB_DECRYPTER_ORIGIN.md`; inherited implementation history remains available through Git history rather than through active product documentation.
 
-A branch configurada é persistente. **A extensão não cria uma nova branch a cada comando.** Cada execução no modo Construir gera um novo commit na mesma branch, permitindo que o GitSync do Lovable reflita a mudança no preview real.
+## Repository
 
-
-### Modos do chat
-
-- **Planejar**: analisa prompt, anexos e repositório e retorna somente um plano. Não cria patch, commit ou alteração.
-- **Construir**: gera somente os patches mínimos necessários, valida o escopo, cria um commit na branch atual e encerra assim que o GitHub aceita a alteração. O preview visual é atualizado pelo GitSync do Lovable.
-
-Anexos são tratados como contexto/referência e não são adicionados ao repositório a menos que o pedido diga explicitamente para fazê-lo.
-
-### Supabase
-
-Para conexão básica:
-- Project URL;
-- anon key.
-
-Para executar migrations pela Management API:
-- Project Ref;
-- Management Token.
-
-Revise sempre o SQL antes da execução.
-
-## Segurança
-
-As credenciais ficam em `chrome.storage.local`. Isso é armazenamento local da extensão, **não criptografia automática fornecida pelo Decrypter**.
-
-As credenciais são enviadas somente aos respectivos provedores:
-- Gemini key → Google Gemini API;
-- GitHub token → GitHub API;
-- Supabase credentials → Supabase.
-
-A extensão não possui servidor próprio na v2.0.
-
-## Limites conhecidos
-
-- A extensão não acessa APIs internas do Lovable para descobrir GitSync. O repositório é configurado pelo usuário e pode ser associado ao ID do projeto detectado na URL.
-- A atualização do preview depende do GitSync do próprio projeto Lovable.
-- A ferramenta **Aplicar Migrations** executa apenas migrations SQL versionadas em `supabase/migrations`; ela não deve ser confundida com o futuro migrador completo Lovable Cloud → Supabase.
-- OAuth GitHub está planejado; v2.0 usa Fine-grained PAT.
-
-Veja `docs/USER_GUIDE.md` e `docs/CHANGELOG.md`.
-
-### Proteção de contexto da IA
-
-O context builder ignora automaticamente arquivos potencialmente sensíveis como `.env`, credenciais, private keys e certificados. `.env.example`, `.env.sample` e `.env.template` podem ser usados por não conterem segredos reais por definição esperada.
-
-
-## ZERO COST
-A v2.0.5 opera por padrão em ZERO COST. O catálogo de modelos é consultado dinamicamente na Gemini API, mas somente modelos com Free Tier verificado na lista de segurança da versão podem ser selecionados. Modelos pagos ou ainda não verificados aparecem bloqueados.
-
-
-## Preview Center — v2.0.5
-
-O modal de revisão ocupa a viewport da extensão sem provocar rolagem da página do Lovable e oferece **Visual/Código**, **Componente/Página** e **Antes/Depois/Lado a lado**. O código exibido é o conteúdo real do plano pendente.
-
-**Importante:** o renderer visual herdado da v2.0.4 usa Gemini para produzir HTML/CSS estático e, portanto, é apenas uma aproximação. Ele não deve ser tratado como preview pixel-perfect do projeto. A arquitetura v2.0.5 prepara um cache persistente do repositório para substituir esse renderer por um runtime que execute o projeto real.
-
-## Cache do projeto — v2.0.5
-
-Ao abrir um projeto com GitHub configurado, a extensão faz warm-up do repositório. O cache é indexado pelo SHA da branch e pelos SHAs imutáveis dos blobs. Em comandos seguintes, arquivos não alterados são lidos do `chrome.storage.local` em vez de serem baixados novamente. Caminhos sensíveis (`.env`, private keys, credenciais e certificados) continuam excluídos do contexto da IA.
-
-
-## Layout do painel — v2.0.6
-
-O painel usa regiões de scroll isoladas: cabeçalho/status e composer são fixos; apenas a navegação lateral e o histórico da conversa podem rolar verticalmente. O container principal permanece com overflow travado para não provocar rolagem na página do Lovable.
+`rhashiki/github-decrypter`
