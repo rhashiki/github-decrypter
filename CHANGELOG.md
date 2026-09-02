@@ -1,13 +1,13 @@
 # GitHub Decrypter Changelog
 
-The active changelog restarts with the independent GitHub Decrypter Build numbering. Earlier Lovable Decrypter history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
+The active changelog restarts with the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
 ## Build 5 — GitHub Decrypter Rebrand — 2026-09-02
 
 ### Identity
 - Canonical product name becomes **GitHub Decrypter**.
 - Extension pre-V1 version becomes `0.0.5` / Build 5.
-- Active README and manifest no longer describe the inherited Lovable product.
+- Active README and manifest no longer describe the inherited predecessor product.
 - Canonical storage/protocol namespace becomes `gd-*` / `gd_*`.
 
 ### Independence
