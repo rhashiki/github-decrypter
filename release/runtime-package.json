@@ -10,11 +10,14 @@
     "launcher/editor-direct-v84.js",
     "launcher/ux-polish-v84.js",
     "launcher/integration-resource-manager-v84.js",
+    "launcher/supabase-project-manager-v84.js",
     "launcher/integration-resource-entrypoints-v84.js",
     "launcher/gemini-integration-v84.js",
     "background/runtime-entry-v84.js",
     "background/runtime-entry-v84-integrations.js",
-    "background/editor-direct-runtime-v84.js"
+    "background/editor-direct-runtime-v84.js",
+    "background/supabase-project-manager-runtime-v84.js",
+    "background/build84-service-worker.js"
   ],
   "excluded_paths":[],
   "forbidden_roots":[".github","ai","benchmark","content","core","diagnostic","docs","github","release","runtime","scripts","security","settings","storage","supabase","tests","tools","ui","updates"],
@@ -28,5 +31,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build84 clean runtime starts from stable Build82. The validated integrations/stability checkpoint is preserved. GitHub and Supabase resource management are browser-validated and nested once under their own integration menus. Gemini integration is reattached independently as an optional on-demand provider configuration surface: API key material is encrypted at rest, status/details never expose the secret, model discovery uses the official Gemini models endpoint, and connection validation does not generate a prompt. Gemini does not become the central orchestrator and does not activate at browser boot. Editor Direct remains isolated and local-AI-first: GitHub context is read with short-lived GitHub App installation tokens; Plan and Shadow Build are zero-write; Apply requires explicit human approval, valid cached Trust and HEAD revalidation; GitHub ref updates are non-force. If Supabase apply is required, Apply fails closed until the Supabase write runtime is separately reattached. Lovable remains Preview/dev environment and does not receive the prompt as AI authority. No composer interception, global MutationObserver, continuous polling, mount guardian, transport monkeypatch, heavy provider engine at boot, OTA metadata or release publication is shipped."
+  "notes":"Build84 clean runtime starts from stable Build82. The validated integrations/stability checkpoint is preserved. GitHub and Supabase resource management are browser-validated and nested once under their own integration menus. Supabase Project Manager is reattached as a separate event-driven layer over the existing OAuth connection: it can test and bind selected projects and can create a remote project only after explicit confirmation; database passwords stay in backend Vault; project provisioning is refreshed manually with no continuous polling; remote deletion is not exposed. Gemini integration remains an optional on-demand provider configuration surface: API key material is encrypted at rest, status/details never expose the secret, model discovery uses the official Gemini models endpoint, and connection validation does not generate a prompt. Gemini does not become the central orchestrator and does not activate at browser boot. Editor Direct remains isolated and local-AI-first: GitHub context is read with short-lived GitHub App installation tokens; Plan and Shadow Build are zero-write; Apply requires explicit human approval, valid cached Trust and HEAD revalidation; GitHub ref updates are non-force. If Supabase apply is required by Editor Direct, Apply still fails closed until that separate guarded write runtime is reattached. Lovable remains Preview/dev environment and does not receive the prompt as AI authority. No composer interception, global MutationObserver, continuous polling, mount guardian, transport monkeypatch, heavy provider engine at boot, OTA metadata or release publication is shipped."
 }
