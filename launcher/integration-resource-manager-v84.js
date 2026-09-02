@@ -133,6 +133,17 @@
         modal.toolbar.appendChild(official);
       }
 
+      if (integration === 'github') {
+        const sync = button('GitHub Sync & History', true);
+        sync.dataset.ldGithubSync = 'true';
+        sync.addEventListener('click', () => {
+          modal.overlay.remove();
+          const open = window.LovableDecrypterGithubSyncV84?.open;
+          if (typeof open === 'function') open('open');
+        });
+        modal.toolbar.appendChild(sync);
+      }
+
       if (integration === 'supabase') {
         const projectManager = button('Gerenciador Supabase', true);
         projectManager.dataset.ldSupabaseProjectManager = 'true';
