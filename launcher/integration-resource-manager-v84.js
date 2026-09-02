@@ -133,6 +133,17 @@
         modal.toolbar.appendChild(official);
       }
 
+      if (integration === 'supabase') {
+        const projectManager = button('Gerenciador Supabase', true);
+        projectManager.dataset.ldSupabaseProjectManager = 'true';
+        projectManager.addEventListener('click', () => {
+          modal.overlay.remove();
+          const open = window.LovableDecrypterSupabaseManagerV84?.open;
+          if (typeof open === 'function') open().catch(() => {});
+        });
+        modal.toolbar.appendChild(projectManager);
+      }
+
       if (!available.length) {
         const empty = document.createElement('div');
         empty.className = 'ld84-rm-empty';
