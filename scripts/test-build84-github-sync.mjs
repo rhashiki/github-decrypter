@@ -88,7 +88,7 @@ assert.ok(worker.includes('githubSyncHistory: true'));
 assert.ok(worker.includes("mode: 'event-driven'"));
 assert.ok(worker.includes('continuousPolling: false'));
 
-assert.ok(launcher.includes("id:'git-history'"), 'launcher must preserve Histórico Git module');
+assert.ok(launcher.includes("['git-history','Git history','branch']"), 'launcher must preserve canonical Git history module');
 assert.ok(resources.includes('GitHub Sync & History'));
 assert.ok(resources.includes('LovableDecrypterGithubSyncV84'));
 assert.ok(resources.includes('Gerenciador Supabase'));
