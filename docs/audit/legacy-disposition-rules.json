@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "status": "frozen-by-build-3",
+  "audit_base": {
+    "repository": "rhashiki/github-decrypter",
+    "commit": "6a8d2fb579f56cce6311eeea83065396055baa53",
+    "tree": "aa4952b88d15ac030ed727d9d6fc1eb716d08146",
+    "lovable_fork_point": "573040f891e4c7ae3627710d41a2d6c0d5b63f7b"
+  },
+  "precedence": ["exact", "prefix", "glob", "default"],
+  "default": {
+    "disposition": "REVIEW",
+    "rule": "An inherited path not matched here must not be deleted automatically. Resolve it against LEGACY_DISPOSITION_MATRIX.md before mutation."
+  },
+  "rules": [
+    {"match":"exact","path":".gitignore","disposition":"KEEP"},
+    {"match":"exact","path":"GITHUB_DECRYPTER_ORIGIN.md","disposition":"KEEP"},
+    {"match":"prefix","path":"docs/product/","disposition":"KEEP"},
+    {"match":"prefix","path":"docs/github-decrypter/","disposition":"KEEP"},
+    {"match":"prefix","path":"docs/audit/","disposition":"KEEP"},
+    {"match":"prefix","path":"docs/builds/","disposition":"KEEP","note":"GitHub Decrypter Build docs; inherited conflicts require manual review."},
+
+    {"match":"exact","path":"manifest.json","disposition":"REFACTOR"},
+    {"match":"exact","path":"README.md","disposition":"REFACTOR"},
+    {"match":"exact","path":"CHANGELOG.md","disposition":"REFACTOR"},
+    {"match":"exact","path":"RELEASE.md","disposition":"DELETE"},
+    {"match":"prefix","path":"assets/","disposition":"REFACTOR"},
+
+    {"match":"exact","path":".github/RELEASE_TRIGGER","disposition":"DELETE"},
+    {"match":"exact","path":".github/workflows/release.yml","disposition":"DELETE"},
+    {"match":"prefix","path":".github/workflows/","disposition":"DELETE","note":"Extract reusable validation intent before deletion; rebuild GitHub Decrypter CI later."},
+
+    {"match":"prefix","path":"launcher/","disposition":"REFACTOR","note":"Keep only lightweight GitHub launcher/bridge concepts."},
+
+    {"match":"exact","path":"content/content.js","disposition":"DELETE"},
+    {"match":"exact","path":"content/lovable-project-creator.js","disposition":"DELETE"},
+    {"match":"exact","path":"content/lovable-project-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"content/lovable-sync-verifier.js","disposition":"DELETE"},
+    {"match":"exact","path":"content/cloud-migrator-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"content/cloud-migrator-runtime-v2.js","disposition":"DELETE"},
+    {"match":"prefix","path":"content/","disposition":"MIGRATE","note":"Remaining reusable browser clients/intelligence move to Studio/runtime packages; page-local execution is not authoritative."},
+
+    {"match":"exact","path":"background/lovable-project-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"background/cloud-assets-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"background/cloud-complete-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"background/cloud-migration-runtime.js","disposition":"DELETE"},
+    {"match":"exact","path":"background/service-worker.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"background/service-worker-entry.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"background/github-autosync-runtime.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"background/update-recovery-runtime.js","disposition":"REFACTOR"},
+    {"match":"prefix","path":"background/","disposition":"MIGRATE","note":"Reusable heavy engines migrate out of browser service worker into local runtime/packages."},
+
+    {"match":"exact","path":"core/utils.js","disposition":"KEEP"},
+    {"match":"exact","path":"core/patch-engine.js","disposition":"KEEP","note":"Pure implementation portions only; final ownership moves to package architecture."},
+    {"match":"exact","path":"core/scope-lock.js","disposition":"KEEP","note":"Invariant semantics retained; runtime enforcement remains mandatory."},
+    {"match":"exact","path":"core/account-integration-readiness.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"core/command-parser.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"core/context-builder.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"core/decrypter-intelligence.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"core/repo-cache.js","disposition":"REFACTOR"},
+    {"match":"exact","path":"core/response-parser.js","disposition":"REFACTOR"},
+    {"match":"prefix","path":"core/","disposition":"MIGRATE","note":"Remaining modern engines are V1 capability assets to be moved into versioned packages/local runtime."},
+
+    {"match":"exact","path":"ai/gemini-agent.js","disposition":"REFACTOR","note":"Gemini becomes an optional AIProvider."},
+    {"match":"exact","path":"github/git-adapter.js","disposition":"MIGRATE","note":"Split local Git authority from GitHub remote collaboration provider."},
+    {"match":"prefix","path":"runtime/decrypter-local/","disposition":"MIGRATE"},
+
+    {"match":"exact","path":"security/license.js","disposition":"DELETE"},
+    {"match":"exact","path":"security/mcp-oauth.js","disposition":"MIGRATE"},
+    {"match":"exact","path":"security/trust.js","disposition":"MIGRATE"},
+    {"match":"exact","path":"security/vault.js","disposition":"REFACTOR"},
+    {"match":"prefix","path":"settings/","disposition":"REFACTOR"},
+    {"match":"exact","path":"storage/secret-sanitizer.js","disposition":"MIGRATE"},
+    {"match":"exact","path":"storage/settings-store.js","disposition":"MIGRATE"},
+
+    {"match":"exact","path":"supabase/functions/_shared/github-rsa.js","disposition":"MIGRATE"},
+    {"match":"prefix","path":"supabase/functions/ld-github-app/","disposition":"MIGRATE"},
+    {"match":"prefix","path":"supabase/functions/ld-supabase-manager/","disposition":"MIGRATE"},
+    {"match":"prefix","path":"supabase/functions/ld-supabase-oauth/","disposition":"MIGRATE"},
+    {"match":"prefix","path":"supabase/functions/ld-knowledge-","disposition":"REFACTOR","note":"Extract provider-independent algorithms only."},
+    {"match":"prefix","path":"supabase/functions/ld-trust-attest/","disposition":"REFACTOR"},
+    {"match":"prefix","path":"supabase/functions/","disposition":"DELETE","note":"Old mandatory hosted backend authority after reusable patterns are extracted."},
+    {"match":"prefix","path":"supabase/migrations/","disposition":"DELETE","note":"Old GitHub Decrypter-internal/LD service schema; user-project Supabase support is rebuilt as a provider."},
+
+    {"match":"exact","path":"tools/supabase-tools.js","disposition":"REFACTOR"},
+    {"match":"prefix","path":"benchmark/","disposition":"MIGRATE"},
+    {"match":"prefix","path":"training/decrypter-coder/","disposition":"DELETE"},
+
+    {"match":"prefix","path":"tests/","disposition":"REVIEW","note":"Classify by protected capability: migrate modern V1 invariants; delete Lovable/commercial/release-specific tests after assertion extraction."},
+    {"match":"exact","path":"scripts/test-build82-canonical-ui.mjs","disposition":"DELETE"},
+    {"match":"exact","path":"scripts/test-build82-modern-engines.mjs","disposition":"MIGRATE"},
+    {"match":"exact","path":"scripts/release-preflight.mjs","disposition":"REFACTOR"},
+    {"match":"prefix","path":"release/","disposition":"DELETE","note":"runtime-package.json is a REFACTOR exception below."},
+    {"match":"exact","path":"release/runtime-package.json","disposition":"REFACTOR"},
+    {"match":"prefix","path":"updates/","disposition":"DELETE"},
+
+    {"match":"exact","path":"docs/ARCHITECTURE.md","disposition":"DELETE"},
+    {"match":"exact","path":"docs/ROADMAP_V2_6_LOCAL_FIRST_AI.md","disposition":"DELETE"},
+    {"match":"exact","path":"docs/USER_GUIDE.md","disposition":"DELETE"},
+    {"match":"exact","path":"docs/CHANGELOG.md","disposition":"DELETE"},
+    {"match":"glob","path":"docs/BUILD*","disposition":"DELETE","note":"Inherited Lovable Decrypter historical Build docs; Git history remains archival authority."}
+  ]
+}
