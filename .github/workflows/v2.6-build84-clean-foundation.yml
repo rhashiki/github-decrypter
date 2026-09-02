@@ -76,8 +76,10 @@ jobs:
           grep -q 'forcePush: false' background/github-sync-runtime-v84.js
           grep -q 'directLovableWrite: false' background/github-sync-runtime-v84.js
           ! grep -q "method: 'PATCH'" background/github-sync-runtime-v84.js
-          ! grep -q "method: 'POST'" background/github-sync-runtime-v84.js
           ! grep -q "method: 'DELETE'" background/github-sync-runtime-v84.js
+          ! grep -q '/git/' background/github-sync-runtime-v84.js
+          ! grep -q '/contents/' background/github-sync-runtime-v84.js
+          ! grep -q '/pulls' background/github-sync-runtime-v84.js
 
       - name: Verify clean architecture invariants
         shell: bash
