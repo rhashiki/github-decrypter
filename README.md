@@ -66,7 +66,7 @@ The audited source-mining policy and provenance ledger are stored in:
 
 ## Historical lineage
 
-GitHub Decrypter originated from a snapshot of `rhashiki/lovable-decrypter-extension`, but it is an independent project with an independent roadmap and release authority. The original project continues separately. Historical lineage is recorded in `GITHUB_DECRYPTER_ORIGIN.md`; inherited implementation history remains available through Git history rather than through active product documentation.
+GitHub Decrypter originated from a snapshot of its predecessor project, but it is independent and has its own roadmap and release authority. The predecessor continues separately. Exact lineage is recorded in `GITHUB_DECRYPTER_ORIGIN.md`; inherited implementation history remains available through Git history rather than through active product documentation.
 
 ## Repository
 
