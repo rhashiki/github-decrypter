@@ -26,23 +26,25 @@ jobs:
           node --check launcher/launcher-runtime.js
           node --check launcher/runtime-client-v84.js
           node --check launcher/account-controller-v84.js
-          node --check launcher/editor-direct-v84.js
-          node --check launcher/ux-polish-v84.js
-          node --check launcher/integration-resource-manager-v84.js
-          node --check launcher/supabase-project-manager-v84.js
+          node --check launcher/ux-polish-v84-2.js
+          node --check launcher/editor-direct-authority-v84.js
+          node --check launcher/integration-resource-manager-v84-2.js
+          node --check launcher/supabase-project-manager-v84-2.js
           node --check launcher/github-sync-v84.js
           node --check launcher/integration-resource-entrypoints-v84.js
-          node --check launcher/gemini-integration-v84.js
+          node --check launcher/gemini-integration-v84-2.js
           node --check background/runtime-entry-v84.js
           node --check background/runtime-entry-v84-integrations.js
           node --check background/editor-direct-runtime-v84.js
           node --check background/supabase-project-manager-runtime-v84.js
+          node --check background/supabase-project-rename-runtime-v84.js
           node --check background/github-sync-runtime-v84.js
+          node --check background/gemini-provider-runtime-v84.js
           node --check background/build84-service-worker.js
-          node --check scripts/test-build84-github-sync.mjs
+          node --check scripts/test-build84-browser-refinement.mjs
 
-      - name: Build84 GitHub Sync parity gate
-        run: node scripts/test-build84-github-sync.mjs
+      - name: Build84 real-browser refinement gate
+        run: node scripts/test-build84-browser-refinement.mjs
 
       - name: Verify validated integrations checkpoint remains intact
         shell: bash
@@ -54,32 +56,24 @@ jobs:
           grep -q '"duplicate_resource_actions_removed": true' docs/checkpoints/build84-integrations-resource-management-validated.json
           grep -q '"ram_stabilizes": true' docs/checkpoints/build84-integrations-resource-management-validated.json
 
-      - name: Verify GitHub Sync and history contract
+      - name: Verify browser-reported fixes contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'GitHub Sync & History' launcher/github-sync-v84.js
-          grep -q 'Sincronizar estado' launcher/github-sync-v84.js
-          grep -q 'Ver histórico' launcher/github-sync-v84.js
-          grep -q 'Comparar' launcher/github-sync-v84.js
-          grep -q "type: 'ld84.github.sync.status'" launcher/github-sync-v84.js
-          grep -q "type: 'ld84.github.sync.refresh'" launcher/github-sync-v84.js
-          grep -q "type: 'ld84.github.sync.history'" launcher/github-sync-v84.js
-          grep -q "type: 'ld84.github.sync.compare'" launcher/github-sync-v84.js
-          grep -q "GITHUB_PROJECT_BINDING_REQUIRED" background/github-sync-runtime-v84.js
-          grep -q "GITHUB_REPOSITORY_NOT_AUTHORIZED" background/github-sync-runtime-v84.js
-          grep -q "GITHUB_REPOSITORY_NOT_SELECTED" background/github-sync-runtime-v84.js
-          grep -q "bindingAuthority: 'explicit-project-binding'" background/github-sync-runtime-v84.js
-          grep -q "writeAuthority: 'editor-direct-explicit-apply'" background/github-sync-runtime-v84.js
-          grep -q 'historyReadOnly: true' background/github-sync-runtime-v84.js
-          grep -q 'compareReadOnly: true' background/github-sync-runtime-v84.js
-          grep -q 'forcePush: false' background/github-sync-runtime-v84.js
-          grep -q 'directLovableWrite: false' background/github-sync-runtime-v84.js
-          ! grep -q "method: 'PATCH'" background/github-sync-runtime-v84.js
-          ! grep -q "method: 'DELETE'" background/github-sync-runtime-v84.js
-          ! grep -q '/git/' background/github-sync-runtime-v84.js
-          ! grep -q '/contents/' background/github-sync-runtime-v84.js
-          ! grep -q '/pulls' background/github-sync-runtime-v84.js
+          ! grep -q 'Controle restaurado. O motor de edição direta será reativado' launcher/ux-polish-v84-2.js
+          ! grep -q 'showEditorDirectModal' launcher/ux-polish-v84-2.js
+          grep -q "dataset.ldEditorDirect='true'" launcher/ux-polish-v84-2.js
+          grep -q 'Salvar vínculo' launcher/editor-direct-authority-v84.js
+          grep -q 'Planejar · ZERO WRITE' launcher/editor-direct-authority-v84.js
+          grep -q 'Aplicar no GitHub' launcher/editor-direct-authority-v84.js
+          grep -q 'transientDB(out)' launcher/integration-resource-manager-v84-2.js
+          grep -q 'Tentar novamente' launcher/integration-resource-manager-v84-2.js
+          grep -q 'Atualizar provisionamento' launcher/supabase-project-manager-v84-2.js
+          grep -q 'Renomear projeto' launcher/supabase-project-manager-v84-2.js
+          grep -q 'ld84.supabase.rename' launcher/supabase-project-manager-v84-2.js
+          grep -q 'Mostrar também modelos pagos / potencialmente cobrados' launcher/gemini-integration-v84-2.js
+          grep -q 'PAGO / POTENCIALMENTE COBRÁVEL' launcher/gemini-integration-v84-2.js
+          grep -q 'GEMINI_PAID_MODEL_OPT_IN_REQUIRED' background/gemini-provider-runtime-v84.js
 
       - name: Verify clean architecture invariants
         shell: bash
@@ -89,69 +83,75 @@ jobs:
             launcher/launcher-runtime.js \
             launcher/runtime-client-v84.js \
             launcher/account-controller-v84.js \
-            launcher/editor-direct-v84.js \
-            launcher/ux-polish-v84.js \
-            launcher/integration-resource-manager-v84.js \
-            launcher/supabase-project-manager-v84.js \
+            launcher/ux-polish-v84-2.js \
+            launcher/editor-direct-authority-v84.js \
+            launcher/integration-resource-manager-v84-2.js \
+            launcher/supabase-project-manager-v84-2.js \
             launcher/github-sync-v84.js \
             launcher/integration-resource-entrypoints-v84.js \
-            launcher/gemini-integration-v84.js \
+            launcher/gemini-integration-v84-2.js \
             background/runtime-entry-v84.js \
             background/runtime-entry-v84-integrations.js \
             background/editor-direct-runtime-v84.js \
             background/supabase-project-manager-runtime-v84.js \
+            background/supabase-project-rename-runtime-v84.js \
             background/github-sync-runtime-v84.js \
+            background/gemini-provider-runtime-v84.js \
             background/build84-service-worker.js; do
             ! grep -q 'MutationObserver' "$f"
             ! grep -q 'setInterval' "$f"
             ! grep -q 'setAttribute([^)]*inert' "$f"
           done
           ! grep -q 'chrome.alarms' background/github-sync-runtime-v84.js
-          ! grep -q 'document.body' launcher/github-sync-v84.js
-          ! grep -q 'document.body' launcher/supabase-project-manager-v84.js
-          ! grep -q 'document.body' launcher/gemini-integration-v84.js
+          ! grep -q 'chrome.alarms' background/supabase-project-rename-runtime-v84.js
+          ! grep -q 'chrome.alarms' background/gemini-provider-runtime-v84.js
+          ! grep -q 'document.body' launcher/editor-direct-authority-v84.js
+          ! grep -q 'document.body' launcher/supabase-project-manager-v84-2.js
+          ! grep -q 'document.body' launcher/gemini-integration-v84-2.js
 
       - name: Package flat installable ZIP
         shell: bash
         run: |
           set -euo pipefail
-          ZIP="Lovable-Decrypter-v2.6.84-github-sync-test.zip"
+          ZIP="Lovable-Decrypter-v2.6.84-browser-refinement-test.zip"
           mapfile -t PATHS < <(node -e "require('./release/runtime-package.json').paths.forEach(p=>console.log(p))")
           zip -qr "$ZIP" "${PATHS[@]}"
           unzip -Z1 "$ZIP" > /tmp/build84-files.txt
-
-          for required in \
-            manifest.json \
-            launcher/launcher-runtime.js \
-            launcher/runtime-client-v84.js \
-            launcher/account-controller-v84.js \
-            launcher/editor-direct-v84.js \
+          test "$(grep -Ec '^manifest\.json$' /tmp/build84-files.txt || true)" -eq 1
+          test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
+          ! grep -E '^(content|ui|core|github|storage|supabase|tools|updates)/' /tmp/build84-files.txt
+          for forbidden in \
             launcher/ux-polish-v84.js \
+            launcher/editor-direct-v84.js \
             launcher/integration-resource-manager-v84.js \
             launcher/supabase-project-manager-v84.js \
+            launcher/gemini-integration-v84.js; do
+            ! grep -qx "$forbidden" /tmp/build84-files.txt
+          done
+          for required in \
+            manifest.json \
+            launcher/ux-polish-v84-2.js \
+            launcher/editor-direct-authority-v84.js \
+            launcher/integration-resource-manager-v84-2.js \
+            launcher/supabase-project-manager-v84-2.js \
             launcher/github-sync-v84.js \
-            launcher/integration-resource-entrypoints-v84.js \
-            launcher/gemini-integration-v84.js \
-            background/runtime-entry-v84.js \
-            background/runtime-entry-v84-integrations.js \
+            launcher/gemini-integration-v84-2.js \
             background/editor-direct-runtime-v84.js \
             background/supabase-project-manager-runtime-v84.js \
+            background/supabase-project-rename-runtime-v84.js \
             background/github-sync-runtime-v84.js \
+            background/gemini-provider-runtime-v84.js \
             background/build84-service-worker.js; do
             grep -qx "$required" /tmp/build84-files.txt
           done
-
-          ! grep -E '^(content|ui|core|github|storage|supabase|tools|updates)/' /tmp/build84-files.txt
-          test "$(grep -Ec '\.zip$' /tmp/build84-files.txt || true)" -eq 0
-          test "$(grep -Ec '^manifest\.json$' /tmp/build84-files.txt || true)" -eq 1
           sha256sum "$ZIP" | tee "${ZIP}.sha256"
 
-      - name: Upload flat Build84 GitHub Sync test ZIP
+      - name: Upload flat Build84 browser refinement ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Lovable-Decrypter-v2.6.84-github-sync-test
+          name: Lovable-Decrypter-v2.6.84-browser-refinement-test
           path: |
-            Lovable-Decrypter-v2.6.84-github-sync-test.zip
-            Lovable-Decrypter-v2.6.84-github-sync-test.zip.sha256
+            Lovable-Decrypter-v2.6.84-browser-refinement-test.zip
+            Lovable-Decrypter-v2.6.84-browser-refinement-test.zip.sha256
           if-no-files-found: error
           retention-days: 14
