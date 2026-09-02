@@ -1,4 +1,4 @@
-name: GitHub Decrypter Build 4 — Lovable Decoupling
+name: GitHub Decrypter Build 5 — Product Rebrand
 
 on:
   pull_request:
@@ -6,18 +6,20 @@ on:
       - main
   push:
     branches:
-      - build/4-lovable-decoupling
+      - build/5-github-decrypter-rebrand
 
 permissions:
   contents: read
 
 jobs:
-  decoupling-regression:
+  identity-regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate Lovable authority removal
+      - name: Validate Build 4 decoupling remains intact
         run: node scripts/test-build4-lovable-decoupling.mjs
+      - name: Validate GitHub Decrypter identity
+        run: node scripts/test-build5-rebrand.mjs
       - name: Validate modern engine preservation
         run: node scripts/test-build4-modern-engine-preservation.mjs
       - name: Syntax-check preserved JavaScript sources
@@ -26,4 +28,4 @@ jobs:
           set -euo pipefail
           while IFS= read -r -d '' file; do
             node --check "$file"
-          done < <(find core background content github security settings storage -type f -name '*.js' -print0 2>/dev/null || true)
+          done < <(find core background content github security settings storage scripts -type f -name '*.js' -o -name '*.mjs' -print0 2>/dev/null || true)
