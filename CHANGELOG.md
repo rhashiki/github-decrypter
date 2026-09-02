@@ -1,28 +1,20 @@
-# Changelog
+# GitHub Decrypter Changelog
 
-## 2.2.0 — 2026-08-26
+The active changelog restarts with the independent GitHub Decrypter Build numbering. Earlier Lovable Decrypter history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
-### Engenharia e execução
-- Project Intelligence, Impact Maps, Project Rules, Explain Project e Skill Router.
-- Scope Lock, Shadow Build, Regression Sentinel e Validation Gate no pipeline autoritativo.
-- Checkpoints persistentes com rollback automático e manual seguro, sem force reset.
-- Batch Mode sequencial, isolado por projeto, com pausa em falha e reentrada no pipeline completo.
-- Sugestões Automáticas determinísticas e somente consultivas, sem Build/Plan autônomo e sem consumo automático de Gemini.
+## Build 5 — GitHub Decrypter Rebrand — 2026-09-02
 
-### UX
-- Novo Control Center v2.2.0.
-- Preview do Lovable com blur durante Build/Aprovação/Batch.
-- Barra de progresso vinculada aos eventos reais de execução e conclusão visual do preview; 100% somente após sinal observável do Lovable.
+### Identity
+- Canonical product name becomes **GitHub Decrypter**.
+- Extension pre-V1 version becomes `0.0.5` / Build 5.
+- Active README and manifest no longer describe the inherited Lovable product.
+- Canonical storage/protocol namespace becomes `gd-*` / `gd_*`.
 
-### Segurança e hardening
-- Credenciais sensíveis mantidas fora do DOM compartilhado com o Lovable.
-- GitHub PAT e operações sensíveis restritos ao background.
-- OTA exige feed ECDSA assinado e token efêmero vinculado à release validada.
-- Destinos Supabase/Vault restritos a HTTPS em `*.supabase.co`.
-- Compatibilidade Chrome MV3 e fallback Firefox/WebExtension sem scripts em MAIN world.
-- Política Gemini zero-cost preservada: sem fallback pago automático; cota gratuita esgotada interrompe a operação.
-- Validações de secrets/.env e regressões dedicadas em CI.
+### Independence
+- Inherited hosted Vault, release-feed and store endpoints are no longer defaults or product authorities.
+- Legacy storage migration is one-shot: an old local settings key may be imported into the new namespace and then removed.
+- Historical lineage remains documented without becoming active product identity.
 
-### Distribuição
-- Release estável empacotada pelo GitHub Actions com ZIP + SHA-256.
-- Metadata publicada em `updates/release.json` e servida por `ld-release-feed` com assinatura ECDSA.
+### Safety
+- No Release, OTA, store publication, deployment, production backend mutation or DNS change is authorized by this Build.
+- Extension remains intentionally inert until the GitHub-native launcher is introduced by the frozen roadmap.
