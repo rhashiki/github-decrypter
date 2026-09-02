@@ -124,6 +124,7 @@ async function ld84SbmValidateSelectedRef(ref) {
 async function ld84SbmBind(message = {}) {
   const ref = ld84SbmClean(message.projectRef, 120);
   if (!ref) throw new Error('SUPABASE_PROJECT_REQUIRED');
+  await ld84SbmEnsureCreatedProjectSelected(ref).catch(() => false);
   const { status, project } = await ld84SbmValidateSelectedRef(ref);
   const projectId = ld84SbmClean(message.projectId || status.projectId, 120);
   if (!projectId) throw new Error('LOVABLE_PROJECT_ID_REQUIRED');
@@ -142,6 +143,8 @@ async function ld84SbmBind(message = {}) {
 }
 async function ld84SbmTest(message = {}) {
   const ref = ld84SbmClean(message.projectRef, 120);
+  if (!ref) throw new Error('SUPABASE_PROJECT_REQUIRED');
+  await ld84SbmEnsureCreatedProjectSelected(ref).catch(() => false);
   const { project } = await ld84SbmValidateSelectedRef(ref);
   const tested = await ld84SbmBackend('ld-supabase-manager', 'project_test', { project_ref: project.ref });
   return {
@@ -162,9 +165,10 @@ async function ld84SbmRegions(message = {}) {
 }
 async function ld84SbmEnsureCreatedProjectSelected(ref) {
   const selection = await ld84SbmSelection();
-  if (selection?.mode === 'all' || selection?.selected === null) return;
+  if (selection?.mode === 'all' || selection?.selected === null) return true;
   const selected = [...new Set([...(Array.isArray(selection?.selected) ? selection.selected.map(String) : []), ref])];
   await ld84SbmBackend('ld-integration-selection', 'set', { integration: 'supabase', mode: 'selected', selected });
+  return true;
 }
 async function ld84SbmCreate(message = {}) {
   if (message.confirm !== true) throw new Error('PROJECT_CREATE_CONFIRMATION_REQUIRED');
@@ -178,6 +182,7 @@ async function ld84SbmCreate(message = {}) {
   if (!status.organizations.some(org => org.slug === organizationSlug)) throw new Error('ORGANIZATION_NOT_AUTHORIZED');
   if (regionCode && !['smartGroup', 'specific'].includes(regionType)) throw new Error('REGION_TYPE_INVALID');
   const created = await ld84SbmBackend('ld-supabase-manager', 'create_project', {
+    confirm: true,
     name,
     organization_slug: organizationSlug,
     region_type: regionType,
@@ -185,12 +190,15 @@ async function ld84SbmCreate(message = {}) {
   });
   const ref = ld84SbmClean(created?.project?.ref, 120);
   if (!ref) throw new Error('PROJECT_CREATE_RESPONSE_INVALID');
-  await ld84SbmEnsureCreatedProjectSelected(ref);
+  let selectionUpdated = false;
+  try { selectionUpdated = await ld84SbmEnsureCreatedProjectSelected(ref); } catch (_) {}
   return {
     ok: true,
     schema: LD84_SBM_SCHEMA,
     project: created.project,
     databasePasswordStored: created?.database_password_stored === true,
+    selectionUpdated,
+    selectionPending: !selectionUpdated,
     next: 'manual-project-status',
     continuousPolling: false
   };
@@ -203,14 +211,20 @@ async function ld84SbmProjectStatus(message = {}) {
   const status = String(project?.status || '').toUpperCase();
   const healthText = JSON.stringify(result?.health || {}).toUpperCase();
   const ready = status === 'ACTIVE_HEALTHY' || /ACTIVE_HEALTHY/.test(healthText);
+  let selectionUpdated = false;
+  if (ready) {
+    try { selectionUpdated = await ld84SbmEnsureCreatedProjectSelected(ref); } catch (_) {}
+  }
   return {
     ok: true,
     schema: LD84_SBM_SCHEMA,
     project,
     health: result?.health || null,
     ready,
+    selectionUpdated,
+    selectionPending: ready && !selectionUpdated,
     checkedAt: new Date().toISOString(),
-    next: ready ? 'test-or-bind' : 'manual-refresh'
+    next: ready ? (selectionUpdated ? 'test-or-bind' : 'manual-refresh-selection') : 'manual-refresh'
   };
 }
 async function ld84SbmResponse(message = {}) {
