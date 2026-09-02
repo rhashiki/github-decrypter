@@ -2,7 +2,8 @@
 
 importScripts(
   'editor-direct-runtime-v84.js',
-  'supabase-project-manager-runtime-v84.js'
+  'supabase-project-manager-runtime-v84.js',
+  'github-sync-runtime-v84.js'
 );
 
 Object.defineProperty(globalThis, 'LovableDecrypterBuild84ServiceWorker', {
@@ -11,6 +12,7 @@ Object.defineProperty(globalThis, 'LovableDecrypterBuild84ServiceWorker', {
     mode: 'event-driven',
     editorDirect: true,
     supabaseProjectManager: true,
+    githubSyncHistory: true,
     continuousPolling: false,
     globalObservers: false
   }),
