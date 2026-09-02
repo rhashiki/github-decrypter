@@ -3,7 +3,7 @@
   "name": "Lovable Decrypter",
   "version": "2.6.84",
   "version_name": "2.6 Build 84 · Trust + Core Integrations",
-  "description": "Stable Build 84 clean runtime with event-driven license/trust, GitHub App, Supabase OAuth, Gemini configuration, resource selection, on-demand project state and an isolated local-AI Editor Direct command path. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
+  "description": "Stable Build 84 clean runtime with event-driven license/trust, GitHub App, Supabase OAuth and project manager, Gemini configuration, resource selection, on-demand project state and an isolated local-AI Editor Direct command path. No legacy UI stack, mount guardians, global observers, content polling or heavy runtime activation at boot.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -21,7 +21,7 @@
     "http://localhost:8000/*"
   ],
   "background": {
-    "service_worker": "background/editor-direct-runtime-v84.js"
+    "service_worker": "background/build84-service-worker.js"
   },
   "content_scripts": [
     {
@@ -33,6 +33,7 @@
         "launcher/editor-direct-v84.js",
         "launcher/ux-polish-v84.js",
         "launcher/integration-resource-manager-v84.js",
+        "launcher/supabase-project-manager-v84.js",
         "launcher/integration-resource-entrypoints-v84.js",
         "launcher/gemini-integration-v84.js"
       ],
