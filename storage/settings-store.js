@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, STORAGE_KEY, mergeSettings } from '../settings/config.js';
+import { DEFAULT_SETTINGS, STORAGE_KEY, LEGACY_STORAGE_KEYS, mergeSettings } from '../settings/config.js';
 import { sanitizeDurableSettings } from './secret-sanitizer.js';
 
 function sameJson(a, b) {
@@ -6,9 +6,25 @@ function sameJson(a, b) {
   catch (_) { return false; }
 }
 
+async function readCanonicalOrLegacySettings() {
+  const keys = [STORAGE_KEY, ...LEGACY_STORAGE_KEYS];
+  const data = await chrome.storage.local.get(keys);
+  if (data[STORAGE_KEY]) return data[STORAGE_KEY];
+
+  for (const legacyKey of LEGACY_STORAGE_KEYS) {
+    if (!data[legacyKey]) continue;
+    const migrated = sanitizeDurableSettings(mergeSettings(data[legacyKey]));
+    await chrome.storage.local.set({ [STORAGE_KEY]: migrated });
+    await chrome.storage.local.remove(legacyKey);
+    return migrated;
+  }
+
+  return DEFAULT_SETTINGS;
+}
+
 export async function getSettings() {
-  const data = await chrome.storage.local.get(STORAGE_KEY);
-  const merged = mergeSettings(data[STORAGE_KEY] || DEFAULT_SETTINGS);
+  const source = await readCanonicalOrLegacySettings();
+  const merged = mergeSettings(source);
   const sanitized = sanitizeDurableSettings(merged);
   if (!sameJson(merged, sanitized)) await chrome.storage.local.set({ [STORAGE_KEY]: sanitized });
   return sanitized;
