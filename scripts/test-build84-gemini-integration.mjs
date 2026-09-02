@@ -108,12 +108,15 @@ for (const type of [
 ]) assert.ok(supabaseManagerRuntime.includes(type), `Supabase manager runtime action missing: ${type}`);
 assert.ok(supabaseManagerRuntime.includes("if (message.confirm !== true) throw new Error('PROJECT_CREATE_CONFIRMATION_REQUIRED')"));
 assert.ok(supabaseManagerRuntime.includes("ld84SbmBackend('ld-supabase-manager', 'create_project'"));
+assert.ok(supabaseManagerRuntime.includes("confirm: true"), 'background must propagate explicit confirmation to backend');
 assert.ok(supabaseManagerRuntime.includes("ld84SbmBackend('ld-integration-selection', 'set'"));
 assert.ok(supabaseManagerRuntime.includes("const LD84_SBM_BINDINGS_KEY = 'ld84_project_bindings'"));
 assert.ok(supabaseManagerRuntime.includes('remoteDelete: false'));
 assert.ok(supabaseManagerRuntime.includes('passwordReturnedToClient: false'));
 assert.ok(supabaseManagerRuntime.includes("next: 'manual-project-status'"));
-assert.ok(supabaseManagerRuntime.includes("next: ready ? 'test-or-bind' : 'manual-refresh'"));
+assert.ok(supabaseManagerRuntime.includes('selectionPending: !selectionUpdated'));
+assert.ok(supabaseManagerRuntime.includes("next: ready ? (selectionUpdated ? 'test-or-bind' : 'manual-refresh-selection') : 'manual-refresh'"));
+assert.ok(supabaseManagerRuntime.includes("await ld84SbmEnsureCreatedProjectSelected(ref).catch(() => false)"));
 
 assert.ok(supabaseManagerBackend.includes('action === "create_project"'));
 assert.ok(supabaseManagerBackend.includes('action === "project_status"'));
@@ -189,7 +192,7 @@ for (const token of ['ui-mount-guardian','composer-guardian','composer-bridge-v3
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'ld-build84-integration-refinement/2',
+  schema: 'ld-build84-integration-refinement/3',
   version: manifest.version,
   integrationsCheckpoint: 'VALIDADO',
   gemini: 'reattached-unvalidated',
@@ -200,7 +203,8 @@ console.log(JSON.stringify({
     createRequiresConfirmation: true,
     passwordExposure: false,
     remoteDelete: false,
-    provisioning: 'manual-refresh'
+    provisioning: 'manual-refresh',
+    discoveryLag: 'tolerated-and-reconciled'
   },
   globalObservers: 0,
   continuousPolling: 0,
