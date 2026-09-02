@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Lovable Decrypter",
-  "version": "2.6.82",
-  "version_name": "Transition shell · Lovable decoupled",
-  "description": "Transitional extension shell. Lovable host injection, legacy launcher authority, release/OTA authority and Lovable-specific runtime paths have been removed. GitHub-native launcher work is introduced later by the frozen roadmap.",
+  "name": "GitHub Decrypter",
+  "version": "0.0.5",
+  "version_name": "GitHub Decrypter Build 5 · Product Rebrand",
+  "description": "Git-native, GitHub-native local-first AI development studio. This Build 5 package is an intentionally inert extension shell while the GitHub launcher, Studio PWA and local runtime are introduced by the frozen roadmap.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -11,6 +11,6 @@
     "128": "assets/icon128.png"
   },
   "action": {
-    "default_title": "GitHub Decrypter migration shell"
+    "default_title": "GitHub Decrypter"
   }
 }
