@@ -1,0 +1,20 @@
+{
+  "name": "github-decrypter",
+  "version": "0.0.6",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:build4": "node scripts/test-build4-lovable-decoupling.mjs",
+    "check:build5": "node scripts/test-build5-rebrand.mjs",
+    "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
