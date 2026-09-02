@@ -141,8 +141,10 @@ assert.ok(githubSyncRuntime.includes('continuousPolling: false'));
 assert.ok(githubSyncRuntime.includes('/compare/${encodeURIComponent(from)}...${encodeURIComponent(to)}'));
 assert.ok(githubSyncRuntime.includes('/commits?${query}'));
 assert.ok(!githubSyncRuntime.includes("method: 'PATCH'"), 'GitHub Sync/history must not mutate refs');
-assert.ok(!githubSyncRuntime.includes("method: 'POST'"), 'GitHub Sync/history must not write to GitHub API');
 assert.ok(!githubSyncRuntime.includes("method: 'DELETE'"), 'GitHub Sync/history must not delete GitHub resources');
+assert.ok(!githubSyncRuntime.includes('/git/'), 'GitHub Sync/history must not use Git data write endpoints');
+assert.ok(!githubSyncRuntime.includes('/contents/'), 'GitHub Sync/history must not use contents write endpoints');
+assert.ok(!githubSyncRuntime.includes('/pulls'), 'GitHub Sync/history must not create or mutate pull requests');
 
 assert.ok(editorRuntime.includes("importScripts('runtime-entry-v84-integrations.js')"));
 assert.ok(editorRuntime.includes("method: 'PATCH'"), 'Editor Direct remains the explicit GitHub apply path');
