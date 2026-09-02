@@ -7,7 +7,7 @@
     "launcher/launcher-runtime.js",
     "launcher/runtime-client-v84.js",
     "launcher/account-controller-v84.js",
-    "launcher/ux-polish-v84.js",
+    "launcher/ux-polish-v84-2.js",
     "launcher/editor-direct-authority-v84.js",
     "launcher/integration-resource-manager-v84-2.js",
     "launcher/supabase-project-manager-v84-2.js",
@@ -29,6 +29,7 @@
     "background/service-worker-entry.js",
     "background/canonical-runtime-entry.js",
     "launcher/canonical-runtime-client.js",
+    "launcher/ux-polish-v84.js",
     "launcher/editor-direct-v84.js",
     "launcher/integration-resource-manager-v84.js",
     "launcher/supabase-project-manager-v84.js",
@@ -39,5 +40,5 @@
     "updates/release.json"
   ],
   "forbidden_extensions":[".pem",".key",".p12",".pfx"],
-  "notes":"Build84 browser-test refinement after real-user homologation. The validated GitHub/Supabase resource checkpoint remains preserved. The old Editor Direct placeholder UI is no longer shipped: ux-polish creates the parity control, then editor-direct-authority-v84 converts it into the unique functional Editor Direct action before user interaction. GitHub Sync/history remains read-only and fail-closed on explicit project binding. Resource management retries one transient DB/config read error exactly once with no timer or polling. Supabase Project Manager v2 preserves test/bind/create behavior, adds clickable project detail/provisioning, manual status refresh, guarded project rename through an isolated custom-auth backend, and test-state red pulse/success green check UX. Gemini remains optional/local-AI-secondary; Free Only remains default, while paid or unverified models are exposed only behind explicit user opt-in and are labeled potentially billable; no prompt is generated for connection validation. No MutationObserver, continuous polling, shell inert takeover, mount guardian, network monkeypatch or heavy provider activation at boot is shipped."
+  "notes":"Build84 browser-test refinement after real-user homologation. The validated GitHub/Supabase resource checkpoint remains preserved. The old Editor Direct placeholder and its old ux-polish authority are not shipped. ux-polish-v84-2 preserves the compact rail and Monitor state while creating Editor Direct directly as data-ld-editor-direct; editor-direct-authority-v84 is the only functional owner of that action. GitHub Sync/history remains read-only and fail-closed on explicit project binding. Resource management retries one transient DB/config read error exactly once with no timer or polling. Supabase Project Manager v2 preserves test/bind/create behavior, adds clickable project detail/provisioning, manual status refresh, guarded project rename through an isolated custom-auth backend, and test-state red pulse/success green check UX. Gemini remains optional/local-AI-secondary; Free Only remains default, while paid or unverified models are exposed only behind explicit user opt-in and are labeled potentially billable; no prompt is generated for connection validation. No MutationObserver, continuous polling, shell inert takeover, mount guardian, network monkeypatch or heavy provider activation at boot is shipped."
 }
