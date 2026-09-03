@@ -2,6 +2,41 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 16 — Secrets Vault — 2026-09-03
+
+### Secrets Vault
+- Added SQLite migration 6 with canonical Local Runtime-owned `gd_vault_metadata` and `gd_vault_secrets` persistence.
+- Added AES-256-GCM authenticated encryption for secret values and secret resource names.
+- Added HKDF-SHA256 subkey separation plus HMAC-SHA256 resource lookup so SQLite does not require a plaintext resource identifier.
+- Added a randomly generated 256-bit local master key stored separately from SQLite in an owner-only POSIX key file.
+- Added database/key fingerprint validation so a mismatched key fails closed before Vault readiness.
+
+### Capability boundary
+- Required an existing job-bound `SECRETS` capability for Vault read/write operations.
+- Required both `SECRETS` and `DESTRUCTIVE` for secret deletion.
+- Kept capability issuance separate from Vault authority; Vault operations cannot self-grant access.
+
+### Runtime
+- Integrated Vault initialization after Capability Security and before Local Runtime HTTP readiness.
+- Added non-sensitive Vault health/readiness state and metadata-only `gd.local.vault.ready` / `gd.local.vault.secret.changed` events.
+- Kept secret values/resource names out of health, events and external transport.
+- Kept `/v1/vault`, `/v1/secret` and `/v1/secrets` absent.
+- Removed inherited predecessor `security/vault.js` remote backup authority so the local Vault is the single active Vault authority.
+
+### Architecture Guardian
+- Added Secrets Vault ownership gates AG140–AG148.
+- Blocked plaintext Vault schema, master-key persistence in SQLite, weak key-file policy, external Vault transport and return of the inherited remote Vault.
+- Made Build 15's premature Vault probe phase-aware now that Build 16 legitimately owns Secrets Vault.
+
+### Validation
+- Proved encrypted secret values and resource names at rest, HMAC lookup, capability gating and independent destructive-delete authorization.
+- Proved persistence across restart, authenticated ciphertext tamper detection, mismatched-key failure and owner-only POSIX key-file permissions.
+- Proved daemon readiness integration and absence of external Vault control endpoints.
+- Added AG141/AG142/AG143/AG145/AG146/AG147 failure injection plus the full Build 4–15 regression chain, TypeScript workspace checks and preservation of 46 modern-engine migration assets.
+
+### Safety
+- No Approval Transactions, product-wide Audit Ledger, provider-specific credential transport, remote Vault synchronization, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 15 — Capability Security Model — 2026-09-03
 
 ### Capability security
