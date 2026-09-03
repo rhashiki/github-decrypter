@@ -20,8 +20,9 @@ Completed:
 - Build 6 — Monorepo Foundation
 - Build 7 — Shared Protocol
 - Build 8 — Central Event Bus
+- Build 9 — Architecture Guardian
 
-Next: **Build 9 — Architecture Guardian**.
+Next: **Build 10 — Local Runtime Daemon**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -38,9 +39,24 @@ packages/
 
 `@github-decrypter/protocol` is the single transport-neutral wire contract shared by Studio, Extension and Local Runtime. Its current schema is `gd-protocol/1`.
 
-`@github-decrypter/shared` now owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
+`@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-React/Vite Studio, Chrome launcher behavior and the local daemon remain owned by their later frozen Builds.
+Build 9 adds the Architecture Guardian. `architecture.guardian.json` plus `scripts/architecture-guardian.mjs` now enforce product authorities, monorepo boundaries, roadmap phase gates, workflow write/release restrictions and North Star provenance/mapping in CI.
+
+## North Star
+
+The North Star Manifesto is now an official repository authority together with the Product Constitution. Its direction is:
+
+> Entenda a pessoa.  
+> Entenda o projeto.  
+> Construa com ela.  
+> Teste o resultado.  
+> Ensine quando ela quiser.  
+> Nunca retire dela o controle.  
+> Dê autonomia sem esconder os limites reais.  
+> Cobre pelo valor da plataforma, não por cada pensamento local da IA.
+
+The V1 roadmap remains Builds **1–134**. North Star additions are mapped into existing owning Builds rather than creating decimal/ad-hoc Builds.
 
 ## Product principles
 
@@ -53,7 +69,10 @@ React/Vite Studio, Chrome launcher behavior and the local daemon remain owned by
 - Providers use contracts/plugins rather than product lock-in.
 - Supabase is first-class but optional.
 - MCP/plugins pass through capability, scope and approval boundaries.
-- No Release, OTA, Chrome Store publication, production deploy or DNS mutation happens without explicit authorization.
+- The user remains the final authority outside already granted scope.
+- Local-first does not mean free, infinite compute, infinite tokens or infinite context.
+- GitHub Decrypter is a paid commercial product with monthly, semiannual, annual and lifetime options plus a 24-hour free trial as the current commercial direction.
+- No Release, OTA, Chrome Store publication, production deploy or DNS mutation happens merely because a Build is complete.
 
 ## Architecture
 
@@ -66,14 +85,31 @@ Studio PWA                Local Runtime
    │                           │
    └─ EventBus            EventBus ─┘
       (in-process)        (in-process)
+
+            │
+            ▼
+   Architecture Guardian
+Constitution + North Star + Scope
 ```
 
 See:
 
-- `docs/product/` — frozen V1 constitution
+- `docs/product/PRODUCT_CONSTITUTION_V1.md` — frozen V1 constitution
+- `docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md` — explicit North Star amendment
+- `docs/product/NORTH_STAR_MANIFESTO.md` — normative North Star authority
+- `docs/product/NORTH_STAR_ROADMAP_MAPPING.md` — mapping into Builds 1–134
 - `docs/architecture/MONOREPO_FOUNDATION.md` — workspace ownership
 - `docs/architecture/SHARED_PROTOCOL.md` — Build 7 wire contract
 - `docs/architecture/CENTRAL_EVENT_BUS.md` — Build 8 event architecture
+- `docs/architecture/ARCHITECTURE_GUARDIAN.md` — Build 9 policy gate
+
+## Architecture check
+
+```bash
+pnpm run guardian
+```
+
+Architecture violations fail with stable `AGxxx` codes. Semantic North Star alignment is also reviewed through the pull-request checklist.
 
 ## Reuse policy
 

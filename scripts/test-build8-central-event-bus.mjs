@@ -5,7 +5,15 @@ const read = (path) => fs.readFileSync(path, 'utf8');
 const json = (path) => JSON.parse(read(path));
 
 const rootPackage = json('package.json');
-assert.equal(rootPackage.version, '0.0.8');
+const versionMatch = String(rootPackage.version || '').match(/^(\d+)\.(\d+)\.(\d+)$/);
+assert.ok(versionMatch, 'root package version must be numeric semver');
+const [, majorText, minorText, patchText] = versionMatch;
+const versionTuple = [Number(majorText), Number(minorText), Number(patchText)];
+const atLeastBuild8 =
+  versionTuple[0] > 0 ||
+  versionTuple[1] > 0 ||
+  versionTuple[2] >= 8;
+assert.ok(atLeastBuild8, 'root package version must not regress below 0.0.8');
 assert.equal(
   rootPackage.scripts?.['check:build8'],
   'node scripts/test-build8-central-event-bus.mjs && tsc -p scripts/tsconfig.build8-tests.json && tsx scripts/test-build8-event-bus-runtime.ts',

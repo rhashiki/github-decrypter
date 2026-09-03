@@ -2,6 +2,30 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 9 — Architecture Guardian — 2026-09-03
+
+### North Star
+- Adopted the GitHub Decrypter North Star Manifesto as an official repository authority.
+- Recorded source SHA-256 provenance and principles P01–P22.
+- Formalized the paid monthly/semiannual/annual/lifetime commercial direction plus a 24-hour free trial.
+- Formalized local-first without false unlimited-token/context/compute claims.
+- Added Constitutional Amendment 001 instead of silently rewriting the frozen Constitution.
+- Mapped Adaptive User Profile, Named Agents, Mentor, Explain This, Voice, Perception, Explore Mode, Visual Mapping, Interactive QA and Adaptive Explanation into existing Builds without decimal Build numbering.
+
+### Architecture Guardian
+- Added machine-readable `architecture.guardian.json`.
+- Added `scripts/architecture-guardian.mjs` with stable `AGxxx` violations.
+- Enforced authority-document presence, monorepo boundaries, sensitive package dependency rules, phase gates and inherited-authority regression checks.
+- Kept workflows fail-closed against write/release authority until explicitly amended by the owning future Build.
+- Added North Star review questions to the PR template and Definition of Done.
+
+### Validation
+- Added Build 9 regression tests and Architecture Guardian CI.
+- Build 4–8 regressions, full TypeScript workspace checks and modern-engine preservation remain prerequisites.
+
+### Safety
+- No Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 8 — Central Event Bus — 2026-09-03
 
 ### Events
