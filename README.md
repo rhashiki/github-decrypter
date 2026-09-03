@@ -23,8 +23,9 @@ Completed:
 - Build 9 — Architecture Guardian
 - Build 10 — Local Runtime Daemon
 - Build 11 — Persistent Local Database
+- Build 12 — Durable Job Engine
 
-Next: **Build 12 — Durable Job Engine**.
+Next: **Build 13 — Crash & Power Recovery**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -43,15 +44,17 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority plus the file-backed persistent SQLite state substrate introduced in Build 11. SQLite uses the Node 22 `node:sqlite` runtime, WAL, foreign keys, checksummed migrations and integrity-gated readiness. It deliberately exposes no generic SQL, coding, tool, Git or model endpoint.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence and the durable job queue. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
-The default development endpoint is `127.0.0.1:43110`. Run it with:
+Build 12 adds durable jobs with stable priority/order, prerequisite DAGs, atomic claims, worker lease tokens, heartbeats, attempt budgets, checkpoint/wait/pause/resume, cancellation/skipping and transition history. Expired running leases are detectable but are intentionally **not auto-recovered until Build 13**.
+
+There is still no generic SQL, coding, tool, Git, model or job-control HTTP endpoint. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian now enforces product authorities, app/package boundaries and exclusive SQLite ownership by `apps/local`, while also blocking Durable Job Engine schema before Build 12.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, Durable Job Engine ownership, phase gates and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -100,6 +103,10 @@ Studio PWA                         Local Runtime Daemon
                                            ▼
                                    SQLite runtime.sqlite3
                                    WAL + migrations
+                                           │
+                                           ▼
+                                  Durable Job Engine
+                                  queue + DAG + leases
 
             │
             ▼
@@ -119,6 +126,7 @@ See:
 - `docs/architecture/ARCHITECTURE_GUARDIAN.md` — Build 9 policy gate
 - `docs/architecture/LOCAL_RUNTIME_DAEMON.md` — Build 10 process and loopback boundary
 - `docs/architecture/PERSISTENT_LOCAL_DATABASE.md` — Build 11 SQLite authority and migration policy
+- `docs/architecture/DURABLE_JOB_ENGINE.md` — Build 12 queue, DAG and lease semantics
 
 ## Architecture check
 
