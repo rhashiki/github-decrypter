@@ -1,6 +1,6 @@
 # Build 14 — Offline Execution
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE — VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -69,6 +69,25 @@ Build 14 adds:
 - real limits are exposed rather than hidden: **yes**;
 - hidden cloud/network authority is introduced: **no**;
 - user control over pause/cancel/recovery remains intact: **yes**.
+
+## Validation
+
+The technical implementation was validated on PR #15 before this status transition:
+
+- Builds 5–14 workflow matrix green on the same technical head;
+- Build 4–14 regression chain green;
+- schema 4 SQLite runtime test green;
+- local work offline/unknown green;
+- network wait/resume persistence green;
+- cooperative mid-run network wait green;
+- stale lease rejection green;
+- generic wait isolation green;
+- daemon readiness while offline/unknown green;
+- AG121/AG122/AG123 negative probes green;
+- TypeScript workspace matrix green;
+- 46 modern-engine migration assets preserved.
+
+This final documentation/status commit must itself pass the same CI gates before merge.
 
 ## Next Build
 
