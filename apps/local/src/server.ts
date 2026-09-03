@@ -3,6 +3,7 @@ import {
   asMessageId,
   assertProtocolEnvelope,
   envelope,
+  isPeerRole,
   protocolError,
   selectProtocolVersion,
   type ProtocolHandshakeHelloPayload,
@@ -51,6 +52,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isHandshakeHelloPayload(value: unknown): value is ProtocolHandshakeHelloPayload {
   if (!isRecord(value) || !isRecord(value.peer)) return false;
+  const peer = value.peer;
+  if (typeof peer.id !== 'string' || peer.id.length === 0) return false;
+  if (!isPeerRole(peer.role)) return false;
+  if (peer.product !== 'github-decrypter') return false;
+  if (typeof peer.productVersion !== 'string' || peer.productVersion.length === 0) return false;
   if (!Array.isArray(value.supportedVersions) || !value.supportedVersions.every(Number.isSafeInteger)) return false;
   if (!Array.isArray(value.features) || !value.features.every((item) => typeof item === 'string')) return false;
   return true;
@@ -77,6 +83,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const startedAt = context.getStartedAt();
   const address = context.getAddress();
   const startedMs = startedAt ? Date.parse(startedAt) : Number.NaN;
+  const nowMs = Date.parse(context.now());
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -87,7 +94,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
     host: address?.address ?? '127.0.0.1',
     port: address?.port ?? null,
     startedAt,
-    uptimeMs: Number.isFinite(startedMs) ? Math.max(0, Date.now() - startedMs) : 0,
+    uptimeMs: Number.isFinite(startedMs) && Number.isFinite(nowMs) ? Math.max(0, nowMs - startedMs) : 0,
     protocol: 'gd-protocol/1',
   };
 }
@@ -117,6 +124,18 @@ async function handleHandshake(
     writeJson(response, 400, {
       schema: 'gd-local-http-error/1',
       error: { code: 'INVALID_REQUEST', message: 'Expected a handshake.hello envelope.' },
+    });
+    return;
+  }
+
+  if (
+    raw.payload.peer.id !== raw.meta.source.id
+    || raw.payload.peer.role !== raw.meta.source.role
+    || raw.payload.peer.product !== raw.meta.source.product
+  ) {
+    writeJson(response, 400, {
+      schema: 'gd-local-http-error/1',
+      error: { code: 'PEER_MISMATCH', message: 'Handshake peer must match envelope source identity.' },
     });
     return;
   }
