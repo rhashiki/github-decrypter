@@ -12,6 +12,8 @@ for (const file of [
   'apps/local/src/server.ts',
   'apps/local/src/daemon.ts',
   'apps/local/src/cli.ts',
+  'scripts/architecture-guardian-apps.mjs',
+  'scripts/test-build10-guardian-negative.mjs',
   'docs/architecture/LOCAL_RUNTIME_DAEMON.md',
   'docs/builds/BUILD_10_LOCAL_RUNTIME_DAEMON.md',
 ]) {
@@ -24,6 +26,17 @@ assert.ok(versionMatch, 'root version must remain numeric semver');
 const [, major, minor, patch] = versionMatch.map(Number);
 assert.ok(major > 0 || minor > 0 || patch >= 10, 'root version must not regress below Build 10');
 assert.ok(rootPackage.scripts?.['check:build10'], 'Build 10 regression command is required');
+assert.ok(rootPackage.scripts?.guardian?.includes('architecture-guardian-apps.mjs'), 'app authority Guardian must be part of pnpm run guardian');
+
+const policy = json('architecture.guardian.json');
+assert.ok(policy.currentBuild >= 10, 'Architecture Guardian must not regress below Build 10');
+assert.equal(policy.phaseGates.localDaemonBuild, 10);
+const localRule = policy.appRules?.['@github-decrypter/local'];
+assert.ok(localRule, 'Local Runtime app authority rule is required');
+assert.deepEqual(localRule.allowedWorkspaceDependencies, [
+  '@github-decrypter/protocol',
+  '@github-decrypter/shared',
+]);
 
 const localPackage = json('apps/local/package.json');
 assert.equal(localPackage.name, '@github-decrypter/local');
@@ -58,6 +71,7 @@ console.log(JSON.stringify({
   authority: '@github-decrypter/local',
   loopbackOnly: true,
   endpoints: ['/healthz', '/readyz', '/v1/handshake'],
+  appGuardian: true,
   persistentDatabaseAuthority: false,
   jobEngineAuthority: false,
   capabilitySecurityAuthority: false,
