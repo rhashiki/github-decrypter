@@ -190,6 +190,34 @@ CREATE INDEX gd_capability_claims_lookup_idx
   ON gd_capability_claims (grant_id, capability, resource);
 `;
 
+const MIGRATION_006_SQL = `
+CREATE TABLE gd_vault_metadata (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  key_fingerprint TEXT NOT NULL,
+  cipher TEXT NOT NULL CHECK (cipher = 'AES-256-GCM'),
+  kdf TEXT NOT NULL CHECK (kdf = 'HKDF-SHA256'),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE gd_vault_secrets (
+  id TEXT PRIMARY KEY,
+  resource_hmac TEXT NOT NULL UNIQUE,
+  resource_ciphertext BLOB NOT NULL,
+  resource_nonce BLOB NOT NULL,
+  resource_tag BLOB NOT NULL,
+  value_ciphertext BLOB NOT NULL,
+  value_nonce BLOB NOT NULL,
+  value_tag BLOB NOT NULL,
+  cipher_version INTEGER NOT NULL CHECK (cipher_version = 1),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+) STRICT;
+
+CREATE INDEX gd_vault_secrets_updated_idx
+  ON gd_vault_secrets (updated_at, id);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -238,6 +266,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_005_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_005_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 6,
+    name: 'secrets-vault',
+    sql: MIGRATION_006_SQL,
+    checksum: checksum(MIGRATION_006_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_006_SQL);
     },
   }),
 ]);
