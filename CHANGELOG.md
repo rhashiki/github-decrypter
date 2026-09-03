@@ -2,6 +2,39 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 14 — Offline Execution — 2026-09-03
+
+### Offline execution
+- Added SQLite migration 4 with durable `gd_connectivity_state`, `gd_connectivity_events` and `gd_job_network_requirements` state.
+- Added explicit `unknown | online | offline` connectivity semantics, with `unknown` failing closed for network-required work.
+- Added network-required job classification, durable network waits and deterministic resume when connectivity returns.
+- Kept local-safe jobs claimable and executable while connectivity is unavailable.
+- Added cooperative `waitForNetwork()` for already-running network-dependent jobs without resetting consumed attempt budgets.
+
+### Runtime
+- Integrated Offline Execution after Crash & Power Recovery reconciliation and before daemon readiness.
+- Added `gd.local.offline.ready`, `gd.local.connectivity.changed`, `gd.local.offline.waiting` and `gd.local.offline.resumed` Event Bus events.
+- Added non-sensitive offline/connectivity status to health/readiness while allowing the daemon to remain ready for local work when offline.
+- Kept connectivity control and job-control HTTP/RPC absent.
+- Deliberately added no automatic outbound internet, DNS, HTTP or socket probe.
+
+### Architecture Guardian
+- Added Offline Execution ownership gates and AG120–AG124.
+- Blocked connectivity persistence outside `apps/local`.
+- Blocked automatic outbound network probes in the Local Runtime during this phase.
+- Kept Capability Security blocked until Build 15.
+- Made the Build 13 AG112 regression phase-aware now that Build 14 legitimately owns Offline Execution.
+
+### Validation
+- Proved local durable jobs continue while connectivity is unknown/offline.
+- Proved network-required jobs wait durably, resume only when connectivity returns, preserve attempt budgets and reject stale leases.
+- Proved generic non-network waiting jobs are isolated from connectivity transitions and offline state survives restart.
+- Proved daemon health/readiness remains available for local work without network.
+- Added AG121/AG122/AG123 failure injection plus the full Build 4–13 regression chain, TypeScript workspace checks and preservation of 46 modern-engine migration assets.
+
+### Safety
+- No Capability Security, Secrets Vault, external provider network authority, generic connectivity/job-control RPC, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 13 — Crash & Power Recovery — 2026-09-03
 
 ### Recovery
