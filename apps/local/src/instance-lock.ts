@@ -1,10 +1,20 @@
-import { closeSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  closeSync,
+  openSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+const lockUser = typeof process.getuid === 'function' ? String(process.getuid()) : 'user';
+const INVALID_LOCK_GRACE_MS = 5_000;
+
 export const DEFAULT_LOCAL_RUNTIME_LOCK_PATH = join(
   tmpdir(),
-  'github-decrypter-local-runtime.lock',
+  `github-decrypter-local-runtime-${lockUser}.lock`,
 );
 
 export interface LocalRuntimeLockRecord {
@@ -43,7 +53,7 @@ function readExistingRecord(path: string): LocalRuntimeLockRecord | null {
       return parsed as LocalRuntimeLockRecord;
     }
   } catch {
-    // Invalid or concurrently removed lock files are treated as stale below.
+    // A writer may still be filling a newly-created exclusive lock.
   }
   return null;
 }
@@ -55,6 +65,22 @@ function removeStaleLock(path: string): void {
     const code = (error as NodeJS.ErrnoException).code;
     if (code !== 'ENOENT') throw error;
   }
+}
+
+function invalidLockIsOldEnoughToRecover(path: string): boolean {
+  try {
+    return Date.now() - statSync(path).mtimeMs >= INVALID_LOCK_GRACE_MS;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') return true;
+    throw error;
+  }
+}
+
+function conflict(message: string, code: string): Error {
+  const error = new Error(message);
+  (error as NodeJS.ErrnoException).code = code;
+  return error;
 }
 
 export function acquireLocalRuntimeInstanceLock(
@@ -71,9 +97,14 @@ export function acquireLocalRuntimeInstanceLock(
 
       const existing = readExistingRecord(path);
       if (existing && pidIsAlive(existing.pid)) {
-        const conflict = new Error(`GitHub Decrypter Local Runtime is already running with PID ${existing.pid}.`);
-        (conflict as NodeJS.ErrnoException).code = 'EADDRINUSE';
-        throw conflict;
+        throw conflict(
+          `GitHub Decrypter Local Runtime is already running with PID ${existing.pid}.`,
+          'EADDRINUSE',
+        );
+      }
+
+      if (!existing && !invalidLockIsOldEnoughToRecover(path)) {
+        throw conflict('GitHub Decrypter Local Runtime lock is currently being acquired.', 'EAGAIN');
       }
 
       removeStaleLock(path);
