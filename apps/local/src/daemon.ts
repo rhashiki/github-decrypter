@@ -15,6 +15,7 @@ import {
   type OfflineExecutionCoordinator,
 } from './offline-execution.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
+import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
 
 export interface LocalRuntimeDaemonOptions {
@@ -25,6 +26,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly recovery?: CrashPowerRecovery;
   readonly offline?: OfflineExecutionCoordinator;
   readonly capabilities?: CapabilitySecurityAuthority;
+  readonly vault?: SecretsVault;
   readonly now?: () => string;
 }
 
@@ -44,6 +46,7 @@ export class LocalRuntimeDaemon {
   readonly #recovery: CrashPowerRecovery;
   readonly #offline: OfflineExecutionCoordinator;
   readonly #capabilities: CapabilitySecurityAuthority;
+  readonly #vault: SecretsVault;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -81,6 +84,13 @@ export class LocalRuntimeDaemon {
       eventBus: this.#eventBus,
       now: this.#now,
     });
+    this.#vault = options.vault ?? createSecretsVault({
+      database: this.#database,
+      capabilities: this.#capabilities,
+      eventBus: this.#eventBus,
+      keyPath: this.#config.vaultKeyPath,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState {
@@ -113,6 +123,10 @@ export class LocalRuntimeDaemon {
 
   get capabilities(): CapabilitySecurityAuthority {
     return this.#capabilities;
+  }
+
+  get vault(): SecretsVault {
+    return this.#vault;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -162,6 +176,9 @@ export class LocalRuntimeDaemon {
       const capabilityStatus = await this.#capabilities.initialize();
       if (!capabilityStatus.ready) throw new Error('Capability Security is not ready after offline execution startup.');
 
+      const vaultStatus = await this.#vault.initialize();
+      if (!vaultStatus.ready) throw new Error('Secrets Vault is not ready after capability security startup.');
+
       const jobStatus = this.#jobs.status();
       await this.#eventBus.publish('gd.local.jobs.ready', {
         schemaVersion: jobStatus.schemaVersion,
@@ -180,6 +197,7 @@ export class LocalRuntimeDaemon {
         getRecoveryStatus: () => this.#recovery.status,
         getOfflineExecutionStatus: () => this.#offline.status(),
         getCapabilitySecurityStatus: () => this.#capabilities.status(),
+        getSecretsVaultStatus: () => this.#vault.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -203,12 +221,13 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with recovery, offline execution and capability security ready');
+      await this.#transition('running', 'loopback server listening with recovery, offline execution, capability security and Secrets Vault ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
     } catch (error) {
       await this.#closeServerBestEffort();
+      this.#closeVaultBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
       await this.#closeDatabaseBestEffort('startup failed');
@@ -226,6 +245,13 @@ export class LocalRuntimeDaemon {
 
     await this.#transition('stopping', reason);
     await this.#closeServerBestEffort();
+
+    let vaultError: unknown = null;
+    try {
+      this.#vault.shutdown();
+    } catch (error) {
+      vaultError = error;
+    }
 
     let capabilityError: unknown = null;
     try {
@@ -246,7 +272,7 @@ export class LocalRuntimeDaemon {
     this.#instanceLock = null;
     this.#startedAt = null;
 
-    const shutdownError = capabilityError ?? recoveryError;
+    const shutdownError = vaultError ?? capabilityError ?? recoveryError;
     if (shutdownError) {
       const message = shutdownError instanceof Error ? shutdownError.message : 'runtime shutdown failed';
       await this.#transition('failed', message);
@@ -267,6 +293,14 @@ export class LocalRuntimeDaemon {
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
+  }
+
+  #closeVaultBestEffort(): void {
+    try {
+      this.#vault.shutdown();
+    } catch {
+      // Preserve the original startup failure.
+    }
   }
 
   async #closeCapabilitiesBestEffort(reason: string): Promise<void> {
