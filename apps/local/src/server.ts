@@ -15,6 +15,7 @@ import type { AddressInfo } from 'node:net';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
+import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
 
 export interface LocalRuntimeHealth {
@@ -36,6 +37,12 @@ export interface LocalRuntimeHealth {
     readonly foreignKeys: boolean;
     readonly integrity: 'ok';
   };
+  readonly jobs: {
+    readonly ready: boolean;
+    readonly total: number;
+    readonly nonTerminal: number;
+    readonly expiredLeases: number;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -44,6 +51,7 @@ export interface LocalRuntimeServerContext {
   getStartedAt(): string | null;
   getAddress(): AddressInfo | null;
   getDatabaseStatus(): LocalDatabaseStatus | null;
+  getJobEngineStatus(): DurableJobEngineStatus;
   now(): string;
 }
 
@@ -94,6 +102,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const startedMs = startedAt ? Date.parse(startedAt) : Number.NaN;
   const nowMs = Date.parse(context.now());
   const database = context.getDatabaseStatus();
+  const jobs = context.getJobEngineStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -113,6 +122,12 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       foreignKeys: database.foreignKeys,
       integrity: database.integrity,
     } : null,
+    jobs: {
+      ready: jobs.ready,
+      total: jobs.summary.total,
+      nonTerminal: jobs.summary.nonTerminal,
+      expiredLeases: jobs.summary.expiredLeases,
+    },
   };
 }
 
@@ -169,8 +184,17 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
     }
     if (request.method === 'GET' && url.pathname === '/readyz') {
       const health = buildHealth(context);
-      const ready = health.state === 'running' && health.database?.open === true && health.database.integrity === 'ok';
-      writeJson(response, ready ? 200 : 503, { schema: 'gd-local-readiness/1', ready, state: health.state, databaseReady: health.database?.open === true });
+      const ready = health.state === 'running'
+        && health.database?.open === true
+        && health.database.integrity === 'ok'
+        && health.jobs.ready;
+      writeJson(response, ready ? 200 : 503, {
+        schema: 'gd-local-readiness/1',
+        ready,
+        state: health.state,
+        databaseReady: health.database?.open === true,
+        jobsReady: health.jobs.ready,
+      });
       return;
     }
     if (request.method === 'POST' && url.pathname === '/v1/handshake') {
