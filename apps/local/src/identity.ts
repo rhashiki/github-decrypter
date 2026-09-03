@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 12 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.12' as const;
+export const LOCAL_RUNTIME_BUILD = 13 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.13' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http',
   'health',
@@ -13,6 +13,9 @@ export const LOCAL_RUNTIME_FEATURES = [
   'durable-jobs',
   'job-dependencies',
   'job-leases',
+  'crash-recovery',
+  'runtime-sessions',
+  'lease-recovery',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -32,5 +35,5 @@ export const localRuntimeIdentity = Object.freeze({
   version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const,
   protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, loopback transport, persistent SQLite state and durable job queue boundary.',
+  authority: 'Independent local daemon lifecycle, persistent SQLite, durable jobs and crash/power recovery boundary.',
 });

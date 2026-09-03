@@ -17,6 +17,7 @@ import type { LocalDatabaseStatus } from './database.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
 import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
+import type { CrashRecoveryStatus } from './recovery-engine.js';
 
 export interface LocalRuntimeHealth {
   readonly schema: 'gd-local-health/1';
@@ -43,6 +44,15 @@ export interface LocalRuntimeHealth {
     readonly nonTerminal: number;
     readonly expiredLeases: number;
   };
+  readonly recovery: {
+    readonly ready: boolean;
+    readonly sessionActive: boolean;
+    readonly healthy: boolean;
+    readonly priorUncleanSessions: number;
+    readonly startupRecovered: number;
+    readonly lastSweepRecovered: number;
+    readonly lastSweepAt: string | null;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -52,6 +62,7 @@ export interface LocalRuntimeServerContext {
   getAddress(): AddressInfo | null;
   getDatabaseStatus(): LocalDatabaseStatus | null;
   getJobEngineStatus(): DurableJobEngineStatus;
+  getRecoveryStatus(): CrashRecoveryStatus;
   now(): string;
 }
 
@@ -103,6 +114,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const nowMs = Date.parse(context.now());
   const database = context.getDatabaseStatus();
   const jobs = context.getJobEngineStatus();
+  const recovery = context.getRecoveryStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -127,6 +139,15 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       total: jobs.summary.total,
       nonTerminal: jobs.summary.nonTerminal,
       expiredLeases: jobs.summary.expiredLeases,
+    },
+    recovery: {
+      ready: recovery.ready,
+      sessionActive: recovery.sessionActive,
+      healthy: recovery.healthy,
+      priorUncleanSessions: recovery.priorUncleanSessions,
+      startupRecovered: recovery.startupRecovered,
+      lastSweepRecovered: recovery.lastSweepRecovered,
+      lastSweepAt: recovery.lastSweepAt,
     },
   };
 }
@@ -187,13 +208,16 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
       const ready = health.state === 'running'
         && health.database?.open === true
         && health.database.integrity === 'ok'
-        && health.jobs.ready;
+        && health.jobs.ready
+        && health.recovery.ready
+        && health.recovery.healthy;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
         state: health.state,
         databaseReady: health.database?.open === true,
         jobsReady: health.jobs.ready,
+        recoveryReady: health.recovery.ready,
       });
       return;
     }

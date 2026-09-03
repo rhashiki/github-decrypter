@@ -43,12 +43,35 @@ export type LocalRuntimeJobChangedPayload = {
   readonly reason: string | null;
 };
 
+export type LocalRuntimeRecoveryReadyPayload = {
+  readonly priorUncleanSessions: number;
+  readonly startupRecovered: number;
+};
+
+export type LocalRuntimeRecoverySweepPayload = {
+  readonly recovered: number;
+  readonly requeued: number;
+  readonly paused: number;
+  readonly cancelled: number;
+  readonly failed: number;
+  readonly occurredAt: string;
+};
+
+export type LocalRuntimeRecoveryClosedPayload = {
+  readonly handoffRecovered: number;
+  readonly clean: boolean;
+  readonly reason: string;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
   readonly 'gd.local.database.closed': LocalRuntimeDatabaseClosedPayload;
   readonly 'gd.local.jobs.ready': LocalRuntimeJobsReadyPayload;
   readonly 'gd.local.job.changed': LocalRuntimeJobChangedPayload;
+  readonly 'gd.local.recovery.ready': LocalRuntimeRecoveryReadyPayload;
+  readonly 'gd.local.recovery.sweep': LocalRuntimeRecoverySweepPayload;
+  readonly 'gd.local.recovery.closed': LocalRuntimeRecoveryClosedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

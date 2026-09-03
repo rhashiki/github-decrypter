@@ -2,6 +2,34 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 13 — Crash & Power Recovery — 2026-09-03
+
+### Recovery
+- Added durable `gd_runtime_sessions` and `gd_job_recoveries` persistence on SQLite migration 3.
+- Added deterministic startup reconciliation of orphaned `running` jobs before Local Runtime readiness.
+- Added expired-lease recovery sweeps while the daemon remains alive.
+- Preserved checkpoints, user pause/cancel intent and consumed attempt budgets across interruption while invalidating stale worker leases.
+- Added graceful-shutdown handoff plus clean-shutdown and later-reconciliation session markers.
+
+### Runtime
+- Integrated recovery startup, health and shutdown into the Local Runtime lifecycle.
+- Added `gd.local.recovery.ready`, `gd.local.recovery.sweep` and `gd.local.recovery.closed` events.
+- Made readiness fail closed when recovery is not ready/healthy while exposing only non-sensitive recovery status.
+- Kept recovery/job mutation transport internal; `/v1/jobs` remains absent.
+
+### Architecture Guardian
+- Added recovery ownership gates and AG111–AG114.
+- Kept Offline Execution blocked until Build 14 and Capability Security blocked until Build 15.
+- Made the Build 12 AG102 regression phase-aware now that Build 13 legitimately owns crash recovery.
+
+### Validation
+- Proved unclean restart detection, startup recovery, checkpoint-preserving requeue, pause/cancel intent preservation, retry-exhaustion failure and stale lease rejection.
+- Proved expired-lease sweep, recovery idempotency, graceful-shutdown handoff, clean-session reconciliation and daemon restart/readiness integration.
+- Added AG111/AG112/AG113 failure injection plus the full Build 4–12 regression chain, TypeScript workspace checks and preservation of 46 modern-engine migration assets.
+
+### Safety
+- No Offline Execution, Capability Security, Secrets Vault, Approval Transactions, product-wide Audit Ledger, generic job-control HTTP/RPC, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 12 — Durable Job Engine — 2026-09-03
 
 ### Jobs
