@@ -1,5 +1,3 @@
-import type { EventCatalog } from '@github-decrypter/shared';
-
 export const LOCAL_RUNTIME_STATES = [
   'idle',
   'starting',
@@ -11,15 +9,15 @@ export const LOCAL_RUNTIME_STATES = [
 
 export type LocalRuntimeState = (typeof LOCAL_RUNTIME_STATES)[number];
 
-export interface LocalRuntimeLifecyclePayload {
+export type LocalRuntimeLifecyclePayload = {
   readonly previous: LocalRuntimeState;
   readonly current: LocalRuntimeState;
-  readonly reason?: string;
-}
+  readonly reason: string | null;
+};
 
-export interface LocalRuntimeEventCatalog extends EventCatalog {
+export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
-}
+};
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
   return typeof value === 'string' && LOCAL_RUNTIME_STATES.includes(value as LocalRuntimeState);
