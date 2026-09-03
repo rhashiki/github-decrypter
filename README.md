@@ -24,8 +24,9 @@ Completed:
 - Build 10 — Local Runtime Daemon
 - Build 11 — Persistent Local Database
 - Build 12 — Durable Job Engine
+- Build 13 — Crash & Power Recovery
 
-Next: **Build 13 — Crash & Power Recovery**.
+Next: **Build 14 — Offline Execution**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -44,17 +45,17 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence and the durable job queue. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue and crash/power recovery. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
-Build 12 adds durable jobs with stable priority/order, prerequisite DAGs, atomic claims, worker lease tokens, heartbeats, attempt budgets, checkpoint/wait/pause/resume, cancellation/skipping and transition history. Expired running leases are detectable but are intentionally **not auto-recovered until Build 13**.
+Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Startup reconciliation happens before readiness; expired leases are recovered while the daemon is alive; graceful shutdown hands off remaining running jobs before marking the session clean. User pause/cancel intent and existing checkpoints survive interruption.
 
-There is still no generic SQL, coding, tool, Git, model or job-control HTTP endpoint. The default development endpoint is `127.0.0.1:43110`. Run it with:
+There is still no generic SQL, coding, tool, Git, model or job-control HTTP endpoint. Offline/network execution policy remains reserved for Build 14 and privileged capability enforcement for Build 15. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, Durable Job Engine ownership, phase gates and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, phase gates and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -107,6 +108,10 @@ Studio PWA                         Local Runtime Daemon
                                            ▼
                                   Durable Job Engine
                                   queue + DAG + leases
+                                           │
+                                           ▼
+                                Crash & Power Recovery
+                              sessions + reconciliation
 
             │
             ▼
@@ -127,6 +132,7 @@ See:
 - `docs/architecture/LOCAL_RUNTIME_DAEMON.md` — Build 10 process and loopback boundary
 - `docs/architecture/PERSISTENT_LOCAL_DATABASE.md` — Build 11 SQLite authority and migration policy
 - `docs/architecture/DURABLE_JOB_ENGINE.md` — Build 12 queue, DAG and lease semantics
+- `docs/architecture/CRASH_POWER_RECOVERY.md` — Build 13 session and recovery semantics
 
 ## Architecture check
 
