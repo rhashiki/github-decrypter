@@ -24,7 +24,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 13. **Crash & Power Recovery** — ✅
 14. **Offline Execution** — ✅
 15. **Capability Security Model** — ✅
-16. **Secrets Vault**
+16. **Secrets Vault** — ✅
 17. **Approval Transactions**
 18. **Audit Ledger**
 
