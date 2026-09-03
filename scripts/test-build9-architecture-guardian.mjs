@@ -26,7 +26,10 @@ assert.equal(policy.product, 'GitHub Decrypter');
 assert.equal(policy.northStar.sourceSha256, '256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718');
 assert.equal(policy.northStar.requiredPrinciples.length, 22);
 assert.equal(policy.northStar.requiredRoadmapBlocks.length, 11);
-assert.equal(policy.workflow.writePermissionAllowlist.length, 0);
+assert.ok(Array.isArray(policy.workflow.writePermissionAllowlist));
+for (const workflow of policy.workflow.writePermissionAllowlist) {
+  assert.ok(policy.workflow.writeScopes?.[workflow], `write-allowlisted workflow requires an explicit scope: ${workflow}`);
+}
 assert.equal(policy.phaseGates.localDaemonBuild, 10);
 assert.equal(policy.phaseGates.extensionActivationBuild, 25);
 assert.equal(policy.phaseGates.studioReactBuild, 27);
@@ -79,7 +82,7 @@ assert.ok(build.includes('No Release'));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build9-architecture-guardian/1',
+  schema: 'gd-build9-architecture-guardian/2',
   currentBuild: policy.currentBuild,
   minimumBuild: 9,
   principles: 22,
@@ -87,4 +90,5 @@ console.log(JSON.stringify({
   northStarRoadmapBlocks: 11,
   phaseGates: policy.phaseGates,
   workflowWriteAllowlist: policy.workflow.writePermissionAllowlist,
+  scopedWorkflowWritesRequired: true,
 }, null, 2));
