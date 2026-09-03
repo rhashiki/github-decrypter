@@ -403,7 +403,7 @@ export class CapabilitySecurityAuthority {
     void this.#eventBus?.publish('gd.local.capability.granted', {
       grantId,
       jobId: request.jobId,
-      capabilities: Object.freeze([...new Set(claims.map((claim) => claim.capability))]),
+      capabilities: [...new Set(claims.map((claim) => claim.capability))],
       claimCount: claims.length,
       issuedAt,
       expiresAt,
@@ -624,7 +624,7 @@ export class CapabilitySecurityAuthority {
       grantId,
       jobId,
       reason,
-      missingCapabilities: Object.freeze([...new Set(missing.map((entry) => entry.capability))]),
+      missingCapabilities: [...new Set(missing.map((entry) => entry.capability))],
       missingCount: missing.length,
     });
     return Object.freeze({
