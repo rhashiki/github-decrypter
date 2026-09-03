@@ -8,6 +8,7 @@ import readline from 'node:readline';
 const root = process.cwd();
 const tempRoot = mkdtempSync(join(tmpdir(), 'gd-build10-cli-'));
 const lockPath = join(tempRoot, 'runtime.lock');
+const databasePath = join(tempRoot, 'runtime.sqlite3');
 const child = spawn(process.execPath, ['--import', 'tsx', 'apps/local/src/cli.ts'], {
   cwd: root,
   env: {
@@ -15,6 +16,7 @@ const child = spawn(process.execPath, ['--import', 'tsx', 'apps/local/src/cli.ts
     GD_LOCAL_HOST: '127.0.0.1',
     GD_LOCAL_PORT: '0',
     GD_LOCAL_LOCK_PATH: lockPath,
+    GD_LOCAL_DB_PATH: databasePath,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -61,8 +63,8 @@ function waitForExit() {
 try {
   const started = await waitForStarted();
   assert.equal(started.schema, 'gd-local-runtime-started/1');
-  assert.equal(started.build, 10);
-  assert.equal(started.version, '0.0.10');
+  assert.ok(Number(started.build) >= 10);
+  assert.match(String(started.version), /^0\.0\.\d+$/);
   assert.match(started.origin, /^http:\/\/127\.0\.0\.1:\d+$/);
   assert.ok(existsSync(lockPath));
 
@@ -80,7 +82,8 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build10-local-runtime-cli/1',
+    schema: 'gd-build10-local-runtime-cli/2',
+    minimumBuild: 10,
     separateProcess: true,
     healthReachable: true,
     sigtermGraceful: true,

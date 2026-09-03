@@ -22,8 +22,9 @@ Completed:
 - Build 8 — Central Event Bus
 - Build 9 — Architecture Guardian
 - Build 10 — Local Runtime Daemon
+- Build 11 — Persistent Local Database
 
-Next: **Build 11 — Persistent Local Database**.
+Next: **Build 12 — Durable Job Engine**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -42,7 +43,7 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is now a real independent Node.js daemon. Build 10 gives it loopback-only process/transport authority, lifecycle events, single-instance coordination, health/readiness endpoints and `gd-protocol/1` negotiation. It deliberately exposes no generic privileged coding/tool/Git/model endpoint yet.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority plus the file-backed persistent SQLite state substrate introduced in Build 11. SQLite uses the Node 22 `node:sqlite` runtime, WAL, foreign keys, checksummed migrations and integrity-gated readiness. It deliberately exposes no generic SQL, coding, tool, Git or model endpoint.
 
 The default development endpoint is `127.0.0.1:43110`. Run it with:
 
@@ -50,7 +51,7 @@ The default development endpoint is `127.0.0.1:43110`. Run it with:
 pnpm --filter @github-decrypter/local start
 ```
 
-Build 9 added the Architecture Guardian. Build 10 extends the gate to application dependency/platform authority so the local daemon cannot silently acquire browser APIs or undeclared dependencies.
+The Architecture Guardian now enforces product authorities, app/package boundaries and exclusive SQLite ownership by `apps/local`, while also blocking Durable Job Engine schema before Build 12.
 
 ## North Star
 
@@ -95,6 +96,10 @@ Studio PWA                         Local Runtime Daemon
    │                                      │
    └─ EventBus                      EventBus
       (in-process)                  (in-process)
+                                           │
+                                           ▼
+                                   SQLite runtime.sqlite3
+                                   WAL + migrations
 
             │
             ▼
@@ -113,6 +118,7 @@ See:
 - `docs/architecture/CENTRAL_EVENT_BUS.md` — Build 8 event architecture
 - `docs/architecture/ARCHITECTURE_GUARDIAN.md` — Build 9 policy gate
 - `docs/architecture/LOCAL_RUNTIME_DAEMON.md` — Build 10 process and loopback boundary
+- `docs/architecture/PERSISTENT_LOCAL_DATABASE.md` — Build 11 SQLite authority and migration policy
 
 ## Architecture check
 

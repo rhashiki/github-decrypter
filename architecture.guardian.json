@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 10,
+  "currentBuild": 11,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -64,10 +64,28 @@
       ]
     }
   },
+  "databaseAuthority": {
+    "ownerRoot": "apps/local",
+    "engineImport": "node:sqlite",
+    "minimumBuild": 11,
+    "durableJobSchemaBuild": 12
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
-    "writePermissionAllowlist": [],
+    "writePermissionAllowlist": [
+      ".github/workflows/cortex.yml"
+    ],
+    "writeScopes": {
+      ".github/workflows/cortex.yml": {
+        "purpose": "generated project map metadata",
+        "allowedGitAddPrefixes": ["graphify-out"],
+        "allowPlainGitPush": true,
+        "allowTags": false,
+        "allowRelease": false,
+        "allowDeploy": false
+      }
+    },
     "forbiddenWritePermissions": ["actions", "checks", "contents", "deployments", "id-token", "packages", "pull-requests", "security-events", "statuses"]
   },
   "phaseGates": {

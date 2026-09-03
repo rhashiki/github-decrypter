@@ -67,12 +67,14 @@ assert.ok(cli.includes('SIGTERM'));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build10-local-runtime-daemon/1',
+  schema: 'gd-build10-local-runtime-daemon/2',
+  minimumBuild: 10,
+  currentBuild: policy.currentBuild,
   authority: '@github-decrypter/local',
   loopbackOnly: true,
   endpoints: ['/healthz', '/readyz', '/v1/handshake'],
   appGuardian: true,
-  persistentDatabaseAuthority: false,
-  jobEngineAuthority: false,
-  capabilitySecurityAuthority: false,
+  persistentDatabaseAuthority: policy.currentBuild >= policy.phaseGates.persistentLocalDatabaseBuild,
+  jobEngineAuthority: policy.currentBuild >= policy.phaseGates.durableJobEngineBuild,
+  capabilitySecurityAuthority: policy.currentBuild >= policy.phaseGates.capabilitySecurityBuild,
 }, null, 2));

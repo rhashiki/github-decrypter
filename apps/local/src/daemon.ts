@@ -1,6 +1,7 @@
 import { createEventBus, type EventBus } from '@github-decrypter/shared';
 import type { AddressInfo } from 'node:net';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
+import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
@@ -9,6 +10,7 @@ import { createLocalRuntimeHttpServer } from './server.js';
 export interface LocalRuntimeDaemonOptions {
   readonly config?: LocalRuntimeConfig;
   readonly eventBus?: EventBus<LocalRuntimeEventCatalog>;
+  readonly database?: LocalDatabase;
   readonly now?: () => string;
 }
 
@@ -23,6 +25,7 @@ export class LocalRuntimeDaemon {
   readonly #eventBus: EventBus<LocalRuntimeEventCatalog>;
   readonly #now: () => string;
   readonly #peer = createLocalRuntimePeer();
+  readonly #database: LocalDatabase;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -35,6 +38,10 @@ export class LocalRuntimeDaemon {
       defaultSource: 'local-runtime',
     });
     this.#now = options.now ?? (() => new Date().toISOString());
+    this.#database = options.database ?? createLocalDatabase({
+      path: this.#config.databasePath,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState {
@@ -47,6 +54,10 @@ export class LocalRuntimeDaemon {
 
   get events(): EventBus<LocalRuntimeEventCatalog> {
     return this.#eventBus;
+  }
+
+  get database(): LocalDatabase {
+    return this.#database;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -74,11 +85,21 @@ export class LocalRuntimeDaemon {
 
     try {
       this.#instanceLock = acquireLocalRuntimeInstanceLock(this.#config.lockPath, this.#now);
+
+      const databaseStatus = this.#database.open();
+      await this.#eventBus.publish('gd.local.database.opened', {
+        schemaVersion: databaseStatus.schemaVersion,
+        journalMode: databaseStatus.journalMode,
+        foreignKeys: databaseStatus.foreignKeys,
+        integrity: databaseStatus.integrity,
+      });
+
       const server = createLocalRuntimeHttpServer({
         peer: this.#peer,
         getState: () => this.#state,
         getStartedAt: () => this.#startedAt,
         getAddress: () => this.#addressInfo(),
+        getDatabaseStatus: () => this.#database.status,
         now: this.#now,
       });
       this.#server = server;
@@ -102,12 +123,13 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening');
+      await this.#transition('running', 'loopback server listening with persistent database ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
     } catch (error) {
       await this.#closeServerBestEffort();
+      await this.#closeDatabaseBestEffort('startup failed');
       this.#instanceLock?.release();
       this.#instanceLock = null;
       this.#startedAt = null;
@@ -122,6 +144,7 @@ export class LocalRuntimeDaemon {
 
     await this.#transition('stopping', reason);
     await this.#closeServerBestEffort();
+    await this.#closeDatabaseBestEffort(reason);
     this.#instanceLock?.release();
     this.#instanceLock = null;
     this.#startedAt = null;
@@ -140,6 +163,19 @@ export class LocalRuntimeDaemon {
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
+  }
+
+  async #closeDatabaseBestEffort(reason: string): Promise<void> {
+    const status = this.#database.status;
+    if (!status) return;
+    try {
+      this.#database.close();
+    } finally {
+      await this.#eventBus.publish('gd.local.database.closed', {
+        schemaVersion: status.schemaVersion,
+        reason: reason || null,
+      });
+    }
   }
 
   async #transition(current: LocalRuntimeState, reason: string): Promise<void> {
