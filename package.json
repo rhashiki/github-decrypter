@@ -1,6 +1,6 @@
 {
   "name": "github-decrypter",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.15.0",
@@ -12,10 +12,12 @@
     "check:build5": "node scripts/test-build5-rebrand.mjs",
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
     "check:build7": "node scripts/test-build7-shared-protocol.mjs",
+    "check:build8": "node scripts/test-build8-central-event-bus.mjs && tsx scripts/test-build8-event-bus-runtime.ts",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run typecheck"
+    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run typecheck"
   },
   "devDependencies": {
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
 }
