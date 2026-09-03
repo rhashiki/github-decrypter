@@ -17,6 +17,7 @@
     "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run typecheck"
   },
   "devDependencies": {
+    "@types/node": "^22.15.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
