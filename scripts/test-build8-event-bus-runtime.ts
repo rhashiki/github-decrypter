@@ -101,14 +101,19 @@ assert.throws(
   () => limited.subscribe('gd.test.alpha', async () => {}),
   RangeError,
 );
-
 limited.clear('gd.test.alpha');
 assert.equal(limited.listenerCount('gd.test.alpha'), 0);
 
-// @ts-expect-error event payload type must be enforced by the catalog
-void bus.publish('gd.test.alpha', { value: 'wrong' });
-// @ts-expect-error non-gd event names are not part of the typed catalog
-void bus.publish('test.alpha', { value: 1 });
+if (false) {
+  // @ts-expect-error event payload type must be enforced by the catalog
+  void bus.publish('gd.test.alpha', { value: 'wrong' });
+  // @ts-expect-error non-gd event names are not part of the typed catalog
+  void bus.publish('test.alpha', { value: 1 });
+}
+
+const openCatalogBus = createEventBus();
+const openReport = await openCatalogBus.publish('gd.test.open', { ok: true });
+assert.equal(openReport.event.name, 'gd.test.open');
 
 console.log(JSON.stringify({
   ok: true,
@@ -118,4 +123,5 @@ console.log(JSON.stringify({
   handlerFailureIsolation: true,
   mutationSafeDispatch: true,
   jsonBoundaryValidation: true,
+  openCatalogSupport: true,
 }, null, 2));
