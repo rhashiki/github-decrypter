@@ -5,6 +5,7 @@
   "namespace": "gd-",
   "authorities": [
     "docs/product/PRODUCT_CONSTITUTION_V1.md",
+    "docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md",
     "docs/product/NORTH_STAR_MANIFESTO.md",
     "docs/product/NORTH_STAR_ROADMAP_MAPPING.md",
     "docs/product/V1_SCOPE.md",
@@ -46,32 +47,11 @@
       "environmentNeutral": true
     }
   },
-  "forbiddenActiveAuthorityTokens": [
-    "lovable.dev",
-    "ld-vault",
-    "ld-release-feed",
-    "ld-store"
-  ],
-  "activeAuthorityRoots": [
-    "apps",
-    "packages",
-    ".github/workflows",
-    "manifest.json",
-    "settings/config.js"
-  ],
+  "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
+  "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
     "writePermissionAllowlist": [],
-    "forbiddenWritePermissions": [
-      "actions",
-      "checks",
-      "contents",
-      "deployments",
-      "id-token",
-      "packages",
-      "pull-requests",
-      "security-events",
-      "statuses"
-    ]
+    "forbiddenWritePermissions": ["actions", "checks", "contents", "deployments", "id-token", "packages", "pull-requests", "security-events", "statuses"]
   },
   "phaseGates": {
     "localDaemonBuild": 10,
