@@ -1,6 +1,6 @@
 # Build 15 — Capability Security Model
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -87,6 +87,10 @@ Build 14's `AG123` becomes phase-aware because Capability Security is now legiti
 - plaintext security tokens are persisted for convenience: **no**;
 - frontend or model can self-authorize: **no**;
 - future providers can share one security contract: **yes**.
+
+## Validation result
+
+The technical head passed the full Build 4–15 regression chain, TypeScript workspace checks, SQLite runtime tests, Capability Security failure injection and modern-engine preservation before this status was promoted. Final documentation-only changes must pass the same CI matrix again before merge.
 
 ## Next Build
 
