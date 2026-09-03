@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const guardian = path.join(root, 'scripts/architecture-guardian-capabilities.mjs');
+const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
 
 function runExpecting(code) {
   const result = spawnSync(process.execPath, [guardian], { cwd: root, encoding: 'utf8' });
@@ -33,16 +34,34 @@ try {
   fs.writeFileSync(migrationPath, migrationOriginal);
 }
 
-for (const [filename, source, code] of [
-  ['__secrets_vault_probe.ts', 'export class SecretsVault {}\n', 'AG133'],
-  ['__approval_transaction_probe.ts', 'export class ApprovalTransaction {}\n', 'AG134'],
-  ['__audit_ledger_probe.ts', 'export class AuditLedger {}\n', 'AG135'],
-]) {
-  const probe = path.join(root, 'apps/local/src', filename);
+const phaseProbes = [
+  {
+    required: policy.currentBuild < policy.capabilityAuthority.secretsVaultBuild,
+    filename: '__secrets_vault_probe.ts',
+    source: 'export class SecretsVault {}\n',
+    code: 'AG133',
+  },
+  {
+    required: policy.currentBuild < policy.capabilityAuthority.approvalTransactionsBuild,
+    filename: '__approval_transaction_probe.ts',
+    source: 'export class ApprovalTransaction {}\n',
+    code: 'AG134',
+  },
+  {
+    required: policy.currentBuild < policy.capabilityAuthority.auditLedgerBuild,
+    filename: '__audit_ledger_probe.ts',
+    source: 'export class AuditLedger {}\n',
+    code: 'AG135',
+  },
+];
+
+for (const probeDefinition of phaseProbes) {
+  if (!probeDefinition.required) continue;
+  const probe = path.join(root, 'apps/local/src', probeDefinition.filename);
   try {
-    fs.writeFileSync(probe, source);
-    runExpecting(code);
-    rejected.push(code);
+    fs.writeFileSync(probe, probeDefinition.source);
+    runExpecting(probeDefinition.code);
+    rejected.push(probeDefinition.code);
   } finally {
     fs.rmSync(probe, { force: true });
   }
@@ -61,9 +80,9 @@ try {
 const policyPath = path.join(root, 'architecture.guardian.json');
 const policyOriginal = fs.readFileSync(policyPath, 'utf8');
 try {
-  const policy = JSON.parse(policyOriginal);
-  policy.capabilityAuthority.denyByDefault = false;
-  fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
+  const changedPolicy = JSON.parse(policyOriginal);
+  changedPolicy.capabilityAuthority.denyByDefault = false;
+  fs.writeFileSync(policyPath, `${JSON.stringify(changedPolicy, null, 2)}\n`);
   runExpecting('AG137');
   rejected.push('AG137');
 } finally {
@@ -75,7 +94,9 @@ assert.equal(final.status, 0, `Capability Guardian did not recover.\n${final.std
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build15-capability-guardian-negative/1',
+  schema: 'gd-build15-capability-guardian-negative/2',
+  currentBuild: policy.currentBuild,
   rejected,
+  prematureSecretsVaultProbeRequired: policy.currentBuild < policy.capabilityAuthority.secretsVaultBuild,
   restoredTreePasses: true,
 }, null, 2));

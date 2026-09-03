@@ -27,8 +27,9 @@ Completed:
 - Build 13 — Crash & Power Recovery
 - Build 14 — Offline Execution
 - Build 15 — Capability Security Model
+- Build 16 — Secrets Vault
 
-Next: **Build 16 — Secrets Vault**.
+Next: **Build 17 — Approval Transactions**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -47,23 +48,25 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling and the deny-by-default Capability Security boundary. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary and the encrypted local Secrets Vault. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
 Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Build 14 adds persistent `unknown | online | offline` connectivity state and explicit network-required job metadata: local-safe work remains claimable without network, while network-required work waits durably and returns to the queue when connectivity is restored.
 
-Build 15 adds explicit job-bound capabilities: `READ`, `WRITE`, `EXECUTE`, `NETWORK`, `DATABASE_WRITE`, `GIT_WRITE`, `DESTRUCTIVE` and `SECRETS`. Grants carry exact or prefix-scoped `gd://` resources, bounded expiry and explicit revocation. Capabilities do not imply one another, so operations requiring multiple authorities must request every required claim.
+Build 15 adds explicit job-bound capabilities: `READ`, `WRITE`, `EXECUTE`, `NETWORK`, `DATABASE_WRITE`, `GIT_WRITE`, `DESTRUCTIVE` and `SECRETS`. Grants carry exact or prefix-scoped `gd://` resources, bounded expiry and explicit revocation. Capabilities do not imply one another, so operations requiring multiple authorities must request every required claim. Capability tokens are opaque 256-bit values and only their SHA-256 hashes are persisted. Grants remain process-bound and stale active grants are revoked after restart rather than being silently trusted by a new runtime process.
 
-Capability tokens are opaque 256-bit values and only their SHA-256 hashes are persisted. Until Build 16 provides a Secrets Vault, grants are process-bound and stale active grants are revoked after restart rather than persisting plaintext credentials. This is intentionally fail-closed. Build 15 exposes no endpoint allowing Studio, Extension or a model to self-grant authority.
+Build 16 adds the canonical local Secrets Vault. Secret values and `gd://secret/...` resource names are encrypted at rest with AES-256-GCM; HKDF-SHA256 separates encryption and lookup subkeys, while HMAC-SHA256 provides deterministic resource lookup without a plaintext resource column. The 256-bit master key is stored separately from SQLite in a local owner-only key file on POSIX systems. The database stores only a key fingerprint to detect a mismatched key and fail closed. This Build does not claim OS-keychain-backed storage.
+
+Vault reads/writes require an existing job-bound `SECRETS` capability, while deletion additionally requires `DESTRUCTIVE`. Vault readiness is part of daemon readiness. Health and Event Bus messages expose only non-sensitive status/IDs and never secret values or resource names. The inherited predecessor remote Vault implementation was removed so the local Vault is the single active authority.
 
 Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. `NETWORK` capability authorizes network use; it does not bypass Build 14 connectivity state.
 
-There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control or job-control HTTP endpoint. Secure secret persistence is reserved for Build 16. The default development endpoint is `127.0.0.1:43110`. Run it with:
+There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control or job-control HTTP endpoint. In particular, Build 16 does not expose `/v1/vault`, `/v1/secret` or `/v1/secrets`. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, phase gates, token-hash-only persistence, no premature grant transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, phase gates, token-hash-only persistence, encrypted secret/resource persistence, master-key separation, no premature privileged transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -129,6 +132,11 @@ Studio PWA                         Local Runtime Daemon
                                 Capability Security
                          job + capability + resource scope
                            deny by default / hash-only token
+                                           │
+                                           ▼
+                                   Secrets Vault
+                         AES-256-GCM + HKDF + HMAC lookup
+                           key file separate from SQLite
 
             │
             ▼
@@ -152,6 +160,7 @@ See:
 - `docs/architecture/CRASH_POWER_RECOVERY.md` — Build 13 session and recovery semantics
 - `docs/architecture/OFFLINE_EXECUTION.md` — Build 14 connectivity-aware local scheduling semantics
 - `docs/architecture/CAPABILITY_SECURITY_MODEL.md` — Build 15 deny-by-default capability boundary
+- `docs/architecture/SECRETS_VAULT.md` — Build 16 encrypted local secret boundary
 
 ## Architecture check
 

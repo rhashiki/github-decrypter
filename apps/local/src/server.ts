@@ -20,6 +20,7 @@ import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
 import type { OfflineExecutionStatus } from './offline-execution.js';
 import type { CrashRecoveryStatus } from './recovery-engine.js';
+import type { SecretsVaultStatus } from './secrets-vault.js';
 
 export interface LocalRuntimeHealth {
   readonly schema: 'gd-local-health/1';
@@ -70,9 +71,19 @@ export interface LocalRuntimeHealth {
     readonly expiredGrants: number;
     readonly denyByDefault: true;
     readonly plaintextTokenPersistence: false;
-    readonly secretsVaultReady: false;
+    readonly secretsVaultReady: boolean;
     readonly approvalTransactionsReady: false;
     readonly externalGrantTransport: false;
+  };
+  readonly vault: {
+    readonly ready: boolean;
+    readonly secretCount: number;
+    readonly cipher: 'AES-256-GCM';
+    readonly kdf: 'HKDF-SHA256';
+    readonly keyBackend: 'local-key-file-v1';
+    readonly plaintextPersistence: false;
+    readonly plaintextResourcePersistence: false;
+    readonly externalTransport: false;
   };
 }
 
@@ -86,6 +97,7 @@ export interface LocalRuntimeServerContext {
   getRecoveryStatus(): CrashRecoveryStatus;
   getOfflineExecutionStatus(): OfflineExecutionStatus;
   getCapabilitySecurityStatus(): CapabilitySecurityStatus;
+  getSecretsVaultStatus(): SecretsVaultStatus;
   now(): string;
 }
 
@@ -140,6 +152,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const recovery = context.getRecoveryStatus();
   const offline = context.getOfflineExecutionStatus();
   const capabilities = context.getCapabilitySecurityStatus();
+  const vault = context.getSecretsVaultStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -189,9 +202,19 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       expiredGrants: capabilities.expiredGrants,
       denyByDefault: true,
       plaintextTokenPersistence: false,
-      secretsVaultReady: false,
+      secretsVaultReady: vault.ready,
       approvalTransactionsReady: false,
       externalGrantTransport: false,
+    },
+    vault: {
+      ready: vault.ready,
+      secretCount: vault.secretCount,
+      cipher: vault.cipher,
+      kdf: vault.kdf,
+      keyBackend: vault.keyBackend,
+      plaintextPersistence: false,
+      plaintextResourcePersistence: false,
+      externalTransport: false,
     },
   };
 }
@@ -256,7 +279,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.recovery.ready
         && health.recovery.healthy
         && health.offline.ready
-        && health.capabilities.ready;
+        && health.capabilities.ready
+        && health.vault.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -266,6 +290,7 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         recoveryReady: health.recovery.ready,
         offlineExecutionReady: health.offline.ready,
         capabilitySecurityReady: health.capabilities.ready,
+        secretsVaultReady: health.vault.ready,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,
