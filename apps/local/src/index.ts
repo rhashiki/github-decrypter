@@ -7,5 +7,7 @@ export * from './database.js';
 export * from './daemon.js';
 export * from './identity.js';
 export * from './instance-lock.js';
+export * from './job-engine.js';
+export * from './job-types.js';
 export * from './lifecycle.js';
 export * from './server.js';
