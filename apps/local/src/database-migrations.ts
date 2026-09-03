@@ -49,6 +49,7 @@ CREATE TABLE gd_jobs (
   max_attempts INTEGER NOT NULL DEFAULT 1 CHECK (max_attempts >= 1),
   pause_requested INTEGER NOT NULL DEFAULT 0 CHECK (pause_requested IN (0, 1)),
   cancel_requested INTEGER NOT NULL DEFAULT 0 CHECK (cancel_requested IN (0, 1)),
+  checkpoint_json TEXT,
   result_json TEXT,
   error_json TEXT
 ) STRICT;
