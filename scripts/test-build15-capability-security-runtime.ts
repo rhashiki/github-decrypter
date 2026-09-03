@@ -22,9 +22,9 @@ try {
   const databasePath = join(tempRoot, 'capabilities.sqlite3');
   const database = new LocalDatabase({ path: databasePath, now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 5);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 5);
-  assert.equal(database.listMigrations().length, 5);
+  assert.ok(opened.schemaVersion >= 5);
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 5);
+  assert.ok(database.listMigrations().length >= 5);
 
   const events: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build15-test' });
@@ -225,22 +225,30 @@ try {
 
   const daemonDatabasePath = join(tempRoot, 'daemon.sqlite3');
   const daemonLockPath = join(tempRoot, 'daemon.lock');
-  const config = { host: '127.0.0.1', port: 0, lockPath: daemonLockPath, databasePath: daemonDatabasePath } as const;
+  const daemonVaultKeyPath = join(tempRoot, 'daemon-vault.key');
+  const config = {
+    host: '127.0.0.1',
+    port: 0,
+    lockPath: daemonLockPath,
+    databasePath: daemonDatabasePath,
+    vaultKeyPath: daemonVaultKeyPath,
+  } as const;
   const daemon = new LocalRuntimeDaemon({ config, now });
   const address = await daemon.start();
   const health = await (await fetch(`${address.origin}/healthz`)).json() as Record<string, any>;
-  assert.equal(health.build, 15);
-  assert.equal(health.version, '0.0.15');
-  assert.equal(health.database.schemaVersion, 5);
+  assert.ok(health.build >= 15);
+  assert.ok(/^0\.0\.\d+$/.test(health.version));
+  assert.ok(health.database.schemaVersion >= 5);
   assert.equal(health.capabilities.ready, true);
   assert.equal(health.capabilities.denyByDefault, true);
   assert.equal(health.capabilities.plaintextTokenPersistence, false);
-  assert.equal(health.capabilities.secretsVaultReady, false);
+  assert.equal(health.capabilities.secretsVaultReady, health.build >= 16);
   assert.equal(health.capabilities.approvalTransactionsReady, false);
   assert.equal(health.capabilities.externalGrantTransport, false);
   const readiness = await (await fetch(`${address.origin}/readyz`)).json() as Record<string, any>;
   assert.equal(readiness.ready, true);
   assert.equal(readiness.capabilitySecurityReady, true);
+  if (health.build >= 16) assert.equal(readiness.secretsVaultReady, true);
   assert.equal(readiness.denyByDefault, true);
   assert.equal((await fetch(`${address.origin}/v1/capabilities`)).status, 404);
   assert.equal((await fetch(`${address.origin}/v1/grants`, { method: 'POST' })).status, 404);
@@ -255,8 +263,9 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build15-capability-security-runtime/1',
-    schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
+    schema: 'gd-build15-capability-security-runtime/2',
+    minimumSchemaVersion: 5,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     capabilities: CAPABILITIES,
     denyByDefault: true,
     tokenHashOnly: true,
@@ -271,7 +280,7 @@ try {
     restartFailsClosed: true,
     daemonReadinessIntegration: true,
     externalGrantTransport: false,
-    secretsVault: false,
+    allowsLaterSecretsVault: true,
     approvalTransactions: false,
   }, null, 2));
 } finally {
