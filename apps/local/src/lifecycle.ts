@@ -1,3 +1,4 @@
+import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { Capability, CapabilityGrantId } from './capability-security.js';
 import type { DurableJobId, DurableJobState } from './job-types.js';
 import type { ConnectivityState } from './offline-execution.js';
@@ -139,6 +140,44 @@ export type LocalRuntimeVaultSecretChangedPayload = {
   readonly occurredAt: string;
 };
 
+export type LocalRuntimeApprovalReadyPayload = {
+  readonly pending: number;
+  readonly approved: number;
+  readonly humanReviewRequired: true;
+  readonly oneShotReceipts: true;
+  readonly plaintextReceiptPersistence: false;
+  readonly payloadDigestBinding: true;
+  readonly externalDecisionTransport: false;
+};
+
+export type LocalRuntimeApprovalRequestedPayload = {
+  readonly transactionId: ApprovalTransactionId;
+  readonly jobId: DurableJobId;
+  readonly action: string;
+  readonly expiresAt: string;
+  readonly requirementCount: number;
+};
+
+export type LocalRuntimeApprovalDecidedPayload = {
+  readonly transactionId: ApprovalTransactionId;
+  readonly jobId: DurableJobId;
+  readonly decision: 'approved' | 'denied';
+  readonly reviewerKind: 'human';
+  readonly occurredAt: string;
+};
+
+export type LocalRuntimeApprovalConsumedPayload = {
+  readonly transactionId: ApprovalTransactionId;
+  readonly jobId: DurableJobId;
+  readonly occurredAt: string;
+};
+
+export type LocalRuntimeApprovalCancelledPayload = {
+  readonly transactionId: ApprovalTransactionId;
+  readonly jobId: DurableJobId;
+  readonly occurredAt: string;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
@@ -158,6 +197,11 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.capability.denied': LocalRuntimeCapabilityDeniedPayload;
   readonly 'gd.local.vault.ready': LocalRuntimeVaultReadyPayload;
   readonly 'gd.local.vault.secret.changed': LocalRuntimeVaultSecretChangedPayload;
+  readonly 'gd.local.approval.ready': LocalRuntimeApprovalReadyPayload;
+  readonly 'gd.local.approval.requested': LocalRuntimeApprovalRequestedPayload;
+  readonly 'gd.local.approval.decided': LocalRuntimeApprovalDecidedPayload;
+  readonly 'gd.local.approval.consumed': LocalRuntimeApprovalConsumedPayload;
+  readonly 'gd.local.approval.cancelled': LocalRuntimeApprovalCancelledPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
