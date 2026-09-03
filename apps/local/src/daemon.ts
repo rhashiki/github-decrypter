@@ -6,6 +6,7 @@ import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from '
 import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
+import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createLocalRuntimeHttpServer } from './server.js';
 
 export interface LocalRuntimeDaemonOptions {
@@ -13,6 +14,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly eventBus?: EventBus<LocalRuntimeEventCatalog>;
   readonly database?: LocalDatabase;
   readonly jobs?: DurableJobEngine;
+  readonly recovery?: CrashPowerRecovery;
   readonly now?: () => string;
 }
 
@@ -29,6 +31,7 @@ export class LocalRuntimeDaemon {
   readonly #peer = createLocalRuntimePeer();
   readonly #database: LocalDatabase;
   readonly #jobs: DurableJobEngine;
+  readonly #recovery: CrashPowerRecovery;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -46,6 +49,11 @@ export class LocalRuntimeDaemon {
       now: this.#now,
     });
     this.#jobs = options.jobs ?? createDurableJobEngine({
+      database: this.#database,
+      eventBus: this.#eventBus,
+      now: this.#now,
+    });
+    this.#recovery = options.recovery ?? createCrashPowerRecovery({
       database: this.#database,
       eventBus: this.#eventBus,
       now: this.#now,
@@ -70,6 +78,10 @@ export class LocalRuntimeDaemon {
 
   get jobs(): DurableJobEngine {
     return this.#jobs;
+  }
+
+  get recovery(): CrashPowerRecovery {
+    return this.#recovery;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -106,8 +118,14 @@ export class LocalRuntimeDaemon {
         integrity: databaseStatus.integrity,
       });
 
+      const preRecoveryJobStatus = this.#jobs.status();
+      if (!preRecoveryJobStatus.ready) throw new Error('Durable Job Engine is not ready after database startup.');
+
+      const recoveryStatus = await this.#recovery.startSession();
+      if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
+      this.#recovery.startLeaseSweep();
+
       const jobStatus = this.#jobs.status();
-      if (!jobStatus.ready) throw new Error('Durable Job Engine is not ready after database startup.');
       await this.#eventBus.publish('gd.local.jobs.ready', {
         schemaVersion: jobStatus.schemaVersion,
         total: jobStatus.summary.total,
@@ -122,6 +140,7 @@ export class LocalRuntimeDaemon {
         getAddress: () => this.#addressInfo(),
         getDatabaseStatus: () => this.#database.status,
         getJobEngineStatus: () => this.#jobs.status(),
+        getRecoveryStatus: () => this.#recovery.status,
         now: this.#now,
       });
       this.#server = server;
@@ -145,12 +164,13 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with persistent database and durable job engine ready');
+      await this.#transition('running', 'loopback server listening with durable crash recovery ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
     } catch (error) {
       await this.#closeServerBestEffort();
+      await this.#closeRecoveryBestEffort('startup failed');
       await this.#closeDatabaseBestEffort('startup failed');
       this.#instanceLock?.release();
       this.#instanceLock = null;
@@ -166,10 +186,24 @@ export class LocalRuntimeDaemon {
 
     await this.#transition('stopping', reason);
     await this.#closeServerBestEffort();
+
+    let recoveryError: unknown = null;
+    try {
+      await this.#recovery.stopSession(reason);
+    } catch (error) {
+      recoveryError = error;
+    }
+
     await this.#closeDatabaseBestEffort(reason);
     this.#instanceLock?.release();
     this.#instanceLock = null;
     this.#startedAt = null;
+
+    if (recoveryError) {
+      const message = recoveryError instanceof Error ? recoveryError.message : 'recovery shutdown failed';
+      await this.#transition('failed', message);
+      throw recoveryError;
+    }
     await this.#transition('stopped', reason);
   }
 
@@ -185,6 +219,15 @@ export class LocalRuntimeDaemon {
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
+  }
+
+  async #closeRecoveryBestEffort(reason: string): Promise<void> {
+    if (!this.#recovery.sessionId || !this.#database.isOpen) return;
+    try {
+      await this.#recovery.stopSession(reason);
+    } catch {
+      this.#recovery.stopLeaseSweep();
+    }
   }
 
   async #closeDatabaseBestEffort(reason: string): Promise<void> {
