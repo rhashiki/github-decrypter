@@ -11,6 +11,7 @@ for (const file of [
   'docs/architecture/ARCHITECTURE_GUARDIAN.md',
   'docs/builds/BUILD_9_ARCHITECTURE_GUARDIAN.md',
   'docs/product/NORTH_STAR_MANIFESTO.md',
+  'docs/product/ROADMAP_V1.md',
   'docs/product/NORTH_STAR_ROADMAP_MAPPING.md',
   'docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md',
   '.github/pull_request_template.md',
@@ -30,6 +31,7 @@ assert.equal(policy.phaseGates.localDaemonBuild, 10);
 assert.equal(policy.phaseGates.extensionActivationBuild, 25);
 assert.equal(policy.phaseGates.studioReactBuild, 27);
 assert.equal(policy.phaseGates.releaseAuthorityBuild, 134);
+assert.ok(policy.authorities.includes('docs/product/ROADMAP_V1.md'));
 
 const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
 for (let index = 1; index <= 22; index += 1) {
@@ -42,6 +44,14 @@ for (const block of policy.northStar.requiredRoadmapBlocks) {
   assert.ok(mapping.includes(block), `roadmap block missing: ${block}`);
 }
 assert.ok(mapping.includes('1 → 134'));
+
+const roadmap = read('docs/product/ROADMAP_V1.md');
+const roadmapNumbers = [...roadmap.matchAll(/^(\d+)\. \*\*/gm)].map((match) => Number(match[1]));
+assert.equal(roadmapNumbers.length, 134, 'canonical roadmap must list exactly 134 numbered Builds');
+assert.deepEqual(roadmapNumbers, Array.from({ length: 134 }, (_, index) => index + 1), 'canonical roadmap numbering must be contiguous 1–134');
+for (const block of policy.northStar.requiredRoadmapBlocks) {
+  assert.ok(roadmap.includes(block), `canonical roadmap does not carry North Star ownership: ${block}`);
+}
 
 const guardian = read('scripts/architecture-guardian.mjs');
 for (const marker of [
@@ -72,6 +82,7 @@ console.log(JSON.stringify({
   schema: 'gd-build9-architecture-guardian/1',
   currentBuild: 9,
   principles: 22,
+  canonicalRoadmapBuilds: roadmapNumbers.length,
   northStarRoadmapBlocks: 11,
   phaseGates: policy.phaseGates,
   workflowWriteAllowlist: policy.workflow.writePermissionAllowlist,
