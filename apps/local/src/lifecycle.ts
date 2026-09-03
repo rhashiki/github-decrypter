@@ -104,7 +104,7 @@ export type LocalRuntimeCapabilityReadyPayload = {
 export type LocalRuntimeCapabilityGrantedPayload = {
   readonly grantId: CapabilityGrantId;
   readonly jobId: DurableJobId;
-  readonly capabilities: readonly Capability[];
+  readonly capabilities: Capability[];
   readonly claimCount: number;
   readonly issuedAt: string;
   readonly expiresAt: string;
@@ -121,7 +121,7 @@ export type LocalRuntimeCapabilityDeniedPayload = {
   readonly grantId: CapabilityGrantId | null;
   readonly jobId: DurableJobId;
   readonly reason: string;
-  readonly missingCapabilities: readonly Capability[];
+  readonly missingCapabilities: Capability[];
   readonly missingCount: number;
 };
 
