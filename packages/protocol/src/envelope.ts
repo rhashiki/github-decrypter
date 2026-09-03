@@ -5,6 +5,7 @@ import type {
   PeerId,
   TraceId,
 } from './ids.js';
+import { assertJsonValue } from './json.js';
 import type { ProtocolPeer, PeerRole } from './peer.js';
 import { PROTOCOL_SCHEMA, PROTOCOL_VERSION, type ProtocolVersion } from './version.js';
 
@@ -54,6 +55,7 @@ export type ProtocolEnvelopeInput<
 export function envelope<TKind extends ProtocolMessageKind, TPayload>(
   input: ProtocolEnvelopeInput<TKind, TPayload>,
 ): ProtocolEnvelope<TKind, TPayload> {
+  assertJsonValue(input.payload);
   return {
     schema: PROTOCOL_SCHEMA,
     version: PROTOCOL_VERSION,
