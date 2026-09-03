@@ -86,6 +86,40 @@ CREATE INDEX gd_job_transitions_job_idx
   ON gd_job_transitions (job_id, id ASC);
 `;
 
+const MIGRATION_003_SQL = `
+CREATE TABLE gd_runtime_sessions (
+  id TEXT PRIMARY KEY,
+  started_at TEXT NOT NULL,
+  recovery_completed_at TEXT,
+  startup_recovered_jobs INTEGER NOT NULL DEFAULT 0 CHECK (startup_recovered_jobs >= 0),
+  prior_unclean_sessions INTEGER NOT NULL DEFAULT 0 CHECK (prior_unclean_sessions >= 0),
+  clean_shutdown_at TEXT,
+  shutdown_reason TEXT,
+  reconciled_at TEXT
+) STRICT;
+
+CREATE INDEX gd_runtime_sessions_unclean_idx
+  ON gd_runtime_sessions (clean_shutdown_at, reconciled_at, started_at);
+
+CREATE TABLE gd_job_recoveries (
+  id INTEGER PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  action TEXT NOT NULL CHECK (action IN ('requeued', 'paused', 'cancelled', 'failed')),
+  previous_worker_id TEXT,
+  previous_lease_expires_at TEXT,
+  reason TEXT NOT NULL,
+  recovered_at TEXT NOT NULL,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE,
+  FOREIGN KEY (session_id) REFERENCES gd_runtime_sessions(id) ON DELETE RESTRICT
+) STRICT;
+
+CREATE INDEX gd_job_recoveries_job_idx
+  ON gd_job_recoveries (job_id, id ASC);
+CREATE INDEX gd_job_recoveries_session_idx
+  ON gd_job_recoveries (session_id, id ASC);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -107,6 +141,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_002_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_002_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 3,
+    name: 'crash-power-recovery',
+    sql: MIGRATION_003_SQL,
+    checksum: checksum(MIGRATION_003_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_003_SQL);
     },
   }),
 ]);
