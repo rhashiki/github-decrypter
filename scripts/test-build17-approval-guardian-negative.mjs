@@ -30,7 +30,7 @@ try {
 const authorityPath = path.join(root, 'apps/local/src/approval-transactions.ts');
 const authorityOriginal = fs.readFileSync(authorityPath, 'utf8');
 try {
-  fs.writeFileSync(authorityPath, authorityOriginal.replace('receipt_hash = NULL', 'receipt_hash = receipt_hash'));
+  fs.writeFileSync(authorityPath, authorityOriginal.replaceAll('receipt_hash = NULL', 'receipt_hash = receipt_hash'));
   expect('AG154');
 } finally { fs.writeFileSync(authorityPath, authorityOriginal); }
 
