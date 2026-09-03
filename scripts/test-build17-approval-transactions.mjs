@@ -35,7 +35,8 @@ assert.equal(policy.approvalAuthority.externalDecisionTransport, false);
 
 const migrations = read('apps/local/src/database-migrations.ts');
 for (const marker of [
-  "migration(7, 'approval-transactions'",
+  'version: 7',
+  "name: 'approval-transactions'",
   'CREATE TABLE gd_approval_transactions',
   'payload_digest TEXT NOT NULL',
   'receipt_hash TEXT UNIQUE',
