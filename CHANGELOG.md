@@ -2,6 +2,31 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 11 — Persistent Local Database — 2026-09-03
+
+### Database
+- Added file-backed SQLite owned exclusively by `apps/local` through Node 22 `node:sqlite`.
+- Added OS-aware storage paths, WAL, foreign keys, busy timeout, trusted-schema hardening and integrity-gated readiness.
+- Added checksummed transactional migrations with fail-closed provenance and future-schema validation.
+- Added schema v1 with only `gd_schema_migrations` and `gd_metadata`, plus JSON-safe metadata persistence and rollback transactions.
+
+### Runtime
+- Integrated database open/close into the Local Runtime lifecycle.
+- Added `gd.local.database.opened` and `gd.local.database.closed` events.
+- Extended health/readiness with non-sensitive database state without exposing filesystem paths or generic SQL/database RPC.
+
+### Architecture Guardian
+- Pinned `node:sqlite` authority to `apps/local` and blocked Durable Job Engine schema before Build 12.
+- Reconciled the pre-existing project-map `cortex.yml` workflow with a narrow write scope limited to `graphify-out/**`, plain `git push`, no tags/releases/deploys.
+
+### Validation
+- Proved persistence across database reopen and daemon restart, WAL, foreign keys, rollback, integrity checks, migration tamper rejection and future-schema rejection.
+- Added failure injection for SQLite authority escape, premature job schema and project-map write-scope expansion.
+- Build 4–10 regressions, all TypeScript workspaces and modern-engine preservation remain prerequisites.
+
+### Safety
+- No Durable Job Engine, crash recovery, capability security, generic database RPC, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 10 — Local Runtime Daemon — 2026-09-03
 
 ### Runtime
@@ -51,7 +76,7 @@ The active changelog uses the independent GitHub Decrypter Build numbering. Earl
 ## Build 8 — Central Event Bus — 2026-09-03
 
 ### Events
-- Promoted `@github-decrypter/shared` into the owner of the deterministic in-process Event Bus.
+- Promoted `@github-decrypter/shared` into the owner of the deterministic in-process Event Bus primitive.
 - Added typed `gd.*` event names, `gd_evt_*` IDs and JSON-safe payload boundaries.
 - Added correlation, causation and trace metadata compatible with the Build 7 protocol vocabulary.
 - Added exact subscriptions, one-shot subscriptions and global observers.
