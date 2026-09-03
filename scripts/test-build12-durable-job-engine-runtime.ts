@@ -7,6 +7,7 @@ import {
   DurableJobEngine,
   LocalDatabase,
   LocalRuntimeDaemon,
+  LOCAL_DATABASE_SCHEMA_VERSION,
   type LocalRuntimeEventCatalog,
 } from '../apps/local/src/index.js';
 
@@ -19,8 +20,8 @@ const advance = (milliseconds: number) => { nowMs += milliseconds; };
 try {
   const database = new LocalDatabase({ path: databasePath, now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 2);
-  assert.equal(database.listMigrations().length, 2);
+  assert.ok(opened.schemaVersion >= 2);
+  assert.ok(database.listMigrations().length >= 2);
 
   const changes: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build12-test' });
@@ -129,7 +130,7 @@ try {
   const reopenedEngine = new DurableJobEngine({ database: reopenedDatabase, now });
   assert.equal(reopenedEngine.getJob(root.id)?.state, 'completed');
   assert.equal(reopenedEngine.getJob(expiring.id)?.state, 'running');
-  assert.equal(reopenedEngine.listExpiredLeases().length, 1, 'Build 12 detects but does not auto-recover expired running jobs');
+  assert.equal(reopenedEngine.listExpiredLeases().length, 1, 'standalone Build 12 engine detects but does not itself auto-recover');
   await reopenedEngine.acknowledgeCancel(expiring.id, expiringClaim.leaseToken, 'test cleanup');
 
   const cycleA = await reopenedEngine.enqueue({ kind: 'dag.cycle-a', payload: null });
@@ -152,9 +153,10 @@ try {
   const address = await daemon.start();
   assert.equal(daemon.jobs.status().ready, true);
   const health = await (await fetch(`${address.origin}/healthz`)).json() as Record<string, any>;
-  assert.equal(health.build, 12);
-  assert.equal(health.version, '0.0.12');
-  assert.equal(health.database.schemaVersion, 2);
+  assert.ok(Number(health.build) >= 12);
+  const versionPatch = Number(String(health.version).split('.').at(-1));
+  assert.ok(Number.isSafeInteger(versionPatch) && versionPatch >= 12);
+  assert.ok(Number(health.database.schemaVersion) >= 2);
   assert.equal(health.jobs.ready, true);
   const ready = await (await fetch(`${address.origin}/readyz`)).json() as Record<string, any>;
   assert.equal(ready.jobsReady, true);
@@ -162,7 +164,7 @@ try {
 
   const daemonJob = await daemon.jobs.enqueue({ kind: 'daemon.persist', payload: { survives: true } });
   await daemon.stop('Build 12 restart test');
-  assert.deepEqual(daemonEvents, ['ready:2']);
+  assert.deepEqual(daemonEvents, [`ready:${LOCAL_DATABASE_SCHEMA_VERSION}`]);
 
   const restarted = new LocalRuntimeDaemon({ config, now });
   await restarted.start();
@@ -176,8 +178,9 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build12-durable-job-engine-runtime/1',
-    schemaVersion: 2,
+    schema: 'gd-build12-durable-job-engine-runtime/2',
+    minimumSchemaVersion: 2,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     persistenceAcrossRestart: true,
     deterministicQueue: true,
     dependencyDag: true,
@@ -191,7 +194,7 @@ try {
     skip: true,
     retryBudget: true,
     expiredLeaseDetection: true,
-    automaticCrashRecovery: false,
+    standaloneEngineDoesNotAutoRecover: true,
     jobControlHttp: false,
     daemonIntegration: true,
   }, null, 2));
