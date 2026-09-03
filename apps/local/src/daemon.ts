@@ -6,6 +6,10 @@ import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from '
 import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
+import {
+  createOfflineExecutionCoordinator,
+  type OfflineExecutionCoordinator,
+} from './offline-execution.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createLocalRuntimeHttpServer } from './server.js';
 
@@ -15,6 +19,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly database?: LocalDatabase;
   readonly jobs?: DurableJobEngine;
   readonly recovery?: CrashPowerRecovery;
+  readonly offline?: OfflineExecutionCoordinator;
   readonly now?: () => string;
 }
 
@@ -32,6 +37,7 @@ export class LocalRuntimeDaemon {
   readonly #database: LocalDatabase;
   readonly #jobs: DurableJobEngine;
   readonly #recovery: CrashPowerRecovery;
+  readonly #offline: OfflineExecutionCoordinator;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -55,6 +61,12 @@ export class LocalRuntimeDaemon {
     });
     this.#recovery = options.recovery ?? createCrashPowerRecovery({
       database: this.#database,
+      eventBus: this.#eventBus,
+      now: this.#now,
+    });
+    this.#offline = options.offline ?? createOfflineExecutionCoordinator({
+      database: this.#database,
+      jobs: this.#jobs,
       eventBus: this.#eventBus,
       now: this.#now,
     });
@@ -82,6 +94,10 @@ export class LocalRuntimeDaemon {
 
   get recovery(): CrashPowerRecovery {
     return this.#recovery;
+  }
+
+  get offline(): OfflineExecutionCoordinator {
+    return this.#offline;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -125,6 +141,9 @@ export class LocalRuntimeDaemon {
       if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
       this.#recovery.startLeaseSweep();
 
+      const offlineStatus = await this.#offline.initialize();
+      if (!offlineStatus.ready) throw new Error('Offline Execution is not ready after recovery startup.');
+
       const jobStatus = this.#jobs.status();
       await this.#eventBus.publish('gd.local.jobs.ready', {
         schemaVersion: jobStatus.schemaVersion,
@@ -141,6 +160,7 @@ export class LocalRuntimeDaemon {
         getDatabaseStatus: () => this.#database.status,
         getJobEngineStatus: () => this.#jobs.status(),
         getRecoveryStatus: () => this.#recovery.status,
+        getOfflineExecutionStatus: () => this.#offline.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -164,7 +184,7 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with durable crash recovery ready');
+      await this.#transition('running', 'loopback server listening with crash recovery and offline execution ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;

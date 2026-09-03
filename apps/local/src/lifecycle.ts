@@ -1,4 +1,5 @@
 import type { DurableJobId, DurableJobState } from './job-types.js';
+import type { ConnectivityState } from './offline-execution.js';
 
 export const LOCAL_RUNTIME_STATES = [
   'idle',
@@ -63,6 +64,32 @@ export type LocalRuntimeRecoveryClosedPayload = {
   readonly reason: string;
 };
 
+export type LocalRuntimeOfflineReadyPayload = {
+  readonly connectivity: ConnectivityState;
+  readonly waitingForNetwork: number;
+  readonly localExecutionAvailable: true;
+  readonly automaticNetworkProbe: false;
+};
+
+export type LocalRuntimeConnectivityChangedPayload = {
+  readonly previous: ConnectivityState;
+  readonly current: ConnectivityState;
+  readonly source: string;
+  readonly observedAt: string;
+  readonly waitingForNetwork: number;
+};
+
+export type LocalRuntimeOfflineWaitingPayload = {
+  readonly jobId: DurableJobId;
+  readonly reason: string;
+  readonly blockedAt: string;
+};
+
+export type LocalRuntimeOfflineResumedPayload = {
+  readonly jobId: DurableJobId;
+  readonly resumedAt: string;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
@@ -72,6 +99,10 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.recovery.ready': LocalRuntimeRecoveryReadyPayload;
   readonly 'gd.local.recovery.sweep': LocalRuntimeRecoverySweepPayload;
   readonly 'gd.local.recovery.closed': LocalRuntimeRecoveryClosedPayload;
+  readonly 'gd.local.offline.ready': LocalRuntimeOfflineReadyPayload;
+  readonly 'gd.local.connectivity.changed': LocalRuntimeConnectivityChangedPayload;
+  readonly 'gd.local.offline.waiting': LocalRuntimeOfflineWaitingPayload;
+  readonly 'gd.local.offline.resumed': LocalRuntimeOfflineResumedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

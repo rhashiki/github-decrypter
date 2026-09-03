@@ -120,6 +120,41 @@ CREATE INDEX gd_job_recoveries_session_idx
   ON gd_job_recoveries (session_id, id ASC);
 `;
 
+const MIGRATION_004_SQL = `
+CREATE TABLE gd_connectivity_state (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  state TEXT NOT NULL CHECK (state IN ('unknown', 'online', 'offline')),
+  source TEXT NOT NULL,
+  observed_at TEXT NOT NULL
+) STRICT;
+
+INSERT INTO gd_connectivity_state (id, state, source, observed_at)
+VALUES (1, 'unknown', 'bootstrap', '1970-01-01T00:00:00.000Z');
+
+CREATE TABLE gd_connectivity_events (
+  id INTEGER PRIMARY KEY,
+  previous_state TEXT NOT NULL CHECK (previous_state IN ('unknown', 'online', 'offline')),
+  current_state TEXT NOT NULL CHECK (current_state IN ('unknown', 'online', 'offline')),
+  source TEXT NOT NULL,
+  observed_at TEXT NOT NULL
+) STRICT;
+
+CREATE INDEX gd_connectivity_events_time_idx
+  ON gd_connectivity_events (observed_at, id);
+
+CREATE TABLE gd_job_network_requirements (
+  job_id TEXT PRIMARY KEY,
+  requirement TEXT NOT NULL CHECK (requirement = 'network-required'),
+  blocked_for_network INTEGER NOT NULL DEFAULT 0 CHECK (blocked_for_network IN (0, 1)),
+  blocked_at TEXT,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_job_network_blocked_idx
+  ON gd_job_network_requirements (blocked_for_network, updated_at);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -150,6 +185,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_003_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_003_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 4,
+    name: 'offline-execution',
+    sql: MIGRATION_004_SQL,
+    checksum: checksum(MIGRATION_004_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_004_SQL);
     },
   }),
 ]);
