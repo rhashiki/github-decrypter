@@ -1,13 +1,15 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 10 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.10' as const;
+export const LOCAL_RUNTIME_BUILD = 11 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.11' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http',
   'health',
   'readiness',
   'protocol-handshake',
+  'persistent-sqlite',
+  'schema-migrations',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -27,5 +29,5 @@ export const localRuntimeIdentity = Object.freeze({
   version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const,
   protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle and loopback transport boundary.',
+  authority: 'Independent local daemon lifecycle, loopback transport and persistent SQLite state boundary.',
 });
