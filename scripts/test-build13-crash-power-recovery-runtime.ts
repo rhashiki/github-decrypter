@@ -16,14 +16,19 @@ const tempRoot = mkdtempSync(join(tmpdir(), 'gd-build13-'));
 let nowMs = Date.parse('2026-09-03T16:00:00.000Z');
 const now = () => new Date(nowMs).toISOString();
 const advance = (milliseconds: number) => { nowMs += milliseconds; };
+const patchVersion = (value: unknown) => {
+  const match = String(value ?? '').match(/^0\.0\.(\d+)$/);
+  assert.ok(match, `expected pre-V1 runtime version, got ${value}`);
+  return Number(match[1]);
+};
 
 try {
   const databasePath = join(tempRoot, 'recovery.sqlite3');
   const database1 = new LocalDatabase({ path: databasePath, now });
   const opened1 = database1.open();
-  assert.equal(opened1.schemaVersion, 3);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 3);
-  assert.equal(database1.listMigrations().length, 3);
+  assert.ok(opened1.schemaVersion >= 3);
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 3);
+  assert.ok(database1.listMigrations().length >= 3);
 
   const events: string[] = [];
   const bus1 = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build13-session-1' });
@@ -184,9 +189,9 @@ try {
   const daemon = new LocalRuntimeDaemon({ config, eventBus: daemonBus, now });
   const address = await daemon.start();
   const health = await (await fetch(`${address.origin}/healthz`)).json() as Record<string, any>;
-  assert.equal(health.build, 13);
-  assert.equal(health.version, '0.0.13');
-  assert.equal(health.database.schemaVersion, 3);
+  assert.ok(Number(health.build) >= 13);
+  assert.ok(patchVersion(health.version) >= 13);
+  assert.ok(Number(health.database.schemaVersion) >= 3);
   assert.equal(health.recovery.ready, true);
   assert.equal(health.recovery.sessionActive, true);
   assert.equal(health.recovery.healthy, true);
@@ -214,8 +219,9 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build13-crash-power-recovery-runtime/1',
-    schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
+    schema: 'gd-build13-crash-power-recovery-runtime/2',
+    minimumSchemaVersion: 3,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     uncleanSessionDetection: true,
     startupRecovery: true,
     checkpointPreserved: true,
@@ -228,6 +234,7 @@ try {
     gracefulShutdownHandoff: true,
     cleanSessionMarkers: true,
     daemonReadinessIntegration: true,
+    allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
