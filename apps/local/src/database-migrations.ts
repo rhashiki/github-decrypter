@@ -53,12 +53,8 @@ CREATE TABLE gd_jobs (
   result_json TEXT,
   error_json TEXT
 ) STRICT;
-
-CREATE INDEX gd_jobs_queue_idx
-  ON gd_jobs (state, available_at, priority DESC, queue_order ASC);
-CREATE INDEX gd_jobs_lease_idx
-  ON gd_jobs (state, lease_expires_at);
-
+CREATE INDEX gd_jobs_queue_idx ON gd_jobs (state, available_at, priority DESC, queue_order ASC);
+CREATE INDEX gd_jobs_lease_idx ON gd_jobs (state, lease_expires_at);
 CREATE TABLE gd_job_dependencies (
   job_id TEXT NOT NULL,
   depends_on_job_id TEXT NOT NULL,
@@ -68,10 +64,7 @@ CREATE TABLE gd_job_dependencies (
   FOREIGN KEY (depends_on_job_id) REFERENCES gd_jobs(id) ON DELETE RESTRICT,
   CHECK (job_id <> depends_on_job_id)
 ) STRICT;
-
-CREATE INDEX gd_job_dependencies_reverse_idx
-  ON gd_job_dependencies (depends_on_job_id, job_id);
-
+CREATE INDEX gd_job_dependencies_reverse_idx ON gd_job_dependencies (depends_on_job_id, job_id);
 CREATE TABLE gd_job_transitions (
   id INTEGER PRIMARY KEY,
   job_id TEXT NOT NULL,
@@ -81,9 +74,7 @@ CREATE TABLE gd_job_transitions (
   occurred_at TEXT NOT NULL,
   FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
 ) STRICT;
-
-CREATE INDEX gd_job_transitions_job_idx
-  ON gd_job_transitions (job_id, id ASC);
+CREATE INDEX gd_job_transitions_job_idx ON gd_job_transitions (job_id, id ASC);
 `;
 
 const MIGRATION_003_SQL = `
@@ -97,10 +88,7 @@ CREATE TABLE gd_runtime_sessions (
   shutdown_reason TEXT,
   reconciled_at TEXT
 ) STRICT;
-
-CREATE INDEX gd_runtime_sessions_unclean_idx
-  ON gd_runtime_sessions (clean_shutdown_at, reconciled_at, started_at);
-
+CREATE INDEX gd_runtime_sessions_unclean_idx ON gd_runtime_sessions (clean_shutdown_at, reconciled_at, started_at);
 CREATE TABLE gd_job_recoveries (
   id INTEGER PRIMARY KEY,
   job_id TEXT NOT NULL,
@@ -113,11 +101,8 @@ CREATE TABLE gd_job_recoveries (
   FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE,
   FOREIGN KEY (session_id) REFERENCES gd_runtime_sessions(id) ON DELETE RESTRICT
 ) STRICT;
-
-CREATE INDEX gd_job_recoveries_job_idx
-  ON gd_job_recoveries (job_id, id ASC);
-CREATE INDEX gd_job_recoveries_session_idx
-  ON gd_job_recoveries (session_id, id ASC);
+CREATE INDEX gd_job_recoveries_job_idx ON gd_job_recoveries (job_id, id ASC);
+CREATE INDEX gd_job_recoveries_session_idx ON gd_job_recoveries (session_id, id ASC);
 `;
 
 const MIGRATION_004_SQL = `
@@ -127,10 +112,8 @@ CREATE TABLE gd_connectivity_state (
   source TEXT NOT NULL,
   observed_at TEXT NOT NULL
 ) STRICT;
-
 INSERT INTO gd_connectivity_state (id, state, source, observed_at)
 VALUES (1, 'unknown', 'bootstrap', '1970-01-01T00:00:00.000Z');
-
 CREATE TABLE gd_connectivity_events (
   id INTEGER PRIMARY KEY,
   previous_state TEXT NOT NULL CHECK (previous_state IN ('unknown', 'online', 'offline')),
@@ -138,10 +121,7 @@ CREATE TABLE gd_connectivity_events (
   source TEXT NOT NULL,
   observed_at TEXT NOT NULL
 ) STRICT;
-
-CREATE INDEX gd_connectivity_events_time_idx
-  ON gd_connectivity_events (observed_at, id);
-
+CREATE INDEX gd_connectivity_events_time_idx ON gd_connectivity_events (observed_at, id);
 CREATE TABLE gd_job_network_requirements (
   job_id TEXT PRIMARY KEY,
   requirement TEXT NOT NULL CHECK (requirement = 'network-required'),
@@ -150,9 +130,7 @@ CREATE TABLE gd_job_network_requirements (
   updated_at TEXT NOT NULL,
   FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
 ) STRICT;
-
-CREATE INDEX gd_job_network_blocked_idx
-  ON gd_job_network_requirements (blocked_for_network, updated_at);
+CREATE INDEX gd_job_network_blocked_idx ON gd_job_network_requirements (blocked_for_network, updated_at);
 `;
 
 const MIGRATION_005_SQL = `
@@ -168,12 +146,8 @@ CREATE TABLE gd_capability_grants (
   revocation_reason TEXT,
   FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
 ) STRICT;
-
-CREATE INDEX gd_capability_grants_job_idx
-  ON gd_capability_grants (job_id, issued_at);
-CREATE INDEX gd_capability_grants_active_idx
-  ON gd_capability_grants (revoked_at, expires_at);
-
+CREATE INDEX gd_capability_grants_job_idx ON gd_capability_grants (job_id, issued_at);
+CREATE INDEX gd_capability_grants_active_idx ON gd_capability_grants (revoked_at, expires_at);
 CREATE TABLE gd_capability_claims (
   grant_id TEXT NOT NULL,
   capability TEXT NOT NULL CHECK (capability IN (
@@ -185,9 +159,7 @@ CREATE TABLE gd_capability_claims (
   PRIMARY KEY (grant_id, capability, resource, match_mode),
   FOREIGN KEY (grant_id) REFERENCES gd_capability_grants(id) ON DELETE CASCADE
 ) STRICT;
-
-CREATE INDEX gd_capability_claims_lookup_idx
-  ON gd_capability_claims (grant_id, capability, resource);
+CREATE INDEX gd_capability_claims_lookup_idx ON gd_capability_claims (grant_id, capability, resource);
 `;
 
 const MIGRATION_006_SQL = `
@@ -199,7 +171,6 @@ CREATE TABLE gd_vault_metadata (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 ) STRICT;
-
 CREATE TABLE gd_vault_secrets (
   id TEXT PRIMARY KEY,
   resource_hmac TEXT NOT NULL UNIQUE,
@@ -213,70 +184,47 @@ CREATE TABLE gd_vault_secrets (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 ) STRICT;
+CREATE INDEX gd_vault_secrets_updated_idx ON gd_vault_secrets (updated_at, id);
+`;
 
-CREATE INDEX gd_vault_secrets_updated_idx
-  ON gd_vault_secrets (updated_at, id);
+const MIGRATION_007_SQL = `
+CREATE TABLE gd_approval_transactions (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  requirements_json TEXT NOT NULL,
+  payload_digest TEXT NOT NULL CHECK (length(payload_digest) = 64),
+  state TEXT NOT NULL CHECK (state IN ('pending','approved','denied','consumed','expired','cancelled')),
+  requested_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  decided_at TEXT,
+  decided_by TEXT,
+  decision_reason TEXT,
+  receipt_hash TEXT UNIQUE,
+  consumed_at TEXT,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+CREATE INDEX gd_approval_transactions_job_idx ON gd_approval_transactions (job_id, requested_at);
+CREATE INDEX gd_approval_transactions_state_idx ON gd_approval_transactions (state, expires_at);
 `;
 
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
 
+function migration(version: number, name: string, sql: string): LocalDatabaseMigration {
+  return Object.freeze({ version, name, sql, checksum: checksum(sql), apply(database: DatabaseSync) { database.exec(sql); } });
+}
+
 export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Object.freeze([
-  Object.freeze({
-    version: 1,
-    name: 'metadata-foundation',
-    sql: MIGRATION_001_SQL,
-    checksum: checksum(MIGRATION_001_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_001_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 2,
-    name: 'durable-job-engine',
-    sql: MIGRATION_002_SQL,
-    checksum: checksum(MIGRATION_002_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_002_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 3,
-    name: 'crash-power-recovery',
-    sql: MIGRATION_003_SQL,
-    checksum: checksum(MIGRATION_003_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_003_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 4,
-    name: 'offline-execution',
-    sql: MIGRATION_004_SQL,
-    checksum: checksum(MIGRATION_004_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_004_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 5,
-    name: 'capability-security-model',
-    sql: MIGRATION_005_SQL,
-    checksum: checksum(MIGRATION_005_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_005_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 6,
-    name: 'secrets-vault',
-    sql: MIGRATION_006_SQL,
-    checksum: checksum(MIGRATION_006_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_006_SQL);
-    },
-  }),
+  migration(1, 'metadata-foundation', MIGRATION_001_SQL),
+  migration(2, 'durable-job-engine', MIGRATION_002_SQL),
+  migration(3, 'crash-power-recovery', MIGRATION_003_SQL),
+  migration(4, 'offline-execution', MIGRATION_004_SQL),
+  migration(5, 'capability-security-model', MIGRATION_005_SQL),
+  migration(6, 'secrets-vault', MIGRATION_006_SQL),
+  migration(7, 'approval-transactions', MIGRATION_007_SQL),
 ]);
 
 export const LOCAL_DATABASE_SCHEMA_VERSION = LOCAL_DATABASE_MIGRATIONS.at(-1)?.version ?? 0;

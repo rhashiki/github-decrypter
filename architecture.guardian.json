@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 16,
+  "currentBuild": 17,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -16,153 +16,65 @@
   ],
   "northStar": {
     "sourceSha256": "256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718",
-    "requiredPrinciples": [
-      "P01", "P02", "P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10", "P11",
-      "P12", "P13", "P14", "P15", "P16", "P17", "P18", "P19", "P20", "P21", "P22"
-    ],
-    "requiredRoadmapBlocks": [
-      "Adaptive User Profile",
-      "Agent Orchestrator",
-      "Named Agent System",
-      "Mentor Engine",
-      "Explain This",
-      "Voice Interaction",
-      "Perception Engine",
-      "Explore Mode",
-      "Visual Element Mapping",
-      "Interactive QA",
-      "Adaptive Explanation Engine"
-    ]
+    "requiredPrinciples": ["P01","P02","P03","P04","P05","P06","P07","P08","P09","P10","P11","P12","P13","P14","P15","P16","P17","P18","P19","P20","P21","P22"],
+    "requiredRoadmapBlocks": ["Adaptive User Profile","Agent Orchestrator","Named Agent System","Mentor Engine","Explain This","Voice Interaction","Perception Engine","Explore Mode","Visual Element Mapping","Interactive QA","Adaptive Explanation Engine"]
   },
   "workspace": {
     "apps": ["studio", "extension", "local"],
     "packages": ["ui", "protocol", "shared", "git", "workspace", "chat", "plan", "build", "preview", "context", "tools", "scope", "ai"]
   },
   "packageRules": {
-    "@github-decrypter/protocol": {
-      "allowedWorkspaceDependencies": [],
-      "environmentNeutral": true
-    },
-    "@github-decrypter/shared": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
-      "environmentNeutral": true
-    }
+    "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": [
-        "@github-decrypter/protocol",
-        "@github-decrypter/shared"
-      ],
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol","@github-decrypter/shared"],
       "allowedExternalDependencies": [],
-      "forbiddenSourcePatterns": [
-        "\\bchrome\\.",
-        "\\bwindow\\.",
-        "\\bdocument\\.",
-        "\\blocalStorage\\b",
-        "\\bindexedDB\\b"
-      ]
+      "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
   },
-  "databaseAuthority": {
-    "ownerRoot": "apps/local",
-    "engineImport": "node:sqlite",
-    "minimumBuild": 11,
-    "durableJobSchemaBuild": 12
-  },
-  "jobAuthority": {
-    "ownerRoot": "apps/local",
-    "minimumBuild": 12,
-    "crashRecoveryBuild": 13,
-    "offlineExecutionBuild": 14,
-    "capabilitySecurityBuild": 15,
-    "jobControlTransportBuild": 47
-  },
-  "recoveryAuthority": {
-    "ownerRoot": "apps/local",
-    "minimumBuild": 13,
-    "offlineExecutionBuild": 14,
-    "capabilitySecurityBuild": 15
-  },
-  "offlineAuthority": {
-    "ownerRoot": "apps/local",
-    "minimumBuild": 14,
-    "capabilitySecurityBuild": 15,
-    "automaticNetworkProbe": false,
-    "jobControlTransportBuild": 47
-  },
+  "databaseAuthority": { "ownerRoot": "apps/local", "engineImport": "node:sqlite", "minimumBuild": 11, "durableJobSchemaBuild": 12 },
+  "jobAuthority": { "ownerRoot": "apps/local", "minimumBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "jobControlTransportBuild": 47 },
+  "recoveryAuthority": { "ownerRoot": "apps/local", "minimumBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15 },
+  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
   "capabilityAuthority": {
-    "ownerRoot": "apps/local",
-    "minimumBuild": 15,
-    "secretsVaultBuild": 16,
-    "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18,
-    "jobControlTransportBuild": 47,
-    "plaintextTokenPersistence": false,
-    "externalGrantTransport": false,
-    "denyByDefault": true,
-    "requiredCapabilities": [
-      "READ",
-      "WRITE",
-      "EXECUTE",
-      "NETWORK",
-      "DATABASE_WRITE",
-      "GIT_WRITE",
-      "DESTRUCTIVE",
-      "SECRETS"
-    ]
+    "ownerRoot": "apps/local", "minimumBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18,
+    "jobControlTransportBuild": 47, "plaintextTokenPersistence": false, "externalGrantTransport": false, "denyByDefault": true,
+    "requiredCapabilities": ["READ","WRITE","EXECUTE","NETWORK","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE","SECRETS"]
   },
   "vaultAuthority": {
+    "ownerRoot": "apps/local", "minimumBuild": 16, "cipher": "AES-256-GCM", "kdf": "HKDF-SHA256", "keyBackend": "local-key-file-v1",
+    "keyFileMode": "0600", "plaintextPersistence": false, "plaintextResourcePersistence": false, "masterKeyInDatabase": false,
+    "externalTransport": false, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18
+  },
+  "approvalAuthority": {
     "ownerRoot": "apps/local",
-    "minimumBuild": 16,
-    "cipher": "AES-256-GCM",
-    "kdf": "HKDF-SHA256",
-    "keyBackend": "local-key-file-v1",
-    "keyFileMode": "0600",
-    "plaintextPersistence": false,
-    "plaintextResourcePersistence": false,
-    "masterKeyInDatabase": false,
-    "externalTransport": false,
-    "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18
+    "minimumBuild": 17,
+    "auditLedgerBuild": 18,
+    "oneShotReceipts": true,
+    "plaintextReceiptPersistence": false,
+    "payloadDigestBinding": "sha256",
+    "jobBinding": true,
+    "externalDecisionTransport": false
   },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
-    "writePermissionAllowlist": [
-      ".github/workflows/cortex.yml"
-    ],
+    "writePermissionAllowlist": [".github/workflows/cortex.yml"],
     "writeScopes": {
       ".github/workflows/cortex.yml": {
-        "purpose": "generated project map metadata",
-        "allowedGitAddPrefixes": ["graphify-out"],
-        "allowPlainGitPush": true,
-        "allowTags": false,
-        "allowRelease": false,
-        "allowDeploy": false
+        "purpose": "generated project map metadata", "allowedGitAddPrefixes": ["graphify-out"], "allowPlainGitPush": true,
+        "allowTags": false, "allowRelease": false, "allowDeploy": false
       }
     },
-    "forbiddenWritePermissions": ["actions", "checks", "contents", "deployments", "id-token", "packages", "pull-requests", "security-events", "statuses"]
+    "forbiddenWritePermissions": ["actions","checks","contents","deployments","id-token","packages","pull-requests","security-events","statuses"]
   },
   "phaseGates": {
-    "localDaemonBuild": 10,
-    "persistentLocalDatabaseBuild": 11,
-    "durableJobEngineBuild": 12,
-    "crashPowerRecoveryBuild": 13,
-    "offlineExecutionBuild": 14,
-    "capabilitySecurityBuild": 15,
-    "secretsVaultBuild": 16,
-    "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18,
-    "extensionActivationBuild": 25,
-    "studioReactBuild": 27,
-    "releaseAuthorityBuild": 134
+    "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
+    "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
+    "auditLedgerBuild": 18, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
-  "prohibitedCrossBoundaryImports": {
-    "packagesToApps": true,
-    "packagesToLegacyRoots": true,
-    "appsToOtherApps": true,
-    "appsToLegacyRoots": true
-  }
+  "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
 }
