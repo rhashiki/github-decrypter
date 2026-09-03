@@ -27,7 +27,9 @@ try {
 
   const lifecycle: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build10-test' });
-  bus.subscribe('gd.local.lifecycle', (event) => lifecycle.push(event.payload.current));
+  bus.subscribe('gd.local.lifecycle', (event) => {
+    lifecycle.push(event.payload.current);
+  });
 
   const daemon = new LocalRuntimeDaemon({ config, eventBus: bus });
   const address = await daemon.start();
