@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -89,6 +89,23 @@ try {
   assert.equal(handshake.payload.peer.role, 'local-runtime');
   assert.ok(handshake.payload.features.includes('loopback-http'));
 
+  const mismatchedPeerHello = {
+    ...hello,
+    meta: { ...hello.meta, messageId: asMessageId('gd_msg_build10_mismatch') },
+    payload: {
+      ...hello.payload,
+      peer: { ...studioPeer, id: asPeerId('gd_peer_build10_other') },
+    },
+  };
+  const mismatchResponse = await fetch(`${address.origin}/v1/handshake`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(mismatchedPeerHello),
+  });
+  assert.equal(mismatchResponse.status, 400);
+  const mismatch = await mismatchResponse.json() as Record<string, any>;
+  assert.equal(mismatch.error.code, 'PEER_MISMATCH');
+
   const incompatibleHello = {
     ...hello,
     meta: { ...hello.meta, messageId: asMessageId('gd_msg_build10_incompatible') },
@@ -118,6 +135,20 @@ try {
   assert.equal(existsSync(lockPath), false, 'single-instance lock must be removed after shutdown');
   assert.deepEqual(lifecycle, ['starting', 'running', 'stopping', 'stopped']);
 
+  writeFileSync(lockPath, JSON.stringify({
+    schema: 'gd-local-runtime-lock/1',
+    pid: 2_147_483_647,
+    createdAt: '2000-01-01T00:00:00.000Z',
+  }));
+  const recoveredDaemon = new LocalRuntimeDaemon({
+    config: { host: '127.0.0.1', port: 0, lockPath },
+  });
+  const recoveredAddress = await recoveredDaemon.start();
+  assert.ok(recoveredAddress.port > 0);
+  assert.equal(recoveredDaemon.state, 'running');
+  await recoveredDaemon.stop('stale-lock recovery verified');
+  assert.equal(existsSync(lockPath), false);
+
   console.log(JSON.stringify({
     ok: true,
     schema: 'gd-build10-local-runtime-runtime/1',
@@ -125,8 +156,10 @@ try {
     health: true,
     readiness: true,
     protocolHandshake: true,
+    peerMismatchRejected: true,
     incompatibleProtocolRejected: true,
     singleInstance: true,
+    staleLockRecovery: true,
     gracefulShutdown: true,
     lifecycle,
   }, null, 2));
