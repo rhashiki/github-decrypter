@@ -12,6 +12,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { ApprovalTransactionsStatus } from './approval-transactions.js';
 import type { CapabilitySecurityStatus } from './capability-security.js';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
@@ -41,49 +42,35 @@ export interface LocalRuntimeHealth {
     readonly foreignKeys: boolean;
     readonly integrity: 'ok';
   };
-  readonly jobs: {
-    readonly ready: boolean;
-    readonly total: number;
-    readonly nonTerminal: number;
-    readonly expiredLeases: number;
-  };
+  readonly jobs: { readonly ready: boolean; readonly total: number; readonly nonTerminal: number; readonly expiredLeases: number; };
   readonly recovery: {
-    readonly ready: boolean;
-    readonly sessionActive: boolean;
-    readonly healthy: boolean;
-    readonly priorUncleanSessions: number;
-    readonly startupRecovered: number;
-    readonly lastSweepRecovered: number;
-    readonly lastSweepAt: string | null;
+    readonly ready: boolean; readonly sessionActive: boolean; readonly healthy: boolean;
+    readonly priorUncleanSessions: number; readonly startupRecovered: number;
+    readonly lastSweepRecovered: number; readonly lastSweepAt: string | null;
   };
   readonly offline: {
-    readonly ready: boolean;
-    readonly connectivity: OfflineExecutionStatus['connectivity'];
-    readonly waitingForNetwork: number;
-    readonly localQueued: number;
-    readonly localExecutionAvailable: true;
-    readonly automaticNetworkProbe: false;
+    readonly ready: boolean; readonly connectivity: OfflineExecutionStatus['connectivity'];
+    readonly waitingForNetwork: number; readonly localQueued: number;
+    readonly localExecutionAvailable: true; readonly automaticNetworkProbe: false;
   };
   readonly capabilities: {
-    readonly ready: boolean;
-    readonly activeGrants: number;
-    readonly revokedGrants: number;
-    readonly expiredGrants: number;
-    readonly denyByDefault: true;
-    readonly plaintextTokenPersistence: false;
-    readonly secretsVaultReady: boolean;
-    readonly approvalTransactionsReady: false;
-    readonly externalGrantTransport: false;
+    readonly ready: boolean; readonly activeGrants: number; readonly revokedGrants: number;
+    readonly expiredGrants: number; readonly denyByDefault: true;
+    readonly plaintextTokenPersistence: false; readonly secretsVaultReady: boolean;
+    readonly approvalTransactionsReady: boolean; readonly externalGrantTransport: false;
   };
   readonly vault: {
-    readonly ready: boolean;
-    readonly secretCount: number;
-    readonly cipher: 'AES-256-GCM';
-    readonly kdf: 'HKDF-SHA256';
-    readonly keyBackend: 'local-key-file-v1';
-    readonly plaintextPersistence: false;
-    readonly plaintextResourcePersistence: false;
+    readonly ready: boolean; readonly secretCount: number; readonly cipher: 'AES-256-GCM';
+    readonly kdf: 'HKDF-SHA256'; readonly keyBackend: 'local-key-file-v1';
+    readonly plaintextPersistence: false; readonly plaintextResourcePersistence: false;
     readonly externalTransport: false;
+  };
+  readonly approvals: {
+    readonly ready: boolean; readonly pending: number; readonly approved: number;
+    readonly consumed: number; readonly denied: number; readonly expired: number; readonly cancelled: number;
+    readonly humanReviewRequired: true; readonly oneShotReceipts: true;
+    readonly plaintextReceiptPersistence: false; readonly payloadDigestBinding: true;
+    readonly externalDecisionTransport: false;
   };
 }
 
@@ -98,6 +85,7 @@ export interface LocalRuntimeServerContext {
   getOfflineExecutionStatus(): OfflineExecutionStatus;
   getCapabilitySecurityStatus(): CapabilitySecurityStatus;
   getSecretsVaultStatus(): SecretsVaultStatus;
+  getApprovalTransactionsStatus(): ApprovalTransactionsStatus;
   now(): string;
 }
 
@@ -153,6 +141,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const offline = context.getOfflineExecutionStatus();
   const capabilities = context.getCapabilitySecurityStatus();
   const vault = context.getSecretsVaultStatus();
+  const approvals = context.getApprovalTransactionsStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -172,49 +161,31 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       foreignKeys: database.foreignKeys,
       integrity: database.integrity,
     } : null,
-    jobs: {
-      ready: jobs.ready,
-      total: jobs.summary.total,
-      nonTerminal: jobs.summary.nonTerminal,
-      expiredLeases: jobs.summary.expiredLeases,
-    },
+    jobs: { ready: jobs.ready, total: jobs.summary.total, nonTerminal: jobs.summary.nonTerminal, expiredLeases: jobs.summary.expiredLeases },
     recovery: {
-      ready: recovery.ready,
-      sessionActive: recovery.sessionActive,
-      healthy: recovery.healthy,
-      priorUncleanSessions: recovery.priorUncleanSessions,
-      startupRecovered: recovery.startupRecovered,
-      lastSweepRecovered: recovery.lastSweepRecovered,
-      lastSweepAt: recovery.lastSweepAt,
+      ready: recovery.ready, sessionActive: recovery.sessionActive, healthy: recovery.healthy,
+      priorUncleanSessions: recovery.priorUncleanSessions, startupRecovered: recovery.startupRecovered,
+      lastSweepRecovered: recovery.lastSweepRecovered, lastSweepAt: recovery.lastSweepAt,
     },
     offline: {
-      ready: offline.ready,
-      connectivity: offline.connectivity,
-      waitingForNetwork: offline.waitingForNetwork,
-      localQueued: offline.localQueued,
-      localExecutionAvailable: true,
-      automaticNetworkProbe: false,
+      ready: offline.ready, connectivity: offline.connectivity, waitingForNetwork: offline.waitingForNetwork,
+      localQueued: offline.localQueued, localExecutionAvailable: true, automaticNetworkProbe: false,
     },
     capabilities: {
-      ready: capabilities.ready,
-      activeGrants: capabilities.activeGrants,
-      revokedGrants: capabilities.revokedGrants,
-      expiredGrants: capabilities.expiredGrants,
-      denyByDefault: true,
-      plaintextTokenPersistence: false,
-      secretsVaultReady: vault.ready,
-      approvalTransactionsReady: false,
-      externalGrantTransport: false,
+      ready: capabilities.ready, activeGrants: capabilities.activeGrants, revokedGrants: capabilities.revokedGrants,
+      expiredGrants: capabilities.expiredGrants, denyByDefault: true, plaintextTokenPersistence: false,
+      secretsVaultReady: vault.ready, approvalTransactionsReady: approvals.ready, externalGrantTransport: false,
     },
     vault: {
-      ready: vault.ready,
-      secretCount: vault.secretCount,
-      cipher: vault.cipher,
-      kdf: vault.kdf,
-      keyBackend: vault.keyBackend,
-      plaintextPersistence: false,
-      plaintextResourcePersistence: false,
+      ready: vault.ready, secretCount: vault.secretCount, cipher: vault.cipher, kdf: vault.kdf,
+      keyBackend: vault.keyBackend, plaintextPersistence: false, plaintextResourcePersistence: false,
       externalTransport: false,
+    },
+    approvals: {
+      ready: approvals.ready, pending: approvals.pending, approved: approvals.approved,
+      consumed: approvals.consumed, denied: approvals.denied, expired: approvals.expired, cancelled: approvals.cancelled,
+      humanReviewRequired: true, oneShotReceipts: true, plaintextReceiptPersistence: false,
+      payloadDigestBinding: true, externalDecisionTransport: false,
     },
   };
 }
@@ -237,7 +208,6 @@ async function handleHandshake(request: IncomingMessage, response: ServerRespons
     writeJson(response, 400, { schema: 'gd-local-http-error/1', error: { code: 'INVALID_REQUEST', message: 'Expected a handshake.hello envelope.' } });
     return;
   }
-
   if (raw.payload.peer.id !== raw.meta.source.id || raw.payload.peer.role !== raw.meta.source.role || raw.payload.peer.product !== raw.meta.source.product) {
     writeJson(response, 400, { schema: 'gd-local-http-error/1', error: { code: 'PEER_MISMATCH', message: 'Handshake peer must match envelope source identity.' } });
     return;
@@ -248,7 +218,6 @@ async function handleHandshake(request: IncomingMessage, response: ServerRespons
     messageId: asMessageId(`gd_msg_${randomUUID()}`), timestamp: context.now(), source: context.peer,
     destination: { role: raw.meta.source.role, peerId: raw.meta.source.id },
   } as const;
-
   if (selectedVersion === null) {
     writeJson(response, 426, envelope({
       kind: 'handshake.reject', meta,
@@ -256,7 +225,6 @@ async function handleHandshake(request: IncomingMessage, response: ServerRespons
     }));
     return;
   }
-
   writeJson(response, 200, envelope({
     kind: 'handshake.accept', meta,
     payload: { peer: context.peer, selectedVersion, features: [...LOCAL_RUNTIME_FEATURES] },
@@ -280,7 +248,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.recovery.healthy
         && health.offline.ready
         && health.capabilities.ready
-        && health.vault.ready;
+        && health.vault.ready
+        && health.approvals.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -291,6 +260,7 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         offlineExecutionReady: health.offline.ready,
         capabilitySecurityReady: health.capabilities.ready,
         secretsVaultReady: health.vault.ready,
+        approvalTransactionsReady: health.approvals.ready,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,

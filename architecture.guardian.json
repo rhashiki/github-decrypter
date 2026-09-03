@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 16,
+  "currentBuild": 17,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -50,18 +50,9 @@
   },
   "appRules": {
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": [
-        "@github-decrypter/protocol",
-        "@github-decrypter/shared"
-      ],
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol", "@github-decrypter/shared"],
       "allowedExternalDependencies": [],
-      "forbiddenSourcePatterns": [
-        "\\bchrome\\.",
-        "\\bwindow\\.",
-        "\\bdocument\\.",
-        "\\blocalStorage\\b",
-        "\\bindexedDB\\b"
-      ]
+      "forbiddenSourcePatterns": ["\\bchrome\\.", "\\bwindow\\.", "\\bdocument\\.", "\\blocalStorage\\b", "\\bindexedDB\\b"]
     }
   },
   "databaseAuthority": {
@@ -101,16 +92,7 @@
     "plaintextTokenPersistence": false,
     "externalGrantTransport": false,
     "denyByDefault": true,
-    "requiredCapabilities": [
-      "READ",
-      "WRITE",
-      "EXECUTE",
-      "NETWORK",
-      "DATABASE_WRITE",
-      "GIT_WRITE",
-      "DESTRUCTIVE",
-      "SECRETS"
-    ]
+    "requiredCapabilities": ["READ", "WRITE", "EXECUTE", "NETWORK", "DATABASE_WRITE", "GIT_WRITE", "DESTRUCTIVE", "SECRETS"]
   },
   "vaultAuthority": {
     "ownerRoot": "apps/local",
@@ -126,12 +108,20 @@
     "approvalTransactionsBuild": 17,
     "auditLedgerBuild": 18
   },
+  "approvalAuthority": {
+    "ownerRoot": "apps/local",
+    "minimumBuild": 17,
+    "auditLedgerBuild": 18,
+    "humanReviewRequired": true,
+    "oneShotReceipts": true,
+    "plaintextReceiptPersistence": false,
+    "payloadDigestBinding": true,
+    "externalDecisionTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
-    "writePermissionAllowlist": [
-      ".github/workflows/cortex.yml"
-    ],
+    "writePermissionAllowlist": [".github/workflows/cortex.yml"],
     "writeScopes": {
       ".github/workflows/cortex.yml": {
         "purpose": "generated project map metadata",

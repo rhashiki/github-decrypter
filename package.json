@@ -1,6 +1,6 @@
 {
   "name": "github-decrypter",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.15.0",
@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs && node scripts/architecture-guardian-offline.mjs && node scripts/architecture-guardian-capabilities.mjs && node scripts/architecture-guardian-vault.mjs",
+    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs && node scripts/architecture-guardian-offline.mjs && node scripts/architecture-guardian-capabilities.mjs && node scripts/architecture-guardian-vault.mjs && node scripts/architecture-guardian-approvals.mjs",
     "check:build4": "node scripts/test-build4-lovable-decoupling.mjs",
     "check:build5": "node scripts/test-build5-rebrand.mjs",
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
@@ -22,8 +22,9 @@
     "check:build14": "node scripts/test-build14-offline-execution.mjs && tsc -p scripts/tsconfig.build14-tests.json && tsx scripts/test-build14-offline-execution-runtime.ts && node scripts/test-build14-offline-guardian-negative.mjs",
     "check:build15": "node scripts/test-build15-capability-security.mjs && tsc -p scripts/tsconfig.build15-tests.json && tsx scripts/test-build15-capability-security-runtime.ts && node scripts/test-build15-capability-guardian-negative.mjs",
     "check:build16": "node scripts/test-build16-secrets-vault.mjs && tsc -p scripts/tsconfig.build16-tests.json && tsx scripts/test-build16-secrets-vault-runtime.ts && node scripts/test-build16-vault-guardian-negative.mjs",
+    "check:build17": "node scripts/test-build17-approval-transactions.mjs && tsc -p scripts/tsconfig.build17-tests.json && tsx scripts/test-build17-approval-transactions-runtime.ts && node scripts/test-build17-approval-guardian-negative.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run check:build14 && pnpm run check:build15 && pnpm run check:build16 && pnpm run typecheck"
+    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run check:build14 && pnpm run check:build15 && pnpm run check:build16 && pnpm run check:build17 && pnpm run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
