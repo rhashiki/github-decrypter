@@ -223,10 +223,11 @@ export class SecretsVault {
           SELECT key_fingerprint, cipher, kdf FROM gd_vault_metadata WHERE id = 1
         `).get() as VaultMetadataRow | undefined;
         if (!metadata) {
+          const initializedAt = this.#now();
           database.prepare(`
             INSERT INTO gd_vault_metadata (id, key_fingerprint, cipher, kdf, created_at, updated_at)
             VALUES (1, ?, ?, ?, ?, ?)
-          `).run(keyStatus.fingerprint, SECRETS_VAULT_CIPHER, SECRETS_VAULT_KDF, this.#now(), this.#now());
+          `).run(keyStatus.fingerprint, SECRETS_VAULT_CIPHER, SECRETS_VAULT_KDF, initializedAt, initializedAt);
           return;
         }
         if (
@@ -239,7 +240,6 @@ export class SecretsVault {
       });
 
       this.#ready = true;
-      this.#capabilities.setSecretsVaultReady(true);
       const status = this.status();
       await this.#eventBus?.publish('gd.local.vault.ready', {
         secretCount: status.secretCount,
@@ -375,7 +375,6 @@ export class SecretsVault {
 
   shutdown(): void {
     this.#ready = false;
-    this.#capabilities.setSecretsVaultReady(false);
     this.#wipeKeys();
     this.#keyStore.close();
   }
