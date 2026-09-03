@@ -37,7 +37,7 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.minimumBuild !== 17 || rule
 
   const migrationPath = path.join(root, rule.ownerRoot, 'src/database-migrations.ts');
   const migration = fs.existsSync(migrationPath) ? fs.readFileSync(migrationPath, 'utf8') : '';
-  for (const marker of ['CREATE TABLE gd_approval_transactions','payload_digest TEXT NOT NULL','receipt_hash TEXT UNIQUE',"'pending','approved','denied','consumed','expired','cancelled'"]) {
+  for (const marker of ['CREATE TABLE gd_approval_transactions','payload_digest TEXT NOT NULL','receipt_hash TEXT UNIQUE',"'pending', 'approved', 'denied', 'consumed', 'expired', 'cancelled'"]) {
     if (!migration.includes(marker)) violations.push({ code: 'AG152', message: 'Approval persistence invariant missing.', detail: marker });
   }
   if (/\breceipt\s+TEXT\b/i.test(migration) && !/receipt_hash\s+TEXT/i.test(migration)) {
