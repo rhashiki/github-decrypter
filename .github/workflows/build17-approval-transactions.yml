@@ -1,0 +1,31 @@
+name: GitHub Decrypter Build 17 — Approval Transactions
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - build/17-approval-transactions
+
+permissions:
+  contents: read
+
+jobs:
+  approval-transactions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Run Architecture Guardian
+        run: pnpm run guardian
+      - name: Validate Build 4–17 and TypeScript workspaces
+        run: pnpm run ci
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs
