@@ -6,7 +6,11 @@ const json = (path) => JSON.parse(read(path));
 
 const rootPackage = json('package.json');
 assert.equal(rootPackage.version, '0.0.8');
-assert.equal(rootPackage.scripts?.['check:build8'], 'node scripts/test-build8-central-event-bus.mjs && tsx scripts/test-build8-event-bus-runtime.ts');
+assert.equal(
+  rootPackage.scripts?.['check:build8'],
+  'node scripts/test-build8-central-event-bus.mjs && tsc -p scripts/tsconfig.build8-tests.json && tsx scripts/test-build8-event-bus-runtime.ts',
+);
+assert.ok(fs.existsSync('scripts/tsconfig.build8-tests.json'), 'Build 8 compile-time contract tsconfig is required');
 
 const sharedPackage = json('packages/shared/package.json');
 assert.equal(sharedPackage.name, '@github-decrypter/shared');
@@ -66,6 +70,7 @@ console.log(JSON.stringify({
   schema: 'gd-central-event-bus/1',
   package: '@github-decrypter/shared',
   eventNamespace: 'gd.*',
+  compileTimeContractCheck: true,
   transportAuthority: false,
   durableQueueAuthority: false,
   securityAuthority: false,
