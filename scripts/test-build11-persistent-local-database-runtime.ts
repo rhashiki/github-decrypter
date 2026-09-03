@@ -64,8 +64,12 @@ try {
 
   const databaseEvents: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build11-test' });
-  bus.subscribe('gd.local.database.opened', () => databaseEvents.push('opened'));
-  bus.subscribe('gd.local.database.closed', () => databaseEvents.push('closed'));
+  bus.subscribe('gd.local.database.opened', () => {
+    databaseEvents.push('opened');
+  });
+  bus.subscribe('gd.local.database.closed', () => {
+    databaseEvents.push('closed');
+  });
 
   const daemon = new LocalRuntimeDaemon({ config, eventBus: bus });
   const address = await daemon.start();
