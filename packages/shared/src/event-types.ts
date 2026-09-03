@@ -10,7 +10,9 @@ declare const eventIdBrand: unique symbol;
 export type EventId = string & { readonly [eventIdBrand]: 'EventId' };
 export type EventName = `gd.${string}`;
 export type EventCatalog = Record<string, JsonValue>;
-export type EventNameOf<TCatalog extends EventCatalog> = Extract<keyof TCatalog, EventName>;
+export type EventNameOf<TCatalog extends EventCatalog> = string extends keyof TCatalog
+  ? EventName
+  : Extract<keyof TCatalog, EventName>;
 
 export interface EventMetadata {
   readonly eventId: EventId;
