@@ -2,6 +2,42 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 15 — Capability Security Model — 2026-09-03
+
+### Capability security
+- Added SQLite migration 5 with `gd_capability_grants` and `gd_capability_claims` owned exclusively by the Local Runtime.
+- Added deny-by-default `READ`, `WRITE`, `EXECUTE`, `NETWORK`, `DATABASE_WRITE`, `GIT_WRITE`, `DESTRUCTIVE` and `SECRETS` capabilities.
+- Added job-bound grants with explicit `gd://` resource scopes, deterministic exact/prefix matching, bounded TTL and explicit revocation.
+- Kept capabilities independent: no capability implies another, and multi-authority operations must satisfy every required claim.
+
+### Token security
+- Added opaque 256-bit capability tokens while persisting only SHA-256 token hashes.
+- Added no plaintext token persistence, health exposure or Event Bus token exposure.
+- Made grants process-bound before Secrets Vault exists; active grants from an older runtime process are revoked on startup.
+- Added graceful-shutdown revocation and terminal-job denial.
+
+### Runtime
+- Integrated Capability Security after recovery/offline initialization and before daemon readiness.
+- Added `gd.local.capability.ready`, `gd.local.capability.granted`, `gd.local.capability.revoked` and `gd.local.capability.denied` events.
+- Added non-sensitive capability readiness/counts to health/readiness.
+- Kept capability grant/control HTTP/RPC absent so Studio, Extension and models cannot self-grant authority.
+- Kept `NETWORK` authorization independent from Build 14 connectivity availability.
+
+### Architecture Guardian
+- Added Capability Security ownership gates and AG130–AG138.
+- Blocked capability persistence outside `apps/local`, plaintext token persistence and premature external grant transport.
+- Kept Secrets Vault blocked until Build 16, Approval Transactions until Build 17 and Audit Ledger until Build 18.
+- Made historical Build 13/14 capability-blocking regressions phase-aware now that Build 15 legitimately owns Capability Security.
+
+### Validation
+- Proved no/unknown token denial, job binding, exact/prefix scopes, no implicit capability inheritance and multi-capability enforcement.
+- Proved token hash-only persistence, expiry, revocation, terminal-job denial and restart fail-closed behavior.
+- Proved daemon readiness integration and absence of capability/job-control endpoints.
+- Added AG131–AG137 failure injection plus the full Build 4–14 regression chain, TypeScript workspace checks and preservation of modern-engine migration assets.
+
+### Safety
+- No Secrets Vault, Approval Transactions, Audit Ledger, external grant transport, Tool Runtime, Git/GitHub write provider, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 14 — Offline Execution — 2026-09-03
 
 ### Offline execution

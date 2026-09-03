@@ -155,6 +155,41 @@ CREATE INDEX gd_job_network_blocked_idx
   ON gd_job_network_requirements (blocked_for_network, updated_at);
 `;
 
+const MIGRATION_005_SQL = `
+CREATE TABLE gd_capability_grants (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  process_instance_id TEXT NOT NULL,
+  label TEXT,
+  issued_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  revoked_at TEXT,
+  revocation_reason TEXT,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_capability_grants_job_idx
+  ON gd_capability_grants (job_id, issued_at);
+CREATE INDEX gd_capability_grants_active_idx
+  ON gd_capability_grants (revoked_at, expires_at);
+
+CREATE TABLE gd_capability_claims (
+  grant_id TEXT NOT NULL,
+  capability TEXT NOT NULL CHECK (capability IN (
+    'READ', 'WRITE', 'EXECUTE', 'NETWORK', 'DATABASE_WRITE',
+    'GIT_WRITE', 'DESTRUCTIVE', 'SECRETS'
+  )),
+  resource TEXT NOT NULL,
+  match_mode TEXT NOT NULL CHECK (match_mode IN ('exact', 'prefix')),
+  PRIMARY KEY (grant_id, capability, resource, match_mode),
+  FOREIGN KEY (grant_id) REFERENCES gd_capability_grants(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_capability_claims_lookup_idx
+  ON gd_capability_claims (grant_id, capability, resource);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -194,6 +229,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_004_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_004_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 5,
+    name: 'capability-security-model',
+    sql: MIGRATION_005_SQL,
+    checksum: checksum(MIGRATION_005_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_005_SQL);
     },
   }),
 ]);

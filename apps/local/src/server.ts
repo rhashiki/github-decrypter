@@ -12,6 +12,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { CapabilitySecurityStatus } from './capability-security.js';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
@@ -62,6 +63,17 @@ export interface LocalRuntimeHealth {
     readonly localExecutionAvailable: true;
     readonly automaticNetworkProbe: false;
   };
+  readonly capabilities: {
+    readonly ready: boolean;
+    readonly activeGrants: number;
+    readonly revokedGrants: number;
+    readonly expiredGrants: number;
+    readonly denyByDefault: true;
+    readonly plaintextTokenPersistence: false;
+    readonly secretsVaultReady: false;
+    readonly approvalTransactionsReady: false;
+    readonly externalGrantTransport: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -73,6 +85,7 @@ export interface LocalRuntimeServerContext {
   getJobEngineStatus(): DurableJobEngineStatus;
   getRecoveryStatus(): CrashRecoveryStatus;
   getOfflineExecutionStatus(): OfflineExecutionStatus;
+  getCapabilitySecurityStatus(): CapabilitySecurityStatus;
   now(): string;
 }
 
@@ -126,6 +139,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const jobs = context.getJobEngineStatus();
   const recovery = context.getRecoveryStatus();
   const offline = context.getOfflineExecutionStatus();
+  const capabilities = context.getCapabilitySecurityStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -167,6 +181,17 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       localQueued: offline.localQueued,
       localExecutionAvailable: true,
       automaticNetworkProbe: false,
+    },
+    capabilities: {
+      ready: capabilities.ready,
+      activeGrants: capabilities.activeGrants,
+      revokedGrants: capabilities.revokedGrants,
+      expiredGrants: capabilities.expiredGrants,
+      denyByDefault: true,
+      plaintextTokenPersistence: false,
+      secretsVaultReady: false,
+      approvalTransactionsReady: false,
+      externalGrantTransport: false,
     },
   };
 }
@@ -230,7 +255,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.jobs.ready
         && health.recovery.ready
         && health.recovery.healthy
-        && health.offline.ready;
+        && health.offline.ready
+        && health.capabilities.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -239,8 +265,10 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         jobsReady: health.jobs.ready,
         recoveryReady: health.recovery.ready,
         offlineExecutionReady: health.offline.ready,
+        capabilitySecurityReady: health.capabilities.ready,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
+        denyByDefault: health.capabilities.denyByDefault,
       });
       return;
     }
