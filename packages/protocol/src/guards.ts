@@ -3,6 +3,7 @@ import {
   type ProtocolEnvelope,
   type ProtocolMessageKind,
 } from './envelope.js';
+import { isJsonValue } from './json.js';
 import { isPeerRole } from './peer.js';
 import {
   PROTOCOL_SCHEMA,
@@ -40,7 +41,7 @@ export function isProtocolEnvelope(value: unknown): value is ProtocolEnvelope {
     if (meta.destination.peerId !== undefined && typeof meta.destination.peerId !== 'string') return false;
   }
 
-  return 'payload' in value;
+  return 'payload' in value && isJsonValue(value.payload);
 }
 
 export function assertProtocolEnvelope(value: unknown): asserts value is ProtocolEnvelope {
