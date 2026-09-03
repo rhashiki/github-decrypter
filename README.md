@@ -18,10 +18,11 @@ Completed:
 - Build 4 — Lovable Decoupling
 - Build 5 — GitHub Decrypter Rebrand
 - Build 6 — Monorepo Foundation
+- Build 7 — Shared Protocol
 
-Next: **Build 7 — Shared Protocol**.
+Next: **Build 8 — Central Event Bus**.
 
-The Build 6 repository now has the canonical pnpm/TypeScript topology:
+The repository has the canonical pnpm/TypeScript topology:
 
 ```text
 apps/
@@ -34,7 +35,9 @@ packages/
   preview/ context/ tools/ scope/ ai/
 ```
 
-These workspaces are intentionally minimal. React/Vite Studio, Chrome launcher behavior and the local daemon remain owned by their later frozen Builds.
+`@github-decrypter/protocol` is now the single transport-neutral wire contract shared by Studio, Extension and Local Runtime. Its current schema is `gd-protocol/1`; the package defines peer roles, branded IDs, envelopes, request/response/event messages, handshakes, version negotiation, errors and boundary guards while remaining independent from Chrome, DOM, Node, HTTP and WebSocket APIs.
+
+React/Vite Studio, Chrome launcher behavior, Event Bus routing and the local daemon remain owned by their later frozen Builds.
 
 ## Product principles
 
@@ -54,15 +57,14 @@ These workspaces are intentionally minimal. React/Vite Studio, Chrome launcher b
 ```text
 Chrome Extension
   └─ GitHub repository detection + launcher/bridge
-
-GitHub Decrypter Studio
-  └─ React + TypeScript + Vite PWA
-
-GitHub Decrypter Local Runtime
-  └─ workspace + Git + AI + tools + MCP + jobs + preview/processes + persistence
+            │
+            ├──── @github-decrypter/protocol ────┐
+            │                                     │
+GitHub Decrypter Studio                    Local Runtime
+  └─ React + TypeScript + Vite PWA           └─ durable local authority
 ```
 
-See `docs/product/` for the frozen V1 constitution and `docs/architecture/MONOREPO_FOUNDATION.md` for Build 6 ownership boundaries.
+See `docs/product/` for the frozen V1 constitution, `docs/architecture/MONOREPO_FOUNDATION.md` for workspace ownership and `docs/architecture/SHARED_PROTOCOL.md` for the Build 7 wire contract.
 
 ## Reuse policy
 

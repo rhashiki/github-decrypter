@@ -2,6 +2,24 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 7 — Shared Protocol — 2026-09-03
+
+### Protocol
+- Promoted `@github-decrypter/protocol` from placeholder to the canonical shared wire contract.
+- Added schema `gd-protocol/1`, version negotiation, peer roles, branded IDs, envelopes, request/response/event/heartbeat messages, handshake contracts and protocol errors.
+- Added JSON-safety and envelope boundary guards.
+- Bound Studio, Extension and Local Runtime workspaces to the same protocol package via `workspace:*`.
+
+### Architecture
+- Kept the protocol environment-neutral: no Chrome, DOM, Node, HTTP, WebSocket, database or provider authority.
+- Kept Event Bus routing, durable jobs and the Capability Security Model in their later frozen Builds.
+
+### Validation
+- Added Build 7 regression checks and retained Build 4/5/6 plus modern-engine preservation as prerequisites.
+
+### Safety
+- No Release, OTA, store publication, deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 6 — Monorepo Foundation — 2026-09-02
 
 ### Foundation

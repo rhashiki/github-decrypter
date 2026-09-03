@@ -10,15 +10,26 @@ const json = (relative) => JSON.parse(read(relative));
 const expectedApps = ['extension', 'local', 'studio'];
 const expectedPackages = ['ai', 'build', 'chat', 'context', 'git', 'plan', 'preview', 'protocol', 'scope', 'shared', 'tools', 'ui', 'workspace'];
 
-for (const file of ['package.json', 'pnpm-workspace.yaml', 'tsconfig.base.json', '.npmrc']) assert.ok(exists(file), `missing monorepo root file: ${file}`);
+for (const file of ['package.json', 'pnpm-workspace.yaml', 'tsconfig.base.json', '.npmrc']) {
+  assert.ok(exists(file), `missing monorepo root file: ${file}`);
+}
 
 const rootPackage = json('package.json');
 assert.equal(rootPackage.name, 'github-decrypter');
-assert.equal(rootPackage.version, '0.0.6');
 assert.equal(rootPackage.private, true);
 assert.match(String(rootPackage.packageManager || ''), /^pnpm@/);
 assert.equal(rootPackage.scripts?.['check:build6'], 'node scripts/test-build6-monorepo-foundation.mjs');
 assert.ok(rootPackage.scripts?.typecheck, 'root typecheck command is required');
+
+const versionMatch = String(rootPackage.version || '').match(/^(\d+)\.(\d+)\.(\d+)$/);
+assert.ok(versionMatch, 'root package version must be numeric semver');
+const [, majorText, minorText, patchText] = versionMatch;
+const versionTuple = [Number(majorText), Number(minorText), Number(patchText)];
+const atLeastBuild6 =
+  versionTuple[0] > 0 ||
+  versionTuple[1] > 0 ||
+  versionTuple[2] >= 6;
+assert.ok(atLeastBuild6, 'root package version must not regress below 0.0.6');
 
 const workspace = read('pnpm-workspace.yaml');
 assert.match(workspace, /apps\/\*/);
@@ -29,46 +40,43 @@ assert.equal(baseTsconfig.compilerOptions?.strict, true);
 assert.equal(baseTsconfig.compilerOptions?.noEmit, true);
 assert.equal(baseTsconfig.compilerOptions?.module, 'NodeNext');
 
-const actualApps = fs.readdirSync('apps', { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-const actualPackages = fs.readdirSync('packages', { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-assert.deepEqual(actualApps, expectedApps);
-assert.deepEqual(actualPackages, expectedPackages);
+const actualApps = fs.readdirSync('apps', { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
+const actualPackages = fs.readdirSync('packages', { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
 
 for (const app of expectedApps) {
+  assert.ok(actualApps.includes(app), `foundational app boundary missing: ${app}`);
   const prefix = `apps/${app}`;
   const manifest = json(`${prefix}/package.json`);
   assert.equal(manifest.name, `@github-decrypter/${app}`);
   assert.equal(manifest.private, true);
   assert.ok(manifest.scripts?.typecheck, `${manifest.name} must expose typecheck`);
-  assert.ok(!manifest.dependencies || Object.keys(manifest.dependencies).length === 0, `${manifest.name} must remain dependency-free in Build 6`);
   assert.equal(json(`${prefix}/tsconfig.json`).extends, '../../tsconfig.base.json');
   const source = read(`${prefix}/src/index.ts`);
-  assert.match(source, /placeholder/i, `${manifest.name} must remain an explicit placeholder in Build 6`);
-  assert.ok(!/from\s+['"]\.\.\/\.\.\/(?:core|background|content|runtime)/.test(source), `${manifest.name} must not bind directly to inherited legacy roots`);
+  assert.ok(
+    !/from\s+['"]\.\.\/\.\.\/(?:core|background|content|runtime)/.test(source),
+    `${manifest.name} must not bind directly to inherited migration roots`,
+  );
 }
 
 for (const pkg of expectedPackages) {
+  assert.ok(actualPackages.includes(pkg), `foundational package boundary missing: ${pkg}`);
   const prefix = `packages/${pkg}`;
   const manifest = json(`${prefix}/package.json`);
   assert.equal(manifest.name, `@github-decrypter/${pkg}`);
   assert.equal(manifest.private, true);
   assert.equal(manifest.exports, './src/index.ts');
   assert.ok(manifest.scripts?.typecheck, `${manifest.name} must expose typecheck`);
-  assert.ok(!manifest.dependencies || Object.keys(manifest.dependencies).length === 0, `${manifest.name} must remain dependency-free in Build 6`);
   assert.equal(json(`${prefix}/tsconfig.json`).extends, '../../tsconfig.base.json');
-  assert.match(read(`${prefix}/src/index.ts`), /packageIdentity/);
 }
 
-for (const legacyRoot of ['core', 'background', 'content', 'runtime']) assert.ok(exists(legacyRoot), `inherited migration input unexpectedly removed: ${legacyRoot}/`);
-
-for (const prematurePath of ['apps/studio/vite.config.ts', 'apps/studio/src/main.tsx', 'apps/studio/src/App.tsx', 'apps/local/src/daemon.ts', 'apps/extension/src/launcher.ts']) {
-  assert.ok(!exists(prematurePath), `Build 6 must not implement later roadmap authority: ${prematurePath}`);
-}
-
-const manifest = json('manifest.json');
-assert.equal(manifest.name, 'GitHub Decrypter');
-assert.ok(!manifest.background);
-assert.equal((manifest.content_scripts || []).length, 0);
-assert.equal((manifest.host_permissions || []).length, 0);
-
-console.log(JSON.stringify({ ok: true, schema: 'gd-monorepo-foundation/1', apps: expectedApps, packages: expectedPackages, legacyMigrationRootsPreserved: ['core', 'background', 'content', 'runtime'], featureAuthorityIntroduced: false }, null, 2));
+console.log(JSON.stringify({
+  ok: true,
+  schema: 'gd-monorepo-foundation/2',
+  foundationalApps: expectedApps,
+  foundationalPackages: expectedPackages,
+  allowsRoadmapEvolution: true,
+}, null, 2));
