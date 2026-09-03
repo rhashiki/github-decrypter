@@ -6,6 +6,7 @@ export interface LocalRuntimeConfig {
   readonly host: string;
   readonly port: number;
   readonly lockPath?: string;
+  readonly databasePath?: string;
 }
 
 export function assertLoopbackHost(host: string): void {
@@ -30,5 +31,6 @@ export function localRuntimeConfigFromEnv(env: NodeJS.ProcessEnv = process.env):
     host,
     port: parseLocalRuntimePort(env.GD_LOCAL_PORT),
     ...(env.GD_LOCAL_LOCK_PATH?.trim() ? { lockPath: env.GD_LOCAL_LOCK_PATH.trim() } : {}),
+    ...(env.GD_LOCAL_DB_PATH?.trim() ? { databasePath: env.GD_LOCAL_DB_PATH.trim() } : {}),
   };
 }
