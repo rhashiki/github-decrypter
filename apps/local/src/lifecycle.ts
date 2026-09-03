@@ -15,8 +15,22 @@ export type LocalRuntimeLifecyclePayload = {
   readonly reason: string | null;
 };
 
+export type LocalRuntimeDatabaseOpenedPayload = {
+  readonly schemaVersion: number;
+  readonly journalMode: string;
+  readonly foreignKeys: boolean;
+  readonly integrity: 'ok';
+};
+
+export type LocalRuntimeDatabaseClosedPayload = {
+  readonly schemaVersion: number;
+  readonly reason: string | null;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
+  readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
+  readonly 'gd.local.database.closed': LocalRuntimeDatabaseClosedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
