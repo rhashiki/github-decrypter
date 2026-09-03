@@ -1,3 +1,5 @@
+export { PROTOCOL_SCHEMA as localRuntimeProtocolSchema } from '@github-decrypter/protocol';
+
 export * from './config.js';
 export * from './daemon.js';
 export * from './identity.js';
