@@ -1,0 +1,29 @@
+name: GitHub Decrypter Build 7 — Shared Protocol
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - build/7-shared-protocol
+
+permissions:
+  contents: read
+
+jobs:
+  shared-protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Validate Build 4/5/6/7 and TypeScript workspaces
+        run: pnpm run ci
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs
