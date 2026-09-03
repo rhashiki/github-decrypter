@@ -28,10 +28,10 @@ try {
 
   const events: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build15-test' });
-  bus.subscribe('gd.local.capability.ready', () => events.push('ready'));
-  bus.subscribe('gd.local.capability.granted', (event) => events.push(`granted:${event.payload.grantId}`));
-  bus.subscribe('gd.local.capability.revoked', (event) => events.push(`revoked:${event.payload.grantId}`));
-  bus.subscribe('gd.local.capability.denied', (event) => events.push(`denied:${event.payload.reason}`));
+  bus.subscribe('gd.local.capability.ready', () => { events.push('ready'); });
+  bus.subscribe('gd.local.capability.granted', (event) => { events.push(`granted:${event.payload.grantId}`); });
+  bus.subscribe('gd.local.capability.revoked', (event) => { events.push(`revoked:${event.payload.grantId}`); });
+  bus.subscribe('gd.local.capability.denied', (event) => { events.push(`denied:${event.payload.reason}`); });
 
   const jobs = new DurableJobEngine({ database, eventBus: bus, now });
   const authority = new CapabilitySecurityAuthority({
