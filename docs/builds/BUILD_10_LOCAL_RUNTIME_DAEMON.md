@@ -1,6 +1,6 @@
 # Build 10 — Local Runtime Daemon
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE**
 
 ## Purpose
 
@@ -11,16 +11,17 @@ Create the first real independent local execution process for GitHub Decrypter w
 - promoted `apps/local` from placeholder to real Node.js daemon authority;
 - loopback-only host validation;
 - configurable local port with stable default `43110`;
-- exclusive single-instance lock with stale-lock recovery;
+- exclusive single-instance lock with stale-lock recovery and lock-acquisition race protection;
 - lifecycle states `idle → starting → running → stopping → stopped`, plus `failed`;
 - lifecycle publication through `gd.local.lifecycle` on the Build 8 Event Bus;
 - `/healthz` using schema `gd-local-health/1`;
 - `/readyz` using schema `gd-local-readiness/1`;
 - `/v1/handshake` using the Build 7 `gd-protocol/1` contract;
 - protocol-version negotiation and `handshake.accept` / `handshake.reject`;
+- source/peer consistency validation during handshake;
 - bounded JSON request body;
 - graceful SIGINT/SIGTERM shutdown;
-- real runtime behavior tests.
+- real runtime behavior tests and separate-process CLI validation.
 
 ## Explicit exclusions
 
@@ -50,12 +51,15 @@ No generic privileged RPC endpoint exists in this Build.
 - [x] port `0` can be used for isolated tests while default production-development port remains deterministic.
 - [x] second daemon instance using the same lock is rejected.
 - [x] stale lock handling is implemented.
+- [x] lock acquisition avoids deleting a freshly-created incomplete lock from a concurrent writer.
 - [x] health endpoint reports product/build/version/state/PID/address/protocol.
 - [x] readiness reports the running state.
 - [x] protocol handshake succeeds for a common supported version.
+- [x] handshake payload peer/source mismatch is rejected.
 - [x] incompatible protocol negotiation fails closed.
 - [x] request body is bounded.
 - [x] SIGINT/SIGTERM trigger graceful shutdown.
+- [x] the real CLI process exits cleanly on SIGTERM.
 - [x] lock is released on graceful shutdown.
 - [x] lifecycle transitions are emitted through the Central Event Bus.
 - [x] no database/job/security/tool/Git/model authority is mixed into Build 10.
@@ -69,9 +73,17 @@ Build 10 adds:
 - `scripts/test-build10-local-runtime-daemon.mjs` — structural regression;
 - `scripts/tsconfig.build10-tests.json` — compile-time validation;
 - `scripts/test-build10-local-runtime-runtime.ts` — real daemon lifecycle/network behavior;
+- `scripts/test-build10-local-runtime-cli.mjs` — separate process, health request, SIGTERM and lock-release validation;
+- `scripts/test-build10-guardian-negative.mjs` — negative probes for local app authority;
 - `.github/workflows/build10-local-runtime-daemon.yml` — CI gate.
 
-The runtime test starts the daemon on an ephemeral loopback port, verifies health/readiness and protocol negotiation, verifies instance locking and public-bind rejection, then performs graceful shutdown.
+Validated behavior includes loopback binding, health/readiness, protocol negotiation, peer mismatch rejection, incompatible protocol rejection, single-instance enforcement, stale-lock recovery, lifecycle ordering, graceful in-process shutdown and graceful separate-process SIGTERM shutdown.
+
+Architecture Guardian negative probes prove rejection of:
+
+- `AG035` — browser authority inside the Local Runtime;
+- `AG033` — undeclared internal workspace dependency;
+- `AG034` — undeclared external dependency.
 
 ## North Star review
 
