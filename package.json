@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "guardian": "node scripts/architecture-guardian.mjs",
+    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs",
     "check:build4": "node scripts/test-build4-lovable-decoupling.mjs",
     "check:build5": "node scripts/test-build5-rebrand.mjs",
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
