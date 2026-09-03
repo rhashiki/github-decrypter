@@ -125,6 +125,20 @@ export type LocalRuntimeCapabilityDeniedPayload = {
   readonly missingCount: number;
 };
 
+export type LocalRuntimeVaultReadyPayload = {
+  readonly secretCount: number;
+  readonly cipher: 'AES-256-GCM';
+  readonly keyBackend: 'local-key-file-v1';
+  readonly plaintextPersistence: false;
+  readonly externalTransport: false;
+};
+
+export type LocalRuntimeVaultSecretChangedPayload = {
+  readonly secretId: string;
+  readonly operation: 'created' | 'updated' | 'deleted';
+  readonly occurredAt: string;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
@@ -142,6 +156,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.capability.granted': LocalRuntimeCapabilityGrantedPayload;
   readonly 'gd.local.capability.revoked': LocalRuntimeCapabilityRevokedPayload;
   readonly 'gd.local.capability.denied': LocalRuntimeCapabilityDeniedPayload;
+  readonly 'gd.local.vault.ready': LocalRuntimeVaultReadyPayload;
+  readonly 'gd.local.vault.secret.changed': LocalRuntimeVaultSecretChangedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
