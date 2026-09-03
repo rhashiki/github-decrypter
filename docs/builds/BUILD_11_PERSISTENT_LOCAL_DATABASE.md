@@ -1,6 +1,6 @@
 # Build 11 — Persistent Local Database
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE — VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -57,6 +57,7 @@ Build 11 does not implement:
 - [x] health/readiness include DB readiness but not local DB path;
 - [x] no job/queue/checkpoint schema arrives early;
 - [x] Architecture Guardian rejects SQLite authority outside `apps/local`;
+- [x] scoped project-map workflow write authority remains bounded to generated `graphify-out/**` content;
 - [x] no Release, OTA, store publication, deploy, production backend mutation or DNS mutation is performed.
 
 ## Validation
@@ -67,9 +68,27 @@ Build 11 adds:
 - `scripts/tsconfig.build11-tests.json` — compile-time validation;
 - `scripts/test-build11-persistent-local-database-runtime.ts` — real file-backed SQLite persistence, migration, rollback, daemon restart and tamper tests;
 - `scripts/test-build11-database-guardian-negative.mjs` — failure injection for authority escape and premature job schema;
+- `scripts/test-build11-workflow-guardian-negative.mjs` — failure injection for the scoped project-map write exception;
 - `.github/workflows/build11-persistent-local-database.yml` — read-only CI gate.
 
+Validated behavior includes WAL, foreign keys, persistence across database reopen and daemon restart, rollback, migration-provenance rejection, future-schema rejection, full workspace typechecking and preservation of the 46 modern migration assets.
+
 Previous Build 10 runtime/CLI tests were made forward-compatible and given explicit temporary database paths so regression tests never write into the runner's normal user data directory.
+
+## Base-main workflow reconciliation
+
+The Build 11 branch was created from the then-current `main` commit `8689533066970bf180d75524bd522b071700d9aa`, which already contained `.github/workflows/cortex.yml` for generated project-map updates. That workflow requests `contents: write` to commit `graphify-out/`, so the Build 9 Guardian correctly rejected it as `AG070` until its authority was explicitly reconciled.
+
+Build 11 does not grant that workflow general repository-write or release authority. The Guardian now allows exactly `.github/workflows/cortex.yml` under a separate scoped rule that requires:
+
+- only `contents: write`;
+- staged paths restricted to `graphify-out`;
+- only plain `git push`;
+- no tags;
+- no releases;
+- no deployment/publish commands.
+
+Negative tests prove that broadening `git add` outside `graphify-out` or changing the push to `git push --tags` fails closed. This reconciliation preserves the pre-existing project-map automation without weakening the general workflow write policy.
 
 ## North Star review
 
