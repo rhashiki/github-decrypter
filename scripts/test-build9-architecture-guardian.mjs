@@ -21,7 +21,7 @@ for (const file of [
 
 const policy = json('architecture.guardian.json');
 assert.equal(policy.schema, 'gd-architecture-guardian/1');
-assert.equal(policy.currentBuild, 9);
+assert.ok(Number.isSafeInteger(policy.currentBuild) && policy.currentBuild >= 9, 'Architecture Guardian must not regress below Build 9');
 assert.equal(policy.product, 'GitHub Decrypter');
 assert.equal(policy.northStar.sourceSha256, '256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718');
 assert.equal(policy.northStar.requiredPrinciples.length, 22);
@@ -80,7 +80,8 @@ assert.ok(build.includes('No Release'));
 console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build9-architecture-guardian/1',
-  currentBuild: 9,
+  currentBuild: policy.currentBuild,
+  minimumBuild: 9,
   principles: 22,
   canonicalRoadmapBuilds: roadmapNumbers.length,
   northStarRoadmapBlocks: 11,

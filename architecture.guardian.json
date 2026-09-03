@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 9,
+  "currentBuild": 10,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -48,6 +48,22 @@
       "environmentNeutral": true
     }
   },
+  "appRules": {
+    "@github-decrypter/local": {
+      "allowedWorkspaceDependencies": [
+        "@github-decrypter/protocol",
+        "@github-decrypter/shared"
+      ],
+      "allowedExternalDependencies": [],
+      "forbiddenSourcePatterns": [
+        "\\bchrome\\.",
+        "\\bwindow\\.",
+        "\\bdocument\\.",
+        "\\blocalStorage\\b",
+        "\\bindexedDB\\b"
+      ]
+    }
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -56,6 +72,9 @@
   },
   "phaseGates": {
     "localDaemonBuild": 10,
+    "persistentLocalDatabaseBuild": 11,
+    "durableJobEngineBuild": 12,
+    "capabilitySecurityBuild": 15,
     "extensionActivationBuild": 25,
     "studioReactBuild": 27,
     "releaseAuthorityBuild": 134
