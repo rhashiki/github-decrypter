@@ -1,6 +1,6 @@
 {
   "name": "github-decrypter",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.15.0",
@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs",
+    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs && node scripts/architecture-guardian-offline.mjs",
     "check:build4": "node scripts/test-build4-lovable-decoupling.mjs",
     "check:build5": "node scripts/test-build5-rebrand.mjs",
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
@@ -19,8 +19,9 @@
     "check:build11": "node scripts/test-build11-persistent-local-database.mjs && tsc -p scripts/tsconfig.build11-tests.json && tsx scripts/test-build11-persistent-local-database-runtime.ts && node scripts/test-build11-database-guardian-negative.mjs && node scripts/test-build11-workflow-guardian-negative.mjs",
     "check:build12": "node scripts/test-build12-durable-job-engine.mjs && tsc -p scripts/tsconfig.build12-tests.json && tsx scripts/test-build12-durable-job-engine-runtime.ts && node scripts/test-build12-job-guardian-negative.mjs",
     "check:build13": "node scripts/test-build13-crash-power-recovery.mjs && tsc -p scripts/tsconfig.build13-tests.json && tsx scripts/test-build13-crash-power-recovery-runtime.ts && node scripts/test-build13-recovery-guardian-negative.mjs",
+    "check:build14": "node scripts/test-build14-offline-execution.mjs && tsc -p scripts/tsconfig.build14-tests.json && tsx scripts/test-build14-offline-execution-runtime.ts && node scripts/test-build14-offline-guardian-negative.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run typecheck"
+    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run check:build14 && pnpm run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
