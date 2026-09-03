@@ -7,6 +7,7 @@ const json = (file) => JSON.parse(read(file));
 for (const file of [
   'architecture.guardian.json',
   'scripts/architecture-guardian.mjs',
+  'scripts/test-build9-guardian-negative.mjs',
   'docs/architecture/ARCHITECTURE_GUARDIAN.md',
   'docs/builds/BUILD_9_ARCHITECTURE_GUARDIAN.md',
   'docs/product/NORTH_STAR_MANIFESTO.md',
@@ -35,9 +36,12 @@ for (let index = 1; index <= 22; index += 1) {
   const id = `P${String(index).padStart(2, '0')}`;
   assert.ok(northStar.includes(`**${id}**`), `missing North Star principle: ${id}`);
 }
+
+const mapping = read('docs/product/NORTH_STAR_ROADMAP_MAPPING.md');
 for (const block of policy.northStar.requiredRoadmapBlocks) {
-  assert.ok(read('docs/product/NORTH_STAR_ROADMAP_MAPPING.md').includes(block), `roadmap block missing: ${block}`);
+  assert.ok(mapping.includes(block), `roadmap block missing: ${block}`);
 }
+assert.ok(mapping.includes('1 → 134'));
 
 const guardian = read('scripts/architecture-guardian.mjs');
 for (const marker of [
@@ -56,7 +60,7 @@ for (const marker of [
 
 const template = read('.github/pull_request_template.md');
 assert.ok(template.includes('North Star review'));
-assert.ok(template.includes('Does this make it easier to transform intention into software?'));
+assert.ok(template.includes('Does it make it easier to transform intention into software?'));
 assert.ok(template.includes('Adaptive profile data does not grant security authority'));
 
 const build = read('docs/builds/BUILD_9_ARCHITECTURE_GUARDIAN.md');
