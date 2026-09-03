@@ -1,6 +1,6 @@
 # Build 16 — Secrets Vault
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE — VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -59,6 +59,12 @@ Build 16 adds:
 - `AG148` — required Build 16 artifact missing.
 
 Build 15's `AG133` becomes phase-aware because Secrets Vault is now legitimately owned by Build 16.
+
+## Validation completed
+
+The Build 16 workflow passed the complete Build 4–16 regression chain, full workspace TypeScript checking and modern-engine preservation. Runtime tests proved encrypted values/resources at rest, HMAC lookup, capability gating, destructive-delete gating, persistence across restart, authenticated tamper detection, mismatched-key failure, owner-only POSIX key permissions and daemon readiness without external Vault transport.
+
+Failure injection proved the Guardian rejects `AG141`, `AG142`, `AG143`, `AG145`, `AG146` and `AG147` and that the tree returns to a passing state afterward.
 
 ## Explicit exclusions
 
