@@ -185,6 +185,14 @@ export class LocalDatabase {
     return Number(result.changes) > 0;
   }
 
+  read<T>(operation: (database: DatabaseSync) => T): T {
+    const result = operation(this.#requireDatabase());
+    if (isThenable(result)) {
+      throw new TypeError('LocalDatabase reads must be synchronous.');
+    }
+    return result;
+  }
+
   transaction<T>(operation: (database: DatabaseSync) => T): T {
     const database = this.#requireDatabase();
     database.exec('BEGIN IMMEDIATE');
