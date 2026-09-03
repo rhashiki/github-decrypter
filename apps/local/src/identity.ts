@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 15 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.15' as const;
+export const LOCAL_RUNTIME_BUILD = 16 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.16' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http',
   'health',
@@ -22,6 +22,9 @@ export const LOCAL_RUNTIME_FEATURES = [
   'capability-security',
   'deny-by-default',
   'scoped-capability-grants',
+  'secrets-vault',
+  'encrypted-secret-storage',
+  'capability-gated-secrets',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -41,5 +44,5 @@ export const localRuntimeIdentity = Object.freeze({
   version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const,
   protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, persistent SQLite, durable jobs, recovery, offline scheduling and deny-by-default capability security boundary.',
+  authority: 'Independent local daemon lifecycle, persistent SQLite, durable jobs, recovery, offline scheduling, deny-by-default capability security and encrypted Secrets Vault boundary.',
 });
