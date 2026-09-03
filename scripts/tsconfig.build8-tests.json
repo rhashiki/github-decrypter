@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "test-build8-event-bus-runtime.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts"
+  ]
+}
