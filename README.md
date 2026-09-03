@@ -19,8 +19,9 @@ Completed:
 - Build 5 — GitHub Decrypter Rebrand
 - Build 6 — Monorepo Foundation
 - Build 7 — Shared Protocol
+- Build 8 — Central Event Bus
 
-Next: **Build 8 — Central Event Bus**.
+Next: **Build 9 — Architecture Guardian**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -35,9 +36,11 @@ packages/
   preview/ context/ tools/ scope/ ai/
 ```
 
-`@github-decrypter/protocol` is now the single transport-neutral wire contract shared by Studio, Extension and Local Runtime. Its current schema is `gd-protocol/1`; the package defines peer roles, branded IDs, envelopes, request/response/event messages, handshakes, version negotiation, errors and boundary guards while remaining independent from Chrome, DOM, Node, HTTP and WebSocket APIs.
+`@github-decrypter/protocol` is the single transport-neutral wire contract shared by Studio, Extension and Local Runtime. Its current schema is `gd-protocol/1`.
 
-React/Vite Studio, Chrome launcher behavior, Event Bus routing and the local daemon remain owned by their later frozen Builds.
+`@github-decrypter/shared` now owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
+
+React/Vite Studio, Chrome launcher behavior and the local daemon remain owned by their later frozen Builds.
 
 ## Product principles
 
@@ -56,15 +59,21 @@ React/Vite Studio, Chrome launcher behavior, Event Bus routing and the local dae
 
 ```text
 Chrome Extension
-  └─ GitHub repository detection + launcher/bridge
-            │
-            ├──── @github-decrypter/protocol ────┐
-            │                                     │
-GitHub Decrypter Studio                    Local Runtime
-  └─ React + TypeScript + Vite PWA           └─ durable local authority
+       │
+       ├──── gd-protocol/1 ────┐
+       │                       │
+Studio PWA                Local Runtime
+   │                           │
+   └─ EventBus            EventBus ─┘
+      (in-process)        (in-process)
 ```
 
-See `docs/product/` for the frozen V1 constitution, `docs/architecture/MONOREPO_FOUNDATION.md` for workspace ownership and `docs/architecture/SHARED_PROTOCOL.md` for the Build 7 wire contract.
+See:
+
+- `docs/product/` — frozen V1 constitution
+- `docs/architecture/MONOREPO_FOUNDATION.md` — workspace ownership
+- `docs/architecture/SHARED_PROTOCOL.md` — Build 7 wire contract
+- `docs/architecture/CENTRAL_EVENT_BUS.md` — Build 8 event architecture
 
 ## Reuse policy
 
