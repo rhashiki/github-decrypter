@@ -73,7 +73,19 @@
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
-    "writePermissionAllowlist": [],
+    "writePermissionAllowlist": [
+      ".github/workflows/cortex.yml"
+    ],
+    "writeScopes": {
+      ".github/workflows/cortex.yml": {
+        "purpose": "generated project map metadata",
+        "allowedGitAddPrefixes": ["graphify-out"],
+        "allowPlainGitPush": true,
+        "allowTags": false,
+        "allowRelease": false,
+        "allowDeploy": false
+      }
+    },
     "forbiddenWritePermissions": ["actions", "checks", "contents", "deployments", "id-token", "packages", "pull-requests", "security-events", "statuses"]
   },
   "phaseGates": {
