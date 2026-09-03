@@ -26,8 +26,9 @@ Completed:
 - Build 12 — Durable Job Engine
 - Build 13 — Crash & Power Recovery
 - Build 14 — Offline Execution
+- Build 15 — Capability Security Model
 
-Next: **Build 15 — Capability Security Model**.
+Next: **Build 16 — Secrets Vault**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -46,19 +47,23 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery and connectivity-aware offline scheduling. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling and the deny-by-default Capability Security boundary. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
 Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Build 14 adds persistent `unknown | online | offline` connectivity state and explicit network-required job metadata: local-safe work remains claimable without network, while network-required work waits durably and returns to the queue when connectivity is restored.
 
-Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. Connectivity observations are supplied through the in-process Local Runtime boundary until later provider/security Builds own external network authority.
+Build 15 adds explicit job-bound capabilities: `READ`, `WRITE`, `EXECUTE`, `NETWORK`, `DATABASE_WRITE`, `GIT_WRITE`, `DESTRUCTIVE` and `SECRETS`. Grants carry exact or prefix-scoped `gd://` resources, bounded expiry and explicit revocation. Capabilities do not imply one another, so operations requiring multiple authorities must request every required claim.
 
-There is still no generic SQL, coding, tool, Git, model, connectivity-control or job-control HTTP endpoint. Privileged capability enforcement remains reserved for Build 15. The default development endpoint is `127.0.0.1:43110`. Run it with:
+Capability tokens are opaque 256-bit values and only their SHA-256 hashes are persisted. Until Build 16 provides a Secrets Vault, grants are process-bound and stale active grants are revoked after restart rather than persisting plaintext credentials. This is intentionally fail-closed. Build 15 exposes no endpoint allowing Studio, Extension or a model to self-grant authority.
+
+Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. `NETWORK` capability authorizes network use; it does not bypass Build 14 connectivity state.
+
+There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control or job-control HTTP endpoint. Secure secret persistence is reserved for Build 16. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, phase gates, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, phase gates, token-hash-only persistence, no premature grant transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -119,6 +124,11 @@ Studio PWA                         Local Runtime Daemon
                                            ▼
                                    Offline Execution
                           local work runs / network work waits
+                                           │
+                                           ▼
+                                Capability Security
+                         job + capability + resource scope
+                           deny by default / hash-only token
 
             │
             ▼
@@ -141,6 +151,7 @@ See:
 - `docs/architecture/DURABLE_JOB_ENGINE.md` — Build 12 queue, DAG and lease semantics
 - `docs/architecture/CRASH_POWER_RECOVERY.md` — Build 13 session and recovery semantics
 - `docs/architecture/OFFLINE_EXECUTION.md` — Build 14 connectivity-aware local scheduling semantics
+- `docs/architecture/CAPABILITY_SECURITY_MODEL.md` — Build 15 deny-by-default capability boundary
 
 ## Architecture check
 
