@@ -10,5 +10,6 @@ export * from './instance-lock.js';
 export * from './job-engine.js';
 export * from './job-types.js';
 export * from './lifecycle.js';
+export * from './offline-execution.js';
 export * from './recovery-engine.js';
 export * from './server.js';
