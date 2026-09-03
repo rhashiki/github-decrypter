@@ -1,103 +1,6 @@
 {
   "communities": {
     "0": [
-      "background_agent_sandbox_runtime",
-      "background_agent_sandbox_runtime_create",
-      "background_agent_sandbox_runtime_destroy",
-      "background_agent_sandbox_runtime_err",
-      "background_agent_sandbox_runtime_get",
-      "background_agent_sandbox_runtime_handle",
-      "background_agent_sandbox_runtime_installagentsandboxruntime",
-      "background_agent_sandbox_runtime_load",
-      "background_agent_sandbox_runtime_publicsandbox",
-      "background_agent_sandbox_runtime_save",
-      "background_agent_sandbox_runtime_status",
-      "background_agent_sandbox_runtime_text",
-      "background_agent_sandbox_runtime_transition",
-      "background_agent_sandbox_runtime_validatediff",
-      "background_native_agent_session_runtime",
-      "background_native_agent_session_runtime_err",
-      "background_native_agent_session_runtime_getsession",
-      "background_native_agent_session_runtime_handle",
-      "background_native_agent_session_runtime_installnativeagentsessionruntime",
-      "background_native_agent_session_runtime_load",
-      "background_native_agent_session_runtime_put",
-      "background_native_agent_session_runtime_save",
-      "background_native_agent_session_runtime_text",
-      "benchmark_universal_agent_bench_v1",
-      "benchmark_universal_agent_bench_v1_assert",
-      "benchmark_universal_agent_bench_v1_cases",
-      "benchmark_universal_agent_bench_v1_expects",
-      "benchmark_universal_agent_bench_v1_expectsasync",
-      "benchmark_universal_agent_bench_v1_probe",
-      "benchmark_universal_agent_bench_v1_readyfixture",
-      "benchmark_universal_agent_bench_v1_rununiversalagentbench",
-      "core_agent_sandbox",
-      "core_agent_sandbox_agent_sandbox_diff_schema",
-      "core_agent_sandbox_agent_sandbox_materialization_schema",
-      "core_agent_sandbox_agent_sandbox_schema",
-      "core_agent_sandbox_allowed_actions",
-      "core_agent_sandbox_assertsafesandboxentry",
-      "core_agent_sandbox_assertsandboxdiffbinding",
-      "core_agent_sandbox_buildsandboxmaterialization",
-      "core_agent_sandbox_bytes",
-      "core_agent_sandbox_canonicalsandboxpath",
-      "core_agent_sandbox_createsandboxdescriptor",
-      "core_agent_sandbox_err",
-      "core_agent_sandbox_normalizechange",
-      "core_agent_sandbox_normalizesandboxdiff",
-      "core_agent_sandbox_te",
-      "core_agent_sandbox_text",
-      "core_agent_sandbox_transitionsandbox",
-      "core_native_agent_sessions",
-      "core_native_agent_sessions_assertsession",
-      "core_native_agent_sessions_bindnativeproposal",
-      "core_native_agent_sessions_closenativesession",
-      "core_native_agent_sessions_createnativeagentsession",
-      "core_native_agent_sessions_err",
-      "core_native_agent_sessions_marknativesessionverified",
-      "core_native_agent_sessions_native_agent_session_schema",
-      "core_native_agent_sessions_native_agent_strategies",
-      "core_native_agent_sessions_runtime_selection_schema",
-      "core_native_agent_sessions_runtimeselectionrecord",
-      "core_native_agent_sessions_strategies",
-      "core_native_agent_sessions_strategy",
-      "core_native_agent_sessions_switchnativeruntime",
-      "core_native_agent_sessions_text",
-      "core_native_agent_sessions_verifynativeresume",
-      "core_native_agent_sessions_verifyproposalbinding",
-      "tests_build73_agent_sandbox_shadow_worktree_test",
-      "tests_build73_agent_sandbox_shadow_worktree_test_build",
-      "tests_build73_agent_sandbox_shadow_worktree_test_client",
-      "tests_build73_agent_sandbox_shadow_worktree_test_core",
-      "tests_build73_agent_sandbox_shadow_worktree_test_entry",
-      "tests_build73_agent_sandbox_shadow_worktree_test_manifest",
-      "tests_build73_agent_sandbox_shadow_worktree_test_materialized",
-      "tests_build73_agent_sandbox_shadow_worktree_test_pkg",
-      "tests_build73_agent_sandbox_shadow_worktree_test_read",
-      "tests_build73_agent_sandbox_shadow_worktree_test_roadmap",
-      "tests_build73_agent_sandbox_shadow_worktree_test_running",
-      "tests_build73_agent_sandbox_shadow_worktree_test_runtime",
-      "tests_build73_agent_sandbox_shadow_worktree_test_sandbox",
-      "tests_build73_agent_sandbox_shadow_worktree_test_settings",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_client",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_closed",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_core",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_currentbuild",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_digest",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_entry",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_manifest",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_pkg",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_read",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_runtime",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_selection",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_session",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_settings",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_switched",
-      "tests_build74_multi_agent_runtime_ui_native_sessions_test_verified"
-    ],
-    "1": [
       "background_portable_skills_runtime",
       "background_portable_skills_runtime_createcustom",
       "background_portable_skills_runtime_err",
@@ -167,7 +70,7 @@
       "tests_build72_portable_skills_v2_test_settings",
       "tests_build72_portable_skills_v2_test_ui"
     ],
-    "2": [
+    "1": [
       "background_agent_runtime_registry_runtime",
       "background_agent_runtime_registry_runtime_authheaders",
       "background_agent_runtime_registry_runtime_clearsessionauth",
@@ -232,71 +135,7 @@
       "tests_build71_universal_agent_runtime_registry_test_watchdog",
       "tests_build71_universal_agent_runtime_registry_test_watchdog2"
     ],
-    "3": [
-      "background_checkpoint_runtime",
-      "background_checkpoint_runtime_activegithub",
-      "background_checkpoint_runtime_authorizedsettings",
-      "background_checkpoint_runtime_dispatch",
-      "background_checkpoint_runtime_historypush",
-      "background_checkpoint_runtime_installcheckpointruntime",
-      "background_checkpoint_runtime_installed",
-      "background_checkpoint_runtime_listforproject",
-      "background_checkpoint_runtime_rollbackforproject",
-      "background_checkpoint_runtime_validatelicenseremote",
-      "core_checkpoint_manager",
-      "core_checkpoint_manager_autorollbackifdefinitivefailure",
-      "core_checkpoint_manager_createcheckpoint",
-      "core_checkpoint_manager_listcheckpoints",
-      "core_checkpoint_manager_loadcheckpoints",
-      "core_checkpoint_manager_markcheckpointaborted",
-      "core_checkpoint_manager_markcheckpointpublished",
-      "core_checkpoint_manager_nowiso",
-      "core_checkpoint_manager_rollbackcheckpoint",
-      "core_checkpoint_manager_savecheckpoints",
-      "core_checkpoint_manager_updatecheckpoint",
-      "core_checkpoint_manager_verifypublishedcheckpoint",
-      "core_guarded_commit",
-      "core_guarded_commit_account_gate_required",
-      "core_guarded_commit_account_write_guard",
-      "core_guarded_commit_assertaccountwriteguard",
-      "core_guarded_commit_installed",
-      "core_guarded_commit_installguardedcommit",
-      "core_guarded_commit_last_refs",
-      "core_guarded_commit_rememberref",
-      "core_regression_sentinel",
-      "core_regression_sentinel_entrychanged",
-      "core_regression_sentinel_entrymap",
-      "core_regression_sentinel_evaluateregressiondelta",
-      "core_regression_sentinel_normalizeaction",
-      "core_regression_sentinel_runregressionsentinel",
-      "core_shadow_build",
-      "core_shadow_build_applyshadowbuild",
-      "core_shadow_build_asserttextsanity",
-      "core_shadow_build_prepareshadowbuild",
-      "core_shadow_build_validateshadowfiles",
-      "core_validation_gate",
-      "core_validation_gate_buildvalidationworkflow",
-      "core_validation_gate_choosepackagepaths",
-      "core_validation_gate_detectpackagemanager",
-      "core_validation_gate_detectscripts",
-      "core_validation_gate_detectvalidationtargets",
-      "core_validation_gate_evaluatestaticvalidation",
-      "core_validation_gate_installcommand",
-      "core_validation_gate_packagedir",
-      "core_validation_gate_parsejsonlike",
-      "core_validation_gate_pathinsidedir",
-      "core_validation_gate_runexternalvalidation",
-      "core_validation_gate_runvalidationgate",
-      "core_validation_gate_script_priority",
-      "core_validation_gate_scriptcommand",
-      "core_validation_gate_sleep",
-      "core_validation_gate_stripjsoncomments",
-      "core_validation_gate_striptrailingcommas",
-      "core_validation_gate_summarizeruns",
-      "core_validation_gate_yamlstring",
-      "settings_config_history_key"
-    ],
-    "4": [
+    "2": [
       "background_scope_intelligence_runtime",
       "background_scope_intelligence_runtime_handle",
       "background_scope_intelligence_runtime_installscopeintelligenceruntime",
@@ -357,7 +196,7 @@
       "tests_build65_scope_intelligence_v2_test_toolruntime",
       "tests_build65_scope_intelligence_v2_test_useredit"
     ],
-    "5": [
+    "3": [
       "benchmark_cli",
       "benchmark_cli_args",
       "benchmark_cli_loadprovider",
@@ -418,116 +257,115 @@
       "tests_build20_decrypter_coder_sim_securityregression",
       "tests_build20_decrypter_coder_sim_validation"
     ],
+    "4": [
+      "background_context_engine_runtime",
+      "background_context_engine_runtime_activegithub",
+      "background_context_engine_runtime_buildprojectcontextv2",
+      "background_context_engine_runtime_handle",
+      "background_context_engine_runtime_installcontextengineruntime",
+      "background_context_engine_runtime_loadimpactsignals",
+      "background_context_engine_runtime_loadprofile",
+      "background_context_engine_runtime_sanitizeskills",
+      "background_context_engine_runtime_text",
+      "core_context_engine_v2",
+      "core_context_engine_v2_budgetedtext",
+      "core_context_engine_v2_buildcontextpack",
+      "core_context_engine_v2_bytes",
+      "core_context_engine_v2_compactcommits",
+      "core_context_engine_v2_compactdiagnostics",
+      "core_context_engine_v2_compactimpacts",
+      "core_context_engine_v2_compactoperation",
+      "core_context_engine_v2_compactprofile",
+      "core_context_engine_v2_compactskills",
+      "core_context_engine_v2_compactuseredit",
+      "core_context_engine_v2_context_engine_schema",
+      "core_context_engine_v2_core_files",
+      "core_context_engine_v2_encoder",
+      "core_context_engine_v2_loadrecentuseredits",
+      "core_context_engine_v2_normalizedwords",
+      "core_context_engine_v2_pathset",
+      "core_context_engine_v2_relevantdocs",
+      "core_context_engine_v2_relevantjournal",
+      "core_context_engine_v2_rendercontextauthority",
+      "core_context_engine_v2_safetreeentries",
+      "core_context_engine_v2_selectedfilecontent",
+      "core_context_engine_v2_sourcescore",
+      "core_context_engine_v2_text",
+      "core_context_engine_v2_unique",
+      "core_context_engine_v2_user_edit_store_prefix",
+      "tests_build64_context_engine_v2_test",
+      "tests_build64_context_engine_v2_test_bg",
+      "tests_build64_context_engine_v2_test_blobs",
+      "tests_build64_context_engine_v2_test_builder",
+      "tests_build64_context_engine_v2_test_client",
+      "tests_build64_context_engine_v2_test_context",
+      "tests_build64_context_engine_v2_test_currentbuild",
+      "tests_build64_context_engine_v2_test_entry",
+      "tests_build64_context_engine_v2_test_fake",
+      "tests_build64_context_engine_v2_test_get",
+      "tests_build64_context_engine_v2_test_git",
+      "tests_build64_context_engine_v2_test_manifest",
+      "tests_build64_context_engine_v2_test_pkg",
+      "tests_build64_context_engine_v2_test_read",
+      "tests_build64_context_engine_v2_test_set",
+      "tests_build64_context_engine_v2_test_settings",
+      "tests_build64_context_engine_v2_test_storage",
+      "tests_build64_context_engine_v2_test_useredit"
+    ],
+    "5": [
+      "background_guarded_commit_bootstrap",
+      "core_checkpoint_manager",
+      "core_checkpoint_manager_autorollbackifdefinitivefailure",
+      "core_checkpoint_manager_createcheckpoint",
+      "core_checkpoint_manager_loadcheckpoints",
+      "core_checkpoint_manager_markcheckpointaborted",
+      "core_checkpoint_manager_markcheckpointpublished",
+      "core_checkpoint_manager_nowiso",
+      "core_checkpoint_manager_rollbackcheckpoint",
+      "core_checkpoint_manager_savecheckpoints",
+      "core_checkpoint_manager_updatecheckpoint",
+      "core_checkpoint_manager_verifypublishedcheckpoint",
+      "core_guarded_commit",
+      "core_guarded_commit_account_gate_required",
+      "core_guarded_commit_account_write_guard",
+      "core_guarded_commit_assertaccountwriteguard",
+      "core_guarded_commit_installed",
+      "core_guarded_commit_installguardedcommit",
+      "core_guarded_commit_last_refs",
+      "core_guarded_commit_rememberref",
+      "core_regression_sentinel",
+      "core_regression_sentinel_entrychanged",
+      "core_regression_sentinel_entrymap",
+      "core_regression_sentinel_evaluateregressiondelta",
+      "core_regression_sentinel_normalizeaction",
+      "core_regression_sentinel_runregressionsentinel",
+      "core_shadow_build",
+      "core_shadow_build_applyshadowbuild",
+      "core_shadow_build_asserttextsanity",
+      "core_shadow_build_prepareshadowbuild",
+      "core_shadow_build_validateshadowfiles",
+      "core_validation_gate",
+      "core_validation_gate_buildvalidationworkflow",
+      "core_validation_gate_choosepackagepaths",
+      "core_validation_gate_detectpackagemanager",
+      "core_validation_gate_detectscripts",
+      "core_validation_gate_detectvalidationtargets",
+      "core_validation_gate_evaluatestaticvalidation",
+      "core_validation_gate_installcommand",
+      "core_validation_gate_packagedir",
+      "core_validation_gate_parsejsonlike",
+      "core_validation_gate_pathinsidedir",
+      "core_validation_gate_runexternalvalidation",
+      "core_validation_gate_runvalidationgate",
+      "core_validation_gate_script_priority",
+      "core_validation_gate_scriptcommand",
+      "core_validation_gate_sleep",
+      "core_validation_gate_stripjsoncomments",
+      "core_validation_gate_striptrailingcommas",
+      "core_validation_gate_summarizeruns",
+      "core_validation_gate_yamlstring"
+    ],
     "6": [
-      "supabase_functions_ld_github_app_index",
-      "supabase_functions_ld_github_app_index_appjwt",
-      "supabase_functions_ld_github_app_index_authorize",
-      "supabase_functions_ld_github_app_index_b64url",
-      "supabase_functions_ld_github_app_index_callbackredirect",
-      "supabase_functions_ld_github_app_index_consumestate",
-      "supabase_functions_ld_github_app_index_cors",
-      "supabase_functions_ld_github_app_index_createstate",
-      "supabase_functions_ld_github_app_index_dec",
-      "supabase_functions_ld_github_app_index_enc",
-      "supabase_functions_ld_github_app_index_getappconfig",
-      "supabase_functions_ld_github_app_index_getprivatekey",
-      "supabase_functions_ld_github_app_index_githubapprequest",
-      "supabase_functions_ld_github_app_index_installationrequest",
-      "supabase_functions_ld_github_app_index_installationtoken",
-      "supabase_functions_ld_github_app_index_json",
-      "supabase_functions_ld_github_app_index_listrepositories",
-      "supabase_functions_ld_github_app_index_publickey",
-      "supabase_functions_ld_github_app_index_randomstate",
-      "supabase_functions_ld_github_app_index_redirect",
-      "supabase_functions_ld_github_app_index_servicekey",
-      "supabase_functions_ld_github_app_index_sha",
-      "supabase_functions_ld_github_app_index_staterow",
-      "supabase_functions_ld_github_app_index_supabaseadmin",
-      "supabase_functions_ld_github_app_index_unb64url",
-      "supabase_functions_ld_github_app_index_verifylicensetoken",
-      "supabase_functions_shared_github_rsa",
-      "supabase_functions_shared_github_rsa_concatbytes",
-      "supabase_functions_shared_github_rsa_decodepem",
-      "supabase_functions_shared_github_rsa_derlength",
-      "supabase_functions_shared_github_rsa_derwrap",
-      "supabase_functions_shared_github_rsa_detectrsaprivatekeyformat",
-      "supabase_functions_shared_github_rsa_normalizersaprivatekeytopkcs8der",
-      "supabase_functions_shared_github_rsa_pkcs1topkcs8",
-      "tests_build70_production_closeout_test",
-      "tests_build70_production_closeout_test_callbackbridge",
-      "tests_build70_production_closeout_test_callbackruntime",
-      "tests_build70_production_closeout_test_clean",
-      "tests_build70_production_closeout_test_dirty",
-      "tests_build70_production_closeout_test_firstscript",
-      "tests_build70_production_closeout_test_get",
-      "tests_build70_production_closeout_test_githubedge",
-      "tests_build70_production_closeout_test_integrationsui",
-      "tests_build70_production_closeout_test_localdata",
-      "tests_build70_production_closeout_test_manifest",
-      "tests_build70_production_closeout_test_normalizedder",
-      "tests_build70_production_closeout_test_normalizedkey",
-      "tests_build70_production_closeout_test_pair",
-      "tests_build70_production_closeout_test_payload",
-      "tests_build70_production_closeout_test_pkcs8pem",
-      "tests_build70_production_closeout_test_read",
-      "tests_build70_production_closeout_test_set",
-      "tests_build70_production_closeout_test_signature",
-      "tests_build70_production_closeout_test_supabaseedge",
-      "tests_build70_production_closeout_test_workerentry"
-    ],
-    "7": [
-      "background_approval_runtime",
-      "background_approval_runtime_activegithub",
-      "background_approval_runtime_applyminimaledits",
-      "background_approval_runtime_applytransaction",
-      "background_approval_runtime_approvalruntime",
-      "background_approval_runtime_canceltransaction",
-      "background_approval_runtime_countoccurrences",
-      "background_approval_runtime_currenthead",
-      "background_approval_runtime_emit",
-      "background_approval_runtime_explicitdelete",
-      "background_approval_runtime_freezetransaction",
-      "background_approval_runtime_gettransaction",
-      "background_approval_runtime_installapprovalruntime",
-      "background_approval_runtime_normalizeattachments",
-      "background_approval_runtime_preparetransaction",
-      "background_approval_runtime_projectrules",
-      "background_approval_runtime_pushhistory",
-      "background_approval_runtime_savetransaction",
-      "background_approval_runtime_sha256",
-      "background_approval_runtime_text",
-      "background_approval_runtime_txkey",
-      "core_approval_transaction",
-      "core_approval_transaction_approval_schema",
-      "core_approval_transaction_approval_ttl_ms",
-      "core_approval_transaction_approvalfilewhitelist",
-      "core_approval_transaction_asserthead",
-      "core_approval_transaction_assertrevision",
-      "core_approval_transaction_canonicalapprovalpayload",
-      "core_approval_transaction_normalizeapprovalplan",
-      "core_approval_transaction_normalizepath",
-      "core_approval_transaction_publicapproval",
-      "core_approval_transaction_text",
-      "core_approval_transaction_unique",
-      "core_approval_transaction_validatepreparedfiles",
-      "core_scope_intelligence_v2_assertscopeintelligence",
-      "core_utils_nowiso",
-      "tests_build30_approve_skip_auto_repair",
-      "tests_build30_approve_skip_auto_repair_allowed",
-      "tests_build30_approve_skip_auto_repair_approvalindex",
-      "tests_build30_approve_skip_auto_repair_canonical",
-      "tests_build30_approve_skip_auto_repair_chatindex",
-      "tests_build30_approve_skip_auto_repair_config",
-      "tests_build30_approve_skip_auto_repair_entry",
-      "tests_build30_approve_skip_auto_repair_escaped",
-      "tests_build30_approve_skip_auto_repair_manifest",
-      "tests_build30_approve_skip_auto_repair_plan",
-      "tests_build30_approve_skip_auto_repair_pub",
-      "tests_build30_approve_skip_auto_repair_runtime",
-      "tests_build30_approve_skip_auto_repair_ui",
-      "tests_build30_approve_skip_auto_repair_versionparts"
-    ],
-    "8": [
       "background_continuity_runtime",
       "background_continuity_runtime_activegithub",
       "background_continuity_runtime_ensurerecoveryalarm",
@@ -578,58 +416,7 @@
       "core_continuity_engine_uniq",
       "core_continuity_engine_writequeue"
     ],
-    "9": [
-      "packages_protocol_src_envelope_protocolmetadata",
-      "packages_protocol_src_ids_causationid",
-      "packages_protocol_src_ids_correlationid",
-      "packages_protocol_src_ids_traceid",
-      "packages_shared_src_event_bus",
-      "packages_shared_src_event_bus_assertpositivelistenerlimit",
-      "packages_shared_src_event_bus_defaultcreateeventid",
-      "packages_shared_src_event_bus_defaultnow",
-      "packages_shared_src_event_bus_eventbus",
-      "packages_shared_src_event_bus_eventbus_addsubscription",
-      "packages_shared_src_event_bus_eventbus_assertevent",
-      "packages_shared_src_event_bus_eventbus_clear",
-      "packages_shared_src_event_bus_eventbus_constructor",
-      "packages_shared_src_event_bus_eventbus_deactivate",
-      "packages_shared_src_event_bus_eventbus_listenercount",
-      "packages_shared_src_event_bus_eventbus_once",
-      "packages_shared_src_event_bus_eventbus_publish",
-      "packages_shared_src_event_bus_eventbus_publishevent",
-      "packages_shared_src_event_bus_eventbus_subscribe",
-      "packages_shared_src_event_bus_eventbus_subscribeall",
-      "packages_shared_src_event_bus_subscriptionrecord",
-      "packages_shared_src_event_types",
-      "packages_shared_src_event_types_anyeventof",
-      "packages_shared_src_event_types_aseventid",
-      "packages_shared_src_event_types_asserteventname",
-      "packages_shared_src_event_types_busevent",
-      "packages_shared_src_event_types_eventbusoptions",
-      "packages_shared_src_event_types_eventcatalog",
-      "packages_shared_src_event_types_eventdeliveryfailure",
-      "packages_shared_src_event_types_eventhandler",
-      "packages_shared_src_event_types_eventid",
-      "packages_shared_src_event_types_eventmetadata",
-      "packages_shared_src_event_types_eventname",
-      "packages_shared_src_event_types_eventnameof",
-      "packages_shared_src_event_types_eventof",
-      "packages_shared_src_event_types_iseventname",
-      "packages_shared_src_event_types_publishmetadatainput",
-      "packages_shared_src_event_types_publishreport",
-      "packages_shared_src_event_types_unsubscribe",
-      "packages_shared_src_index",
-      "packages_shared_src_index_packageidentity",
-      "scripts_test_build8_event_bus_runtime",
-      "scripts_test_build8_event_bus_runtime_bus",
-      "scripts_test_build8_event_bus_runtime_limited",
-      "scripts_test_build8_event_bus_runtime_mutationorder",
-      "scripts_test_build8_event_bus_runtime_opencatalogbus",
-      "scripts_test_build8_event_bus_runtime_order",
-      "scripts_test_build8_event_bus_runtime_testevents",
-      "scripts_test_build8_event_bus_runtime_unsubscribesecond"
-    ],
-    "10": [
+    "7": [
       "supabase_functions_ld_cloud_migrator_assets_index",
       "supabase_functions_ld_cloud_migrator_assets_index_nativefetch",
       "supabase_functions_ld_cloud_migrator_assets_legacy",
@@ -680,7 +467,7 @@
       "supabase_functions_ld_cloud_migrator_assets_legacy_verifylicensetoken",
       "supabase_functions_ld_cloud_migrator_assets_legacy_withsourcedb"
     ],
-    "11": [
+    "8": [
       "supabase_functions_ld_cloud_migrator_broker_index",
       "supabase_functions_ld_cloud_migrator_broker_index_accesstoken",
       "supabase_functions_ld_cloud_migrator_broker_index_admin",
@@ -731,7 +518,7 @@
       "supabase_functions_ld_cloud_migrator_broker_index_verifymigration",
       "supabase_functions_ld_cloud_migrator_broker_index_withsource"
     ],
-    "12": [
+    "9": [
       "background_intelligence_bootstrap",
       "background_intelligence_bootstrap_briefwithknowledge",
       "background_intelligence_bootstrap_decorateresult",
@@ -780,7 +567,53 @@
       "tests_build15_intelligence_test_secret",
       "tests_build15_intelligence_test_summary"
     ],
-    "13": [
+    "10": [
+      "background_integration_readiness_runtime",
+      "background_integration_readiness_runtime_assertremoteaccountintegrationreadiness",
+      "background_integration_readiness_runtime_assertwritecontext",
+      "background_integration_readiness_runtime_backendstatus",
+      "background_integration_readiness_runtime_installintegrationreadinessruntime",
+      "background_integration_readiness_runtime_installintegrationwriteguard",
+      "background_integration_readiness_runtime_loadaccountintegrationreadiness",
+      "background_integration_readiness_runtime_loadstatuses",
+      "background_integration_readiness_runtime_resolveprojectidforrepository",
+      "background_integration_readiness_runtime_text",
+      "background_integration_readiness_runtime_write_guard",
+      "core_account_integration_readiness",
+      "core_account_integration_readiness_account_integration_schema",
+      "core_account_integration_readiness_activegithub",
+      "core_account_integration_readiness_activesupabase",
+      "core_account_integration_readiness_assertaccountintegrationreadiness",
+      "core_account_integration_readiness_evaluateaccountintegrationreadiness",
+      "core_account_integration_readiness_list",
+      "core_account_integration_readiness_reason",
+      "core_account_integration_readiness_text",
+      "tests_build70_account_integration_gate_test",
+      "tests_build70_account_integration_gate_test_bootstrapsource",
+      "tests_build70_account_integration_gate_test_clientsource",
+      "tests_build70_account_integration_gate_test_coresource",
+      "tests_build70_account_integration_gate_test_currentbuild",
+      "tests_build70_account_integration_gate_test_githubready",
+      "tests_build70_account_integration_gate_test_guardedsource",
+      "tests_build70_account_integration_gate_test_installchanged",
+      "tests_build70_account_integration_gate_test_loggedout",
+      "tests_build70_account_integration_gate_test_manifest",
+      "tests_build70_account_integration_gate_test_missingscope",
+      "tests_build70_account_integration_gate_test_onlygithub",
+      "tests_build70_account_integration_gate_test_onlysupabase",
+      "tests_build70_account_integration_gate_test_pkg",
+      "tests_build70_account_integration_gate_test_projectrevoked",
+      "tests_build70_account_integration_gate_test_read",
+      "tests_build70_account_integration_gate_test_ready",
+      "tests_build70_account_integration_gate_test_reporevoked",
+      "tests_build70_account_integration_gate_test_roadmap",
+      "tests_build70_account_integration_gate_test_runtimesource",
+      "tests_build70_account_integration_gate_test_settings",
+      "tests_build70_account_integration_gate_test_settingssource",
+      "tests_build70_account_integration_gate_test_supabaseready",
+      "tests_build70_account_integration_gate_test_uisource"
+    ],
+    "11": [
       "apps_extension_package",
       "apps_extension_package_dependencies",
       "apps_extension_package_dependencies_github_decrypter_protocol",
@@ -824,7 +657,51 @@
       "packages_shared_package_type",
       "packages_shared_package_version"
     ],
-    "14": [
+    "12": [
+      "apps_extension_src_index",
+      "apps_extension_src_index_appidentity",
+      "apps_studio_src_index",
+      "apps_studio_src_index_appidentity",
+      "packages_protocol_src_envelope",
+      "packages_protocol_src_envelope_protocol_message_kinds",
+      "packages_protocol_src_envelope_protocoldestination",
+      "packages_protocol_src_envelope_protocolenvelope",
+      "packages_protocol_src_envelope_protocolenvelopeinput",
+      "packages_protocol_src_envelope_protocolmessagekind",
+      "packages_protocol_src_envelope_protocolmetadata",
+      "packages_protocol_src_guards",
+      "packages_protocol_src_guards_assertprotocolenvelope",
+      "packages_protocol_src_guards_isprotocolenvelope",
+      "packages_protocol_src_guards_isprotocolmessagekind",
+      "packages_protocol_src_guards_isrecord",
+      "packages_protocol_src_handshake",
+      "packages_protocol_src_handshake_protocolhandshakeaccept",
+      "packages_protocol_src_handshake_protocolhandshakeacceptpayload",
+      "packages_protocol_src_handshake_protocolhandshakehello",
+      "packages_protocol_src_handshake_protocolhandshakehellopayload",
+      "packages_protocol_src_handshake_protocolhandshakereject",
+      "packages_protocol_src_ids_messageid",
+      "packages_protocol_src_ids_peerid",
+      "packages_protocol_src_ids_sessionid",
+      "packages_protocol_src_json",
+      "packages_protocol_src_json_assertjsonvalue",
+      "packages_protocol_src_json_isjsonvalue",
+      "packages_protocol_src_json_jsonobject",
+      "packages_protocol_src_json_jsonprimitive",
+      "packages_protocol_src_peer",
+      "packages_protocol_src_peer_ispeerrole",
+      "packages_protocol_src_peer_peer_roles",
+      "packages_protocol_src_peer_peerrole",
+      "packages_protocol_src_peer_protocolpeer",
+      "packages_protocol_src_version",
+      "packages_protocol_src_version_issupportedprotocolversion",
+      "packages_protocol_src_version_protocol_family",
+      "packages_protocol_src_version_protocol_schema",
+      "packages_protocol_src_version_protocol_version",
+      "packages_protocol_src_version_protocolversion",
+      "packages_protocol_src_version_selectprotocolversion"
+    ],
+    "13": [
       "background_local_agent_orchestrator",
       "background_local_agent_orchestrator_activegithub",
       "background_local_agent_orchestrator_agentprompt",
@@ -868,50 +745,7 @@
       "background_local_agent_orchestrator_write_tools",
       "core_continuity_engine_continuitydigest"
     ],
-    "15": [
-      "apps_extension_src_index",
-      "apps_extension_src_index_appidentity",
-      "apps_studio_src_index",
-      "apps_studio_src_index_appidentity",
-      "packages_protocol_src_envelope",
-      "packages_protocol_src_envelope_protocol_message_kinds",
-      "packages_protocol_src_envelope_protocoldestination",
-      "packages_protocol_src_envelope_protocolenvelope",
-      "packages_protocol_src_envelope_protocolenvelopeinput",
-      "packages_protocol_src_envelope_protocolmessagekind",
-      "packages_protocol_src_guards",
-      "packages_protocol_src_guards_assertprotocolenvelope",
-      "packages_protocol_src_guards_isprotocolenvelope",
-      "packages_protocol_src_guards_isprotocolmessagekind",
-      "packages_protocol_src_guards_isrecord",
-      "packages_protocol_src_handshake",
-      "packages_protocol_src_handshake_protocolhandshakeaccept",
-      "packages_protocol_src_handshake_protocolhandshakeacceptpayload",
-      "packages_protocol_src_handshake_protocolhandshakehello",
-      "packages_protocol_src_handshake_protocolhandshakehellopayload",
-      "packages_protocol_src_handshake_protocolhandshakereject",
-      "packages_protocol_src_ids_messageid",
-      "packages_protocol_src_ids_peerid",
-      "packages_protocol_src_ids_sessionid",
-      "packages_protocol_src_json",
-      "packages_protocol_src_json_assertjsonvalue",
-      "packages_protocol_src_json_isjsonvalue",
-      "packages_protocol_src_json_jsonobject",
-      "packages_protocol_src_json_jsonprimitive",
-      "packages_protocol_src_peer",
-      "packages_protocol_src_peer_ispeerrole",
-      "packages_protocol_src_peer_peer_roles",
-      "packages_protocol_src_peer_peerrole",
-      "packages_protocol_src_peer_protocolpeer",
-      "packages_protocol_src_version",
-      "packages_protocol_src_version_issupportedprotocolversion",
-      "packages_protocol_src_version_protocol_family",
-      "packages_protocol_src_version_protocol_schema",
-      "packages_protocol_src_version_protocol_version",
-      "packages_protocol_src_version_protocolversion",
-      "packages_protocol_src_version_selectprotocolversion"
-    ],
-    "16": [
+    "14": [
       "supabase_functions_ld_cloud_migrator_complete_apply",
       "supabase_functions_ld_cloud_migrator_complete_apply_applyserviceconfig",
       "supabase_functions_ld_cloud_migrator_complete_auth",
@@ -953,7 +787,7 @@
       "supabase_functions_ld_cloud_migrator_complete_verify_sourcesnapshot",
       "supabase_functions_ld_cloud_migrator_complete_verify_verifycomplete"
     ],
-    "17": [
+    "15": [
       "supabase_functions_ld_supabase_manager_index",
       "supabase_functions_ld_supabase_manager_index_activesession",
       "supabase_functions_ld_supabase_manager_index_authorize",
@@ -994,6 +828,86 @@
       "supabase_functions_ld_supabase_manager_index_supabaseadmin",
       "supabase_functions_ld_supabase_manager_index_unb64url",
       "supabase_functions_ld_supabase_manager_index_verifylicensetoken"
+    ],
+    "16": [
+      "background_service_worker",
+      "background_service_worker_applyminimaledits",
+      "background_service_worker_applyplan",
+      "background_service_worker_approveplanning",
+      "background_service_worker_buildandapply",
+      "background_service_worker_cache_prefixes",
+      "background_service_worker_clearextensioncaches",
+      "background_service_worker_devicelabel",
+      "background_service_worker_getactiveconfig",
+      "background_service_worker_getagentprofile",
+      "background_service_worker_getagentrules",
+      "background_service_worker_getpending",
+      "background_service_worker_hasexplicitdeleteintent",
+      "background_service_worker_historypush",
+      "background_service_worker_makeagent",
+      "background_service_worker_normalizeattachments",
+      "background_service_worker_occurrencecount",
+      "background_service_worker_pending",
+      "background_service_worker_prepareplan",
+      "background_service_worker_prepareplanning",
+      "background_service_worker_response",
+      "background_service_worker_sendprogress",
+      "background_service_worker_stageautomaticupdate",
+      "background_service_worker_trainagent",
+      "background_service_worker_validatelicenseremote",
+      "core_command_parser",
+      "core_command_parser_parsecommand",
+      "core_command_parser_rules",
+      "core_context_builder_buildprojectcontext",
+      "core_repo_cache",
+      "core_repo_cache_blobkey",
+      "core_repo_cache_getcachedfile",
+      "core_repo_cache_getcachedtext",
+      "core_repo_cache_getmany",
+      "core_repo_cache_getrepositorycache",
+      "core_repo_cache_repokey",
+      "core_repo_cache_setmany",
+      "core_repo_cache_syncrepositorycache"
+    ],
+    "17": [
+      "packages_protocol_src_ids_causationid",
+      "packages_protocol_src_ids_correlationid",
+      "packages_protocol_src_ids_traceid",
+      "packages_shared_src_event_bus",
+      "packages_shared_src_event_bus_assertpositivelistenerlimit",
+      "packages_shared_src_event_bus_defaultcreateeventid",
+      "packages_shared_src_event_bus_defaultnow",
+      "packages_shared_src_event_bus_eventbus",
+      "packages_shared_src_event_bus_eventbus_addsubscription",
+      "packages_shared_src_event_bus_eventbus_assertevent",
+      "packages_shared_src_event_bus_eventbus_clear",
+      "packages_shared_src_event_bus_eventbus_constructor",
+      "packages_shared_src_event_bus_eventbus_deactivate",
+      "packages_shared_src_event_bus_eventbus_listenercount",
+      "packages_shared_src_event_bus_eventbus_once",
+      "packages_shared_src_event_bus_eventbus_publish",
+      "packages_shared_src_event_bus_eventbus_publishevent",
+      "packages_shared_src_event_bus_eventbus_subscribe",
+      "packages_shared_src_event_bus_eventbus_subscribeall",
+      "packages_shared_src_event_bus_subscriptionrecord",
+      "packages_shared_src_event_types",
+      "packages_shared_src_event_types_anyeventof",
+      "packages_shared_src_event_types_aseventid",
+      "packages_shared_src_event_types_asserteventname",
+      "packages_shared_src_event_types_busevent",
+      "packages_shared_src_event_types_eventbusoptions",
+      "packages_shared_src_event_types_eventcatalog",
+      "packages_shared_src_event_types_eventdeliveryfailure",
+      "packages_shared_src_event_types_eventhandler",
+      "packages_shared_src_event_types_eventid",
+      "packages_shared_src_event_types_eventmetadata",
+      "packages_shared_src_event_types_eventname",
+      "packages_shared_src_event_types_eventnameof",
+      "packages_shared_src_event_types_eventof",
+      "packages_shared_src_event_types_iseventname",
+      "packages_shared_src_event_types_publishmetadatainput",
+      "packages_shared_src_event_types_publishreport",
+      "packages_shared_src_event_types_unsubscribe"
     ],
     "18": [
       "supabase_functions_ld_supabase_oauth_index",
@@ -1036,44 +950,6 @@
       "supabase_functions_ld_supabase_oauth_index_verifyproject"
     ],
     "19": [
-      "apps_local_src_cli",
-      "apps_local_src_cli_daemon",
-      "apps_local_src_cli_shutdown",
-      "apps_local_src_config",
-      "apps_local_src_config_assertloopbackhost",
-      "apps_local_src_config_default_local_runtime_host",
-      "apps_local_src_config_default_local_runtime_port",
-      "apps_local_src_config_localruntimeconfig",
-      "apps_local_src_config_localruntimeconfigfromenv",
-      "apps_local_src_config_max_request_body_bytes",
-      "apps_local_src_config_parselocalruntimeport",
-      "apps_local_src_daemon",
-      "apps_local_src_daemon_createlocalruntimedaemon",
-      "apps_local_src_daemon_localruntimeboundaddress",
-      "apps_local_src_daemon_localruntimedaemon",
-      "apps_local_src_daemon_localruntimedaemon_address",
-      "apps_local_src_daemon_localruntimedaemon_addressinfo",
-      "apps_local_src_daemon_localruntimedaemon_closeserverbesteffort",
-      "apps_local_src_daemon_localruntimedaemon_constructor",
-      "apps_local_src_daemon_localruntimedaemon_events",
-      "apps_local_src_daemon_localruntimedaemon_start",
-      "apps_local_src_daemon_localruntimedaemon_startedat",
-      "apps_local_src_daemon_localruntimedaemon_state",
-      "apps_local_src_daemon_localruntimedaemon_stop",
-      "apps_local_src_daemon_localruntimedaemon_transition",
-      "apps_local_src_daemon_localruntimedaemonoptions",
-      "apps_local_src_identity_localruntimeidentity",
-      "apps_local_src_instance_lock_localruntimeinstancelock",
-      "apps_local_src_instance_lock_localruntimeinstancelock_release",
-      "apps_local_src_lifecycle",
-      "apps_local_src_lifecycle_islocalruntimestate",
-      "apps_local_src_lifecycle_local_runtime_states",
-      "apps_local_src_lifecycle_localruntimeeventcatalog",
-      "apps_local_src_lifecycle_localruntimelifecyclepayload",
-      "apps_local_src_lifecycle_localruntimestate",
-      "packages_shared_src_event_bus_createeventbus"
-    ],
-    "20": [
       "supabase_functions_ld_command_index",
       "supabase_functions_ld_command_index_backendsecret",
       "supabase_functions_ld_command_index_claimlocalexecution",
@@ -1111,44 +987,44 @@
       "supabase_functions_ld_command_index_validatebuild",
       "supabase_functions_ld_command_index_verifytoken"
     ],
-    "21": [
-      "background_context_engine_runtime",
-      "background_context_engine_runtime_activegithub",
-      "background_context_engine_runtime_buildprojectcontextv2",
-      "background_context_engine_runtime_handle",
-      "background_context_engine_runtime_installcontextengineruntime",
-      "background_context_engine_runtime_loadimpactsignals",
-      "background_context_engine_runtime_loadprofile",
-      "background_context_engine_runtime_sanitizeskills",
-      "background_context_engine_runtime_text",
-      "core_context_engine_v2",
-      "core_context_engine_v2_budgetedtext",
-      "core_context_engine_v2_buildcontextpack",
-      "core_context_engine_v2_bytes",
-      "core_context_engine_v2_compactcommits",
-      "core_context_engine_v2_compactdiagnostics",
-      "core_context_engine_v2_compactimpacts",
-      "core_context_engine_v2_compactoperation",
-      "core_context_engine_v2_compactprofile",
-      "core_context_engine_v2_compactskills",
-      "core_context_engine_v2_compactuseredit",
-      "core_context_engine_v2_context_engine_schema",
-      "core_context_engine_v2_core_files",
-      "core_context_engine_v2_encoder",
-      "core_context_engine_v2_loadrecentuseredits",
-      "core_context_engine_v2_normalizedwords",
-      "core_context_engine_v2_pathset",
-      "core_context_engine_v2_relevantdocs",
-      "core_context_engine_v2_relevantjournal",
-      "core_context_engine_v2_rendercontextauthority",
-      "core_context_engine_v2_safetreeentries",
-      "core_context_engine_v2_selectedfilecontent",
-      "core_context_engine_v2_sourcescore",
-      "core_context_engine_v2_text",
-      "core_context_engine_v2_unique",
-      "core_context_engine_v2_user_edit_store_prefix"
+    "20": [
+      "settings_config",
+      "settings_config_account_integration_schema",
+      "settings_config_agent_runtime_registry_schema",
+      "settings_config_agent_sandbox_diff_schema",
+      "settings_config_agent_sandbox_schema",
+      "settings_config_context_engine_schema",
+      "settings_config_continuity_engine_schema",
+      "settings_config_decrypter_bench_schema",
+      "settings_config_decrypter_local_medium_model",
+      "settings_config_decrypter_local_provider_id",
+      "settings_config_decrypter_local_recommended_model",
+      "settings_config_decrypter_local_small_model",
+      "settings_config_default_update_feed_url",
+      "settings_config_default_vault_api_base",
+      "settings_config_legacy_history_keys",
+      "settings_config_local_agent_schema",
+      "settings_config_local_model_router_schema",
+      "settings_config_mcp_marketplace_catalog_version",
+      "settings_config_mcp_marketplace_schema",
+      "settings_config_mcp_protocol_version",
+      "settings_config_mcp_runtime_schema",
+      "settings_config_native_agent_session_schema",
+      "settings_config_operation_journal_schema",
+      "settings_config_portable_skill_registry_schema",
+      "settings_config_portable_skill_schema",
+      "settings_config_product_id",
+      "settings_config_product_name",
+      "settings_config_reversible_operations_schema",
+      "settings_config_runtime_selection_schema",
+      "settings_config_scope_intelligence_schema",
+      "settings_config_store_url",
+      "settings_config_tool_runtime_schema",
+      "settings_config_universal_agent_bench_schema",
+      "settings_config_user_edit_context_schema",
+      "settings_config_verified_free_model_ids"
     ],
-    "22": [
+    "21": [
       "background_mcp_runtime",
       "background_mcp_runtime_asserthostpermission",
       "background_mcp_runtime_client",
@@ -1184,78 +1060,7 @@
       "core_mcp_trust_gateway_updateserver",
       "core_mcp_trust_gateway_valueat"
     ],
-    "23": [
-      "settings_config",
-      "settings_config_account_integration_schema",
-      "settings_config_agent_runtime_registry_schema",
-      "settings_config_agent_sandbox_diff_schema",
-      "settings_config_agent_sandbox_schema",
-      "settings_config_context_engine_schema",
-      "settings_config_continuity_engine_schema",
-      "settings_config_decrypter_bench_schema",
-      "settings_config_decrypter_local_medium_model",
-      "settings_config_decrypter_local_provider_id",
-      "settings_config_decrypter_local_recommended_model",
-      "settings_config_decrypter_local_small_model",
-      "settings_config_default_update_feed_url",
-      "settings_config_legacy_history_keys",
-      "settings_config_local_agent_schema",
-      "settings_config_local_model_router_schema",
-      "settings_config_mcp_marketplace_catalog_version",
-      "settings_config_mcp_marketplace_schema",
-      "settings_config_mcp_protocol_version",
-      "settings_config_mcp_runtime_schema",
-      "settings_config_native_agent_session_schema",
-      "settings_config_operation_journal_schema",
-      "settings_config_portable_skill_registry_schema",
-      "settings_config_portable_skill_schema",
-      "settings_config_product_id",
-      "settings_config_product_name",
-      "settings_config_reversible_operations_schema",
-      "settings_config_runtime_selection_schema",
-      "settings_config_scope_intelligence_schema",
-      "settings_config_store_url",
-      "settings_config_tool_runtime_schema",
-      "settings_config_universal_agent_bench_schema",
-      "settings_config_user_edit_context_schema",
-      "settings_config_verified_free_model_ids"
-    ],
-    "24": [
-      "background_service_worker",
-      "background_service_worker_applyminimaledits",
-      "background_service_worker_applyplan",
-      "background_service_worker_approveplanning",
-      "background_service_worker_buildandapply",
-      "background_service_worker_cache_prefixes",
-      "background_service_worker_clearextensioncaches",
-      "background_service_worker_devicelabel",
-      "background_service_worker_getactiveconfig",
-      "background_service_worker_getagentprofile",
-      "background_service_worker_getagentrules",
-      "background_service_worker_getpending",
-      "background_service_worker_hasexplicitdeleteintent",
-      "background_service_worker_historypush",
-      "background_service_worker_makeagent",
-      "background_service_worker_normalizeattachments",
-      "background_service_worker_occurrencecount",
-      "background_service_worker_pending",
-      "background_service_worker_prepareplan",
-      "background_service_worker_prepareplanning",
-      "background_service_worker_response",
-      "background_service_worker_sendprogress",
-      "background_service_worker_stageautomaticupdate",
-      "background_service_worker_trainagent",
-      "background_service_worker_validatelicenseremote",
-      "core_command_parser",
-      "core_command_parser_parsecommand",
-      "core_command_parser_rules",
-      "core_context_builder",
-      "core_context_builder_buildprojectcontext",
-      "core_context_builder_legacysignals",
-      "core_scope_lock_assertscopelock",
-      "settings_config_default_vault_api_base"
-    ],
-    "25": [
+    "22": [
       "background_service_worker_migrationsql",
       "core_utils_decodebase64utf8",
       "core_utils_encodebase64utf8",
@@ -1290,7 +1095,7 @@
       "github_git_adapter_installationtokencache",
       "github_git_adapter_trustedgithubdownloadurl"
     ],
-    "26": [
+    "23": [
       "content_skill_router",
       "content_skill_router_attachskillcontext",
       "content_skill_router_autoenabled",
@@ -1323,7 +1128,7 @@
       "content_skill_router_texttobase64",
       "content_skill_router_updatecustom"
     ],
-    "27": [
+    "24": [
       "core_patch_engine",
       "core_patch_engine_applytextpatch",
       "core_patch_engine_changedwindow",
@@ -1356,7 +1161,39 @@
       "core_utils_issensitivepath",
       "core_utils_istextpath"
     ],
-    "28": [
+    "25": [
+      "background_model_gateway_bootstrap_geminiagent_plancommand",
+      "background_model_gateway_bootstrap_geminiagent_processcommand",
+      "background_model_gateway_bootstrap_inspect",
+      "background_model_gateway_bootstrap_persist",
+      "core_model_gateway",
+      "core_model_gateway_assertgatewaydecision",
+      "core_model_gateway_decryptermodelgateway",
+      "core_model_gateway_model_gateway_modes",
+      "core_model_gateway_model_gateway_name",
+      "core_model_gateway_model_gateway_providers",
+      "core_model_gateway_model_gateway_schema",
+      "core_model_gateway_normalizegatewaymode",
+      "core_model_gateway_publicgatewaysummary",
+      "core_model_gateway_validategatewaydecision",
+      "tests_build18_decrypter_local_sim",
+      "tests_build18_decrypter_local_sim_assert",
+      "tests_build18_decrypter_local_sim_between",
+      "tests_build18_decrypter_local_sim_commandsrc",
+      "tests_build18_decrypter_local_sim_decision",
+      "tests_build18_decrypter_local_sim_deleteintent",
+      "tests_build18_decrypter_local_sim_gatewaysrc",
+      "tests_build18_decrypter_local_sim_loadfunction",
+      "tests_build18_decrypter_local_sim_none",
+      "tests_build18_decrypter_local_sim_patchcheck",
+      "tests_build18_decrypter_local_sim_real",
+      "tests_build18_decrypter_local_sim_route",
+      "tests_build18_decrypter_local_sim_stripjsonfence",
+      "tests_build18_decrypter_local_sim_stripts",
+      "tests_build18_decrypter_local_sim_telemetry",
+      "tests_build18_decrypter_local_sim_validatebuild"
+    ],
+    "26": [
       "background_reversible_operations_runtime",
       "background_reversible_operations_runtime_activegithub",
       "background_reversible_operations_runtime_applycascade",
@@ -1388,7 +1225,7 @@
       "background_reversible_operations_runtime_treemap",
       "background_reversible_operations_runtime_unique"
     ],
-    "29": [
+    "27": [
       "tests_build57_final_homologation_test",
       "tests_build57_final_homologation_test_app",
       "tests_build57_final_homologation_test_atleast",
@@ -1420,7 +1257,7 @@
       "tests_build57_final_homologation_test_updateruntime",
       "tests_build57_final_homologation_test_zeroguard"
     ],
-    "30": [
+    "28": [
       "tests_build68_local_agent_orchestrator_test",
       "tests_build68_local_agent_orchestrator_test_approval",
       "tests_build68_local_agent_orchestrator_test_changed",
@@ -1452,38 +1289,38 @@
       "tests_build68_local_agent_orchestrator_test_ui",
       "tests_build68_local_agent_orchestrator_test_unavailable"
     ],
-    "31": [
-      "background_github_app_runtime",
-      "background_github_app_runtime_installgithubappruntime",
-      "background_github_app_runtime_requestgithubappbackend",
-      "background_github_autosync_runtime",
-      "background_github_autosync_runtime_clean",
-      "background_github_autosync_runtime_findauthorizedrepository",
-      "background_github_autosync_runtime_getstatus",
-      "background_github_autosync_runtime_installgithubautosyncruntime",
-      "background_github_autosync_runtime_keyfor",
-      "background_github_autosync_runtime_neutralizemapping",
-      "background_github_autosync_runtime_reconcilegithubautosync",
-      "background_github_autosync_runtime_statusshape",
-      "background_github_autosync_runtime_storestatus",
-      "settings_config_clampint",
-      "settings_config_default_settings",
-      "settings_config_legacy_storage_keys",
-      "settings_config_localendpoint",
-      "settings_config_mergesettings",
-      "settings_config_storage_key",
-      "storage_secret_sanitizer",
-      "storage_secret_sanitizer_forbiddenatpath",
-      "storage_secret_sanitizer_sanitizedurablesettings",
-      "storage_secret_sanitizer_scrub",
-      "storage_settings_store",
-      "storage_settings_store_getsettings",
-      "storage_settings_store_readcanonicalorlegacysettings",
-      "storage_settings_store_samejson",
-      "storage_settings_store_savesettings",
-      "storage_settings_store_updatesettings"
+    "29": [
+      "core_agent_sandbox",
+      "core_agent_sandbox_agent_sandbox_diff_schema",
+      "core_agent_sandbox_agent_sandbox_materialization_schema",
+      "core_agent_sandbox_agent_sandbox_schema",
+      "core_agent_sandbox_allowed_actions",
+      "core_agent_sandbox_assertsafesandboxentry",
+      "core_agent_sandbox_buildsandboxmaterialization",
+      "core_agent_sandbox_bytes",
+      "core_agent_sandbox_canonicalsandboxpath",
+      "core_agent_sandbox_createsandboxdescriptor",
+      "core_agent_sandbox_err",
+      "core_agent_sandbox_normalizechange",
+      "core_agent_sandbox_normalizesandboxdiff",
+      "core_agent_sandbox_te",
+      "core_agent_sandbox_text",
+      "tests_build73_agent_sandbox_shadow_worktree_test",
+      "tests_build73_agent_sandbox_shadow_worktree_test_build",
+      "tests_build73_agent_sandbox_shadow_worktree_test_client",
+      "tests_build73_agent_sandbox_shadow_worktree_test_core",
+      "tests_build73_agent_sandbox_shadow_worktree_test_entry",
+      "tests_build73_agent_sandbox_shadow_worktree_test_manifest",
+      "tests_build73_agent_sandbox_shadow_worktree_test_materialized",
+      "tests_build73_agent_sandbox_shadow_worktree_test_pkg",
+      "tests_build73_agent_sandbox_shadow_worktree_test_read",
+      "tests_build73_agent_sandbox_shadow_worktree_test_roadmap",
+      "tests_build73_agent_sandbox_shadow_worktree_test_running",
+      "tests_build73_agent_sandbox_shadow_worktree_test_runtime",
+      "tests_build73_agent_sandbox_shadow_worktree_test_sandbox",
+      "tests_build73_agent_sandbox_shadow_worktree_test_settings"
     ],
-    "32": [
+    "30": [
       "core_mcp_client",
       "core_mcp_client_fetchmcp",
       "core_mcp_client_mcpclient",
@@ -1514,7 +1351,7 @@
       "core_mcp_protocol_validatemcpname",
       "core_mcp_trust_gateway_mcpbearertoken"
     ],
-    "33": [
+    "31": [
       "background_mcp_marketplace_runtime",
       "background_mcp_marketplace_runtime_handle",
       "background_mcp_marketplace_runtime_installmcpmarketplaceruntime",
@@ -1544,7 +1381,7 @@
       "core_mcp_marketplace_validatehost",
       "core_mcp_protocol_originpermissionpattern"
     ],
-    "34": [
+    "32": [
       "supabase_functions_ld_project_state_index",
       "supabase_functions_ld_project_state_index_admin",
       "supabase_functions_ld_project_state_index_authorize",
@@ -1574,7 +1411,7 @@
       "supabase_functions_ld_project_state_index_shahex",
       "supabase_functions_ld_project_state_index_verifylicensetoken"
     ],
-    "35": [
+    "33": [
       "any",
       "runtime_decrypter_local_homologate",
       "runtime_decrypter_local_homologate_bearer",
@@ -1603,64 +1440,65 @@
       "runtime_decrypter_local_worker_agent_validate_config",
       "runtimeerror"
     ],
-    "36": [
-      "background_agent_runtime_client",
-      "background_agent_runtime_client_actions",
-      "background_agent_runtime_client_installagentruntimeclient",
-      "background_agent_runtime_client_requestagentruntime",
-      "background_model_gateway_bootstrap",
-      "background_model_gateway_bootstrap_attachgateway",
-      "background_model_gateway_bootstrap_geminiagent_backendcommand",
-      "background_model_gateway_bootstrap_status",
+    "34": [
+      "background_approval_runtime",
+      "background_approval_runtime_activegithub",
+      "background_approval_runtime_applyminimaledits",
+      "background_approval_runtime_applytransaction",
+      "background_approval_runtime_approvalruntime",
+      "background_approval_runtime_canceltransaction",
+      "background_approval_runtime_countoccurrences",
+      "background_approval_runtime_currenthead",
+      "background_approval_runtime_emit",
+      "background_approval_runtime_explicitdelete",
+      "background_approval_runtime_freezetransaction",
+      "background_approval_runtime_gettransaction",
+      "background_approval_runtime_installapprovalruntime",
+      "background_approval_runtime_normalizeattachments",
+      "background_approval_runtime_preparetransaction",
+      "background_approval_runtime_projectrules",
+      "background_approval_runtime_pushhistory",
+      "background_approval_runtime_savetransaction",
+      "background_approval_runtime_sha256",
+      "background_approval_runtime_text",
+      "background_approval_runtime_txkey",
+      "core_approval_transaction_asserthead",
+      "core_approval_transaction_assertrevision",
+      "core_approval_transaction_publicapproval",
+      "core_scope_intelligence_v2_assertscopeintelligence",
+      "core_scope_lock_assertscopelock",
+      "core_utils_nowiso"
+    ],
+    "35": [
       "background_model_gateway_bootstrap_trust",
-      "background_model_gateway_client",
-      "background_model_gateway_client_getmodelgatewaystatus",
-      "security_trust",
-      "security_trust_cachevalid",
-      "security_trust_cleartrustsession",
-      "security_trust_computeclientintegrityfingerprint",
-      "security_trust_critical_assets",
-      "security_trust_ensuretrustsession",
-      "security_trust_hex",
-      "security_trust_randomnonce",
-      "security_trust_sessionget",
-      "security_trust_sessionset",
-      "security_trust_sha256",
-      "security_trust_trust_critical_assets",
-      "security_trust_trustpublicsummary",
+      "background_project_state_runtime",
+      "background_project_state_runtime_inspectprojectstate",
+      "background_project_state_runtime_installprojectstateruntime",
+      "background_supabase_oauth_runtime",
+      "background_supabase_oauth_runtime_installsupabaseoauthruntime",
+      "background_supabase_oauth_runtime_manager_actions",
+      "background_supabase_oauth_runtime_oauth_actions",
+      "background_supabase_oauth_runtime_requestbackend",
+      "core_context_builder",
+      "core_context_builder_legacysignals",
+      "settings_config_clampint",
       "settings_config_default_backend_base",
-      "settings_config_trust_protocol_version",
-      "settings_config_version"
+      "settings_config_default_settings",
+      "settings_config_legacy_storage_keys",
+      "settings_config_localendpoint",
+      "settings_config_mergesettings",
+      "settings_config_storage_key",
+      "storage_secret_sanitizer",
+      "storage_secret_sanitizer_forbiddenatpath",
+      "storage_secret_sanitizer_sanitizedurablesettings",
+      "storage_secret_sanitizer_scrub",
+      "storage_settings_store",
+      "storage_settings_store_getsettings",
+      "storage_settings_store_readcanonicalorlegacysettings",
+      "storage_settings_store_samejson",
+      "storage_settings_store_savesettings"
     ],
-    "37": [
-      "apps_local_src_identity",
-      "apps_local_src_identity_local_runtime_build",
-      "apps_local_src_identity_local_runtime_features",
-      "apps_local_src_identity_local_runtime_version",
-      "apps_local_src_index",
-      "apps_local_src_server",
-      "apps_local_src_server_buildhealth",
-      "apps_local_src_server_createlocalruntimehttpserver",
-      "apps_local_src_server_handlehandshake",
-      "apps_local_src_server_ishandshakehellopayload",
-      "apps_local_src_server_isrecord",
-      "apps_local_src_server_localruntimehealth",
-      "apps_local_src_server_localruntimeservercontext",
-      "apps_local_src_server_localruntimeservercontext_getaddress",
-      "apps_local_src_server_localruntimeservercontext_getstartedat",
-      "apps_local_src_server_localruntimeservercontext_getstate",
-      "apps_local_src_server_localruntimeservercontext_now",
-      "apps_local_src_server_readjsonbody",
-      "apps_local_src_server_writejson",
-      "packages_protocol_src_envelope_envelope",
-      "packages_protocol_src_index",
-      "packages_protocol_src_index_packageidentity",
-      "packages_protocol_src_version_supported_protocol_versions",
-      "scripts_test_build10_local_runtime_runtime",
-      "scripts_test_build10_local_runtime_runtime_lockpath",
-      "scripts_test_build10_local_runtime_runtime_temproot"
-    ],
-    "38": [
+    "36": [
       "package",
       "package_devdependencies",
       "package_devdependencies_tsx",
@@ -1673,6 +1511,7 @@
       "package_private",
       "package_scripts",
       "package_scripts_check_build10",
+      "package_scripts_check_build11",
       "package_scripts_check_build4",
       "package_scripts_check_build5",
       "package_scripts_check_build6",
@@ -1688,7 +1527,35 @@
       "types_node",
       "typescript"
     ],
-    "39": [
+    "37": [
+      "supabase_functions_ld_github_app_index",
+      "supabase_functions_ld_github_app_index_appjwt",
+      "supabase_functions_ld_github_app_index_authorize",
+      "supabase_functions_ld_github_app_index_b64url",
+      "supabase_functions_ld_github_app_index_callbackredirect",
+      "supabase_functions_ld_github_app_index_consumestate",
+      "supabase_functions_ld_github_app_index_cors",
+      "supabase_functions_ld_github_app_index_createstate",
+      "supabase_functions_ld_github_app_index_dec",
+      "supabase_functions_ld_github_app_index_enc",
+      "supabase_functions_ld_github_app_index_getappconfig",
+      "supabase_functions_ld_github_app_index_getprivatekey",
+      "supabase_functions_ld_github_app_index_githubapprequest",
+      "supabase_functions_ld_github_app_index_installationrequest",
+      "supabase_functions_ld_github_app_index_installationtoken",
+      "supabase_functions_ld_github_app_index_json",
+      "supabase_functions_ld_github_app_index_listrepositories",
+      "supabase_functions_ld_github_app_index_publickey",
+      "supabase_functions_ld_github_app_index_randomstate",
+      "supabase_functions_ld_github_app_index_redirect",
+      "supabase_functions_ld_github_app_index_servicekey",
+      "supabase_functions_ld_github_app_index_sha",
+      "supabase_functions_ld_github_app_index_staterow",
+      "supabase_functions_ld_github_app_index_supabaseadmin",
+      "supabase_functions_ld_github_app_index_unb64url",
+      "supabase_functions_ld_github_app_index_verifylicensetoken"
+    ],
+    "38": [
       "ai_gemini_agent",
       "ai_gemini_agent_edit_schema",
       "ai_gemini_agent_geminiagent",
@@ -1715,7 +1582,137 @@
       "settings_config_isverifiedfreemodel",
       "settings_config_normalizegeminimodelid"
     ],
+    "39": [
+      "apps_local_src_daemon_localruntimedaemon",
+      "apps_local_src_daemon_localruntimedaemon_address",
+      "apps_local_src_daemon_localruntimedaemon_addressinfo",
+      "apps_local_src_daemon_localruntimedaemon_closedatabasebesteffort",
+      "apps_local_src_daemon_localruntimedaemon_closeserverbesteffort",
+      "apps_local_src_daemon_localruntimedaemon_events",
+      "apps_local_src_daemon_localruntimedaemon_start",
+      "apps_local_src_daemon_localruntimedaemon_startedat",
+      "apps_local_src_daemon_localruntimedaemon_state",
+      "apps_local_src_daemon_localruntimedaemon_stop",
+      "apps_local_src_daemon_localruntimedaemon_transition",
+      "apps_local_src_lifecycle",
+      "apps_local_src_lifecycle_islocalruntimestate",
+      "apps_local_src_lifecycle_local_runtime_states",
+      "apps_local_src_lifecycle_localruntimedatabaseclosedpayload",
+      "apps_local_src_lifecycle_localruntimedatabaseopenedpayload",
+      "apps_local_src_lifecycle_localruntimeeventcatalog",
+      "apps_local_src_lifecycle_localruntimelifecyclepayload",
+      "apps_local_src_lifecycle_localruntimestate",
+      "scripts_test_build11_persistent_local_database_runtime",
+      "scripts_test_build11_persistent_local_database_runtime_config",
+      "scripts_test_build11_persistent_local_database_runtime_databasepath",
+      "scripts_test_build11_persistent_local_database_runtime_lockpath",
+      "scripts_test_build11_persistent_local_database_runtime_temproot"
+    ],
     "40": [
+      "apps_local_src_daemon_localruntimedaemon_database",
+      "apps_local_src_database_integer",
+      "apps_local_src_database_isthenable",
+      "apps_local_src_database_localdatabase",
+      "apps_local_src_database_localdatabase_applymigrations",
+      "apps_local_src_database_localdatabase_close",
+      "apps_local_src_database_localdatabase_configure",
+      "apps_local_src_database_localdatabase_deletemetadata",
+      "apps_local_src_database_localdatabase_foreignkeysenabled",
+      "apps_local_src_database_localdatabase_getmetadata",
+      "apps_local_src_database_localdatabase_integritycheck",
+      "apps_local_src_database_localdatabase_isopen",
+      "apps_local_src_database_localdatabase_journalmode",
+      "apps_local_src_database_localdatabase_listmigrations",
+      "apps_local_src_database_localdatabase_metadatakey",
+      "apps_local_src_database_localdatabase_open",
+      "apps_local_src_database_localdatabase_quickcheck",
+      "apps_local_src_database_localdatabase_requiredatabase",
+      "apps_local_src_database_localdatabase_setmetadata",
+      "apps_local_src_database_localdatabase_status",
+      "apps_local_src_database_localdatabase_transaction",
+      "apps_local_src_database_localdatabase_userversion",
+      "apps_local_src_database_text",
+      "packages_protocol_src_json_jsonvalue"
+    ],
+    "41": [
+      "background_agent_runtime_client",
+      "background_agent_runtime_client_actions",
+      "background_agent_runtime_client_installagentruntimeclient",
+      "background_agent_runtime_client_requestagentruntime",
+      "background_model_gateway_bootstrap",
+      "background_model_gateway_bootstrap_attachgateway",
+      "background_model_gateway_bootstrap_geminiagent_backendcommand",
+      "background_model_gateway_bootstrap_status",
+      "background_model_gateway_client",
+      "background_model_gateway_client_getmodelgatewaystatus",
+      "security_trust",
+      "security_trust_cachevalid",
+      "security_trust_cleartrustsession",
+      "security_trust_computeclientintegrityfingerprint",
+      "security_trust_critical_assets",
+      "security_trust_ensuretrustsession",
+      "security_trust_hex",
+      "security_trust_randomnonce",
+      "security_trust_sessionget",
+      "security_trust_sessionset",
+      "security_trust_sha256",
+      "security_trust_trust_critical_assets",
+      "security_trust_trustpublicsummary",
+      "settings_config_trust_protocol_version"
+    ],
+    "42": [
+      "core_approval_transaction",
+      "core_approval_transaction_approval_schema",
+      "core_approval_transaction_approval_ttl_ms",
+      "core_approval_transaction_approvalfilewhitelist",
+      "core_approval_transaction_canonicalapprovalpayload",
+      "core_approval_transaction_normalizeapprovalplan",
+      "core_approval_transaction_normalizepath",
+      "core_approval_transaction_text",
+      "core_approval_transaction_unique",
+      "core_approval_transaction_validatepreparedfiles",
+      "tests_build30_approve_skip_auto_repair",
+      "tests_build30_approve_skip_auto_repair_allowed",
+      "tests_build30_approve_skip_auto_repair_approvalindex",
+      "tests_build30_approve_skip_auto_repair_canonical",
+      "tests_build30_approve_skip_auto_repair_chatindex",
+      "tests_build30_approve_skip_auto_repair_config",
+      "tests_build30_approve_skip_auto_repair_entry",
+      "tests_build30_approve_skip_auto_repair_escaped",
+      "tests_build30_approve_skip_auto_repair_manifest",
+      "tests_build30_approve_skip_auto_repair_plan",
+      "tests_build30_approve_skip_auto_repair_pub",
+      "tests_build30_approve_skip_auto_repair_runtime",
+      "tests_build30_approve_skip_auto_repair_ui",
+      "tests_build30_approve_skip_auto_repair_versionparts"
+    ],
+    "43": [
+      "packages_protocol_src_ids",
+      "packages_protocol_src_ids_ascausationid",
+      "packages_protocol_src_ids_ascorrelationid",
+      "packages_protocol_src_ids_asmessageid",
+      "packages_protocol_src_ids_asprotocolid",
+      "packages_protocol_src_ids_assessionid",
+      "packages_protocol_src_ids_astraceid",
+      "packages_protocol_src_ids_protocolid",
+      "packages_protocol_src_version_supported_protocol_versions",
+      "packages_shared_src_index",
+      "packages_shared_src_index_packageidentity",
+      "scripts_test_build10_local_runtime_runtime",
+      "scripts_test_build10_local_runtime_runtime_config",
+      "scripts_test_build10_local_runtime_runtime_databasepath",
+      "scripts_test_build10_local_runtime_runtime_lockpath",
+      "scripts_test_build10_local_runtime_runtime_temproot",
+      "scripts_test_build8_event_bus_runtime",
+      "scripts_test_build8_event_bus_runtime_bus",
+      "scripts_test_build8_event_bus_runtime_limited",
+      "scripts_test_build8_event_bus_runtime_mutationorder",
+      "scripts_test_build8_event_bus_runtime_opencatalogbus",
+      "scripts_test_build8_event_bus_runtime_order",
+      "scripts_test_build8_event_bus_runtime_testevents",
+      "scripts_test_build8_event_bus_runtime_unsubscribesecond"
+    ],
+    "44": [
       "supabase_functions_ld_model_gateway_index",
       "supabase_functions_ld_model_gateway_index_authorize",
       "supabase_functions_ld_model_gateway_index_autoprofile",
@@ -1741,33 +1738,7 @@
       "supabase_functions_ld_model_gateway_index_verifysigned",
       "supabase_functions_ld_model_gateway_index_verifytrust"
     ],
-    "41": [
-      "tests_build70_account_integration_gate_test",
-      "tests_build70_account_integration_gate_test_bootstrapsource",
-      "tests_build70_account_integration_gate_test_clientsource",
-      "tests_build70_account_integration_gate_test_coresource",
-      "tests_build70_account_integration_gate_test_currentbuild",
-      "tests_build70_account_integration_gate_test_githubready",
-      "tests_build70_account_integration_gate_test_guardedsource",
-      "tests_build70_account_integration_gate_test_installchanged",
-      "tests_build70_account_integration_gate_test_loggedout",
-      "tests_build70_account_integration_gate_test_manifest",
-      "tests_build70_account_integration_gate_test_missingscope",
-      "tests_build70_account_integration_gate_test_onlygithub",
-      "tests_build70_account_integration_gate_test_onlysupabase",
-      "tests_build70_account_integration_gate_test_pkg",
-      "tests_build70_account_integration_gate_test_projectrevoked",
-      "tests_build70_account_integration_gate_test_read",
-      "tests_build70_account_integration_gate_test_ready",
-      "tests_build70_account_integration_gate_test_reporevoked",
-      "tests_build70_account_integration_gate_test_roadmap",
-      "tests_build70_account_integration_gate_test_runtimesource",
-      "tests_build70_account_integration_gate_test_settings",
-      "tests_build70_account_integration_gate_test_settingssource",
-      "tests_build70_account_integration_gate_test_supabaseready",
-      "tests_build70_account_integration_gate_test_uisource"
-    ],
-    "42": [
+    "45": [
       "core_mcp_marketplace_mcp_marketplace_catalog_version",
       "core_mcp_marketplace_mcp_marketplace_schema",
       "tests_build63_curated_mcp_marketplace_test",
@@ -1792,7 +1763,7 @@
       "tests_build63_curated_mcp_marketplace_test_trust",
       "tests_build63_curated_mcp_marketplace_test_ui"
     ],
-    "43": [
+    "46": [
       "tests_build24_security_chaos",
       "tests_build24_security_chaos_admit",
       "tests_build24_security_chaos_attest",
@@ -1817,54 +1788,78 @@
       "tests_build24_security_chaos_versionmatch",
       "tests_build24_security_chaos_webhook"
     ],
-    "44": [
-      "benchmark_universal_agent_bench",
-      "benchmark_universal_agent_bench_rununiversalagentbench",
-      "benchmark_universal_agent_bench_v1_universal_agent_bench_build",
-      "benchmark_universal_agent_bench_v1_universal_agent_bench_schema",
-      "core_local_model_router",
-      "core_local_model_router_classifylocaltask",
-      "core_local_model_router_default_local_model_tiers",
-      "core_local_model_router_degradationorder",
-      "core_local_model_router_local_model_router_schema",
-      "core_local_model_router_localrouterpublicstatus",
-      "core_local_model_router_normalizelocalmodeltiers",
-      "core_local_model_router_routelocalmodel",
-      "core_local_model_router_text",
-      "core_local_model_router_tier_order",
-      "core_local_model_router_uniq",
-      "tests_build75_universal_agent_bench_test",
-      "tests_build75_universal_agent_bench_test_currentbuild",
-      "tests_build75_universal_agent_bench_test_manifest",
-      "tests_build75_universal_agent_bench_test_pkg",
-      "tests_build75_universal_agent_bench_test_read",
-      "tests_build75_universal_agent_bench_test_roadmap",
-      "tests_build75_universal_agent_bench_test_settings"
+    "47": [
+      "apps_local_src_cli",
+      "apps_local_src_cli_daemon",
+      "apps_local_src_cli_shutdown",
+      "apps_local_src_config",
+      "apps_local_src_config_assertloopbackhost",
+      "apps_local_src_config_default_local_runtime_host",
+      "apps_local_src_config_default_local_runtime_port",
+      "apps_local_src_config_localruntimeconfig",
+      "apps_local_src_config_localruntimeconfigfromenv",
+      "apps_local_src_config_parselocalruntimeport",
+      "apps_local_src_daemon",
+      "apps_local_src_daemon_createlocalruntimedaemon",
+      "apps_local_src_daemon_localruntimeboundaddress",
+      "apps_local_src_daemon_localruntimedaemon_constructor",
+      "apps_local_src_daemon_localruntimedaemonoptions",
+      "apps_local_src_database_createlocaldatabase",
+      "apps_local_src_identity",
+      "apps_local_src_identity_createlocalruntimepeer",
+      "apps_local_src_identity_local_runtime_features",
+      "apps_local_src_identity_localruntimeidentity",
+      "packages_protocol_src_ids_aspeerid",
+      "packages_shared_src_event_bus_createeventbus"
     ],
-    "45": [
-      "background_guarded_commit_bootstrap",
-      "background_integration_readiness_runtime",
-      "background_integration_readiness_runtime_assertremoteaccountintegrationreadiness",
-      "background_integration_readiness_runtime_assertwritecontext",
-      "background_integration_readiness_runtime_backendstatus",
-      "background_integration_readiness_runtime_installintegrationreadinessruntime",
-      "background_integration_readiness_runtime_installintegrationwriteguard",
-      "background_integration_readiness_runtime_loadaccountintegrationreadiness",
-      "background_integration_readiness_runtime_loadstatuses",
-      "background_integration_readiness_runtime_resolveprojectidforrepository",
-      "background_integration_readiness_runtime_text",
-      "background_integration_readiness_runtime_write_guard",
-      "core_account_integration_readiness",
-      "core_account_integration_readiness_account_integration_schema",
-      "core_account_integration_readiness_activegithub",
-      "core_account_integration_readiness_activesupabase",
-      "core_account_integration_readiness_assertaccountintegrationreadiness",
-      "core_account_integration_readiness_evaluateaccountintegrationreadiness",
-      "core_account_integration_readiness_list",
-      "core_account_integration_readiness_reason",
-      "core_account_integration_readiness_text"
+    "48": [
+      "background_native_agent_session_runtime",
+      "background_native_agent_session_runtime_err",
+      "background_native_agent_session_runtime_getsession",
+      "background_native_agent_session_runtime_handle",
+      "background_native_agent_session_runtime_installnativeagentsessionruntime",
+      "background_native_agent_session_runtime_load",
+      "background_native_agent_session_runtime_put",
+      "background_native_agent_session_runtime_save",
+      "background_native_agent_session_runtime_text",
+      "core_native_agent_sessions",
+      "core_native_agent_sessions_assertsession",
+      "core_native_agent_sessions_bindnativeproposal",
+      "core_native_agent_sessions_createnativeagentsession",
+      "core_native_agent_sessions_err",
+      "core_native_agent_sessions_marknativesessionverified",
+      "core_native_agent_sessions_runtimeselectionrecord",
+      "core_native_agent_sessions_strategies",
+      "core_native_agent_sessions_strategy",
+      "core_native_agent_sessions_switchnativeruntime",
+      "core_native_agent_sessions_text",
+      "core_native_agent_sessions_verifynativeresume",
+      "core_native_agent_sessions_verifyproposalbinding"
     ],
-    "46": [
+    "49": [
+      "apps_local_src_database",
+      "apps_local_src_database_localdatabase_constructor",
+      "apps_local_src_database_localdatabasemigrationrecord",
+      "apps_local_src_database_localdatabaseoptions",
+      "apps_local_src_database_migrations",
+      "apps_local_src_database_migrations_checksum",
+      "apps_local_src_database_migrations_local_database_bootstrap_sql",
+      "apps_local_src_database_migrations_local_database_migrations",
+      "apps_local_src_database_migrations_local_database_schema_version",
+      "apps_local_src_database_migrations_localdatabasemigration",
+      "apps_local_src_database_migrations_localdatabasemigration_apply",
+      "apps_local_src_database_path",
+      "apps_local_src_database_path_defaultlocalruntimedatadirectory",
+      "apps_local_src_database_path_ensurelocaldatabaseparent",
+      "apps_local_src_database_path_local_database_filename",
+      "apps_local_src_database_path_resolvelocaldatabasepath",
+      "apps_local_src_database_rawmetadatarow",
+      "apps_local_src_database_rawmigrationrow",
+      "apps_local_src_index",
+      "packages_protocol_src_index",
+      "packages_protocol_src_index_packageidentity"
+    ],
+    "50": [
       "benchmark_decrypterbench_v2",
       "benchmark_decrypterbench_v2_bench",
       "benchmark_decrypterbench_v2_cases",
@@ -1887,7 +1882,30 @@
       "core_local_agent_approval_text",
       "core_local_agent_approval_write_tools"
     ],
-    "47": [
+    "51": [
+      "benchmark_universal_agent_bench",
+      "benchmark_universal_agent_bench_rununiversalagentbench",
+      "benchmark_universal_agent_bench_v1",
+      "benchmark_universal_agent_bench_v1_assert",
+      "benchmark_universal_agent_bench_v1_cases",
+      "benchmark_universal_agent_bench_v1_expects",
+      "benchmark_universal_agent_bench_v1_expectsasync",
+      "benchmark_universal_agent_bench_v1_probe",
+      "benchmark_universal_agent_bench_v1_readyfixture",
+      "benchmark_universal_agent_bench_v1_rununiversalagentbench",
+      "benchmark_universal_agent_bench_v1_universal_agent_bench_build",
+      "benchmark_universal_agent_bench_v1_universal_agent_bench_schema",
+      "core_agent_sandbox_assertsandboxdiffbinding",
+      "core_native_agent_sessions_closenativesession",
+      "tests_build75_universal_agent_bench_test",
+      "tests_build75_universal_agent_bench_test_currentbuild",
+      "tests_build75_universal_agent_bench_test_manifest",
+      "tests_build75_universal_agent_bench_test_pkg",
+      "tests_build75_universal_agent_bench_test_read",
+      "tests_build75_universal_agent_bench_test_roadmap",
+      "tests_build75_universal_agent_bench_test_settings"
+    ],
+    "52": [
       "core_continuity_engine_continuity_schema",
       "tests_build67_continuity_engine_test",
       "tests_build67_continuity_engine_test_client",
@@ -1910,7 +1928,52 @@
       "tests_build67_continuity_engine_test_toolruntime",
       "tests_build67_continuity_engine_test_ui"
     ],
-    "48": [
+    "53": [
+      "tests_build70_production_closeout_test",
+      "tests_build70_production_closeout_test_callbackbridge",
+      "tests_build70_production_closeout_test_callbackruntime",
+      "tests_build70_production_closeout_test_clean",
+      "tests_build70_production_closeout_test_dirty",
+      "tests_build70_production_closeout_test_firstscript",
+      "tests_build70_production_closeout_test_get",
+      "tests_build70_production_closeout_test_githubedge",
+      "tests_build70_production_closeout_test_integrationsui",
+      "tests_build70_production_closeout_test_localdata",
+      "tests_build70_production_closeout_test_manifest",
+      "tests_build70_production_closeout_test_normalizedder",
+      "tests_build70_production_closeout_test_normalizedkey",
+      "tests_build70_production_closeout_test_pair",
+      "tests_build70_production_closeout_test_payload",
+      "tests_build70_production_closeout_test_pkcs8pem",
+      "tests_build70_production_closeout_test_read",
+      "tests_build70_production_closeout_test_set",
+      "tests_build70_production_closeout_test_signature",
+      "tests_build70_production_closeout_test_supabaseedge",
+      "tests_build70_production_closeout_test_workerentry"
+    ],
+    "54": [
+      "apps_local_src_config_max_request_body_bytes",
+      "apps_local_src_database_localdatabasestatus",
+      "apps_local_src_identity_local_runtime_build",
+      "apps_local_src_identity_local_runtime_version",
+      "apps_local_src_server",
+      "apps_local_src_server_buildhealth",
+      "apps_local_src_server_createlocalruntimehttpserver",
+      "apps_local_src_server_handlehandshake",
+      "apps_local_src_server_ishandshakehellopayload",
+      "apps_local_src_server_isrecord",
+      "apps_local_src_server_localruntimehealth",
+      "apps_local_src_server_localruntimeservercontext",
+      "apps_local_src_server_localruntimeservercontext_getaddress",
+      "apps_local_src_server_localruntimeservercontext_getdatabasestatus",
+      "apps_local_src_server_localruntimeservercontext_getstartedat",
+      "apps_local_src_server_localruntimeservercontext_getstate",
+      "apps_local_src_server_localruntimeservercontext_now",
+      "apps_local_src_server_readjsonbody",
+      "apps_local_src_server_writejson",
+      "packages_protocol_src_envelope_envelope"
+    ],
+    "55": [
       "basehttprequesthandler",
       "runtime_decrypter_local_ollama_gateway",
       "runtime_decrypter_local_ollama_gateway_authorised",
@@ -1932,7 +1995,7 @@
       "runtime_decrypter_local_ollama_gateway_resolve_requested_model",
       "runtime_decrypter_local_ollama_gateway_rewrite_chat_payload"
     ],
-    "49": [
+    "56": [
       "core_reversible_operations",
       "core_reversible_operations_applythreewayhunk",
       "core_reversible_operations_boundarymatches",
@@ -1954,7 +2017,7 @@
       "core_reversible_operations_text",
       "core_reversible_operations_unique"
     ],
-    "50": [
+    "57": [
       "scripts_architecture_guardian",
       "scripts_architecture_guardian_exists",
       "scripts_architecture_guardian_json",
@@ -1976,7 +2039,7 @@
       "scripts_architecture_guardian_warnings",
       "scripts_architecture_guardian_workflowfiles"
     ],
-    "51": [
+    "58": [
       "tests_build10_queue_simulation",
       "tests_build10_queue_simulation_assertsinglerunning",
       "tests_build10_queue_simulation_cancelpending",
@@ -1998,7 +2061,7 @@
       "tests_build10_queue_simulation_skip",
       "tests_build10_queue_simulation_uncertainjournal"
     ],
-    "52": [
+    "59": [
       "background_update_recovery_runtime",
       "background_update_recovery_runtime_accepthealthreport",
       "background_update_recovery_runtime_backupsettings",
@@ -2019,7 +2082,28 @@
       "background_update_recovery_runtime_stagenativeapply",
       "background_update_recovery_runtime_status"
     ],
-    "53": [
+    "60": [
+      "core_native_agent_sessions_native_agent_session_schema",
+      "core_native_agent_sessions_native_agent_strategies",
+      "core_native_agent_sessions_runtime_selection_schema",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_client",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_closed",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_core",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_currentbuild",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_digest",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_entry",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_manifest",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_pkg",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_read",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_runtime",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_selection",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_session",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_settings",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_switched",
+      "tests_build74_multi_agent_runtime_ui_native_sessions_test_verified"
+    ],
+    "61": [
       "tests_build27_unified_project_state_graph",
       "tests_build27_unified_project_state_graph_backendbad",
       "tests_build27_unified_project_state_graph_backendok",
@@ -2040,7 +2124,27 @@
       "tests_build27_unified_project_state_graph_sets",
       "tests_build27_unified_project_state_graph_versionparts"
     ],
-    "54": [
+    "62": [
+      "background_github_app_runtime",
+      "background_github_app_runtime_installgithubappruntime",
+      "background_github_app_runtime_requestgithubappbackend",
+      "background_github_autosync_runtime",
+      "background_github_autosync_runtime_clean",
+      "background_github_autosync_runtime_findauthorizedrepository",
+      "background_github_autosync_runtime_getstatus",
+      "background_github_autosync_runtime_installgithubautosyncruntime",
+      "background_github_autosync_runtime_keyfor",
+      "background_github_autosync_runtime_neutralizemapping",
+      "background_github_autosync_runtime_reconcilegithubautosync",
+      "background_github_autosync_runtime_statusshape",
+      "background_github_autosync_runtime_storestatus",
+      "background_integration_callback_runtime",
+      "background_integration_callback_runtime_installintegrationcallbackruntime",
+      "background_integration_callback_runtime_trustedcallbacksender",
+      "background_service_worker_entry",
+      "storage_settings_store_updatesettings"
+    ],
+    "63": [
       "background_local_model_runtime",
       "background_local_model_runtime_assertpermission",
       "background_local_model_runtime_cleartoken",
@@ -2060,7 +2164,7 @@
       "background_local_model_runtime_text",
       "background_local_model_runtime_token"
     ],
-    "55": [
+    "64": [
       "content_error_intelligence_core",
       "content_error_intelligence_core_classify",
       "content_error_intelligence_core_fingerprint",
@@ -2080,7 +2184,7 @@
       "content_project_recovery_doctor_core_pushmatches",
       "content_project_recovery_doctor_core_resolvelocalreference"
     ],
-    "56": [
+    "65": [
       "content_live_operations",
       "content_live_operations_addstage",
       "content_live_operations_begin",
@@ -2100,7 +2204,7 @@
       "content_live_operations_telemetryfrom",
       "content_live_operations_update"
     ],
-    "57": [
+    "66": [
       "content_mcp_runtime_client",
       "content_mcp_runtime_client_approvewrite",
       "content_mcp_runtime_client_calltool",
@@ -2120,7 +2224,7 @@
       "content_mcp_runtime_client_settrust",
       "content_mcp_runtime_client_status"
     ],
-    "58": [
+    "67": [
       "core_reversible_operations_reversible_operations_schema",
       "tests_build66_smart_undo_redo_test",
       "tests_build66_smart_undo_redo_test_client",
@@ -2140,7 +2244,7 @@
       "tests_build66_smart_undo_redo_test_settings",
       "tests_build66_smart_undo_redo_test_ui"
     ],
-    "59": [
+    "68": [
       "tests_build28_project_recovery_doctor",
       "tests_build28_project_recovery_doctor_config",
       "tests_build28_project_recovery_doctor_contents",
@@ -2160,7 +2264,7 @@
       "tests_build28_project_recovery_doctor_report",
       "tests_build28_project_recovery_doctor_runtimesource"
     ],
-    "60": [
+    "69": [
       "tests_build58_decrypter_ai_core_test",
       "tests_build58_decrypter_ai_core_test_agent",
       "tests_build58_decrypter_ai_core_test_agentbuild",
@@ -2180,27 +2284,7 @@
       "tests_build58_decrypter_ai_core_test_settings",
       "tests_build58_decrypter_ai_core_test_version"
     ],
-    "61": [
-      "tests_build64_context_engine_v2_test",
-      "tests_build64_context_engine_v2_test_bg",
-      "tests_build64_context_engine_v2_test_blobs",
-      "tests_build64_context_engine_v2_test_builder",
-      "tests_build64_context_engine_v2_test_client",
-      "tests_build64_context_engine_v2_test_context",
-      "tests_build64_context_engine_v2_test_currentbuild",
-      "tests_build64_context_engine_v2_test_entry",
-      "tests_build64_context_engine_v2_test_fake",
-      "tests_build64_context_engine_v2_test_get",
-      "tests_build64_context_engine_v2_test_git",
-      "tests_build64_context_engine_v2_test_manifest",
-      "tests_build64_context_engine_v2_test_pkg",
-      "tests_build64_context_engine_v2_test_read",
-      "tests_build64_context_engine_v2_test_set",
-      "tests_build64_context_engine_v2_test_settings",
-      "tests_build64_context_engine_v2_test_storage",
-      "tests_build64_context_engine_v2_test_useredit"
-    ],
-    "62": [
+    "70": [
       "content_continuity_runtime_client",
       "content_continuity_runtime_client_cancel",
       "content_continuity_runtime_client_checkpoint",
@@ -2219,7 +2303,7 @@
       "content_continuity_runtime_client_status",
       "content_continuity_runtime_client_verifywrite"
     ],
-    "63": [
+    "71": [
       "content_local_agent_orchestrator_client",
       "content_local_agent_orchestrator_client_approvewrite",
       "content_local_agent_orchestrator_client_cancel",
@@ -2238,45 +2322,7 @@
       "content_local_agent_orchestrator_client_start",
       "content_local_agent_orchestrator_client_status"
     ],
-    "64": [
-      "core_utils",
-      "core_utils_clamp",
-      "core_utils_parserepoinput",
-      "core_utils_redactsettings",
-      "core_utils_textdecoder",
-      "core_utils_textencoder",
-      "tests_build69_decrypterbench_v2_test",
-      "tests_build69_decrypterbench_v2_test_benchsource",
-      "tests_build69_decrypterbench_v2_test_buildnumber",
-      "tests_build69_decrypterbench_v2_test_manifest",
-      "tests_build69_decrypterbench_v2_test_output",
-      "tests_build69_decrypterbench_v2_test_pkg",
-      "tests_build69_decrypterbench_v2_test_read",
-      "tests_build69_decrypterbench_v2_test_report",
-      "tests_build69_decrypterbench_v2_test_roadmap",
-      "tests_build69_decrypterbench_v2_test_settings",
-      "tests_build69_decrypterbench_v2_test_workflow"
-    ],
-    "65": [
-      "packages_protocol_src_errors",
-      "packages_protocol_src_errors_protocol_error_codes",
-      "packages_protocol_src_errors_protocolerror",
-      "packages_protocol_src_errors_protocolerrorcode",
-      "packages_protocol_src_handshake_protocolhandshakerejectpayload",
-      "packages_protocol_src_json_jsonvalue",
-      "packages_protocol_src_messages",
-      "packages_protocol_src_messages_protocolevent",
-      "packages_protocol_src_messages_protocoleventpayload",
-      "packages_protocol_src_messages_protocolfailurepayload",
-      "packages_protocol_src_messages_protocolheartbeat",
-      "packages_protocol_src_messages_protocolheartbeatpayload",
-      "packages_protocol_src_messages_protocolrequest",
-      "packages_protocol_src_messages_protocolrequestpayload",
-      "packages_protocol_src_messages_protocolresponse",
-      "packages_protocol_src_messages_protocolresponsepayload",
-      "packages_protocol_src_messages_protocolsuccesspayload"
-    ],
-    "66": [
+    "72": [
       "supabase_functions_ld_agent_runtime_index",
       "supabase_functions_ld_agent_runtime_index_authorize",
       "supabase_functions_ld_agent_runtime_index_b64u",
@@ -2295,7 +2341,7 @@
       "supabase_functions_ld_agent_runtime_index_verifysigned",
       "supabase_functions_ld_agent_runtime_index_verifytrust"
     ],
-    "67": [
+    "73": [
       "tests_build31_hardening_regression",
       "tests_build31_hardening_regression_approvalindex",
       "tests_build31_hardening_regression_approvalruntime",
@@ -2314,7 +2360,7 @@
       "tests_build31_hardening_regression_sentinelindex",
       "tests_build31_hardening_regression_sentinelsource"
     ],
-    "68": [
+    "74": [
       "background_project_migration_runtime",
       "background_project_migration_runtime_activegithub",
       "background_project_migration_runtime_activesupabaseref",
@@ -2332,7 +2378,7 @@
       "tools_supabase_tools_selectedproject",
       "tools_supabase_tools_testsupabase"
     ],
-    "69": [
+    "75": [
       "content_unified_project_state_graph",
       "content_unified_project_state_graph_activegithub",
       "content_unified_project_state_graph_activesupabase",
@@ -2350,25 +2396,42 @@
       "content_unified_project_state_graph_sha256hex",
       "content_unified_project_state_graph_statusfrom"
     ],
-    "70": [
-      "tests_build18_decrypter_local_sim",
-      "tests_build18_decrypter_local_sim_assert",
-      "tests_build18_decrypter_local_sim_between",
-      "tests_build18_decrypter_local_sim_commandsrc",
-      "tests_build18_decrypter_local_sim_decision",
-      "tests_build18_decrypter_local_sim_deleteintent",
-      "tests_build18_decrypter_local_sim_gatewaysrc",
-      "tests_build18_decrypter_local_sim_loadfunction",
-      "tests_build18_decrypter_local_sim_none",
-      "tests_build18_decrypter_local_sim_patchcheck",
-      "tests_build18_decrypter_local_sim_real",
-      "tests_build18_decrypter_local_sim_route",
-      "tests_build18_decrypter_local_sim_stripjsonfence",
-      "tests_build18_decrypter_local_sim_stripts",
-      "tests_build18_decrypter_local_sim_telemetry",
-      "tests_build18_decrypter_local_sim_validatebuild"
+    "76": [
+      "packages_protocol_src_errors",
+      "packages_protocol_src_errors_protocol_error_codes",
+      "packages_protocol_src_errors_protocolerror",
+      "packages_protocol_src_errors_protocolerrorcode",
+      "packages_protocol_src_handshake_protocolhandshakerejectpayload",
+      "packages_protocol_src_messages",
+      "packages_protocol_src_messages_protocolevent",
+      "packages_protocol_src_messages_protocoleventpayload",
+      "packages_protocol_src_messages_protocolfailurepayload",
+      "packages_protocol_src_messages_protocolheartbeat",
+      "packages_protocol_src_messages_protocolheartbeatpayload",
+      "packages_protocol_src_messages_protocolrequest",
+      "packages_protocol_src_messages_protocolrequestpayload",
+      "packages_protocol_src_messages_protocolresponse",
+      "packages_protocol_src_messages_protocolresponsepayload",
+      "packages_protocol_src_messages_protocolsuccesspayload"
     ],
-    "71": [
+    "77": [
+      "background_agent_sandbox_runtime",
+      "background_agent_sandbox_runtime_create",
+      "background_agent_sandbox_runtime_destroy",
+      "background_agent_sandbox_runtime_err",
+      "background_agent_sandbox_runtime_get",
+      "background_agent_sandbox_runtime_handle",
+      "background_agent_sandbox_runtime_installagentsandboxruntime",
+      "background_agent_sandbox_runtime_load",
+      "background_agent_sandbox_runtime_publicsandbox",
+      "background_agent_sandbox_runtime_save",
+      "background_agent_sandbox_runtime_status",
+      "background_agent_sandbox_runtime_text",
+      "background_agent_sandbox_runtime_transition",
+      "background_agent_sandbox_runtime_validatediff",
+      "core_agent_sandbox_transitionsandbox"
+    ],
+    "78": [
       "background_tool_runtime",
       "background_tool_runtime_activegithub",
       "background_tool_runtime_assertlocalagentproposalbinding",
@@ -2385,7 +2448,7 @@
       "background_tool_runtime_txkey",
       "core_tool_runtime_tooljournal"
     ],
-    "72": [
+    "79": [
       "content_user_edit_context",
       "content_user_edit_context_changedmetadatapaths",
       "content_user_edit_context_codeeditortarget",
@@ -2402,7 +2465,7 @@
       "content_user_edit_context_schedulesnapshot",
       "content_user_edit_context_snapshotsummary"
     ],
-    "73": [
+    "80": [
       "core_operation_journal",
       "core_operation_journal_beginoperation",
       "core_operation_journal_compactpaths",
@@ -2419,7 +2482,7 @@
       "core_operation_journal_text",
       "core_operation_journal_writequeue"
     ],
-    "74": [
+    "81": [
       "supabase_functions_ld_custom_skills_index",
       "supabase_functions_ld_custom_skills_index_authorize",
       "supabase_functions_ld_custom_skills_index_b64u",
@@ -2436,7 +2499,7 @@
       "supabase_functions_ld_custom_skills_index_verifytoken",
       "supabase_functions_ld_custom_skills_index_words"
     ],
-    "75": [
+    "82": [
       "supabase_functions_ld_memory_engine_index",
       "supabase_functions_ld_memory_engine_index_authorize",
       "supabase_functions_ld_memory_engine_index_b64u",
@@ -2453,7 +2516,7 @@
       "supabase_functions_ld_memory_engine_index_verifysigned",
       "supabase_functions_ld_memory_engine_index_verifytrust"
     ],
-    "76": [
+    "83": [
       "supabase_functions_ld_mercadopago_webhook_index",
       "supabase_functions_ld_mercadopago_webhook_index_addperiod",
       "supabase_functions_ld_mercadopago_webhook_index_backendsecret",
@@ -2470,7 +2533,7 @@
       "supabase_functions_ld_mercadopago_webhook_index_validdate",
       "supabase_functions_ld_mercadopago_webhook_index_validsignature"
     ],
-    "77": [
+    "84": [
       "tests_build25_release_candidate",
       "tests_build25_release_candidate_build23",
       "tests_build25_release_candidate_build24",
@@ -2487,7 +2550,7 @@
       "tests_build25_release_candidate_versionparts",
       "tests_build25_release_candidate_webhook"
     ],
-    "78": [
+    "85": [
       "tests_build62_mcp_trust_gateway_test",
       "tests_build62_mcp_trust_gateway_test_bg",
       "tests_build62_mcp_trust_gateway_test_client",
@@ -2504,23 +2567,7 @@
       "tests_build62_mcp_trust_gateway_test_settings",
       "tests_build62_mcp_trust_gateway_test_trust"
     ],
-    "79": [
-      "background_model_gateway_bootstrap_geminiagent_plancommand",
-      "background_model_gateway_bootstrap_geminiagent_processcommand",
-      "background_model_gateway_bootstrap_inspect",
-      "background_model_gateway_bootstrap_persist",
-      "core_model_gateway",
-      "core_model_gateway_assertgatewaydecision",
-      "core_model_gateway_decryptermodelgateway",
-      "core_model_gateway_model_gateway_modes",
-      "core_model_gateway_model_gateway_name",
-      "core_model_gateway_model_gateway_providers",
-      "core_model_gateway_model_gateway_schema",
-      "core_model_gateway_normalizegatewaymode",
-      "core_model_gateway_publicgatewaysummary",
-      "core_model_gateway_validategatewaydecision"
-    ],
-    "80": [
+    "86": [
       "core_mcp_protocol_mcperror",
       "core_mcp_protocol_mcpresourceuri",
       "core_mcp_protocol_normalizemcpendpoint",
@@ -2536,7 +2583,7 @@
       "security_mcp_oauth_sha256",
       "security_mcp_oauth_text"
     ],
-    "81": [
+    "87": [
       "scripts_test_build6_monorepo_foundation",
       "scripts_test_build6_monorepo_foundation_actualapps",
       "scripts_test_build6_monorepo_foundation_actualpackages",
@@ -2552,7 +2599,7 @@
       "scripts_test_build6_monorepo_foundation_versiontuple",
       "scripts_test_build6_monorepo_foundation_workspace"
     ],
-    "82": [
+    "88": [
       "supabase_functions_ld_commercial_index",
       "supabase_functions_ld_commercial_index_authorize",
       "supabase_functions_ld_commercial_index_b64u",
@@ -2568,7 +2615,7 @@
       "supabase_functions_ld_commercial_index_syncsubscription",
       "supabase_functions_ld_commercial_index_verifykey"
     ],
-    "83": [
+    "89": [
       "supabase_functions_ld_knowledge_ingest_index",
       "supabase_functions_ld_knowledge_ingest_index_chunksfrom",
       "supabase_functions_ld_knowledge_ingest_index_classify",
@@ -2584,7 +2631,7 @@
       "supabase_functions_ld_knowledge_ingest_index_sha",
       "supabase_functions_ld_knowledge_ingest_index_titlefrom"
     ],
-    "84": [
+    "90": [
       "supabase_functions_ld_knowledge_ingest_resource_safe",
       "supabase_functions_ld_knowledge_ingest_resource_safe_admin",
       "supabase_functions_ld_knowledge_ingest_resource_safe_chunks",
@@ -2600,7 +2647,7 @@
       "supabase_functions_ld_knowledge_ingest_resource_safe_title",
       "supabase_functions_ld_knowledge_ingest_resource_safe_vector"
     ],
-    "85": [
+    "91": [
       "tests_build60_local_model_runtime_test",
       "tests_build60_local_model_runtime_test_command",
       "tests_build60_local_model_runtime_test_compose",
@@ -2616,7 +2663,7 @@
       "tests_build60_local_model_runtime_test_vllm",
       "tests_build60_local_model_runtime_test_worker"
     ],
-    "86": [
+    "92": [
       "manifest",
       "manifest_action",
       "manifest_action_default_title",
@@ -2631,22 +2678,7 @@
       "manifest_version",
       "manifest_version_name"
     ],
-    "87": [
-      "ref_apps_local_src_ts",
-      "ref_test_build10_local_runtime_runtime_ts",
-      "ref_test_build8_event_bus_runtime_ts",
-      "scripts_tsconfig_build10_tests",
-      "scripts_tsconfig_build10_tests_compileroptions",
-      "scripts_tsconfig_build10_tests_compileroptions_noemit",
-      "scripts_tsconfig_build10_tests_compileroptions_types",
-      "scripts_tsconfig_build10_tests_extends",
-      "scripts_tsconfig_build10_tests_include",
-      "scripts_tsconfig_build10_tests_json_ref_node",
-      "scripts_tsconfig_build8_tests_include",
-      "scripts_tsconfig_build8_tests_json_ref_packages_protocol_src_ts",
-      "scripts_tsconfig_build8_tests_json_ref_packages_shared_src_ts"
-    ],
-    "88": [
+    "93": [
       "supabase_functions_ld_local_control_index",
       "supabase_functions_ld_local_control_index_backendsecret",
       "supabase_functions_ld_local_control_index_cors",
@@ -2661,7 +2693,7 @@
       "supabase_functions_ld_local_control_index_snap",
       "supabase_functions_ld_local_control_index_workerauthorized"
     ],
-    "89": [
+    "94": [
       "supabase_functions_ld_trust_attest_index",
       "supabase_functions_ld_trust_attest_index_b64url",
       "supabase_functions_ld_trust_attest_index_cors",
@@ -2676,7 +2708,7 @@
       "supabase_functions_ld_trust_attest_index_unb64url",
       "supabase_functions_ld_trust_attest_index_verifylicense"
     ],
-    "90": [
+    "95": [
       "tests_build59_memory_engine_project_brain_v2_test",
       "tests_build59_memory_engine_project_brain_v2_test_agent",
       "tests_build59_memory_engine_project_brain_v2_test_atleast",
@@ -2691,7 +2723,7 @@
       "tests_build59_memory_engine_project_brain_v2_test_read",
       "tests_build59_memory_engine_project_brain_v2_test_settings"
     ],
-    "91": [
+    "96": [
       "tests_build61_tool_runtime_test",
       "tests_build61_tool_runtime_test_bg",
       "tests_build61_tool_runtime_test_client",
@@ -2706,21 +2738,21 @@
       "tests_build61_tool_runtime_test_settings",
       "tests_build61_tool_runtime_test_tools"
     ],
-    "92": [
-      "background_integration_callback_runtime",
-      "background_integration_callback_runtime_installintegrationcallbackruntime",
-      "background_integration_callback_runtime_trustedcallbacksender",
-      "background_project_state_runtime",
-      "background_project_state_runtime_inspectprojectstate",
-      "background_project_state_runtime_installprojectstateruntime",
-      "background_service_worker_entry",
-      "background_supabase_oauth_runtime",
-      "background_supabase_oauth_runtime_installsupabaseoauthruntime",
-      "background_supabase_oauth_runtime_manager_actions",
-      "background_supabase_oauth_runtime_oauth_actions",
-      "background_supabase_oauth_runtime_requestbackend"
+    "97": [
+      "background_checkpoint_runtime",
+      "background_checkpoint_runtime_activegithub",
+      "background_checkpoint_runtime_authorizedsettings",
+      "background_checkpoint_runtime_dispatch",
+      "background_checkpoint_runtime_historypush",
+      "background_checkpoint_runtime_installcheckpointruntime",
+      "background_checkpoint_runtime_installed",
+      "background_checkpoint_runtime_listforproject",
+      "background_checkpoint_runtime_rollbackforproject",
+      "background_checkpoint_runtime_validatelicenseremote",
+      "core_checkpoint_manager_listcheckpoints",
+      "settings_config_history_key"
     ],
-    "93": [
+    "98": [
       "content_project_state_graph_core",
       "content_project_state_graph_core_expectededgefunctionslugs",
       "content_project_state_graph_core_expectedmigrationversions",
@@ -2734,7 +2766,7 @@
       "content_project_state_graph_core_revisionsmatch",
       "content_project_state_graph_core_safepath"
     ],
-    "94": [
+    "99": [
       "scripts_test_build10_local_runtime_daemon",
       "scripts_test_build10_local_runtime_daemon_cli",
       "scripts_test_build10_local_runtime_daemon_config",
@@ -2748,7 +2780,7 @@
       "scripts_test_build10_local_runtime_daemon_server",
       "scripts_test_build10_local_runtime_daemon_versionmatch"
     ],
-    "95": [
+    "100": [
       "supabase_functions_ld_knowledge_ingest_staged",
       "supabase_functions_ld_knowledge_ingest_staged_admin",
       "supabase_functions_ld_knowledge_ingest_staged_chunks",
@@ -2762,7 +2794,7 @@
       "supabase_functions_ld_knowledge_ingest_staged_text",
       "supabase_functions_ld_knowledge_ingest_staged_title"
     ],
-    "96": [
+    "101": [
       "tsconfig_base",
       "tsconfig_base_compileroptions",
       "tsconfig_base_compileroptions_forceconsistentcasinginfilenames",
@@ -2776,7 +2808,46 @@
       "tsconfig_base_compileroptions_target",
       "tsconfig_base_compileroptions_verbatimmodulesyntax"
     ],
-    "97": [
+    "102": [
+      "apps_local_src_instance_lock",
+      "apps_local_src_instance_lock_acquirelocalruntimeinstancelock",
+      "apps_local_src_instance_lock_conflict",
+      "apps_local_src_instance_lock_default_local_runtime_lock_path",
+      "apps_local_src_instance_lock_invalidlockisoldenoughtorecover",
+      "apps_local_src_instance_lock_localruntimeinstancelock",
+      "apps_local_src_instance_lock_localruntimeinstancelock_release",
+      "apps_local_src_instance_lock_localruntimelockrecord",
+      "apps_local_src_instance_lock_pidisalive",
+      "apps_local_src_instance_lock_readexistingrecord",
+      "apps_local_src_instance_lock_removestalelock"
+    ],
+    "103": [
+      "core_local_model_router",
+      "core_local_model_router_classifylocaltask",
+      "core_local_model_router_default_local_model_tiers",
+      "core_local_model_router_degradationorder",
+      "core_local_model_router_local_model_router_schema",
+      "core_local_model_router_localrouterpublicstatus",
+      "core_local_model_router_normalizelocalmodeltiers",
+      "core_local_model_router_routelocalmodel",
+      "core_local_model_router_text",
+      "core_local_model_router_tier_order",
+      "core_local_model_router_uniq"
+    ],
+    "104": [
+      "scripts_test_build11_persistent_local_database",
+      "scripts_test_build11_persistent_local_database_database",
+      "scripts_test_build11_persistent_local_database_identity",
+      "scripts_test_build11_persistent_local_database_json",
+      "scripts_test_build11_persistent_local_database_localpackage",
+      "scripts_test_build11_persistent_local_database_migrations",
+      "scripts_test_build11_persistent_local_database_patchversion",
+      "scripts_test_build11_persistent_local_database_policy",
+      "scripts_test_build11_persistent_local_database_read",
+      "scripts_test_build11_persistent_local_database_rootpackage",
+      "scripts_test_build11_persistent_local_database_server"
+    ],
+    "105": [
       "scripts_test_build8_central_event_bus",
       "scripts_test_build8_central_event_bus_eventbus",
       "scripts_test_build8_central_event_bus_eventtypes",
@@ -2789,7 +2860,7 @@
       "scripts_test_build8_central_event_bus_versionmatch",
       "scripts_test_build8_central_event_bus_versiontuple"
     ],
-    "98": [
+    "106": [
       "scripts_test_build9_architecture_guardian",
       "scripts_test_build9_architecture_guardian_build",
       "scripts_test_build9_architecture_guardian_guardian",
@@ -2802,7 +2873,7 @@
       "scripts_test_build9_architecture_guardian_roadmapnumbers",
       "scripts_test_build9_architecture_guardian_template"
     ],
-    "99": [
+    "107": [
       "supabase_functions_ld_knowledge_search_index",
       "supabase_functions_ld_knowledge_search_index_auth",
       "supabase_functions_ld_knowledge_search_index_b64u",
@@ -2815,7 +2886,7 @@
       "supabase_functions_ld_knowledge_search_index_sha",
       "supabase_functions_ld_knowledge_search_index_verifytoken"
     ],
-    "100": [
+    "108": [
       "tests_build21_trust_sim",
       "tests_build21_trust_sim_acceptnonce",
       "tests_build21_trust_sim_attest",
@@ -2828,7 +2899,7 @@
       "tests_build21_trust_sim_nonces",
       "tests_build21_trust_sim_validatesession"
     ],
-    "101": [
+    "109": [
       "tests_build23_mass_scale_sim",
       "tests_build23_mass_scale_sim_agent",
       "tests_build23_mass_scale_sim_canscaledown",
@@ -2841,7 +2912,7 @@
       "tests_build23_mass_scale_sim_jobs",
       "tests_build23_mass_scale_sim_migration"
     ],
-    "102": [
+    "110": [
       "tests_build54_update_recovery_center_test",
       "tests_build54_update_recovery_center_test_app",
       "tests_build54_update_recovery_center_test_atleast",
@@ -2854,7 +2925,7 @@
       "tests_build54_update_recovery_center_test_runtime",
       "tests_build54_update_recovery_center_test_settings"
     ],
-    "103": [
+    "111": [
       "tests_build55_backend_messaging_natural_voice_test",
       "tests_build55_backend_messaging_natural_voice_test_app",
       "tests_build55_backend_messaging_natural_voice_test_atleast",
@@ -2867,7 +2938,20 @@
       "tests_build55_backend_messaging_natural_voice_test_runtime",
       "tests_build55_backend_messaging_natural_voice_test_settings"
     ],
-    "104": [
+    "112": [
+      "tests_build69_decrypterbench_v2_test",
+      "tests_build69_decrypterbench_v2_test_benchsource",
+      "tests_build69_decrypterbench_v2_test_buildnumber",
+      "tests_build69_decrypterbench_v2_test_manifest",
+      "tests_build69_decrypterbench_v2_test_output",
+      "tests_build69_decrypterbench_v2_test_pkg",
+      "tests_build69_decrypterbench_v2_test_read",
+      "tests_build69_decrypterbench_v2_test_report",
+      "tests_build69_decrypterbench_v2_test_roadmap",
+      "tests_build69_decrypterbench_v2_test_settings",
+      "tests_build69_decrypterbench_v2_test_workflow"
+    ],
+    "113": [
       "tests_build77_emergency_safe_mode_test",
       "tests_build77_emergency_safe_mode_test_disabledbackground",
       "tests_build77_emergency_safe_mode_test_disabledpagemodules",
@@ -2880,19 +2964,19 @@
       "tests_build77_emergency_safe_mode_test_settings",
       "tests_build77_emergency_safe_mode_test_sw"
     ],
-    "105": [
-      "apps_local_src_identity_createlocalruntimepeer",
-      "packages_protocol_src_ids",
-      "packages_protocol_src_ids_ascausationid",
-      "packages_protocol_src_ids_ascorrelationid",
-      "packages_protocol_src_ids_asmessageid",
-      "packages_protocol_src_ids_aspeerid",
-      "packages_protocol_src_ids_asprotocolid",
-      "packages_protocol_src_ids_assessionid",
-      "packages_protocol_src_ids_astraceid",
-      "packages_protocol_src_ids_protocolid"
+    "114": [
+      "background_messaging_runtime",
+      "background_messaging_runtime_baseurl",
+      "background_messaging_runtime_cache",
+      "background_messaging_runtime_health",
+      "background_messaging_runtime_installmessagingruntime",
+      "background_messaging_runtime_messagingruntime",
+      "background_messaging_runtime_requestbackend",
+      "background_messaging_runtime_result",
+      "background_messaging_runtime_types",
+      "settings_config_version"
     ],
-    "106": [
+    "115": [
       "background_suggestions_runtime",
       "background_suggestions_runtime_activegithub",
       "background_suggestions_runtime_dispatch",
@@ -2904,7 +2988,7 @@
       "background_suggestions_runtime_scanrepository",
       "background_suggestions_runtime_validatelicenseremote"
     ],
-    "107": [
+    "116": [
       "security_vault",
       "security_vault_b64url",
       "security_vault_backuppayload",
@@ -2916,7 +3000,7 @@
       "security_vault_fromb64url",
       "security_vault_restoresettingsremote"
     ],
-    "108": [
+    "117": [
       "supabase_functions_ld_messaging_index",
       "supabase_functions_ld_messaging_index_catalog",
       "supabase_functions_ld_messaging_index_cors",
@@ -2928,7 +3012,7 @@
       "supabase_functions_ld_messaging_index_validatelicense",
       "supabase_functions_ld_messaging_index_voice"
     ],
-    "109": [
+    "118": [
       "supabase_functions_ld_release_feed_index",
       "supabase_functions_ld_release_feed_index_b64url",
       "supabase_functions_ld_release_feed_index_backendsecret",
@@ -2940,7 +3024,7 @@
       "supabase_functions_ld_release_feed_index_json",
       "supabase_functions_ld_release_feed_index_validrelease"
     ],
-    "110": [
+    "119": [
       "tests_build48_ui_kernel_test",
       "tests_build48_ui_kernel_test_app",
       "tests_build48_ui_kernel_test_atleast",
@@ -2952,7 +3036,7 @@
       "tests_build48_ui_kernel_test_settings",
       "tests_build48_ui_kernel_test_versionparts"
     ],
-    "111": [
+    "120": [
       "tests_build53_settings_preferences_test",
       "tests_build53_settings_preferences_test_app",
       "tests_build53_settings_preferences_test_atleast",
@@ -2964,7 +3048,7 @@
       "tests_build53_settings_preferences_test_parts",
       "tests_build53_settings_preferences_test_pkg"
     ],
-    "112": [
+    "121": [
       "tests_build56_legacy_purge_performance_test",
       "tests_build56_legacy_purge_performance_test_app",
       "tests_build56_legacy_purge_performance_test_atleast",
@@ -2976,40 +3060,7 @@
       "tests_build56_legacy_purge_performance_test_purged",
       "tests_build56_legacy_purge_performance_test_settings"
     ],
-    "113": [
-      "apps_local_src_instance_lock",
-      "apps_local_src_instance_lock_acquirelocalruntimeinstancelock",
-      "apps_local_src_instance_lock_conflict",
-      "apps_local_src_instance_lock_default_local_runtime_lock_path",
-      "apps_local_src_instance_lock_invalidlockisoldenoughtorecover",
-      "apps_local_src_instance_lock_localruntimelockrecord",
-      "apps_local_src_instance_lock_pidisalive",
-      "apps_local_src_instance_lock_readexistingrecord",
-      "apps_local_src_instance_lock_removestalelock"
-    ],
-    "114": [
-      "background_messaging_runtime",
-      "background_messaging_runtime_baseurl",
-      "background_messaging_runtime_cache",
-      "background_messaging_runtime_health",
-      "background_messaging_runtime_installmessagingruntime",
-      "background_messaging_runtime_messagingruntime",
-      "background_messaging_runtime_requestbackend",
-      "background_messaging_runtime_result",
-      "background_messaging_runtime_types"
-    ],
-    "115": [
-      "core_repo_cache",
-      "core_repo_cache_blobkey",
-      "core_repo_cache_getcachedfile",
-      "core_repo_cache_getcachedtext",
-      "core_repo_cache_getmany",
-      "core_repo_cache_getrepositorycache",
-      "core_repo_cache_repokey",
-      "core_repo_cache_setmany",
-      "core_repo_cache_syncrepositorycache"
-    ],
-    "116": [
+    "122": [
       "packages_protocol_package",
       "packages_protocol_package_exports",
       "packages_protocol_package_name",
@@ -3020,7 +3071,18 @@
       "packages_protocol_package_type",
       "packages_protocol_package_version"
     ],
-    "117": [
+    "123": [
+      "ref_test_build10_local_runtime_runtime_ts",
+      "ref_test_build11_persistent_local_database_runtime_ts",
+      "ref_test_build8_event_bus_runtime_ts",
+      "scripts_tsconfig_build10_tests_include",
+      "scripts_tsconfig_build10_tests_json_ref_apps_local_src_ts",
+      "scripts_tsconfig_build11_tests_include",
+      "scripts_tsconfig_build8_tests_include",
+      "scripts_tsconfig_build8_tests_json_ref_packages_protocol_src_ts",
+      "scripts_tsconfig_build8_tests_json_ref_packages_shared_src_ts"
+    ],
+    "124": [
       "scripts_test_build9_guardian_negative",
       "scripts_test_build9_guardian_negative_final",
       "scripts_test_build9_guardian_negative_guardian",
@@ -3031,7 +3093,7 @@
       "scripts_test_build9_guardian_negative_workflow",
       "scripts_test_build9_guardian_negative_workfloworiginal"
     ],
-    "118": [
+    "125": [
       "tests_build22_commercial_platform_sim",
       "tests_build22_commercial_platform_sim_addperiod",
       "tests_build22_commercial_platform_sim_commercial",
@@ -3042,7 +3104,7 @@
       "tests_build22_commercial_platform_sim_start",
       "tests_build22_commercial_platform_sim_webhook"
     ],
-    "119": [
+    "126": [
       "tests_build49_integrations_test",
       "tests_build49_integrations_test_app",
       "tests_build49_integrations_test_atleast",
@@ -3053,7 +3115,7 @@
       "tests_build49_integrations_test_pkg",
       "tests_build49_integrations_test_settings"
     ],
-    "120": [
+    "127": [
       "tests_build50_project_intelligence_test",
       "tests_build50_project_intelligence_test_app",
       "tests_build50_project_intelligence_test_atleast",
@@ -3064,7 +3126,7 @@
       "tests_build50_project_intelligence_test_pkg",
       "tests_build50_project_intelligence_test_settings"
     ],
-    "121": [
+    "128": [
       "tests_build52_project_tools_zip_test",
       "tests_build52_project_tools_zip_test_app",
       "tests_build52_project_tools_zip_test_atleast",
@@ -3075,7 +3137,7 @@
       "tests_build52_project_tools_zip_test_pkg",
       "tests_build52_project_tools_zip_test_settings"
     ],
-    "122": [
+    "129": [
       "tests_build60_local_homologation_test",
       "tests_build60_local_homologation_test_fakeclient",
       "tests_build60_local_homologation_test_fakeclient_init",
@@ -3086,7 +3148,17 @@
       "tests_build60_local_homologation_test_homologationprobetests_test_full_homologation_contract",
       "tests_build60_local_homologation_test_homologationprobetests_test_inference_requires_zero_cost_attestation"
     ],
-    "123": [
+    "130": [
+      "apps_local_src_database_localdatabase_path",
+      "scripts_test_build4_lovable_decoupling",
+      "scripts_test_build4_lovable_decoupling_failures",
+      "scripts_test_build4_lovable_decoupling_manifest",
+      "scripts_test_build4_lovable_decoupling_mustexist",
+      "scripts_test_build4_lovable_decoupling_mustnotexist",
+      "scripts_test_build4_lovable_decoupling_serializedmanifest",
+      "scripts_test_build4_lovable_decoupling_sources"
+    ],
+    "131": [
       "apps_local_tsconfig",
       "apps_local_tsconfig_compileroptions",
       "apps_local_tsconfig_compileroptions_rootdir",
@@ -3096,7 +3168,7 @@
       "apps_local_tsconfig_json_ref_node",
       "apps_local_tsconfig_json_ref_src_ts"
     ],
-    "124": [
+    "132": [
       "content_reversible_operations_client",
       "content_reversible_operations_client_apply",
       "content_reversible_operations_client_list",
@@ -3106,7 +3178,7 @@
       "content_reversible_operations_client_status",
       "content_reversible_operations_client_undo"
     ],
-    "125": [
+    "133": [
       "packages_ai_package",
       "packages_ai_package_exports",
       "packages_ai_package_name",
@@ -3116,7 +3188,7 @@
       "packages_ai_package_type",
       "packages_ai_package_version"
     ],
-    "126": [
+    "134": [
       "packages_chat_package",
       "packages_chat_package_exports",
       "packages_chat_package_name",
@@ -3126,7 +3198,7 @@
       "packages_chat_package_type",
       "packages_chat_package_version"
     ],
-    "127": [
+    "135": [
       "packages_context_package",
       "packages_context_package_exports",
       "packages_context_package_name",
@@ -3136,7 +3208,7 @@
       "packages_context_package_type",
       "packages_context_package_version"
     ],
-    "128": [
+    "136": [
       "packages_git_package",
       "packages_git_package_exports",
       "packages_git_package_name",
@@ -3146,7 +3218,7 @@
       "packages_git_package_type",
       "packages_git_package_version"
     ],
-    "129": [
+    "137": [
       "packages_plan_package",
       "packages_plan_package_exports",
       "packages_plan_package_name",
@@ -3156,7 +3228,7 @@
       "packages_plan_package_type",
       "packages_plan_package_version"
     ],
-    "130": [
+    "138": [
       "packages_preview_package",
       "packages_preview_package_exports",
       "packages_preview_package_name",
@@ -3166,7 +3238,7 @@
       "packages_preview_package_type",
       "packages_preview_package_version"
     ],
-    "131": [
+    "139": [
       "packages_scope_package",
       "packages_scope_package_exports",
       "packages_scope_package_name",
@@ -3176,7 +3248,7 @@
       "packages_scope_package_type",
       "packages_scope_package_version"
     ],
-    "132": [
+    "140": [
       "packages_tools_package",
       "packages_tools_package_exports",
       "packages_tools_package_name",
@@ -3186,7 +3258,7 @@
       "packages_tools_package_type",
       "packages_tools_package_version"
     ],
-    "133": [
+    "141": [
       "packages_ui_package",
       "packages_ui_package_exports",
       "packages_ui_package_name",
@@ -3196,7 +3268,7 @@
       "packages_ui_package_type",
       "packages_ui_package_version"
     ],
-    "134": [
+    "142": [
       "packages_workspace_package",
       "packages_workspace_package_exports",
       "packages_workspace_package_name",
@@ -3206,7 +3278,7 @@
       "packages_workspace_package_type",
       "packages_workspace_package_version"
     ],
-    "135": [
+    "143": [
       "scripts_test_build10_guardian_negative",
       "scripts_test_build10_guardian_negative_browserprobe",
       "scripts_test_build10_guardian_negative_final",
@@ -3216,7 +3288,27 @@
       "scripts_test_build10_guardian_negative_root",
       "scripts_test_build10_guardian_negative_runexpecting"
     ],
-    "136": [
+    "144": [
+      "scripts_test_build10_local_runtime_cli",
+      "scripts_test_build10_local_runtime_cli_child",
+      "scripts_test_build10_local_runtime_cli_databasepath",
+      "scripts_test_build10_local_runtime_cli_lockpath",
+      "scripts_test_build10_local_runtime_cli_root",
+      "scripts_test_build10_local_runtime_cli_temproot",
+      "scripts_test_build10_local_runtime_cli_waitforexit",
+      "scripts_test_build10_local_runtime_cli_waitforstarted"
+    ],
+    "145": [
+      "scripts_test_build11_database_guardian_negative",
+      "scripts_test_build11_database_guardian_negative_final",
+      "scripts_test_build11_database_guardian_negative_guardian",
+      "scripts_test_build11_database_guardian_negative_migrationoriginal",
+      "scripts_test_build11_database_guardian_negative_migrationpath",
+      "scripts_test_build11_database_guardian_negative_root",
+      "scripts_test_build11_database_guardian_negative_runexpecting",
+      "scripts_test_build11_database_guardian_negative_studioprobe"
+    ],
+    "146": [
       "scripts_test_build5_rebrand",
       "scripts_test_build5_rebrand_config",
       "scripts_test_build5_rebrand_exists",
@@ -3226,7 +3318,7 @@
       "scripts_test_build5_rebrand_root",
       "scripts_test_build5_rebrand_store"
     ],
-    "137": [
+    "147": [
       "supabase_functions_ld_license_validate_index",
       "supabase_functions_ld_license_validate_index_cors",
       "supabase_functions_ld_license_validate_index_enc",
@@ -3236,7 +3328,7 @@
       "supabase_functions_ld_license_validate_index_u",
       "supabase_functions_ld_license_validate_index_verifytoken"
     ],
-    "138": [
+    "148": [
       "supabase_functions_ld_queue_skip_index",
       "supabase_functions_ld_queue_skip_index_authorize",
       "supabase_functions_ld_queue_skip_index_b64u",
@@ -3246,7 +3338,17 @@
       "supabase_functions_ld_queue_skip_index_sha",
       "supabase_functions_ld_queue_skip_index_verifytoken"
     ],
-    "139": [
+    "149": [
+      "supabase_functions_shared_github_rsa",
+      "supabase_functions_shared_github_rsa_concatbytes",
+      "supabase_functions_shared_github_rsa_decodepem",
+      "supabase_functions_shared_github_rsa_derlength",
+      "supabase_functions_shared_github_rsa_derwrap",
+      "supabase_functions_shared_github_rsa_detectrsaprivatekeyformat",
+      "supabase_functions_shared_github_rsa_normalizersaprivatekeytopkcs8der",
+      "supabase_functions_shared_github_rsa_pkcs1topkcs8"
+    ],
+    "150": [
       "tests_build51_engineering_suite_test",
       "tests_build51_engineering_suite_test_atleast",
       "tests_build51_engineering_suite_test_css",
@@ -3256,7 +3358,7 @@
       "tests_build51_engineering_suite_test_scripts",
       "tests_build51_engineering_suite_test_styles"
     ],
-    "140": [
+    "151": [
       "apps_extension_tsconfig",
       "apps_extension_tsconfig_compileroptions",
       "apps_extension_tsconfig_compileroptions_rootdir",
@@ -3265,7 +3367,16 @@
       "apps_extension_tsconfig_json_ref_src_ts",
       "apps_local_tsconfig_json_ref_tsconfig_base_json"
     ],
-    "141": [
+    "152": [
+      "rule_engineimport",
+      "scripts_architecture_guardian_database",
+      "scripts_architecture_guardian_database_policy",
+      "scripts_architecture_guardian_database_report",
+      "scripts_architecture_guardian_database_root",
+      "scripts_architecture_guardian_database_violations",
+      "scripts_architecture_guardian_database_walk"
+    ],
+    "153": [
       "scripts_architecture_guardian_apps",
       "scripts_architecture_guardian_apps_policy",
       "scripts_architecture_guardian_apps_readjson",
@@ -3274,25 +3385,25 @@
       "scripts_architecture_guardian_apps_violations",
       "scripts_architecture_guardian_apps_walk"
     ],
-    "142": [
-      "scripts_test_build10_local_runtime_cli",
-      "scripts_test_build10_local_runtime_cli_child",
-      "scripts_test_build10_local_runtime_cli_lockpath",
-      "scripts_test_build10_local_runtime_cli_root",
-      "scripts_test_build10_local_runtime_cli_temproot",
-      "scripts_test_build10_local_runtime_cli_waitforexit",
-      "scripts_test_build10_local_runtime_cli_waitforstarted"
+    "154": [
+      "scripts_architecture_guardian_workflow_write",
+      "scripts_architecture_guardian_workflow_write_allowlist",
+      "scripts_architecture_guardian_workflow_write_fail",
+      "scripts_architecture_guardian_workflow_write_policy",
+      "scripts_architecture_guardian_workflow_write_report",
+      "scripts_architecture_guardian_workflow_write_root",
+      "scripts_architecture_guardian_workflow_write_violations"
     ],
-    "143": [
-      "scripts_test_build4_lovable_decoupling",
-      "scripts_test_build4_lovable_decoupling_failures",
-      "scripts_test_build4_lovable_decoupling_manifest",
-      "scripts_test_build4_lovable_decoupling_mustexist",
-      "scripts_test_build4_lovable_decoupling_mustnotexist",
-      "scripts_test_build4_lovable_decoupling_serializedmanifest",
-      "scripts_test_build4_lovable_decoupling_sources"
+    "155": [
+      "scripts_test_build11_workflow_guardian_negative",
+      "scripts_test_build11_workflow_guardian_negative_final",
+      "scripts_test_build11_workflow_guardian_negative_guardian",
+      "scripts_test_build11_workflow_guardian_negative_original",
+      "scripts_test_build11_workflow_guardian_negative_root",
+      "scripts_test_build11_workflow_guardian_negative_runexpecting",
+      "scripts_test_build11_workflow_guardian_negative_workflow"
     ],
-    "144": [
+    "156": [
       "scripts_test_build7_shared_protocol",
       "scripts_test_build7_shared_protocol_protocoldir",
       "scripts_test_build7_shared_protocol_protocolpackage",
@@ -3301,7 +3412,7 @@
       "scripts_test_build7_shared_protocol_source",
       "scripts_test_build7_shared_protocol_srcdir"
     ],
-    "145": [
+    "157": [
       "scripts_tsconfig_build8_tests",
       "scripts_tsconfig_build8_tests_compileroptions",
       "scripts_tsconfig_build8_tests_compileroptions_allowimportingtsextensions",
@@ -3310,7 +3421,7 @@
       "scripts_tsconfig_build8_tests_extends",
       "scripts_tsconfig_build8_tests_json_ref_node"
     ],
-    "146": [
+    "158": [
       "supabase_functions_ld_knowledge_embed_index",
       "supabase_functions_ld_knowledge_embed_index_admin",
       "supabase_functions_ld_knowledge_embed_index_cors",
@@ -3319,7 +3430,7 @@
       "supabase_functions_ld_knowledge_embed_index_sha",
       "supabase_functions_ld_knowledge_embed_index_vector"
     ],
-    "147": [
+    "159": [
       "tests_build76_lovable_load_stability_test",
       "tests_build76_lovable_load_stability_test_accountgate",
       "tests_build76_lovable_load_stability_test_agentui",
@@ -3328,7 +3439,7 @@
       "tests_build76_lovable_load_stability_test_read",
       "tests_build76_lovable_load_stability_test_settings"
     ],
-    "148": [
+    "160": [
       "apps_studio_tsconfig",
       "apps_studio_tsconfig_compileroptions",
       "apps_studio_tsconfig_compileroptions_rootdir",
@@ -3336,7 +3447,7 @@
       "apps_studio_tsconfig_include",
       "apps_studio_tsconfig_json_ref_src_ts"
     ],
-    "149": [
+    "161": [
       "content_context_engine_client",
       "content_context_engine_client_build",
       "content_context_engine_client_call",
@@ -3344,7 +3455,15 @@
       "content_context_engine_client_status",
       "content_context_engine_client_useredits"
     ],
-    "150": [
+    "162": [
+      "core_utils",
+      "core_utils_clamp",
+      "core_utils_parserepoinput",
+      "core_utils_redactsettings",
+      "core_utils_textdecoder",
+      "core_utils_textencoder"
+    ],
+    "163": [
       "packages_ai_tsconfig",
       "packages_ai_tsconfig_compileroptions",
       "packages_ai_tsconfig_compileroptions_rootdir",
@@ -3352,7 +3471,7 @@
       "packages_ai_tsconfig_include",
       "packages_ai_tsconfig_json_ref_src_ts"
     ],
-    "151": [
+    "164": [
       "packages_chat_tsconfig",
       "packages_chat_tsconfig_compileroptions",
       "packages_chat_tsconfig_compileroptions_rootdir",
@@ -3360,7 +3479,7 @@
       "packages_chat_tsconfig_include",
       "packages_chat_tsconfig_json_ref_src_ts"
     ],
-    "152": [
+    "165": [
       "packages_context_tsconfig",
       "packages_context_tsconfig_compileroptions",
       "packages_context_tsconfig_compileroptions_rootdir",
@@ -3368,7 +3487,7 @@
       "packages_context_tsconfig_include",
       "packages_context_tsconfig_json_ref_src_ts"
     ],
-    "153": [
+    "166": [
       "packages_git_tsconfig",
       "packages_git_tsconfig_compileroptions",
       "packages_git_tsconfig_compileroptions_rootdir",
@@ -3376,7 +3495,7 @@
       "packages_git_tsconfig_include",
       "packages_git_tsconfig_json_ref_src_ts"
     ],
-    "154": [
+    "167": [
       "packages_plan_tsconfig",
       "packages_plan_tsconfig_compileroptions",
       "packages_plan_tsconfig_compileroptions_rootdir",
@@ -3384,7 +3503,7 @@
       "packages_plan_tsconfig_include",
       "packages_plan_tsconfig_json_ref_src_ts"
     ],
-    "155": [
+    "168": [
       "packages_preview_tsconfig",
       "packages_preview_tsconfig_compileroptions",
       "packages_preview_tsconfig_compileroptions_rootdir",
@@ -3392,7 +3511,7 @@
       "packages_preview_tsconfig_include",
       "packages_preview_tsconfig_json_ref_src_ts"
     ],
-    "156": [
+    "169": [
       "packages_protocol_tsconfig",
       "packages_protocol_tsconfig_compileroptions",
       "packages_protocol_tsconfig_compileroptions_rootdir",
@@ -3400,7 +3519,7 @@
       "packages_protocol_tsconfig_include",
       "packages_protocol_tsconfig_json_ref_src_ts"
     ],
-    "157": [
+    "170": [
       "packages_scope_tsconfig",
       "packages_scope_tsconfig_compileroptions",
       "packages_scope_tsconfig_compileroptions_rootdir",
@@ -3408,7 +3527,7 @@
       "packages_scope_tsconfig_include",
       "packages_scope_tsconfig_json_ref_src_ts"
     ],
-    "158": [
+    "171": [
       "packages_shared_tsconfig",
       "packages_shared_tsconfig_compileroptions",
       "packages_shared_tsconfig_compileroptions_rootdir",
@@ -3416,7 +3535,7 @@
       "packages_shared_tsconfig_include",
       "packages_shared_tsconfig_json_ref_src_ts"
     ],
-    "159": [
+    "172": [
       "packages_tools_tsconfig",
       "packages_tools_tsconfig_compileroptions",
       "packages_tools_tsconfig_compileroptions_rootdir",
@@ -3424,7 +3543,7 @@
       "packages_tools_tsconfig_include",
       "packages_tools_tsconfig_json_ref_src_ts"
     ],
-    "160": [
+    "173": [
       "packages_ui_tsconfig",
       "packages_ui_tsconfig_compileroptions",
       "packages_ui_tsconfig_compileroptions_rootdir",
@@ -3432,7 +3551,7 @@
       "packages_ui_tsconfig_include",
       "packages_ui_tsconfig_json_ref_src_ts"
     ],
-    "161": [
+    "174": [
       "packages_workspace_tsconfig",
       "packages_workspace_tsconfig_compileroptions",
       "packages_workspace_tsconfig_compileroptions_rootdir",
@@ -3440,7 +3559,23 @@
       "packages_workspace_tsconfig_include",
       "packages_workspace_tsconfig_json_ref_src_ts"
     ],
-    "162": [
+    "175": [
+      "scripts_tsconfig_build10_tests",
+      "scripts_tsconfig_build10_tests_compileroptions",
+      "scripts_tsconfig_build10_tests_compileroptions_noemit",
+      "scripts_tsconfig_build10_tests_compileroptions_types",
+      "scripts_tsconfig_build10_tests_extends",
+      "scripts_tsconfig_build10_tests_json_ref_node"
+    ],
+    "176": [
+      "scripts_tsconfig_build11_tests",
+      "scripts_tsconfig_build11_tests_compileroptions",
+      "scripts_tsconfig_build11_tests_compileroptions_noemit",
+      "scripts_tsconfig_build11_tests_compileroptions_types",
+      "scripts_tsconfig_build11_tests_extends",
+      "scripts_tsconfig_build11_tests_json_ref_node"
+    ],
+    "177": [
       "tests_build60_ollama_gateway_test",
       "tests_build60_ollama_gateway_test_ollamagatewaycontracttest",
       "tests_build60_ollama_gateway_test_ollamagatewaycontracttest_test_bearer_auth_is_constant_time_contract",
@@ -3448,7 +3583,7 @@
       "tests_build60_ollama_gateway_test_ollamagatewaycontracttest_test_model_probe_accepts_configured_qwen",
       "tests_build60_ollama_gateway_test_ollamagatewaycontracttest_test_openai_payload_rewrites_only_runtime_model"
     ],
-    "163": [
+    "178": [
       "tests_build78_emergency_kill_switch_test",
       "tests_build78_emergency_kill_switch_test_config",
       "tests_build78_emergency_kill_switch_test_manifest",
@@ -3456,309 +3591,324 @@
       "tests_build78_emergency_kill_switch_test_pkg",
       "tests_build78_emergency_kill_switch_test_updater"
     ],
-    "164": [
+    "179": [
       "content_activity_cloud_sync",
       "content_activity_cloud_sync_modefor",
       "content_activity_cloud_sync_record",
       "content_activity_cloud_sync_settings",
       "content_activity_cloud_sync_sourcefor"
     ],
-    "165": [
+    "180": [
       "content_credential_ui_guard",
       "content_credential_ui_guard_getcurrentsettings",
       "content_credential_ui_guard_hassentinel",
       "content_credential_ui_guard_preparemessage",
       "content_credential_ui_guard_resolvesentinels"
     ],
-    "166": [
+    "181": [
       "content_tool_runtime_client",
       "content_tool_runtime_client_invoke",
       "content_tool_runtime_client_journal",
       "content_tool_runtime_client_list",
       "content_tool_runtime_client_request"
     ],
-    "167": [
+    "182": [
       "scripts_test_build4_modern_engine_preservation",
       "scripts_test_build4_modern_engine_preservation_exists",
       "scripts_test_build4_modern_engine_preservation_missing",
       "scripts_test_build4_modern_engine_preservation_preservedgroups",
       "scripts_test_build4_modern_engine_preservation_root"
     ],
-    "168": [
+    "183": [
       "tests_build11_guardian_simulation",
       "tests_build11_guardian_simulation_broken",
       "tests_build11_guardian_simulation_off",
       "tests_build11_guardian_simulation_simulate"
     ],
-    "169": [
+    "184": [
       "content_agent_runtime_registry_client",
       "content_agent_runtime_registry_client_ensureport",
       "content_agent_runtime_registry_client_request"
     ],
-    "170": [
+    "185": [
       "content_portable_skills_client",
       "content_portable_skills_client_ensure",
       "content_portable_skills_client_request"
     ],
-    "171": [
+    "186": [
       "tests_release_feed_v5_contract",
       "tests_release_feed_v5_contract_fail",
       "tests_release_feed_v5_contract_src"
     ],
-    "172": [
+    "187": [
       "content_agent_sandbox_client",
       "content_agent_sandbox_client_call"
     ],
-    "173": [
+    "188": [
       "content_integration_callback_bridge",
       "content_integration_callback_bridge_render"
     ],
-    "174": [
+    "189": [
       "content_integration_readiness_client",
       "content_integration_readiness_client_call"
     ],
-    "175": [
+    "190": [
       "content_mcp_marketplace_client",
       "content_mcp_marketplace_client_request"
     ],
-    "176": [
+    "191": [
       "content_native_agent_session_client",
       "content_native_agent_session_client_call"
     ],
-    "177": [
+    "192": [
       "packages_ai_src_index",
       "packages_ai_src_index_packageidentity"
     ],
-    "178": [
+    "193": [
       "packages_chat_src_index",
       "packages_chat_src_index_packageidentity"
     ],
-    "179": [
+    "194": [
       "packages_context_src_index",
       "packages_context_src_index_packageidentity"
     ],
-    "180": [
+    "195": [
       "packages_git_src_index",
       "packages_git_src_index_packageidentity"
     ],
-    "181": [
+    "196": [
       "packages_plan_src_index",
       "packages_plan_src_index_packageidentity"
     ],
-    "182": [
+    "197": [
       "packages_preview_src_index",
       "packages_preview_src_index_packageidentity"
     ],
-    "183": [
+    "198": [
       "packages_scope_src_index",
       "packages_scope_src_index_packageidentity"
     ],
-    "184": [
+    "199": [
       "packages_tools_src_index",
       "packages_tools_src_index_packageidentity"
     ],
-    "185": [
+    "200": [
       "packages_ui_src_index",
       "packages_ui_src_index_packageidentity"
     ],
-    "186": [
+    "201": [
       "packages_workspace_src_index",
       "packages_workspace_src_index_packageidentity"
     ],
-    "187": [
+    "202": [
       "scripts_test_build82_canonical_ui",
       "tests_build82_canonical_ui_legacy_purge_test"
     ]
   },
   "cohesion": {
-    "0": 0.05307950727883538,
-    "1": 0.07462686567164178,
-    "2": 0.07834101382488479,
-    "3": 0.07033315705975675,
-    "4": 0.061952074810052604,
-    "5": 0.06370543541788427,
-    "6": 0.055218855218855216,
-    "7": 0.11591836734693878,
-    "8": 0.1488095238095238,
-    "9": 0.0977891156462585,
-    "10": 0.07397959183673469,
-    "11": 0.08418367346938775,
-    "12": 0.08788159111933395,
-    "13": 0.047619047619047616,
-    "14": 0.17073170731707318,
-    "15": 0.09878048780487805,
-    "16": 0.12179487179487179,
-    "17": 0.08205128205128205,
+    "0": 0.07462686567164178,
+    "1": 0.07834101382488479,
+    "2": 0.061952074810052604,
+    "3": 0.06370543541788427,
+    "4": 0.07547169811320754,
+    "5": 0.08470588235294117,
+    "6": 0.1488095238095238,
+    "7": 0.07397959183673469,
+    "8": 0.08418367346938775,
+    "9": 0.08788159111933395,
+    "10": 0.07293868921775898,
+    "11": 0.047619047619047616,
+    "12": 0.0975609756097561,
+    "13": 0.17073170731707318,
+    "14": 0.12179487179487179,
+    "15": 0.08205128205128205,
+    "16": 0.11522048364153627,
+    "17": 0.13940256045519203,
     "18": 0.09103840682788052,
-    "19": 0.10158730158730159,
-    "20": 0.08888888888888889,
-    "21": 0.14453781512605043,
-    "22": 0.2014260249554367,
-    "23": 0.058823529411764705,
-    "24": 0.12310606060606061,
-    "25": 0.14015151515151514,
-    "26": 0.14623655913978495,
-    "27": 0.1827956989247312,
-    "28": 0.18850574712643678,
-    "29": 0.06896551724137931,
-    "30": 0.06666666666666667,
-    "31": 0.16748768472906403,
-    "32": 0.15270935960591134,
-    "33": 0.20899470899470898,
-    "34": 0.12433862433862433,
-    "35": 0.20797720797720798,
-    "36": 0.15384615384615385,
-    "37": 0.15076923076923077,
-    "38": 0.07692307692307693,
-    "39": 0.18,
-    "40": 0.13405797101449277,
-    "41": 0.08333333333333333,
-    "42": 0.08695652173913043,
-    "43": 0.08695652173913043,
-    "44": 0.1471861471861472,
-    "45": 0.21428571428571427,
-    "46": 0.1380952380952381,
-    "47": 0.09523809523809523,
-    "48": 0.19473684210526315,
-    "49": 0.24210526315789474,
-    "50": 0.11052631578947368,
-    "51": 0.14736842105263157,
-    "52": 0.3391812865497076,
-    "53": 0.10526315789473684,
-    "54": 0.30718954248366015,
-    "55": 0.23529411764705882,
-    "56": 0.3006535947712418,
-    "57": 0.21568627450980393,
-    "58": 0.1111111111111111,
-    "59": 0.1111111111111111,
-    "60": 0.1111111111111111,
-    "61": 0.1111111111111111,
-    "62": 0.22794117647058823,
-    "63": 0.23529411764705882,
-    "64": 0.11764705882352941,
-    "65": 0.13970588235294118,
-    "66": 0.16176470588235295,
-    "67": 0.11764705882352941,
-    "68": 0.30833333333333335,
-    "69": 0.24166666666666667,
-    "70": 0.14166666666666666,
-    "71": 0.3238095238095238,
-    "72": 0.20952380952380953,
-    "73": 0.3047619047619048,
-    "74": 0.19047619047619047,
-    "75": 0.2,
-    "76": 0.23809523809523808,
-    "77": 0.13333333333333333,
-    "78": 0.13333333333333333,
-    "79": 0.17582417582417584,
-    "80": 0.37362637362637363,
-    "81": 0.15384615384615385,
-    "82": 0.21978021978021978,
-    "83": 0.26373626373626374,
-    "84": 0.26373626373626374,
-    "85": 0.14285714285714285,
-    "86": 0.15384615384615385,
-    "87": 0.16666666666666666,
-    "88": 0.24358974358974358,
-    "89": 0.20512820512820512,
-    "90": 0.16666666666666666,
-    "91": 0.15384615384615385,
-    "92": 0.25757575757575757,
-    "93": 0.2878787878787879,
-    "94": 0.18181818181818182,
-    "95": 0.2878787878787879,
-    "96": 0.16666666666666666,
-    "97": 0.2,
-    "98": 0.2,
-    "99": 0.23636363636363636,
-    "100": 0.18181818181818182,
-    "101": 0.18181818181818182,
-    "102": 0.2,
-    "103": 0.2,
-    "104": 0.18181818181818182,
-    "105": 0.3333333333333333,
-    "106": 0.35555555555555557,
-    "107": 0.4,
-    "108": 0.24444444444444444,
-    "109": 0.26666666666666666,
-    "110": 0.2222222222222222,
-    "111": 0.2222222222222222,
-    "112": 0.2222222222222222,
-    "113": 0.3611111111111111,
-    "114": 0.3611111111111111,
-    "115": 0.4444444444444444,
-    "116": 0.2222222222222222,
-    "117": 0.2222222222222222,
-    "118": 0.2222222222222222,
-    "119": 0.25,
-    "120": 0.25,
-    "121": 0.25,
-    "122": 0.3611111111111111,
-    "123": 0.25,
-    "124": 0.4642857142857143,
-    "125": 0.25,
+    "19": 0.08888888888888889,
+    "20": 0.05714285714285714,
+    "21": 0.2014260249554367,
+    "22": 0.14015151515151514,
+    "23": 0.14623655913978495,
+    "24": 0.1827956989247312,
+    "25": 0.08045977011494253,
+    "26": 0.18850574712643678,
+    "27": 0.06896551724137931,
+    "28": 0.06666666666666667,
+    "29": 0.10591133004926108,
+    "30": 0.15270935960591134,
+    "31": 0.20899470899470898,
+    "32": 0.12433862433862433,
+    "33": 0.20797720797720798,
+    "34": 0.2336182336182336,
+    "35": 0.13105413105413105,
+    "36": 0.07407407407407407,
+    "37": 0.12923076923076923,
+    "38": 0.18,
+    "39": 0.13043478260869565,
+    "40": 0.17753623188405798,
+    "41": 0.17391304347826086,
+    "42": 0.14855072463768115,
+    "43": 0.10144927536231885,
+    "44": 0.13405797101449277,
+    "45": 0.08695652173913043,
+    "46": 0.08695652173913043,
+    "47": 0.16017316017316016,
+    "48": 0.2987012987012987,
+    "49": 0.1380952380952381,
+    "50": 0.1380952380952381,
+    "51": 0.15714285714285714,
+    "52": 0.09523809523809523,
+    "53": 0.09523809523809523,
+    "54": 0.18947368421052632,
+    "55": 0.19473684210526315,
+    "56": 0.24210526315789474,
+    "57": 0.11052631578947368,
+    "58": 0.14736842105263157,
+    "59": 0.3391812865497076,
+    "60": 0.10526315789473684,
+    "61": 0.10526315789473684,
+    "62": 0.2679738562091503,
+    "63": 0.30718954248366015,
+    "64": 0.23529411764705882,
+    "65": 0.3006535947712418,
+    "66": 0.21568627450980393,
+    "67": 0.1111111111111111,
+    "68": 0.1111111111111111,
+    "69": 0.1111111111111111,
+    "70": 0.22794117647058823,
+    "71": 0.23529411764705882,
+    "72": 0.16176470588235295,
+    "73": 0.11764705882352941,
+    "74": 0.30833333333333335,
+    "75": 0.24166666666666667,
+    "76": 0.14166666666666666,
+    "77": 0.4,
+    "78": 0.3238095238095238,
+    "79": 0.20952380952380953,
+    "80": 0.3047619047619048,
+    "81": 0.19047619047619047,
+    "82": 0.2,
+    "83": 0.23809523809523808,
+    "84": 0.13333333333333333,
+    "85": 0.13333333333333333,
+    "86": 0.37362637362637363,
+    "87": 0.15384615384615385,
+    "88": 0.21978021978021978,
+    "89": 0.26373626373626374,
+    "90": 0.26373626373626374,
+    "91": 0.14285714285714285,
+    "92": 0.15384615384615385,
+    "93": 0.24358974358974358,
+    "94": 0.20512820512820512,
+    "95": 0.16666666666666666,
+    "96": 0.15384615384615385,
+    "97": 0.3333333333333333,
+    "98": 0.2878787878787879,
+    "99": 0.18181818181818182,
+    "100": 0.2878787878787879,
+    "101": 0.16666666666666666,
+    "102": 0.2727272727272727,
+    "103": 0.32727272727272727,
+    "104": 0.2,
+    "105": 0.2,
+    "106": 0.2,
+    "107": 0.23636363636363636,
+    "108": 0.18181818181818182,
+    "109": 0.18181818181818182,
+    "110": 0.2,
+    "111": 0.2,
+    "112": 0.18181818181818182,
+    "113": 0.18181818181818182,
+    "114": 0.3111111111111111,
+    "115": 0.35555555555555557,
+    "116": 0.4,
+    "117": 0.24444444444444444,
+    "118": 0.26666666666666666,
+    "119": 0.2222222222222222,
+    "120": 0.2222222222222222,
+    "121": 0.2222222222222222,
+    "122": 0.2222222222222222,
+    "123": 0.3055555555555556,
+    "124": 0.2222222222222222,
+    "125": 0.2222222222222222,
     "126": 0.25,
     "127": 0.25,
     "128": 0.25,
-    "129": 0.25,
+    "129": 0.3611111111111111,
     "130": 0.25,
     "131": 0.25,
-    "132": 0.25,
+    "132": 0.4642857142857143,
     "133": 0.25,
     "134": 0.25,
     "135": 0.25,
     "136": 0.25,
-    "137": 0.2857142857142857,
-    "138": 0.35714285714285715,
-    "139": 0.2857142857142857,
-    "140": 0.2857142857142857,
-    "141": 0.2857142857142857,
-    "142": 0.2857142857142857,
-    "143": 0.2857142857142857,
-    "144": 0.2857142857142857,
-    "145": 0.2857142857142857,
-    "146": 0.3333333333333333,
+    "137": 0.25,
+    "138": 0.25,
+    "139": 0.25,
+    "140": 0.25,
+    "141": 0.25,
+    "142": 0.25,
+    "143": 0.25,
+    "144": 0.25,
+    "145": 0.25,
+    "146": 0.25,
     "147": 0.2857142857142857,
-    "148": 0.3333333333333333,
-    "149": 0.6666666666666666,
-    "150": 0.3333333333333333,
-    "151": 0.3333333333333333,
-    "152": 0.3333333333333333,
-    "153": 0.3333333333333333,
-    "154": 0.3333333333333333,
-    "155": 0.3333333333333333,
-    "156": 0.3333333333333333,
-    "157": 0.3333333333333333,
+    "148": 0.35714285714285715,
+    "149": 0.5,
+    "150": 0.2857142857142857,
+    "151": 0.2857142857142857,
+    "152": 0.2857142857142857,
+    "153": 0.2857142857142857,
+    "154": 0.2857142857142857,
+    "155": 0.2857142857142857,
+    "156": 0.2857142857142857,
+    "157": 0.2857142857142857,
     "158": 0.3333333333333333,
-    "159": 0.3333333333333333,
+    "159": 0.2857142857142857,
     "160": 0.3333333333333333,
-    "161": 0.3333333333333333,
+    "161": 0.6666666666666666,
     "162": 0.3333333333333333,
     "163": 0.3333333333333333,
-    "164": 0.7,
-    "165": 0.7,
-    "166": 0.7,
-    "167": 0.4,
-    "168": 0.5,
-    "169": 1.0,
-    "170": 1.0,
-    "171": 0.6666666666666666,
-    "172": 1.0,
-    "173": 1.0,
-    "174": 1.0,
-    "175": 1.0,
-    "176": 1.0,
-    "177": 1.0,
-    "178": 1.0,
-    "179": 1.0,
-    "180": 1.0,
-    "181": 1.0,
-    "182": 1.0,
-    "183": 1.0,
+    "164": 0.3333333333333333,
+    "165": 0.3333333333333333,
+    "166": 0.3333333333333333,
+    "167": 0.3333333333333333,
+    "168": 0.3333333333333333,
+    "169": 0.3333333333333333,
+    "170": 0.3333333333333333,
+    "171": 0.3333333333333333,
+    "172": 0.3333333333333333,
+    "173": 0.3333333333333333,
+    "174": 0.3333333333333333,
+    "175": 0.3333333333333333,
+    "176": 0.3333333333333333,
+    "177": 0.3333333333333333,
+    "178": 0.3333333333333333,
+    "179": 0.7,
+    "180": 0.7,
+    "181": 0.7,
+    "182": 0.4,
+    "183": 0.5,
     "184": 1.0,
     "185": 1.0,
-    "186": 1.0,
-    "187": 1.0
+    "186": 0.6666666666666666,
+    "187": 1.0,
+    "188": 1.0,
+    "189": 1.0,
+    "190": 1.0,
+    "191": 1.0,
+    "192": 1.0,
+    "193": 1.0,
+    "194": 1.0,
+    "195": 1.0,
+    "196": 1.0,
+    "197": 1.0,
+    "198": 1.0,
+    "199": 1.0,
+    "200": 1.0,
+    "201": 1.0,
+    "202": 1.0
   },
   "gods": [
     {
@@ -3792,6 +3942,11 @@
       "degree": 29
     },
     {
+      "id": "apps_local_src_database_localdatabase",
+      "label": "LocalDatabase",
+      "degree": 27
+    },
+    {
       "id": "background_local_agent_orchestrator_drive",
       "label": "drive()",
       "degree": 25
@@ -3805,11 +3960,6 @@
       "id": "benchmark_universal_agent_bench_v1_rununiversalagentbench",
       "label": "runUniversalAgentBench()",
       "degree": 24
-    },
-    {
-      "id": "background_approval_runtime_applytransaction",
-      "label": "applyTransaction()",
-      "degree": 23
     }
   ],
   "surprises": [
@@ -3823,6 +3973,17 @@
       "confidence": "INFERRED",
       "relation": "indirect_call",
       "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "bus",
+      "target": "asEventId()",
+      "source_files": [
+        "scripts/test-build8-event-bus-runtime.ts",
+        "packages/shared/src/event-types.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities; peripheral node `bus` unexpectedly reaches hub `asEventId()`"
     },
     {
       "source": "prepareTransaction()",
@@ -3848,17 +4009,6 @@
     },
     {
       "source": "LocalRuntimeDaemonOptions",
-      "target": "EventBus",
-      "source_files": [
-        "apps/local/src/daemon.ts",
-        "packages/shared/src/event-bus.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "connects across different repos/directories; bridges separate communities"
-    },
-    {
-      "source": "LocalRuntimeDaemon",
       "target": "EventBus",
       "source_files": [
         "apps/local/src/daemon.ts",
