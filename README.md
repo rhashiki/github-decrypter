@@ -21,8 +21,9 @@ Completed:
 - Build 7 — Shared Protocol
 - Build 8 — Central Event Bus
 - Build 9 — Architecture Guardian
+- Build 10 — Local Runtime Daemon
 
-Next: **Build 10 — Local Runtime Daemon**.
+Next: **Build 11 — Persistent Local Database**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -41,11 +42,19 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-Build 9 adds the Architecture Guardian. `architecture.guardian.json` plus `scripts/architecture-guardian.mjs` now enforce product authorities, monorepo boundaries, roadmap phase gates, workflow write/release restrictions and North Star provenance/mapping in CI.
+`@github-decrypter/local` is now a real independent Node.js daemon. Build 10 gives it loopback-only process/transport authority, lifecycle events, single-instance coordination, health/readiness endpoints and `gd-protocol/1` negotiation. It deliberately exposes no generic privileged coding/tool/Git/model endpoint yet.
+
+The default development endpoint is `127.0.0.1:43110`. Run it with:
+
+```bash
+pnpm --filter @github-decrypter/local start
+```
+
+Build 9 added the Architecture Guardian. Build 10 extends the gate to application dependency/platform authority so the local daemon cannot silently acquire browser APIs or undeclared dependencies.
 
 ## North Star
 
-The North Star Manifesto is now an official repository authority together with the Product Constitution. Its direction is:
+The North Star Manifesto is an official repository authority together with the Product Constitution. Its direction is:
 
 > Entenda a pessoa.  
 > Entenda o projeto.  
@@ -79,12 +88,13 @@ The V1 roadmap remains Builds **1–134**. North Star additions are mapped into 
 ```text
 Chrome Extension
        │
-       ├──── gd-protocol/1 ────┐
-       │                       │
-Studio PWA                Local Runtime
-   │                           │
-   └─ EventBus            EventBus ─┘
-      (in-process)        (in-process)
+       ├──── gd-protocol/1 ───────────────┐
+       │                                  │
+Studio PWA                         Local Runtime Daemon
+   │                               127.0.0.1 / ::1 only
+   │                                      │
+   └─ EventBus                      EventBus
+      (in-process)                  (in-process)
 
             │
             ▼
@@ -102,6 +112,7 @@ See:
 - `docs/architecture/SHARED_PROTOCOL.md` — Build 7 wire contract
 - `docs/architecture/CENTRAL_EVENT_BUS.md` — Build 8 event architecture
 - `docs/architecture/ARCHITECTURE_GUARDIAN.md` — Build 9 policy gate
+- `docs/architecture/LOCAL_RUNTIME_DAEMON.md` — Build 10 process and loopback boundary
 
 ## Architecture check
 
