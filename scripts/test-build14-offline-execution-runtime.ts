@@ -7,6 +7,7 @@ import {
   DurableJobEngine,
   LocalDatabase,
   LocalRuntimeDaemon,
+  LOCAL_DATABASE_SCHEMA_VERSION,
   OfflineExecutionCoordinator,
   type LocalRuntimeEventCatalog,
 } from '../apps/local/src/index.js';
@@ -15,13 +16,19 @@ const tempRoot = mkdtempSync(join(tmpdir(), 'gd-build14-'));
 let nowMs = Date.parse('2026-09-03T17:00:00.000Z');
 const now = () => new Date(nowMs).toISOString();
 const advance = (milliseconds: number) => { nowMs += milliseconds; };
+const patchVersion = (value: unknown) => {
+  const match = String(value ?? '').match(/^0\.0\.(\d+)$/);
+  assert.ok(match, `expected pre-V1 runtime version, got ${value}`);
+  return Number(match[1]);
+};
 
 try {
   const databasePath = join(tempRoot, 'offline.sqlite3');
   const database = new LocalDatabase({ path: databasePath, now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 4);
-  assert.equal(database.listMigrations().length, 4);
+  assert.ok(opened.schemaVersion >= 4);
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 4);
+  assert.ok(database.listMigrations().length >= 4);
 
   const events: string[] = [];
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build14-test' });
@@ -127,9 +134,9 @@ try {
   const daemon = new LocalRuntimeDaemon({ config, now });
   const address = await daemon.start();
   const health = await (await fetch(`${address.origin}/healthz`)).json() as Record<string, any>;
-  assert.equal(health.build, 14);
-  assert.equal(health.version, '0.0.14');
-  assert.equal(health.database.schemaVersion, 4);
+  assert.ok(Number(health.build) >= 14);
+  assert.ok(patchVersion(health.version) >= 14);
+  assert.ok(Number(health.database.schemaVersion) >= 4);
   assert.equal(health.offline.ready, true);
   assert.equal(health.offline.connectivity, 'unknown');
   assert.equal(health.offline.localExecutionAvailable, true);
@@ -149,8 +156,9 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build14-offline-execution-runtime/1',
-    schemaVersion: 4,
+    schema: 'gd-build14-offline-execution-runtime/2',
+    minimumSchemaVersion: 4,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     unknownFailsClosedForNetwork: true,
     localJobsRunOffline: true,
     networkJobsWaitDurably: true,
@@ -163,6 +171,7 @@ try {
     daemonReadyOffline: true,
     automaticNetworkProbe: false,
     jobControlHttp: false,
+    allowsLaterSecurityBuilds: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
