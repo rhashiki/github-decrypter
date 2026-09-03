@@ -1,3 +1,4 @@
+import type { Capability, CapabilityGrantId } from './capability-security.js';
 import type { DurableJobId, DurableJobState } from './job-types.js';
 import type { ConnectivityState } from './offline-execution.js';
 
@@ -90,6 +91,40 @@ export type LocalRuntimeOfflineResumedPayload = {
   readonly resumedAt: string;
 };
 
+export type LocalRuntimeCapabilityReadyPayload = {
+  readonly activeGrants: number;
+  readonly restartRevocations: number;
+  readonly denyByDefault: true;
+  readonly plaintextTokenPersistence: false;
+  readonly secretsVaultReady: false;
+  readonly approvalTransactionsReady: false;
+  readonly externalGrantTransport: false;
+};
+
+export type LocalRuntimeCapabilityGrantedPayload = {
+  readonly grantId: CapabilityGrantId;
+  readonly jobId: DurableJobId;
+  readonly capabilities: readonly Capability[];
+  readonly claimCount: number;
+  readonly issuedAt: string;
+  readonly expiresAt: string;
+};
+
+export type LocalRuntimeCapabilityRevokedPayload = {
+  readonly grantId: CapabilityGrantId;
+  readonly jobId: DurableJobId;
+  readonly reason: string;
+  readonly revokedAt: string;
+};
+
+export type LocalRuntimeCapabilityDeniedPayload = {
+  readonly grantId: CapabilityGrantId | null;
+  readonly jobId: DurableJobId;
+  readonly reason: string;
+  readonly missingCapabilities: readonly Capability[];
+  readonly missingCount: number;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
@@ -103,6 +138,10 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.connectivity.changed': LocalRuntimeConnectivityChangedPayload;
   readonly 'gd.local.offline.waiting': LocalRuntimeOfflineWaitingPayload;
   readonly 'gd.local.offline.resumed': LocalRuntimeOfflineResumedPayload;
+  readonly 'gd.local.capability.ready': LocalRuntimeCapabilityReadyPayload;
+  readonly 'gd.local.capability.granted': LocalRuntimeCapabilityGrantedPayload;
+  readonly 'gd.local.capability.revoked': LocalRuntimeCapabilityRevokedPayload;
+  readonly 'gd.local.capability.denied': LocalRuntimeCapabilityDeniedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
