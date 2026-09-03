@@ -13,4 +13,6 @@ export * from './job-types.js';
 export * from './lifecycle.js';
 export * from './offline-execution.js';
 export * from './recovery-engine.js';
+export * from './secrets-vault.js';
 export * from './server.js';
+export * from './vault-key-store.js';
