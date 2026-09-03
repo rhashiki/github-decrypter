@@ -17,6 +17,7 @@ import type { LocalDatabaseStatus } from './database.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
 import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
+import type { OfflineExecutionStatus } from './offline-execution.js';
 import type { CrashRecoveryStatus } from './recovery-engine.js';
 
 export interface LocalRuntimeHealth {
@@ -53,6 +54,14 @@ export interface LocalRuntimeHealth {
     readonly lastSweepRecovered: number;
     readonly lastSweepAt: string | null;
   };
+  readonly offline: {
+    readonly ready: boolean;
+    readonly connectivity: OfflineExecutionStatus['connectivity'];
+    readonly waitingForNetwork: number;
+    readonly localQueued: number;
+    readonly localExecutionAvailable: true;
+    readonly automaticNetworkProbe: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -63,6 +72,7 @@ export interface LocalRuntimeServerContext {
   getDatabaseStatus(): LocalDatabaseStatus | null;
   getJobEngineStatus(): DurableJobEngineStatus;
   getRecoveryStatus(): CrashRecoveryStatus;
+  getOfflineExecutionStatus(): OfflineExecutionStatus;
   now(): string;
 }
 
@@ -115,6 +125,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const database = context.getDatabaseStatus();
   const jobs = context.getJobEngineStatus();
   const recovery = context.getRecoveryStatus();
+  const offline = context.getOfflineExecutionStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -148,6 +159,14 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       startupRecovered: recovery.startupRecovered,
       lastSweepRecovered: recovery.lastSweepRecovered,
       lastSweepAt: recovery.lastSweepAt,
+    },
+    offline: {
+      ready: offline.ready,
+      connectivity: offline.connectivity,
+      waitingForNetwork: offline.waitingForNetwork,
+      localQueued: offline.localQueued,
+      localExecutionAvailable: true,
+      automaticNetworkProbe: false,
     },
   };
 }
@@ -210,7 +229,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.database.integrity === 'ok'
         && health.jobs.ready
         && health.recovery.ready
-        && health.recovery.healthy;
+        && health.recovery.healthy
+        && health.offline.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -218,6 +238,9 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         databaseReady: health.database?.open === true,
         jobsReady: health.jobs.ready,
         recoveryReady: health.recovery.ready,
+        offlineExecutionReady: health.offline.ready,
+        connectivity: health.offline.connectivity,
+        localExecutionAvailable: health.offline.localExecutionAvailable,
       });
       return;
     }
