@@ -36,13 +36,16 @@ if (prematureOfflineProbeRequired) {
   }
 }
 
-const capabilityProbe = path.join(root, 'apps/local/src/__capability_guardian_probe.ts');
-try {
-  fs.writeFileSync(capabilityProbe, 'export class CapabilityGrant {}\n');
-  runExpecting('AG113');
-  rejected.push('AG113');
-} finally {
-  fs.rmSync(capabilityProbe, { force: true });
+const prematureCapabilityProbeRequired = policy.currentBuild < recoveryRule.capabilitySecurityBuild;
+if (prematureCapabilityProbeRequired) {
+  const capabilityProbe = path.join(root, 'apps/local/src/__capability_guardian_probe.ts');
+  try {
+    fs.writeFileSync(capabilityProbe, 'export class CapabilityGrant {}\n');
+    runExpecting('AG113');
+    rejected.push('AG113');
+  } finally {
+    fs.rmSync(capabilityProbe, { force: true });
+  }
 }
 
 const final = spawnSync(process.execPath, [guardian], { cwd: root, encoding: 'utf8' });
@@ -50,10 +53,12 @@ assert.equal(final.status, 0, `Recovery Guardian did not recover.\n${final.stdou
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build13-recovery-guardian-negative/2',
+  schema: 'gd-build13-recovery-guardian-negative/3',
   currentBuild: policy.currentBuild,
   offlineExecutionBuild: recoveryRule.offlineExecutionBuild,
+  capabilitySecurityBuild: recoveryRule.capabilitySecurityBuild,
   rejected,
   prematureOfflineProbeRequired,
+  prematureCapabilityProbeRequired,
   restoredTreePasses: true,
 }, null, 2));
