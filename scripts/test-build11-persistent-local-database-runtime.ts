@@ -25,11 +25,12 @@ try {
   assert.equal(existsSync(databasePath), true);
   assert.equal(opened.open, true);
   assert.equal(opened.schemaVersion, LOCAL_DATABASE_SCHEMA_VERSION);
-  assert.equal(opened.schemaVersion, 1);
+  assert.ok(opened.schemaVersion >= 1, 'database schema must not regress below Build 11');
   assert.equal(opened.journalMode, 'wal');
   assert.equal(opened.foreignKeys, true);
   assert.equal(opened.integrity, 'ok');
-  assert.equal(database.listMigrations().length, 1);
+  assert.ok(database.listMigrations().length >= 1);
+  assert.equal(database.listMigrations()[0]!.version, 1);
   assert.match(database.listMigrations()[0]!.checksum, /^[a-f0-9]{64}$/);
 
   database.setMetadata('build11.persistence', {
@@ -77,10 +78,10 @@ try {
   const healthResponse = await fetch(`${address.origin}/healthz`);
   assert.equal(healthResponse.status, 200);
   const health = await healthResponse.json() as Record<string, any>;
-  assert.equal(health.build, 11);
-  assert.equal(health.version, '0.0.11');
+  assert.ok(Number(health.build) >= 11);
+  assert.match(String(health.version), /^0\.0\.\d+$/);
   assert.equal(health.database.open, true);
-  assert.equal(health.database.schemaVersion, 1);
+  assert.ok(Number(health.database.schemaVersion) >= 1);
   assert.equal(health.database.journalMode, 'wal');
   assert.equal(health.database.foreignKeys, true);
   assert.equal(health.database.integrity, 'ok');
@@ -114,9 +115,10 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build11-persistent-local-database-runtime/1',
+    schema: 'gd-build11-persistent-local-database-runtime/2',
+    minimumSchemaVersion: 1,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     sqlite: true,
-    schemaVersion: 1,
     wal: true,
     foreignKeys: true,
     persistenceAcrossReopen: true,
@@ -124,7 +126,7 @@ try {
     daemonLifecycleIntegration: true,
     migrationProvenanceFailClosed: true,
     futureSchemaFailClosed: true,
-    jobSchemaAuthority: false,
+    allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });

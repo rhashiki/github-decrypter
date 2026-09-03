@@ -1,3 +1,5 @@
+import type { DurableJobId, DurableJobState } from './job-types.js';
+
 export const LOCAL_RUNTIME_STATES = [
   'idle',
   'starting',
@@ -27,10 +29,26 @@ export type LocalRuntimeDatabaseClosedPayload = {
   readonly reason: string | null;
 };
 
+export type LocalRuntimeJobsReadyPayload = {
+  readonly schemaVersion: number;
+  readonly total: number;
+  readonly nonTerminal: number;
+  readonly expiredLeases: number;
+};
+
+export type LocalRuntimeJobChangedPayload = {
+  readonly jobId: DurableJobId;
+  readonly previousState: DurableJobState | null;
+  readonly currentState: DurableJobState;
+  readonly reason: string | null;
+};
+
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
   readonly 'gd.local.database.opened': LocalRuntimeDatabaseOpenedPayload;
   readonly 'gd.local.database.closed': LocalRuntimeDatabaseClosedPayload;
+  readonly 'gd.local.jobs.ready': LocalRuntimeJobsReadyPayload;
+  readonly 'gd.local.job.changed': LocalRuntimeJobChangedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

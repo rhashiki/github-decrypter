@@ -2,6 +2,35 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 12 — Durable Job Engine — 2026-09-03
+
+### Jobs
+- Added persistent `gd_jobs`, dependency DAG and internal transition history on SQLite migration 2.
+- Added deterministic priority/insertion-order scheduling with atomic `BEGIN IMMEDIATE` claims.
+- Added worker IDs, random lease tokens, lease heartbeat/expiry tracking and attempt budgets.
+- Added checkpoint, wait, pause/resume, cancel, skip, completion, failure and explicit retry semantics.
+- Added recursive dependency-cycle rejection and dependency gating where completed/skipped prerequisites satisfy downstream work.
+
+### Runtime
+- Integrated the Durable Job Engine into Local Runtime startup/readiness.
+- Added `gd.local.jobs.ready` and `gd.local.job.changed` events.
+- Added non-sensitive job readiness/counts to health/readiness while keeping job-control HTTP absent.
+- Persisted queue state across database and daemon restarts.
+
+### Architecture Guardian
+- Added job authority rules owned exclusively by `apps/local`.
+- Blocked automatic crash/power recovery before Build 13.
+- Blocked job-control transport before the owning Jobs Center phase.
+- Kept the narrow `cortex.yml` generated-map write exception unchanged.
+
+### Validation
+- Proved deterministic queueing, DAG blocking, cycle rejection, lease-token enforcement, heartbeat, checkpoint/resume, pause/resume, wait/resume, cancel, skip, retry budget and expired-lease detection.
+- Proved expired `running` jobs persist and are detected but are not auto-recovered in Build 12.
+- Added AG101/AG102/AG103 failure injection plus the full Build 4–11 regression chain, TypeScript workspace checks and modern-engine preservation.
+
+### Safety
+- No automatic crash recovery, offline execution, capability security, generic job-control RPC, Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 11 — Persistent Local Database — 2026-09-03
 
 ### Database
