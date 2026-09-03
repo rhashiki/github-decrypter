@@ -2,6 +2,28 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 10 — Local Runtime Daemon — 2026-09-03
+
+### Runtime
+- Promoted `@github-decrypter/local` from placeholder to an independent Node.js daemon process.
+- Added loopback-only HTTP binding, default port `43110`, health/readiness endpoints and bounded JSON intake.
+- Added `gd-protocol/1` handshake negotiation with explicit accept/reject behavior.
+- Added deterministic lifecycle states, Central Event Bus lifecycle events and graceful SIGINT/SIGTERM shutdown.
+- Added single-instance coordination with stale-lock recovery.
+
+### Architecture
+- Kept the daemon deliberately non-privileged at the RPC surface: no file/tool/Git/model/database/job execution endpoint exists yet.
+- Extended the Architecture Guardian with explicit local-app dependency and browser-platform boundaries.
+- Advanced the canonical root version and Guardian Build authority to Build 10.
+
+### Validation
+- Added structural, compile-time and real loopback runtime tests.
+- Added failure injection proving the app Guardian rejects browser authority and undeclared workspace/external dependencies.
+- Build 4–9 regressions, all TypeScript workspaces and modern-engine preservation remain prerequisites.
+
+### Safety
+- No Release, OTA, store publication, production deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 9 — Architecture Guardian — 2026-09-03
 
 ### North Star
