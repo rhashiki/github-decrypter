@@ -14,7 +14,7 @@
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
     "check:build7": "node scripts/test-build7-shared-protocol.mjs",
     "check:build8": "node scripts/test-build8-central-event-bus.mjs && tsc -p scripts/tsconfig.build8-tests.json && tsx scripts/test-build8-event-bus-runtime.ts",
-    "check:build9": "node scripts/test-build9-architecture-guardian.mjs && pnpm run guardian",
+    "check:build9": "node scripts/test-build9-architecture-guardian.mjs && pnpm run guardian && node scripts/test-build9-guardian-negative.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
     "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run typecheck"
   },
