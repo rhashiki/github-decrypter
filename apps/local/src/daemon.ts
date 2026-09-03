@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
+import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -11,6 +12,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly config?: LocalRuntimeConfig;
   readonly eventBus?: EventBus<LocalRuntimeEventCatalog>;
   readonly database?: LocalDatabase;
+  readonly jobs?: DurableJobEngine;
   readonly now?: () => string;
 }
 
@@ -26,6 +28,7 @@ export class LocalRuntimeDaemon {
   readonly #now: () => string;
   readonly #peer = createLocalRuntimePeer();
   readonly #database: LocalDatabase;
+  readonly #jobs: DurableJobEngine;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -40,6 +43,11 @@ export class LocalRuntimeDaemon {
     this.#now = options.now ?? (() => new Date().toISOString());
     this.#database = options.database ?? createLocalDatabase({
       path: this.#config.databasePath,
+      now: this.#now,
+    });
+    this.#jobs = options.jobs ?? createDurableJobEngine({
+      database: this.#database,
+      eventBus: this.#eventBus,
       now: this.#now,
     });
   }
@@ -58,6 +66,10 @@ export class LocalRuntimeDaemon {
 
   get database(): LocalDatabase {
     return this.#database;
+  }
+
+  get jobs(): DurableJobEngine {
+    return this.#jobs;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -94,12 +106,22 @@ export class LocalRuntimeDaemon {
         integrity: databaseStatus.integrity,
       });
 
+      const jobStatus = this.#jobs.status();
+      if (!jobStatus.ready) throw new Error('Durable Job Engine is not ready after database startup.');
+      await this.#eventBus.publish('gd.local.jobs.ready', {
+        schemaVersion: jobStatus.schemaVersion,
+        total: jobStatus.summary.total,
+        nonTerminal: jobStatus.summary.nonTerminal,
+        expiredLeases: jobStatus.summary.expiredLeases,
+      });
+
       const server = createLocalRuntimeHttpServer({
         peer: this.#peer,
         getState: () => this.#state,
         getStartedAt: () => this.#startedAt,
         getAddress: () => this.#addressInfo(),
         getDatabaseStatus: () => this.#database.status,
+        getJobEngineStatus: () => this.#jobs.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -123,7 +145,7 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with persistent database ready');
+      await this.#transition('running', 'loopback server listening with persistent database and durable job engine ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
