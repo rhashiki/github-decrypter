@@ -2,6 +2,27 @@
 
 The active changelog uses the independent GitHub Decrypter Build numbering. Earlier predecessor history remains available through Git history and `GITHUB_DECRYPTER_ORIGIN.md`.
 
+## Build 8 — Central Event Bus — 2026-09-03
+
+### Events
+- Promoted `@github-decrypter/shared` into the owner of the deterministic in-process Event Bus.
+- Added typed `gd.*` event names, `gd_evt_*` IDs and JSON-safe payload boundaries.
+- Added correlation, causation and trace metadata compatible with the Build 7 protocol vocabulary.
+- Added exact subscriptions, one-shot subscriptions and global observers.
+- Added mutation-safe sequential dispatch, listener limits, idempotent unsubscribe and handler-failure isolation.
+
+### Architecture
+- Preserved `@github-decrypter/protocol` as the only wire contract.
+- Event Bus remains in-process only: no WebSocket/HTTP/Chrome transport, durable queue, retry scheduler, database or security authority.
+- No hidden global singleton is created; future composition roots own their bus instance.
+
+### Validation
+- Added structural and runtime Event Bus tests plus full workspace typechecking.
+- Build 4/5/6/7 and modern-engine preservation remain prerequisites.
+
+### Safety
+- No Release, OTA, store publication, deployment, production backend mutation or DNS change is authorized by this Build.
+
 ## Build 7 — Shared Protocol — 2026-09-03
 
 ### Protocol
