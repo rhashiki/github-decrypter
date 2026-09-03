@@ -218,65 +218,44 @@ CREATE INDEX gd_vault_secrets_updated_idx
   ON gd_vault_secrets (updated_at, id);
 `;
 
+const MIGRATION_007_SQL = `
+CREATE TABLE gd_approval_transactions (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  requirements_json TEXT NOT NULL,
+  payload_digest TEXT NOT NULL CHECK (length(payload_digest) = 64),
+  state TEXT NOT NULL CHECK (state IN ('pending', 'approved', 'denied', 'consumed', 'expired', 'cancelled')),
+  requested_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  decided_at TEXT,
+  reviewer_id TEXT,
+  reviewer_kind TEXT CHECK (reviewer_kind IS NULL OR reviewer_kind = 'human'),
+  decision_reason TEXT,
+  receipt_hash TEXT UNIQUE,
+  consumed_at TEXT,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_approval_transactions_job_idx
+  ON gd_approval_transactions (job_id, requested_at);
+CREATE INDEX gd_approval_transactions_state_idx
+  ON gd_approval_transactions (state, expires_at);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
 
 export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Object.freeze([
-  Object.freeze({
-    version: 1,
-    name: 'metadata-foundation',
-    sql: MIGRATION_001_SQL,
-    checksum: checksum(MIGRATION_001_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_001_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 2,
-    name: 'durable-job-engine',
-    sql: MIGRATION_002_SQL,
-    checksum: checksum(MIGRATION_002_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_002_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 3,
-    name: 'crash-power-recovery',
-    sql: MIGRATION_003_SQL,
-    checksum: checksum(MIGRATION_003_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_003_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 4,
-    name: 'offline-execution',
-    sql: MIGRATION_004_SQL,
-    checksum: checksum(MIGRATION_004_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_004_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 5,
-    name: 'capability-security-model',
-    sql: MIGRATION_005_SQL,
-    checksum: checksum(MIGRATION_005_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_005_SQL);
-    },
-  }),
-  Object.freeze({
-    version: 6,
-    name: 'secrets-vault',
-    sql: MIGRATION_006_SQL,
-    checksum: checksum(MIGRATION_006_SQL),
-    apply(database: DatabaseSync) {
-      database.exec(MIGRATION_006_SQL);
-    },
-  }),
+  Object.freeze({ version: 1, name: 'metadata-foundation', sql: MIGRATION_001_SQL, checksum: checksum(MIGRATION_001_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_001_SQL); } }),
+  Object.freeze({ version: 2, name: 'durable-job-engine', sql: MIGRATION_002_SQL, checksum: checksum(MIGRATION_002_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_002_SQL); } }),
+  Object.freeze({ version: 3, name: 'crash-power-recovery', sql: MIGRATION_003_SQL, checksum: checksum(MIGRATION_003_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_003_SQL); } }),
+  Object.freeze({ version: 4, name: 'offline-execution', sql: MIGRATION_004_SQL, checksum: checksum(MIGRATION_004_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_004_SQL); } }),
+  Object.freeze({ version: 5, name: 'capability-security-model', sql: MIGRATION_005_SQL, checksum: checksum(MIGRATION_005_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_005_SQL); } }),
+  Object.freeze({ version: 6, name: 'secrets-vault', sql: MIGRATION_006_SQL, checksum: checksum(MIGRATION_006_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_006_SQL); } }),
+  Object.freeze({ version: 7, name: 'approval-transactions', sql: MIGRATION_007_SQL, checksum: checksum(MIGRATION_007_SQL), apply(database: DatabaseSync) { database.exec(MIGRATION_007_SQL); } }),
 ]);
 
 export const LOCAL_DATABASE_SCHEMA_VERSION = LOCAL_DATABASE_MIGRATIONS.at(-1)?.version ?? 0;
