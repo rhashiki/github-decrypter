@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS gd_schema_migrations (
 
 const MIGRATION_001_SQL = `
 CREATE TABLE gd_metadata (
-  key TEXT PRIMARY KEY CHECK (length(key) > 0),
+  key TEXT PRIMARY KEY,
   value_json TEXT NOT NULL,
   updated_at TEXT NOT NULL
 ) STRICT;
