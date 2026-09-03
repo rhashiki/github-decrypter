@@ -1,5 +1,9 @@
 import { createEventBus, type EventBus } from '@github-decrypter/shared';
 import type { AddressInfo } from 'node:net';
+import {
+  createCapabilitySecurityAuthority,
+  type CapabilitySecurityAuthority,
+} from './capability-security.js';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
@@ -20,6 +24,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly jobs?: DurableJobEngine;
   readonly recovery?: CrashPowerRecovery;
   readonly offline?: OfflineExecutionCoordinator;
+  readonly capabilities?: CapabilitySecurityAuthority;
   readonly now?: () => string;
 }
 
@@ -38,6 +43,7 @@ export class LocalRuntimeDaemon {
   readonly #jobs: DurableJobEngine;
   readonly #recovery: CrashPowerRecovery;
   readonly #offline: OfflineExecutionCoordinator;
+  readonly #capabilities: CapabilitySecurityAuthority;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -70,6 +76,11 @@ export class LocalRuntimeDaemon {
       eventBus: this.#eventBus,
       now: this.#now,
     });
+    this.#capabilities = options.capabilities ?? createCapabilitySecurityAuthority({
+      database: this.#database,
+      eventBus: this.#eventBus,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState {
@@ -98,6 +109,10 @@ export class LocalRuntimeDaemon {
 
   get offline(): OfflineExecutionCoordinator {
     return this.#offline;
+  }
+
+  get capabilities(): CapabilitySecurityAuthority {
+    return this.#capabilities;
   }
 
   get address(): LocalRuntimeBoundAddress | null {
@@ -144,6 +159,9 @@ export class LocalRuntimeDaemon {
       const offlineStatus = await this.#offline.initialize();
       if (!offlineStatus.ready) throw new Error('Offline Execution is not ready after recovery startup.');
 
+      const capabilityStatus = await this.#capabilities.initialize();
+      if (!capabilityStatus.ready) throw new Error('Capability Security is not ready after offline execution startup.');
+
       const jobStatus = this.#jobs.status();
       await this.#eventBus.publish('gd.local.jobs.ready', {
         schemaVersion: jobStatus.schemaVersion,
@@ -161,6 +179,7 @@ export class LocalRuntimeDaemon {
         getJobEngineStatus: () => this.#jobs.status(),
         getRecoveryStatus: () => this.#recovery.status,
         getOfflineExecutionStatus: () => this.#offline.status(),
+        getCapabilitySecurityStatus: () => this.#capabilities.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -184,12 +203,13 @@ export class LocalRuntimeDaemon {
       });
 
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with crash recovery and offline execution ready');
+      await this.#transition('running', 'loopback server listening with recovery, offline execution and capability security ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
     } catch (error) {
       await this.#closeServerBestEffort();
+      await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
       await this.#closeDatabaseBestEffort('startup failed');
       this.#instanceLock?.release();
@@ -207,6 +227,13 @@ export class LocalRuntimeDaemon {
     await this.#transition('stopping', reason);
     await this.#closeServerBestEffort();
 
+    let capabilityError: unknown = null;
+    try {
+      await this.#capabilities.shutdown(`runtime stopped: ${reason}`);
+    } catch (error) {
+      capabilityError = error;
+    }
+
     let recoveryError: unknown = null;
     try {
       await this.#recovery.stopSession(reason);
@@ -219,10 +246,11 @@ export class LocalRuntimeDaemon {
     this.#instanceLock = null;
     this.#startedAt = null;
 
-    if (recoveryError) {
-      const message = recoveryError instanceof Error ? recoveryError.message : 'recovery shutdown failed';
+    const shutdownError = capabilityError ?? recoveryError;
+    if (shutdownError) {
+      const message = shutdownError instanceof Error ? shutdownError.message : 'runtime shutdown failed';
       await this.#transition('failed', message);
-      throw recoveryError;
+      throw shutdownError;
     }
     await this.#transition('stopped', reason);
   }
@@ -239,6 +267,15 @@ export class LocalRuntimeDaemon {
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
+  }
+
+  async #closeCapabilitiesBestEffort(reason: string): Promise<void> {
+    if (!this.#database.isOpen || !this.#capabilities.status().ready) return;
+    try {
+      await this.#capabilities.shutdown(`runtime stopped: ${reason}`);
+    } catch {
+      // Preserve the original startup failure.
+    }
   }
 
   async #closeRecoveryBestEffort(reason: string): Promise<void> {
