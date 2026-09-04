@@ -28,7 +28,9 @@ try {
   database.open();
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build20-test', now });
   const observed: unknown[] = [];
-  bus.subscribe('gd.local.project.detected', (event) => observed.push(event));
+  bus.subscribe('gd.local.project.detected', (event) => {
+    observed.push(event);
+  });
   const workspaces = new WorkspaceManager({ database, eventBus: bus, now });
   await workspaces.initialize();
   const detector = new ProjectDetector({ workspaces, eventBus: bus, now });
