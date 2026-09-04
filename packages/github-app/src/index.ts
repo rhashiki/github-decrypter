@@ -1,6 +1,4 @@
 export const GITHUB_APP_SCHEMA = 'gd-github-app/1' as const;
-export const GITHUB_API_BASE_URL = 'https://api.github.com' as const;
-export const GITHUB_API_VERSION = '2022-11-28' as const;
 export const GITHUB_APP_JWT_ALGORITHM = 'RS256' as const;
 export const GITHUB_APP_JWT_MAX_TTL_SECONDS = 600 as const;
 export const GITHUB_INSTALLATION_TOKEN_MAX_TTL_SECONDS = 3600 as const;
@@ -15,7 +13,7 @@ export type GitHubRepositorySelection = 'all' | 'selected';
 export interface GitHubAppConfigurationRecord {
   readonly schema: typeof GITHUB_APP_SCHEMA;
   readonly appId: string;
-  readonly apiBaseUrl: typeof GITHUB_API_BASE_URL;
+  readonly apiBaseUrl: string;
   readonly configuredAt: string;
   readonly updatedAt: string;
 }
