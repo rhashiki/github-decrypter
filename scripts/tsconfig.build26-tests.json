@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../apps/extension/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "./test-build26-repository-launcher-runtime.ts"
+  ]
+}

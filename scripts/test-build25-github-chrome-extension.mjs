@@ -25,14 +25,16 @@ assert.equal(rule.statelessPageContext, true);
 assert.equal(rule.networkAuthority, false);
 assert.equal(rule.secretAuthority, false);
 assert.equal(rule.durableExecution, false);
-assert.equal(rule.repositoryDetection, false);
-assert.equal(rule.fab, false);
-assert.equal(rule.openInFlow, false);
 assert.equal(rule.studioLaunch, false);
 assert.equal(rule.localRuntimeDirectTransport, false);
-assert.equal(rule.contentDomMutation, false);
 assert.equal(rule.contextPersistence, false);
 assert.equal(rule.externalHosts, false);
+if (policy.currentBuild === 25) {
+  assert.equal(rule.repositoryDetection, false);
+  assert.equal(rule.fab, false);
+  assert.equal(rule.openInFlow, false);
+  assert.equal(rule.contentDomMutation, false);
+}
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.name, 'GitHub Decrypter');
@@ -45,53 +47,45 @@ assert.deepEqual(manifest.content_scripts[0]?.matches, rule.hostAllowlist);
 assert.deepEqual(manifest.content_scripts[0]?.js, [rule.contentScript]);
 assert.equal(manifest.content_scripts[0]?.run_at, 'document_idle');
 
-assert.equal(extensionPackage.version, '0.0.25');
+if (policy.currentBuild === 25) assert.equal(extensionPackage.version, '0.0.25');
 assert.deepEqual(Object.keys(extensionPackage.dependencies ?? {}), ['@github-decrypter/protocol']);
 
 for (const marker of [
-  "GITHUB_EXTENSION_BUILD = 25",
-  "GITHUB_EXTENSION_VERSION = '0.0.25'",
   "GITHUB_EXTENSION_BRIDGE_SCHEMA = 'gd-extension-bridge/1'",
   "GITHUB_EXTENSION_ALLOWED_ORIGIN = 'https://github.com'",
   "'gd.extension.hello'",
   "'gd.extension.page-context'",
-  'repositoryLauncher: false',
   'networkAuthority: false',
   'durableExecution: false',
 ]) assert.ok(contract.includes(marker), `missing extension contract marker: ${marker}`);
+if (policy.currentBuild === 25) {
+  assert.ok(contract.includes('GITHUB_EXTENSION_BUILD = 25'));
+  assert.ok(contract.includes("GITHUB_EXTENSION_VERSION = '0.0.25'"));
+  assert.ok(contract.includes('repositoryLauncher: false'));
+}
 
 for (const marker of [
-  "BRIDGE_SCHEMA = 'gd-extension-bridge/1'",
-  "ALLOWED_ORIGIN = 'https://github.com'",
-  'sender.id !== chrome.runtime.id',
-  "url.hostname !== 'github.com'",
-  'senderUrl.pathname !== message.pathname',
-  'chrome.runtime.onMessage.addListener',
-  'chrome.action.setTitle',
+  "BRIDGE_SCHEMA = 'gd-extension-bridge/1'", "ALLOWED_ORIGIN = 'https://github.com'",
+  'sender.id !== chrome.runtime.id', "url.hostname !== 'github.com'",
+  'senderUrl.pathname !== message.pathname', 'chrome.runtime.onMessage.addListener', 'chrome.action.setTitle',
 ]) assert.ok(worker.includes(marker), `missing service-worker invariant: ${marker}`);
 
 for (const marker of [
-  "BRIDGE_SCHEMA = 'gd-extension-bridge/1'",
-  "ALLOWED_ORIGIN = 'https://github.com'",
-  'location.origin !== ALLOWED_ORIGIN',
-  'chrome.runtime.sendMessage(context',
-  "document.addEventListener('turbo:load'",
+  "BRIDGE_SCHEMA = 'gd-extension-bridge/1'", "ALLOWED_ORIGIN = 'https://github.com'",
+  'location.origin !== ALLOWED_ORIGIN', "document.addEventListener('turbo:load'",
 ]) assert.ok(content.includes(marker), `missing content-script invariant: ${marker}`);
 
 const browserSource = `${worker}\n${content}`;
 for (const forbidden of [
-  /\bfetch\s*\(/,
-  /\bWebSocket\s*\(/,
-  /\bXMLHttpRequest\b/,
-  /chrome\.storage/,
-  /localStorage/,
-  /indexedDB/,
-  /document\.createElement\s*\(/,
-  /\.appendChild\s*\(/,
-  /chrome\.tabs\.create\s*\(/,
-  /window\.open\s*\(/,
-  /127\.0\.0\.1|localhost|43110/,
+  /\bfetch\s*\(/, /\bWebSocket\s*\(/, /\bXMLHttpRequest\b/, /chrome\.storage/,
+  /localStorage/, /indexedDB/, /127\.0\.0\.1|localhost|43110/,
 ]) assert.doesNotMatch(browserSource, forbidden);
+if (policy.currentBuild < 26) {
+  for (const forbidden of [
+    /document\.createElement\s*\(/, /\.appendChild\s*\(/,
+    /chrome\.tabs\.create\s*\(/, /window\.open\s*\(/,
+  ]) assert.doesNotMatch(browserSource, forbidden);
+}
 
 console.log(JSON.stringify({
   ok: true,
@@ -105,7 +99,6 @@ console.log(JSON.stringify({
   lightweightBridge: true,
   statelessPageContext: true,
   networkAuthority: false,
-  repositoryLauncher: false,
-  repositoryDetection: false,
+  repositoryLauncherBuild: rule.repositoryLauncherBuild,
   contextPersistence: false,
 }, null, 2));

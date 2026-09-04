@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "GitHub Decrypter",
-  "version": "0.0.25",
-  "version_name": "GitHub Decrypter Build 25 · GitHub Chrome Extension",
-  "description": "Lightweight GitHub launcher/bridge foundation for GitHub Decrypter. Repository Launcher and Open in GitHub Decrypter arrive in Build 26.",
+  "version": "0.0.26",
+  "version_name": "GitHub Decrypter Build 26 · Repository Launcher",
+  "description": "Lightweight GitHub bridge with fail-closed repository detection, repository FAB and extension-owned Open in GitHub Decrypter handoff.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
