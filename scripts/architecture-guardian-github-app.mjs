@@ -54,7 +54,6 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
     'class GitHubAppRuntime',
     'GITHUB_APP_PRIVATE_KEY_RESOURCE',
     'GITHUB_APP_WEBHOOK_SECRET_RESOURCE',
-    "capability: 'SECRETS'",
     "capability: 'NETWORK'",
     "capability: 'DATABASE_WRITE'",
     "capability: 'READ'",
@@ -62,6 +61,10 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
     'this.#vault.putSecret',
   ]) {
     if (!runtime.includes(marker)) violations.push({ code: 'AG213', message: 'GitHub App capability/Vault invariant missing.', detail: marker });
+  }
+  const vault = read('apps/local/src/secrets-vault.ts');
+  if (!vault.includes("requirements: [{ capability: 'SECRETS', resource }]")) {
+    violations.push({ code: 'AG213', message: 'Secrets Vault no longer enforces SECRETS capability for GitHub App secret access.' });
   }
 
   for (const marker of [
