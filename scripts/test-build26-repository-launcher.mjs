@@ -14,9 +14,10 @@ const worker = read(rule.serviceWorker);
 const launcherHtml = read(rule.launcherPage);
 const launcherScript = read(rule.launcherScript);
 
-assert.equal(policy.currentBuild, 26);
+assert.ok(policy.currentBuild >= 26, `Build 26 regression requires currentBuild >= 26; got ${policy.currentBuild}.`);
 assert.equal(policy.phaseGates.repositoryLauncherBuild, 26);
 assert.equal(policy.phaseGates.studioReactBuild, 27);
+assert.equal(rule.repositoryLauncherBuild, 26);
 assert.equal(rule.repositoryDetection, true);
 assert.equal(rule.repositoryIdentitySource, 'github-meta+pathname');
 assert.equal(rule.fab, true);
@@ -70,8 +71,10 @@ for (const forbidden of [
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build26-repository-launcher-static/1',
+  schema: 'gd-build26-repository-launcher-static/2',
   build: 26,
+  currentBuild: policy.currentBuild,
+  forwardCompatibleRegression: true,
   repositoryDetection: 'github-meta+pathname',
   fab: true,
   openInFlow: true,

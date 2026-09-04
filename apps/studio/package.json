@@ -1,10 +1,22 @@
 {
   "name": "@github-decrypter/studio",
-  "version": "0.0.0",
+  "version": "0.0.27",
   "private": true,
   "type": "module",
-  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json"
+  },
   "dependencies": {
-    "@github-decrypter/protocol": "workspace:*"
+    "@github-decrypter/protocol": "workspace:*",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.2.2"
   }
 }
