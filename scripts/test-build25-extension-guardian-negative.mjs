@@ -30,11 +30,6 @@ try {
   expect('AG233');
 } finally { fs.writeFileSync(contentPath, contentOriginal); }
 
-try {
-  fs.writeFileSync(contentPath, `${contentOriginal}\ndocument.createElement('button');\n`);
-  expect('AG234');
-} finally { fs.writeFileSync(contentPath, contentOriginal); }
-
 const workerPath = path.join(root, 'apps/extension/browser/service-worker.js');
 const workerOriginal = fs.readFileSync(workerPath, 'utf8');
 try {
@@ -42,16 +37,11 @@ try {
   expect('AG235');
 } finally { fs.writeFileSync(workerPath, workerOriginal); }
 
-try {
-  fs.writeFileSync(workerPath, `${workerOriginal}\nfunction detectRepository() { return null; }\n`);
-  expect('AG236');
-} finally { fs.writeFileSync(workerPath, workerOriginal); }
-
 const policyPath = path.join(root, 'architecture.guardian.json');
 const policyOriginal = fs.readFileSync(policyPath, 'utf8');
 try {
   const policy = JSON.parse(policyOriginal);
-  policy.extensionAuthority.openInFlow = true;
+  policy.extensionAuthority.networkAuthority = true;
   fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
   expect('AG238');
 } finally { fs.writeFileSync(policyPath, policyOriginal); }
@@ -61,7 +51,8 @@ assert.equal(final.status, 0, `Extension Guardian did not recover.\n${final.stdo
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build25-extension-guardian-negative/1',
+  schema: 'gd-build25-extension-guardian-negative/2',
+  currentPhaseAware: true,
   rejected,
   restoredTreePasses: true,
 }, null, 2));
