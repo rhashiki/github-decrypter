@@ -31,8 +31,9 @@ Completed:
 - Build 17 — Approval Transactions
 - Build 18 — Audit Ledger
 - Build 19 — Workspace Manager
+- Build 20 — Project Detection
 
-Next: **Build 20 — Project Detection**.
+Next: **Build 21 — Git Runtime**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -51,7 +52,7 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault, durable one-shot Approval Transactions, the append-only local Audit Ledger and the local Workspace Manager. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault, durable one-shot Approval Transactions, the append-only local Audit Ledger, the local Workspace Manager and read-only Project Detection. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
 Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Build 14 adds persistent `unknown | online | offline` connectivity state and explicit network-required job metadata: local-safe work remains claimable without network, while network-required work waits durably and returns to the queue when connectivity is restored.
 
@@ -67,15 +68,17 @@ Build 18 adds the canonical local Audit Ledger. Audit entries are append-only un
 
 Build 19 adds the canonical local Workspace Manager. Existing local directories are registered by canonical `realpath` under opaque `gd_ws_<uuid>` identities in SQLite schema 9. Duplicate registration of the same canonical root is idempotent. Workspace-relative resolution performs both lexical containment and post-`realpath` containment so symlink escapes fail closed. This Build resolves existing paths only: it does not create, edit, move, delete or otherwise mutate project files. Health, readiness and Event Bus messages expose workspace IDs/counts/timestamps rather than filesystem paths or display names.
 
+Build 20 adds read-only Project Detection on top of Workspace Manager. It inspects only known root files, recognizes pnpm/npm/yarn/bun, detects Next.js/Astro/React/Vue/Svelte/Vite/vanilla project families, derives a deterministic `dev` or `start` command when possible, caps `package.json` at 1 MiB and rejects malformed JSON or symlink escapes. It performs no recursive scan, file mutation, process execution, network access or Git operation, and it does not persist a project-detection cache.
+
 Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. `NETWORK` capability authorizes network use; it does not bypass Build 14 connectivity state.
 
-There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control, audit-control, workspace-control or job-control HTTP endpoint. In particular, Build 18 does not expose `/v1/audit`, `/v1/audits` or `/v1/audit-ledger`, and Build 19 does not expose `/v1/workspace` or `/v1/workspaces`. The default development endpoint is `127.0.0.1:43110`. Run it with:
+There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control, audit-control, workspace-control, project-detection-control or job-control HTTP endpoint. In particular, Build 18 does not expose `/v1/audit`, `/v1/audits` or `/v1/audit-ledger`, Build 19 does not expose `/v1/workspace` or `/v1/workspaces`, and Build 20 does not expose `/v1/project-detection`. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, phase gates, token/receipt-hash-only persistence, encrypted secret/resource persistence, master-key separation, append-only audit persistence, SHA-256 audit-chain verification, metadata-only audit capture, canonical workspace roots, workspace path containment, no premature privileged transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, Project Detection ownership, phase gates, token/receipt-hash-only persistence, encrypted secret/resource persistence, master-key separation, append-only audit persistence, SHA-256 audit-chain verification, metadata-only audit capture, canonical workspace roots, workspace path containment, root-only read-only project inspection, no premature Git/network/process or privileged transport authority, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -161,6 +164,11 @@ Studio PWA                         Local Runtime Daemon
                                 Workspace Manager
                          canonical realpath registry
                        containment + metadata-only events
+                                           │
+                                           ▼
+                                Project Detection
+                       root-only read-only inspection
+                    package manager + framework + dev command
 
             │
             ▼
@@ -188,6 +196,7 @@ See:
 - `docs/architecture/APPROVAL_TRANSACTIONS.md` — Build 17 one-shot human approval boundary
 - `docs/architecture/AUDIT_LEDGER.md` — Build 18 append-only tamper-evident local audit boundary
 - `docs/architecture/WORKSPACE_MANAGER.md` — Build 19 canonical local workspace registry and path boundary
+- `docs/architecture/PROJECT_DETECTION.md` — Build 20 root-only read-only project inspection boundary
 
 ## Architecture check
 
