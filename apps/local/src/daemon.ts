@@ -5,6 +5,7 @@ import { createAuditLedger, type AuditLedger } from './audit-ledger.js';
 import { createCapabilitySecurityAuthority, type CapabilitySecurityAuthority } from './capability-security.js';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
+import { createGitRuntime, type GitRuntime } from './git-runtime.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
 import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
@@ -29,6 +30,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly audit?: AuditLedger;
   readonly workspaces?: WorkspaceManager;
   readonly projectDetection?: ProjectDetector;
+  readonly git?: GitRuntime;
   readonly now?: () => string;
 }
 
@@ -49,6 +51,7 @@ export class LocalRuntimeDaemon {
   readonly #audit: AuditLedger;
   readonly #workspaces: WorkspaceManager;
   readonly #projectDetection: ProjectDetector;
+  readonly #git: GitRuntime;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -69,6 +72,13 @@ export class LocalRuntimeDaemon {
     this.#audit = options.audit ?? createAuditLedger({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#workspaces = options.workspaces ?? createWorkspaceManager({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#projectDetection = options.projectDetection ?? createProjectDetector({ workspaces: this.#workspaces, eventBus: this.#eventBus, now: this.#now });
+    this.#git = options.git ?? createGitRuntime({
+      workspaces: this.#workspaces,
+      capabilities: this.#capabilities,
+      offline: this.#offline,
+      eventBus: this.#eventBus,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState { return this.#state; }
@@ -84,6 +94,7 @@ export class LocalRuntimeDaemon {
   get audit(): AuditLedger { return this.#audit; }
   get workspaces(): WorkspaceManager { return this.#workspaces; }
   get projectDetection(): ProjectDetector { return this.#projectDetection; }
+  get git(): GitRuntime { return this.#git; }
 
   get address(): LocalRuntimeBoundAddress | null {
     const address = this.#addressInfo();
@@ -120,6 +131,8 @@ export class LocalRuntimeDaemon {
       if (!offlineStatus.ready) throw new Error('Offline Execution is not ready after recovery startup.');
       const capabilityStatus = await this.#capabilities.initialize();
       if (!capabilityStatus.ready) throw new Error('Capability Security is not ready after offline execution startup.');
+      const gitStatus = await this.#git.initialize();
+      if (!gitStatus.ready || !gitStatus.available) throw new Error('Git Runtime requires an available Git executable.');
       const vaultStatus = await this.#vault.initialize();
       if (!vaultStatus.ready) throw new Error('Secrets Vault is not ready after capability security startup.');
       const approvalStatus = await this.#approvals.initialize();
@@ -142,6 +155,7 @@ export class LocalRuntimeDaemon {
         getAuditLedgerStatus: () => this.#audit.status(),
         getWorkspaceManagerStatus: () => this.#workspaces.status(),
         getProjectDetectionStatus: () => this.#projectDetection.status(),
+        getGitRuntimeStatus: () => this.#git.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -152,7 +166,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -160,6 +174,7 @@ export class LocalRuntimeDaemon {
       await this.#closeServerBestEffort();
       this.#closeApprovalsBestEffort();
       this.#closeVaultBestEffort();
+      this.#closeGitBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
       this.#closeProjectDetectionBestEffort();
@@ -179,6 +194,7 @@ export class LocalRuntimeDaemon {
     this.#approvals.shutdown();
     let vaultError: unknown = null;
     try { this.#vault.shutdown(); } catch (error) { vaultError = error; }
+    this.#git.shutdown();
     let capabilityError: unknown = null;
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
@@ -207,6 +223,7 @@ export class LocalRuntimeDaemon {
   }
   #closeApprovalsBestEffort(): void { try { this.#approvals.shutdown(); } catch {} }
   #closeVaultBestEffort(): void { try { this.#vault.shutdown(); } catch {} }
+  #closeGitBestEffort(): void { try { this.#git.shutdown(); } catch {} }
   #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }
   #closeWorkspacesBestEffort(): void { try { this.#workspaces.shutdown(); } catch {} }
   #closeAuditBestEffort(): void { try { this.#audit.shutdown(); } catch {} }
