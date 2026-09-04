@@ -1,4 +1,5 @@
 import type { ApprovalTransactionId } from './approval-transactions.js';
+import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
 import type { Capability, CapabilityGrantId } from './capability-security.js';
 import type { DurableJobId, DurableJobState } from './job-types.js';
 import type { ConnectivityState } from './offline-execution.js';
@@ -29,6 +30,8 @@ export type LocalRuntimeApprovalRequestedPayload = { readonly transactionId: App
 export type LocalRuntimeApprovalDecidedPayload = { readonly transactionId: ApprovalTransactionId; readonly jobId: DurableJobId; readonly decision: 'approved' | 'denied'; readonly actor: string; readonly occurredAt: string; };
 export type LocalRuntimeApprovalConsumedPayload = { readonly transactionId: ApprovalTransactionId; readonly jobId: DurableJobId; readonly occurredAt: string; };
 export type LocalRuntimeApprovalCancelledPayload = { readonly transactionId: ApprovalTransactionId; readonly jobId: DurableJobId; readonly occurredAt: string; };
+export type LocalRuntimeAuditReadyPayload = { readonly entryCount: number; readonly headHash: string; readonly appendOnly: true; readonly hashChain: 'sha256'; readonly externalTransport: false; };
+export type LocalRuntimeAuditAppendedPayload = { readonly entryId: AuditEntryId; readonly sequence: number; readonly category: AuditCategory; readonly action: string; readonly outcome: AuditOutcome; readonly occurredAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -54,6 +57,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.approval.decided': LocalRuntimeApprovalDecidedPayload;
   readonly 'gd.local.approval.consumed': LocalRuntimeApprovalConsumedPayload;
   readonly 'gd.local.approval.cancelled': LocalRuntimeApprovalCancelledPayload;
+  readonly 'gd.local.audit.ready': LocalRuntimeAuditReadyPayload;
+  readonly 'gd.local.audit.appended': LocalRuntimeAuditAppendedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
