@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../apps/local/src/**/*.ts",
+    "../packages/git/src/**/*.ts",
+    "../packages/github-app/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts",
+    "./test-build23-github-app-runtime.ts"
+  ]
+}
