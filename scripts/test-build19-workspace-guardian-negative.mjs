@@ -31,7 +31,7 @@ try {
 const managerPath = path.join(root, 'apps/local/src/workspace-manager.ts');
 const managerOriginal = fs.readFileSync(managerPath, 'utf8');
 try {
-  fs.writeFileSync(managerPath, managerOriginal.replace('realpathSync', 'canonicalizePath'));
+  fs.writeFileSync(managerPath, managerOriginal.replaceAll('realpathSync', 'canonicalizePath'));
   expect('AG173');
 } finally { fs.writeFileSync(managerPath, managerOriginal); }
 
