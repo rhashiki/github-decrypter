@@ -18,10 +18,10 @@ export function StudioApp() {
         <section className="foundation-card" aria-labelledby="foundation-title">
           <div className="status-dot" aria-hidden="true" />
           <div>
-            <h2 id="foundation-title">React Studio foundation ready</h2>
+            <h2 id="foundation-title">Installable Studio shell ready</h2>
             <p>
-              The browser Studio is running as a client-only React application. PWA installation,
-              the unified design system and the IDE layout belong to later Builds.
+              The browser Studio now has an installable PWA app shell with same-origin offline fallback.
+              Unified design system and IDE layout remain owned by later Builds.
             </p>
           </div>
         </section>
@@ -49,22 +49,30 @@ export function StudioApp() {
           <section className="empty-card" aria-labelledby="empty-title">
             <p className="eyebrow">Studio entry</p>
             <h2 id="empty-title">No repository selected</h2>
-            <p>The Studio foundation can start independently without claiming a GitHub or Local Runtime connection.</p>
+            <p>The Studio can start independently without claiming a GitHub or Local Runtime connection.</p>
           </section>
         ) : null}
 
-        <section className="boundary-grid" aria-label="Build 27 boundaries">
+        <section className="boundary-grid" aria-label="Build 28 boundaries">
           <article>
             <span>React</span>
             <strong>Active</strong>
           </article>
           <article>
-            <span>Vite</span>
+            <span>PWA</span>
             <strong>Active</strong>
           </article>
           <article>
-            <span>PWA</span>
-            <strong>Build 28</strong>
+            <span>Offline shell</span>
+            <strong>Active</strong>
+          </article>
+          <article>
+            <span>Design System</span>
+            <strong>Build 29</strong>
+          </article>
+          <article>
+            <span>IDE Layout</span>
+            <strong>Build 30</strong>
           </article>
           <article>
             <span>Local Runtime</span>
