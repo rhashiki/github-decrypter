@@ -68,15 +68,20 @@ for (const pkg of expectedPackages) {
   const manifest = json(`${prefix}/package.json`);
   assert.equal(manifest.name, `@github-decrypter/${pkg}`);
   assert.equal(manifest.private, true);
-  assert.equal(manifest.exports, './src/index.ts');
+  if (typeof manifest.exports === 'string') {
+    assert.equal(manifest.exports, './src/index.ts');
+  } else {
+    assert.equal(manifest.exports?.['.'], './src/index.ts');
+  }
   assert.ok(manifest.scripts?.typecheck, `${manifest.name} must expose typecheck`);
   assert.equal(json(`${prefix}/tsconfig.json`).extends, '../../tsconfig.base.json');
 }
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-monorepo-foundation/2',
+  schema: 'gd-monorepo-foundation/3',
   foundationalApps: expectedApps,
   foundationalPackages: expectedPackages,
+  packageExportMapsAllowed: true,
   allowsRoadmapEvolution: true,
 }, null, 2));
