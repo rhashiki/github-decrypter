@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 28,
+  "currentBuild": 29,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -24,6 +24,7 @@
     "packages": ["ui", "protocol", "shared", "git", "github-app", "github-provider", "workspace", "chat", "plan", "build", "preview", "context", "tools", "scope", "ai"]
   },
   "packageRules": {
+    "@github-decrypter/ui": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true },
     "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
@@ -33,7 +34,7 @@
   },
   "appRules": {
     "@github-decrypter/studio": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol", "@github-decrypter/ui"],
       "allowedExternalDependencies": ["react", "react-dom", "@types/react", "@types/react-dom", "@vitejs/plugin-react", "vite"],
       "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."]
     },
@@ -133,6 +134,30 @@
     "repositoryContextPersistence": false, "localRuntimeTransport": false, "githubProviderDirectAccess": false,
     "extensionDirectAccess": false, "contextPersistence": false, "externalTransport": false,
     "productionHosting": false, "productionPackaging": false
+  },
+  "designSystemAuthority": {
+    "ownerPackage": "@github-decrypter/ui",
+    "ownerRoot": "packages/ui",
+    "minimumBuild": 29,
+    "studioConsumer": "@github-decrypter/studio",
+    "ideLayoutBuild": 30,
+    "onboardingBuild": 31,
+    "schema": "gd-ui-tokens/1",
+    "cssVariablePrefix": "--gd-",
+    "componentClassPrefix": "gd-",
+    "theme": "dark",
+    "semanticTokens": true,
+    "reactPrimitives": true,
+    "focusVisible": true,
+    "environmentNeutral": true,
+    "networkAuthority": false,
+    "storageAuthority": false,
+    "filesystemAuthority": false,
+    "localRuntimeTransport": false,
+    "githubProviderAccess": false,
+    "ideLayoutAuthority": false,
+    "workspaceLayoutAuthority": false,
+    "externalTransport": false
   },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
