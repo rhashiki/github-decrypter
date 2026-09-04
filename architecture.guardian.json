@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 19,
+  "currentBuild": 20,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -82,6 +82,20 @@
     "filesystemMutation": false,
     "externalTransport": false
   },
+  "projectDetectionAuthority": {
+    "ownerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/workspace",
+    "minimumBuild": 20,
+    "workspaceManagerBuild": 19,
+    "gitRuntimeBuild": 21,
+    "rootOnly": true,
+    "readOnly": true,
+    "filesystemMutation": false,
+    "networkAccess": false,
+    "gitAuthority": false,
+    "externalTransport": false,
+    "maxPackageJsonBytes": 1048576
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -97,7 +111,8 @@
   "phaseGates": {
     "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
+    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "extensionActivationBuild": 25,
+    "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
