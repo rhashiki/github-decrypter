@@ -14,6 +14,7 @@ export * from './job-engine.js';
 export * from './job-types.js';
 export * from './lifecycle.js';
 export * from './offline-execution.js';
+export * from './project-detector.js';
 export * from './recovery-engine.js';
 export * from './secrets-vault.js';
 export * from './server.js';
