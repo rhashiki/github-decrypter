@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 23 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.23' as const;
+export const LOCAL_RUNTIME_BUILD = 24 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.24' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http','health','readiness','protocol-handshake','persistent-sqlite','schema-migrations',
   'durable-jobs','job-dependencies','job-leases','crash-recovery','runtime-sessions','lease-recovery',
@@ -19,6 +19,8 @@ export const LOCAL_RUNTIME_FEATURES = [
   'change-provenance-digests','fail-closed-change-origin',
   'github-app','github-app-jwt','github-installation-token','github-webhook-hmac',
   'github-installation-metadata','github-webhook-replay-metadata','no-github-token-persistence',
+  'github-provider','github-repository-discovery','github-repository-metadata','github-branch-discovery',
+  'github-provider-read-only','github-provider-installation-scoped','no-github-provider-response-cache',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -29,5 +31,5 @@ export const localRuntimeIdentity = Object.freeze({
   id: 'local', packageName: '@github-decrypter/local', product: 'GitHub Decrypter',
   build: LOCAL_RUNTIME_BUILD, version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const, protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking and GitHub App authentication/webhook trust foundation.',
+  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust and the installation-scoped read-only GitHub Provider.',
 });
