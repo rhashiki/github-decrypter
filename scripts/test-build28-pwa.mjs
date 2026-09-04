@@ -16,10 +16,13 @@ const pwa = read('apps/studio/src/pwa.ts');
 const vite = read('apps/studio/vite.config.ts');
 const identity = read('apps/studio/src/index.ts');
 
-assert.equal(policy.currentBuild, 28);
+assert.ok(policy.currentBuild >= 28);
 assert.equal(policy.phaseGates.pwaBuild, 28);
-assert.equal(rootPackage.version, '0.0.28');
-assert.equal(studioPackage.version, '0.0.28');
+const rootVersion = /^0\.0\.(\d+)$/.exec(rootPackage.version);
+const studioVersion = /^0\.0\.(\d+)$/.exec(studioPackage.version);
+assert.ok(rootVersion && Number(rootVersion[1]) >= 28);
+assert.ok(studioVersion && Number(studioVersion[1]) >= 28);
+const studioBuild = Number(studioVersion[1]);
 assert.equal(manifest.name, 'GitHub Decrypter Studio');
 assert.equal(manifest.short_name, 'GitHub Decrypter');
 assert.equal(manifest.id, './');
@@ -54,7 +57,7 @@ for (const marker of [
 
 for (const marker of [
   "PWA_CACHE_PREFIX = 'gd-studio-shell-'",
-  "PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v28`",
+  `PWA_CACHE_NAME = \`\${PWA_CACHE_PREFIX}v${studioBuild}\``,
   "name: 'gd-studio-pwa-shell'",
   "apply: 'build'",
   "fileName: 'service-worker.js'",
@@ -83,8 +86,10 @@ assert.equal(policy.studioAuthority.pwaProductionPackagingBuild, 122);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build28-pwa-static/1',
-  build: 28,
+  schema: 'gd-build28-pwa-static/2',
+  owningBuild: 28,
+  currentBuild: policy.currentBuild,
+  studioBuild,
   installable: true,
   offlineAppShell: true,
   sameOriginShellFetch: true,
