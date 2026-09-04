@@ -283,6 +283,21 @@ BEGIN
 END;
 `;
 
+const MIGRATION_009_SQL = `
+CREATE TABLE gd_workspaces (
+  id TEXT PRIMARY KEY,
+  root_path TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  registered_at TEXT NOT NULL,
+  last_opened_at TEXT
+) STRICT;
+
+CREATE INDEX gd_workspaces_registered_idx
+  ON gd_workspaces (registered_at, id);
+CREATE INDEX gd_workspaces_last_opened_idx
+  ON gd_workspaces (last_opened_at, id);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -358,6 +373,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_008_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_008_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 9,
+    name: 'workspace-manager',
+    sql: MIGRATION_009_SQL,
+    checksum: checksum(MIGRATION_009_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_009_SQL);
     },
   }),
 ]);

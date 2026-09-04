@@ -33,15 +33,19 @@ assert.ok(policy.currentBuild >= 10, 'Architecture Guardian must not regress bel
 assert.equal(policy.phaseGates.localDaemonBuild, 10);
 const localRule = policy.appRules?.['@github-decrypter/local'];
 assert.ok(localRule, 'Local Runtime app authority rule is required');
-assert.deepEqual(localRule.allowedWorkspaceDependencies, [
-  '@github-decrypter/protocol',
-  '@github-decrypter/shared',
-]);
+assert.ok(localRule.allowedWorkspaceDependencies.includes('@github-decrypter/protocol'));
+assert.ok(localRule.allowedWorkspaceDependencies.includes('@github-decrypter/shared'));
+if (policy.currentBuild >= (policy.phaseGates.workspaceManagerBuild ?? Number.POSITIVE_INFINITY)) {
+  assert.ok(localRule.allowedWorkspaceDependencies.includes('@github-decrypter/workspace'));
+}
 
 const localPackage = json('apps/local/package.json');
 assert.equal(localPackage.name, '@github-decrypter/local');
 assert.equal(localPackage.dependencies?.['@github-decrypter/protocol'], 'workspace:*');
 assert.equal(localPackage.dependencies?.['@github-decrypter/shared'], 'workspace:*');
+if (policy.currentBuild >= (policy.phaseGates.workspaceManagerBuild ?? Number.POSITIVE_INFINITY)) {
+  assert.equal(localPackage.dependencies?.['@github-decrypter/workspace'], 'workspace:*');
+}
 assert.equal(localPackage.scripts?.start, 'tsx src/cli.ts');
 
 const config = read('apps/local/src/config.ts');

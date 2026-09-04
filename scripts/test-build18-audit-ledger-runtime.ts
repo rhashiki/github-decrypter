@@ -14,6 +14,8 @@ import {
   SecretsVault,
   AUDIT_GENESIS_HASH,
   LOCAL_DATABASE_SCHEMA_VERSION,
+  LOCAL_RUNTIME_BUILD,
+  LOCAL_RUNTIME_VERSION,
   type LocalRuntimeEventCatalog,
 } from '../apps/local/src/index.js';
 
@@ -25,9 +27,9 @@ const digest = (value: string) => createHash('sha256').update(value, 'utf8').dig
 try {
   const database = new LocalDatabase({ path: join(tempRoot, 'audit.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 8);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 8);
-  assert.equal(database.listMigrations().length, 8);
+  assert.ok(opened.schemaVersion >= 8, 'Build 18 requires schema 8 or later');
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 8, 'schema version must not regress below Build 18');
+  assert.equal(database.listMigrations().length, LOCAL_DATABASE_SCHEMA_VERSION);
 
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build18-test', now });
   const audit = new AuditLedger({ database, eventBus: bus, now });
@@ -150,11 +152,12 @@ try {
   const address = await daemon.start();
   assert.equal(daemon.audit.status().ready, true);
   assert.equal(daemon.audit.status().integrity, 'ok');
-  assert.equal(daemon.database.status?.schemaVersion, 8);
+  assert.ok((daemon.database.status?.schemaVersion ?? 0) >= 8);
   const health = await (await fetch(`${address.origin}/healthz`)).json() as Record<string, any>;
-  assert.equal(health.build, 18);
-  assert.equal(health.version, '0.0.18');
-  assert.equal(health.database.schemaVersion, 8);
+  assert.ok(health.build >= 18);
+  assert.equal(health.build, LOCAL_RUNTIME_BUILD);
+  assert.equal(health.version, LOCAL_RUNTIME_VERSION);
+  assert.equal(health.database.schemaVersion, LOCAL_DATABASE_SCHEMA_VERSION);
   assert.equal(health.audit.ready, true);
   assert.equal(health.audit.integrity, 'ok');
   assert.equal(health.audit.appendOnly, true);
@@ -171,7 +174,8 @@ try {
   console.log(JSON.stringify({
     ok: true,
     schema: 'gd-build18-audit-ledger-runtime/1',
-    schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
+    minimumSchemaVersion: 8,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     appendOnlyTriggers: true,
     sha256Chain: true,
     startupIntegrityVerification: true,
@@ -181,6 +185,7 @@ try {
     sensitivePayloadPersistence: false,
     daemonReadinessIntegration: true,
     externalTransport: false,
+    allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });

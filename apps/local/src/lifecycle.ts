@@ -1,3 +1,4 @@
+import type { WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
 import type { Capability, CapabilityGrantId } from './capability-security.js';
@@ -32,6 +33,10 @@ export type LocalRuntimeApprovalConsumedPayload = { readonly transactionId: Appr
 export type LocalRuntimeApprovalCancelledPayload = { readonly transactionId: ApprovalTransactionId; readonly jobId: DurableJobId; readonly occurredAt: string; };
 export type LocalRuntimeAuditReadyPayload = { readonly entryCount: number; readonly headHash: string; readonly appendOnly: true; readonly hashChain: 'sha256'; readonly externalTransport: false; };
 export type LocalRuntimeAuditAppendedPayload = { readonly entryId: AuditEntryId; readonly sequence: number; readonly category: AuditCategory; readonly action: string; readonly outcome: AuditOutcome; readonly occurredAt: string; };
+export type LocalRuntimeWorkspaceReadyPayload = { readonly registered: number; readonly available: number; readonly filesystemMutation: false; readonly externalTransport: false; };
+export type LocalRuntimeWorkspaceRegisteredPayload = { readonly workspaceId: WorkspaceId; readonly registeredAt: string; };
+export type LocalRuntimeWorkspaceOpenedPayload = { readonly workspaceId: WorkspaceId; readonly openedAt: string; };
+export type LocalRuntimeWorkspaceUnregisteredPayload = { readonly workspaceId: WorkspaceId; readonly occurredAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -59,6 +64,10 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.approval.cancelled': LocalRuntimeApprovalCancelledPayload;
   readonly 'gd.local.audit.ready': LocalRuntimeAuditReadyPayload;
   readonly 'gd.local.audit.appended': LocalRuntimeAuditAppendedPayload;
+  readonly 'gd.local.workspace.ready': LocalRuntimeWorkspaceReadyPayload;
+  readonly 'gd.local.workspace.registered': LocalRuntimeWorkspaceRegisteredPayload;
+  readonly 'gd.local.workspace.opened': LocalRuntimeWorkspaceOpenedPayload;
+  readonly 'gd.local.workspace.unregistered': LocalRuntimeWorkspaceUnregisteredPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

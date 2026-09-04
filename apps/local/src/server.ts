@@ -22,6 +22,7 @@ import type { LocalRuntimeState } from './lifecycle.js';
 import type { OfflineExecutionStatus } from './offline-execution.js';
 import type { CrashRecoveryStatus } from './recovery-engine.js';
 import type { SecretsVaultStatus } from './secrets-vault.js';
+import type { WorkspaceManagerStatus } from './workspace-manager.js';
 
 export interface LocalRuntimeHealth {
   readonly schema: 'gd-local-health/1';
@@ -95,6 +96,13 @@ export interface LocalRuntimeHealth {
     readonly hashChain: 'sha256';
     readonly externalTransport: false;
   };
+  readonly workspaces: {
+    readonly ready: boolean;
+    readonly registered: number;
+    readonly available: number;
+    readonly filesystemMutation: false;
+    readonly externalTransport: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -109,6 +117,7 @@ export interface LocalRuntimeServerContext {
   getCapabilitySecurityStatus(): CapabilitySecurityStatus;
   getSecretsVaultStatus(): SecretsVaultStatus;
   getAuditLedgerStatus(): AuditLedgerStatus;
+  getWorkspaceManagerStatus(): WorkspaceManagerStatus;
   now(): string;
 }
 
@@ -165,6 +174,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const capabilities = context.getCapabilitySecurityStatus();
   const vault = context.getSecretsVaultStatus();
   const audit = context.getAuditLedgerStatus();
+  const workspaces = context.getWorkspaceManagerStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -237,6 +247,13 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       hashChain: 'sha256',
       externalTransport: false,
     },
+    workspaces: {
+      ready: workspaces.ready,
+      registered: workspaces.registered,
+      available: workspaces.available,
+      filesystemMutation: false,
+      externalTransport: false,
+    },
   };
 }
 
@@ -303,7 +320,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.capabilities.ready
         && health.vault.ready
         && health.audit.ready
-        && health.audit.integrity === 'ok';
+        && health.audit.integrity === 'ok'
+        && health.workspaces.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -316,6 +334,9 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         secretsVaultReady: health.vault.ready,
         auditLedgerReady: health.audit.ready,
         auditIntegrity: health.audit.integrity,
+        workspaceManagerReady: health.workspaces.ready,
+        registeredWorkspaces: health.workspaces.registered,
+        availableWorkspaces: health.workspaces.available,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,
