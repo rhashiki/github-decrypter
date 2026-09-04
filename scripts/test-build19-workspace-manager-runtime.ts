@@ -27,7 +27,9 @@ try {
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build19-test', now });
   const observed: Array<{ name: string; payload: unknown }> = [];
   for (const name of ['gd.local.workspace.ready', 'gd.local.workspace.registered', 'gd.local.workspace.opened', 'gd.local.workspace.unregistered'] as const) {
-    bus.subscribe(name, (event) => observed.push({ name, payload: event.payload }));
+    bus.subscribe(name, (event) => {
+      observed.push({ name, payload: event.payload });
+    });
   }
 
   const manager = new WorkspaceManager({ database, eventBus: bus, now });
