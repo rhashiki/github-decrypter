@@ -40,7 +40,7 @@
   "databaseAuthority": { "ownerRoot": "apps/local", "engineImport": "node:sqlite", "minimumBuild": 11, "durableJobSchemaBuild": 12 },
   "jobAuthority": { "ownerRoot": "apps/local", "minimumBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "jobControlTransportBuild": 47 },
   "recoveryAuthority": { "ownerRoot": "apps/local", "minimumBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15 },
-  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
+  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "githubAppNetworkBuild": 23, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
   "capabilityAuthority": {
     "ownerRoot": "apps/local", "minimumBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18,
     "jobControlTransportBuild": 47, "plaintextTokenPersistence": false, "externalGrantTransport": false, "denyByDefault": true,
