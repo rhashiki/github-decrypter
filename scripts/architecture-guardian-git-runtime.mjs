@@ -41,7 +41,7 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
     'resolveExistingPath',
     "['pull', '--ff-only'",
     'assertSafeRemoteUrl',
-    'embedded credentials',
+    'may not embed credentials',
     'forcePush: false',
     'hardReset: false',
     'externalTransport: false',
