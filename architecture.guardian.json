@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 26,
+  "currentBuild": 27,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -32,6 +32,11 @@
     "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
   },
   "appRules": {
+    "@github-decrypter/studio": {
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
+      "allowedExternalDependencies": ["react", "react-dom", "@types/react", "@types/react-dom", "@vitejs/plugin-react", "vite"],
+      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","navigator\\.serviceWorker","\\bcaches\\."]
+    },
     "@github-decrypter/extension": {
       "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
       "allowedExternalDependencies": [],
@@ -220,6 +225,30 @@
     "contextPersistence": false,
     "externalHosts": false
   },
+  "studioAuthority": {
+    "ownerRoot": "apps/studio",
+    "minimumBuild": 27,
+    "pwaBuild": 28,
+    "designSystemBuild": 29,
+    "ideLayoutBuild": 30,
+    "framework": "React 19",
+    "bundler": "Vite 8",
+    "clientOnly": true,
+    "ssr": false,
+    "reactServerComponents": false,
+    "repositoryLaunchContext": true,
+    "repositoryLaunchSchema": "gd-studio-launch/1",
+    "repositoryIdentityPublicOnly": true,
+    "networkAuthority": false,
+    "storageAuthority": false,
+    "serviceWorker": false,
+    "webAppManifest": false,
+    "localRuntimeTransport": false,
+    "githubProviderDirectAccess": false,
+    "extensionDirectAccess": false,
+    "contextPersistence": false,
+    "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -237,7 +266,8 @@
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
     "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
     "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
-    "repositoryLauncherBuild": 26, "studioReactBuild": 27, "releaseAuthorityBuild": 134
+    "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
+    "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
