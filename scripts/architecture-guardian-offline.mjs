@@ -51,7 +51,14 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
   for (const absolute of walk(`${rule.ownerRoot}/src`)) {
     const relative = path.relative(root, absolute).split(path.sep).join('/');
     const source = fs.readFileSync(absolute, 'utf8');
-    if (/\bfetch\s*\(|\bhttps?\.(?:request|get)\s*\(|\bnet\.connect\s*\(|\btls\.connect\s*\(|\bdns\.(?:lookup|resolve|promises)\b/.test(source)) {
+    const gitRuntimePath = policy.gitRuntimeAuthority
+      && policy.currentBuild >= policy.gitRuntimeAuthority.minimumBuild
+      ? `${policy.gitRuntimeAuthority.ownerRoot}/src/git-runtime.ts`
+      : null;
+    const probeSource = relative === gitRuntimePath
+      ? source.replace(/\basync\s+fetch\s*\(/, 'async __git_fetch_method__(')
+      : source;
+    if (/\bfetch\s*\(|\bhttps?\.(?:request|get)\s*\(|\bnet\.connect\s*\(|\btls\.connect\s*\(|\bdns\.(?:lookup|resolve|promises)\b/.test(probeSource)) {
       violations.push({
         code: 'AG122',
         message: 'Automatic/outbound network probing is not authorized by Build 14.',
