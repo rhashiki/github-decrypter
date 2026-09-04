@@ -5,8 +5,6 @@ import {
 } from 'node:crypto';
 import type { EventBus } from '@github-decrypter/shared';
 import {
-  GITHUB_API_BASE_URL,
-  GITHUB_API_VERSION,
   GITHUB_APP_JWT_ALGORITHM,
   GITHUB_APP_SCHEMA,
   GITHUB_WEBHOOK_SIGNATURE_ALGORITHM,
@@ -32,6 +30,8 @@ import type { LocalRuntimeEventCatalog } from './lifecycle.js';
 import type { OfflineExecutionCoordinator } from './offline-execution.js';
 import type { SecretsVault } from './secrets-vault.js';
 
+export const GITHUB_API_BASE_URL = 'https://api.github.com' as const;
+export const GITHUB_API_VERSION = '2022-11-28' as const;
 export const GITHUB_APP_PRIVATE_KEY_RESOURCE = 'gd://secret/github-app/private-key' as const;
 export const GITHUB_APP_WEBHOOK_SECRET_RESOURCE = 'gd://secret/github-app/webhook-secret' as const;
 export const GITHUB_APP_CONFIG_RESOURCE = 'gd://github-app/config' as const;
