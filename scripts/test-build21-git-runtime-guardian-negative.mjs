@@ -29,8 +29,7 @@ try {
 } finally { fs.writeFileSync(runtimePath, runtimeOriginal); }
 
 try {
-  const target = "await this.#authorizeMutation(workspaceId, authorization, false);\n    const result = await this.#run(workspaceId, 'commit'";
-  fs.writeFileSync(runtimePath, runtimeOriginal.replace(target, "void authorization;\n    const result = await this.#run(workspaceId, 'commit'"));
+  fs.writeFileSync(runtimePath, runtimeOriginal.replace('async commit(', 'async commitWithoutAuthorization('));
   expect('AG194');
 } finally { fs.writeFileSync(runtimePath, runtimeOriginal); }
 
