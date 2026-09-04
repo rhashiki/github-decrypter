@@ -10,8 +10,9 @@ const lifecycle = read('apps/local/src/lifecycle.ts');
 const server = read('apps/local/src/server.ts');
 const migrations = read('apps/local/src/database-migrations.ts');
 
-assert.equal(policy.currentBuild, 24);
+assert.ok(policy.currentBuild >= 24);
 assert.equal(policy.phaseGates.githubProviderBuild, 24);
+assert.equal(policy.githubProviderAuthority.minimumBuild, 24);
 assert.equal(policy.githubProviderAuthority.githubAppBuild, 23);
 assert.equal(policy.githubProviderAuthority.extensionBuild, 25);
 assert.deepEqual(policy.githubProviderAuthority.allowedOperations, [
@@ -61,6 +62,7 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build24-github-provider-static/1',
   build: 24,
+  currentBuild: policy.currentBuild,
   databaseSchemaUnchanged: 11,
   readOnly: true,
   installationScoped: true,
