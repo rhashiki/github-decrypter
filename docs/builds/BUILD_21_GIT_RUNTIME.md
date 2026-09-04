@@ -1,6 +1,6 @@
 # Build 21 — Git Runtime
 
-Status: **IMPLEMENTED ON `build/21-git-runtime` PENDING VALIDATION/MERGE**
+Status: **COMPLETE — VALIDATED**
 
 ## Objective
 
@@ -55,9 +55,9 @@ Build 21 does not claim:
 - Build 111 Pull Request Workflow;
 - Build 134 release authority.
 
-## Validation target
+## Validation
 
-The Build 21 CI must run:
+Build 21 validation covers:
 
 1. Architecture Guardian including Git Runtime authority;
 2. the complete Build 4–21 regression chain;
@@ -68,5 +68,7 @@ The Build 21 CI must run:
 7. remote credential rejection test;
 8. Git HTTP transport absence test;
 9. modern-engine preservation regression.
+
+The branch validation completed successfully before pull-request creation.
 
 No Release, OTA, tag, Chrome Store publication, production deploy, production backend mutation or DNS mutation is authorized by this Build.
