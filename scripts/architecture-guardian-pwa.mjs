@@ -41,6 +41,11 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
   const vite = read('apps/studio/vite.config.ts');
   const app = read('apps/studio/src/App.tsx');
   const studioPackage = JSON.parse(read('apps/studio/package.json'));
+  const versionMatch = /^0\.0\.(\d+)$/.exec(String(studioPackage.version ?? ''));
+  const studioBuild = versionMatch ? Number(versionMatch[1]) : NaN;
+  const cacheNameMarker = Number.isSafeInteger(studioBuild)
+    ? `PWA_CACHE_NAME = \`\${PWA_CACHE_PREFIX}v${studioBuild}\``
+    : null;
 
   for (const marker of [
     'rel="manifest" href="./manifest.webmanifest"',
@@ -64,15 +69,15 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
 
   for (const marker of [
     "PWA_CACHE_PREFIX = 'gd-studio-shell-'",
-    "PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v28`",
+    cacheNameMarker,
     "name: 'gd-studio-pwa-shell'",
     "apply: 'build'",
     "fileName: 'service-worker.js'",
     "'./manifest.webmanifest'",
     "'./icons/icon-192.png'",
     "'./icons/icon-512.png'",
-    "plugins: [react(), studioPwaShellPlugin()]",
-  ]) if (!vite.includes(marker)) violations.push({ code: 'AG263', message: 'Vite PWA app-shell generation invariant missing.', detail: marker });
+    'studioPwaShellPlugin()',
+  ].filter(Boolean)) if (!vite.includes(marker)) violations.push({ code: 'AG263', message: 'Vite PWA app-shell generation invariant missing.', detail: marker });
 
   for (const marker of [
     "request.method !== 'GET'",
@@ -128,17 +133,19 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
   for (const forbiddenDependency of ['vite-plugin-pwa', 'workbox-build', 'workbox-window', 'workbox-core']) {
     if (dependencies[forbiddenDependency]) violations.push({ code: 'AG267', message: 'Build 28 introduced undeclared opaque PWA dependency.', detail: forbiddenDependency });
   }
-  if (studioPackage.version !== '0.0.28') {
-    violations.push({ code: 'AG267', message: 'Studio package version must match Build 28.' });
+  if (!Number.isSafeInteger(studioBuild) || studioBuild < 28) {
+    violations.push({ code: 'AG267', message: 'Studio package version regressed below the PWA owning Build.' });
   }
 
+  const designSystemPremature = policy.currentBuild < rule.designSystemBuild;
+  const ideLayoutPremature = policy.currentBuild < rule.ideLayoutBuild;
   if (
     rule.designSystemBuild !== 29 || rule.ideLayoutBuild !== 30
     || policy.phaseGates?.designSystemBuild !== 29 || policy.phaseGates?.ideLayoutBuild !== 30
-    || !app.includes('Design System') || !app.includes('Build 29')
-    || !app.includes('IDE Layout') || !app.includes('Build 30')
+    || (designSystemPremature && (!app.includes('Design System') || !app.includes('Build 29')))
+    || (ideLayoutPremature && (!app.includes('IDE Layout') || !app.includes('Build 30')))
     || !app.includes('Not connected')
-  ) violations.push({ code: 'AG268', message: 'Build 29+ Studio authority was pulled into the PWA Build or its deferral markers disappeared.' });
+  ) violations.push({ code: 'AG268', message: 'Later Studio authority arrived before its phase gate or deferral markers disappeared.' });
 
   for (const required of [
     'apps/studio/public/manifest.webmanifest',
@@ -158,7 +165,7 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-pwa-report/1',
+  schema: 'gd-architecture-guardian-pwa-report/2',
   currentBuild: policy.currentBuild,
   installable: rule?.installable ?? null,
   offlineAppShell: rule?.offlineAppShell ?? null,
