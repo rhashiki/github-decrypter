@@ -298,6 +298,52 @@ CREATE INDEX gd_workspaces_last_opened_idx
   ON gd_workspaces (last_opened_at, id);
 `;
 
+const MIGRATION_010_SQL = `
+CREATE TABLE gd_change_sessions (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  job_id TEXT NOT NULL,
+  process_instance_id TEXT NOT NULL,
+  state TEXT NOT NULL CHECK (state IN ('active', 'completed', 'cancelled', 'invalidated')),
+  baseline_json TEXT NOT NULL,
+  baseline_digest TEXT NOT NULL CHECK (length(baseline_digest) = 64),
+  baseline_paths INTEGER NOT NULL CHECK (baseline_paths >= 0),
+  started_at TEXT NOT NULL,
+  completed_at TEXT,
+  invalidation_reason TEXT,
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_change_sessions_workspace_idx
+  ON gd_change_sessions (workspace_id, started_at, id);
+CREATE INDEX gd_change_sessions_job_idx
+  ON gd_change_sessions (job_id, started_at, id);
+CREATE UNIQUE INDEX gd_change_sessions_active_workspace_idx
+  ON gd_change_sessions (workspace_id)
+  WHERE state = 'active';
+
+CREATE TABLE gd_change_path_events (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  workspace_id TEXT NOT NULL,
+  path TEXT NOT NULL,
+  origin TEXT NOT NULL CHECK (origin IN ('human', 'ai', 'mixed', 'unknown')),
+  state_digest TEXT NOT NULL CHECK (length(state_digest) = 64),
+  dirty INTEGER NOT NULL CHECK (dirty IN (0, 1)),
+  session_id TEXT,
+  job_id TEXT,
+  observed_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (session_id) REFERENCES gd_change_sessions(id) ON DELETE SET NULL,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE SET NULL
+) STRICT;
+
+CREATE INDEX gd_change_path_events_workspace_path_idx
+  ON gd_change_path_events (workspace_id, path, seq);
+CREATE INDEX gd_change_path_events_session_idx
+  ON gd_change_path_events (session_id, seq);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -382,6 +428,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_009_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_009_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 10,
+    name: 'human-ai-change-tracking',
+    sql: MIGRATION_010_SQL,
+    checksum: checksum(MIGRATION_010_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_010_SQL);
     },
   }),
 ]);
