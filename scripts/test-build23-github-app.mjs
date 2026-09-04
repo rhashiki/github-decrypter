@@ -9,8 +9,9 @@ const migrations = read('apps/local/src/database-migrations.ts');
 const server = read('apps/local/src/server.ts');
 const daemon = read('apps/local/src/daemon.ts');
 
-assert.equal(policy.currentBuild, 23);
+assert.ok(policy.currentBuild >= 23);
 assert.equal(policy.phaseGates.githubAppBuild, 23);
+assert.equal(policy.githubAppAuthority.minimumBuild, 23);
 assert.equal(policy.githubAppAuthority.githubProviderBuild, 24);
 assert.equal(policy.githubAppAuthority.extensionBuild, 25);
 assert.equal(policy.githubAppAuthority.installationTokenPersistence, false);
@@ -37,11 +38,12 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build23-github-app-static/1',
   build: 23,
+  currentBuild: policy.currentBuild,
   schemaVersion: 11,
   contractNeutral: true,
   jwtAlgorithm: 'RS256',
   webhookAlgorithm: 'sha256',
-  providerOperations: false,
+  providerOperationsInsideGitHubApp: false,
   extensionActivation: false,
   genericHttpTransport: false,
 }, null, 2));
