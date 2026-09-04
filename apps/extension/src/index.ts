@@ -32,7 +32,7 @@ export interface GitHubRepositoryIdentity {
   readonly url: string;
 }
 
-export interface GitHubExtensionRepositoryContext extends GitHubExtensionPageContext {
+export interface GitHubExtensionRepositoryContext extends Omit<GitHubExtensionPageContext, 'type'> {
   readonly type: 'gd.extension.repository-context';
   readonly repository: GitHubRepositoryIdentity;
 }
