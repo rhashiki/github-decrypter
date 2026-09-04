@@ -8,6 +8,7 @@ import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig 
 import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { createGitRuntime, type GitRuntime } from './git-runtime.js';
 import { createGitHubAppRuntime, type GitHubAppRuntime } from './github-app-runtime.js';
+import { createGitHubProvider, type GitHubProvider } from './github-provider.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
 import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
@@ -35,6 +36,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly git?: GitRuntime;
   readonly changeTracking?: ChangeTracker;
   readonly githubApp?: GitHubAppRuntime;
+  readonly githubProvider?: GitHubProvider;
   readonly now?: () => string;
 }
 
@@ -58,6 +60,7 @@ export class LocalRuntimeDaemon {
   readonly #git: GitRuntime;
   readonly #changeTracking: ChangeTracker;
   readonly #githubApp: GitHubAppRuntime;
+  readonly #githubProvider: GitHubProvider;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -102,6 +105,13 @@ export class LocalRuntimeDaemon {
       eventBus: this.#eventBus,
       now: this.#now,
     });
+    this.#githubProvider = options.githubProvider ?? createGitHubProvider({
+      capabilities: this.#capabilities,
+      offline: this.#offline,
+      githubApp: this.#githubApp,
+      eventBus: this.#eventBus,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState { return this.#state; }
@@ -120,6 +130,7 @@ export class LocalRuntimeDaemon {
   get git(): GitRuntime { return this.#git; }
   get changeTracking(): ChangeTracker { return this.#changeTracking; }
   get githubApp(): GitHubAppRuntime { return this.#githubApp; }
+  get githubProvider(): GitHubProvider { return this.#githubProvider; }
 
   get address(): LocalRuntimeBoundAddress | null {
     const address = this.#addressInfo();
@@ -164,6 +175,8 @@ export class LocalRuntimeDaemon {
       if (!vaultStatus.ready) throw new Error('Secrets Vault is not ready after capability security startup.');
       const githubAppStatus = await this.#githubApp.initialize();
       if (!githubAppStatus.ready) throw new Error('GitHub App Runtime is not ready after Secrets Vault startup.');
+      const githubProviderStatus = await this.#githubProvider.initialize();
+      if (!githubProviderStatus.ready) throw new Error('GitHub Provider is not ready after GitHub App startup.');
       const approvalStatus = await this.#approvals.initialize();
       if (!approvalStatus.ready) throw new Error('Approval Transactions are not ready after Secrets Vault startup.');
 
@@ -196,13 +209,14 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
     } catch (error) {
       await this.#closeServerBestEffort();
       this.#closeApprovalsBestEffort();
+      this.#closeGitHubProviderBestEffort();
       this.#closeGitHubAppBestEffort();
       this.#closeVaultBestEffort();
       await this.#closeChangeTrackingBestEffort('startup failed');
@@ -224,6 +238,7 @@ export class LocalRuntimeDaemon {
     await this.#transition('stopping', reason);
     await this.#closeServerBestEffort();
     this.#approvals.shutdown();
+    this.#githubProvider.shutdown();
     this.#githubApp.shutdown();
     let vaultError: unknown = null;
     try { this.#vault.shutdown(); } catch (error) { vaultError = error; }
@@ -257,6 +272,7 @@ export class LocalRuntimeDaemon {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
   #closeApprovalsBestEffort(): void { try { this.#approvals.shutdown(); } catch {} }
+  #closeGitHubProviderBestEffort(): void { try { this.#githubProvider.shutdown(); } catch {} }
   #closeGitHubAppBestEffort(): void { try { this.#githubApp.shutdown(); } catch {} }
   #closeVaultBestEffort(): void { try { this.#vault.shutdown(); } catch {} }
   async #closeChangeTrackingBestEffort(reason: string): Promise<void> {

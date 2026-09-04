@@ -11,6 +11,7 @@ export * from './database.js';
 export * from './daemon.js';
 export * from './git-runtime.js';
 export * from './github-app-runtime.js';
+export * from './github-provider.js';
 export * from './identity.js';
 export * from './instance-lock.js';
 export * from './job-engine.js';

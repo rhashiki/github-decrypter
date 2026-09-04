@@ -59,6 +59,17 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
     ? `${githubAppRule.ownerRoot}/src/github-app-runtime.ts`
     : null;
 
+  const githubProviderRule = policy.githubProviderAuthority;
+  const githubProviderNetworkAuthorized = Boolean(
+    githubProviderRule
+    && policy.currentBuild >= githubProviderRule.minimumBuild
+    && Number.isSafeInteger(rule.githubProviderNetworkBuild)
+    && rule.githubProviderNetworkBuild === githubProviderRule.minimumBuild,
+  );
+  const githubProviderRuntimePath = githubProviderNetworkAuthorized
+    ? `${githubProviderRule.ownerRoot}/src/github-provider.ts`
+    : null;
+
   for (const absolute of walk(`${rule.ownerRoot}/src`)) {
     const relative = path.relative(root, absolute).split(path.sep).join('/');
     const source = fs.readFileSync(absolute, 'utf8');
@@ -79,6 +90,24 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
       }
     }
 
+    if (relative === githubProviderRuntimePath) {
+      const hasExplicitOnlineGate = source.includes("connectivity !== 'online'");
+      const hasNetworkCapabilityGate = source.includes("capability: 'NETWORK'");
+      const hasReadCapabilityGate = source.includes("capability: 'READ'");
+      const usesInstallationTokenAuthority = source.includes('createInstallationAccessToken');
+      const getOnlyTransport = source.includes("method: 'GET'")
+        && !/method:\s*['\"](?:POST|PUT|PATCH|DELETE)['\"]/.test(source);
+      if (
+        hasExplicitOnlineGate
+        && hasNetworkCapabilityGate
+        && hasReadCapabilityGate
+        && usesInstallationTokenAuthority
+        && getOnlyTransport
+      ) {
+        probeSource = probeSource.replaceAll('this.#fetch(', '__authorized_github_provider_get__(');
+      }
+    }
+
     if (/\bfetch\s*\(|\bhttps?\.(?:request|get)\s*\(|\bnet\.connect\s*\(|\btls\.connect\s*\(|\bdns\.(?:lookup|resolve|promises)\b/.test(probeSource)) {
       violations.push({
         code: 'AG122',
@@ -93,6 +122,15 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
     violations.push({
       code: 'AG122',
       message: 'GitHub App network authority must remain pinned to its owning build.',
+      detail: 'architecture.guardian.json',
+    });
+  }
+
+  if (policy.currentBuild >= (policy.githubProviderAuthority?.minimumBuild ?? Number.POSITIVE_INFINITY)
+    && rule.githubProviderNetworkBuild !== policy.githubProviderAuthority.minimumBuild) {
+    violations.push({
+      code: 'AG122',
+      message: 'GitHub Provider network authority must remain pinned to its owning build.',
       detail: 'architecture.guardian.json',
     });
   }
@@ -131,6 +169,7 @@ const report = {
   ownerRoot: rule?.ownerRoot ?? null,
   capabilitySecurityBuild: rule?.capabilitySecurityBuild ?? null,
   githubAppNetworkBuild: rule?.githubAppNetworkBuild ?? null,
+  githubProviderNetworkBuild: rule?.githubProviderNetworkBuild ?? null,
   automaticNetworkProbe: rule?.automaticNetworkProbe ?? null,
   violations,
 };
