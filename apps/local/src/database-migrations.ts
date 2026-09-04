@@ -218,6 +218,33 @@ CREATE INDEX gd_vault_secrets_updated_idx
   ON gd_vault_secrets (updated_at, id);
 `;
 
+const MIGRATION_007_SQL = `
+CREATE TABLE gd_approval_transactions (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  requirements_json TEXT NOT NULL,
+  payload_digest TEXT NOT NULL CHECK (length(payload_digest) = 64),
+  state TEXT NOT NULL CHECK (state IN (
+    'pending', 'approved', 'denied', 'consumed', 'expired', 'cancelled'
+  )),
+  requested_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  decided_at TEXT,
+  decided_by TEXT,
+  decision_reason TEXT,
+  receipt_hash TEXT UNIQUE,
+  consumed_at TEXT,
+  FOREIGN KEY (job_id) REFERENCES gd_jobs(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_approval_transactions_job_idx
+  ON gd_approval_transactions (job_id, requested_at);
+CREATE INDEX gd_approval_transactions_state_idx
+  ON gd_approval_transactions (state, expires_at);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -275,6 +302,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_006_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_006_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 7,
+    name: 'approval-transactions',
+    sql: MIGRATION_007_SQL,
+    checksum: checksum(MIGRATION_007_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_007_SQL);
     },
   }),
 ]);
