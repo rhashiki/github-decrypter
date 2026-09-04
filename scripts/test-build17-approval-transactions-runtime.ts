@@ -20,8 +20,9 @@ const digest = (value: string) => createHash('sha256').update(value, 'utf8').dig
 try {
   const database = new LocalDatabase({ path: join(tempRoot, 'approvals.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 7);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 7);
+  assert.ok(opened.schemaVersion >= 7);
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 7);
+  assert.ok(database.listMigrations().length >= 7);
 
   const jobs = new DurableJobEngine({ database, now });
   const approvals = new ApprovalTransactions({ database, now });
@@ -114,15 +115,16 @@ try {
   });
   const address = await daemon.start();
   assert.equal(daemon.approvals.status().ready, true);
-  assert.equal(daemon.database.status?.schemaVersion, 7);
+  assert.ok((daemon.database.status?.schemaVersion ?? 0) >= 7);
   assert.equal((await fetch(`${address.origin}/v1/approvals`)).status, 404);
   assert.equal((await fetch(`${address.origin}/v1/approval-transactions`, { method: 'POST' })).status, 404);
   await daemon.stop('Build 17 verified');
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build17-approval-transactions-runtime/1',
-    schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
+    schema: 'gd-build17-approval-transactions-runtime/2',
+    minimumSchemaVersion: 7,
+    currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     jobBound: true,
     payloadDigestBound: true,
     receiptHashOnly: true,
@@ -132,6 +134,7 @@ try {
     terminalJobsRejected: true,
     daemonLifecycleIntegration: true,
     externalDecisionTransport: false,
+    allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
