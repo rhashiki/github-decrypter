@@ -6,7 +6,6 @@ const EXTENSION_BUILD = 25;
 const EXTENSION_VERSION = '0.0.25';
 const HELLO_TYPE = 'gd.extension.hello';
 const PAGE_CONTEXT_TYPE = 'gd.extension.page-context';
-const pageContexts = new Map();
 
 function trustedGitHubSender(sender) {
   if (sender.id !== chrome.runtime.id || typeof sender.url !== 'string') return null;
@@ -59,17 +58,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const tabId = sender.tab?.id;
   if (!Number.isInteger(tabId) || tabId < 0) return false;
-  pageContexts.set(tabId, Object.freeze({
-    origin: ALLOWED_ORIGIN,
-    pathname: message.pathname,
-    observedAt: new Date(Date.parse(message.observedAt)).toISOString(),
-  }));
-
   void chrome.action.setTitle({ tabId, title: 'GitHub Decrypter — GitHub bridge active' });
   sendResponse(helloResponse());
   return false;
-});
-
-chrome.tabs?.onRemoved?.addListener((tabId) => {
-  pageContexts.delete(tabId);
 });
