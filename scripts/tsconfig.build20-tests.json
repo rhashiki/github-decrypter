@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../apps/local/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts",
+    "./test-build20-project-detection-runtime.ts"
+  ]
+}
