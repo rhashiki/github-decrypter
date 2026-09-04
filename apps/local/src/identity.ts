@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 21 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.21' as const;
+export const LOCAL_RUNTIME_BUILD = 22 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.22' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http','health','readiness','protocol-handshake','persistent-sqlite','schema-migrations',
   'durable-jobs','job-dependencies','job-leases','crash-recovery','runtime-sessions','lease-recovery',
@@ -15,6 +15,8 @@ export const LOCAL_RUNTIME_FEATURES = [
   'git-runtime','git-status','git-diff','git-log','git-branches','git-merge-base','git-blame',
   'git-clone','git-fetch','git-pull','git-checkout','git-commit','git-push','git-stash','git-restore',
   'git-write-capability','network-gated-git','no-force-push','no-shell-git-execution',
+  'human-ai-change-tracking','explicit-ai-change-boundaries','path-level-change-attribution',
+  'change-provenance-digests','fail-closed-change-origin',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -25,5 +27,5 @@ export const localRuntimeIdentity = Object.freeze({
   id: 'local', packageName: '@github-decrypter/local', product: 'GitHub Decrypter',
   build: LOCAL_RUNTIME_BUILD, version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const, protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection and capability-gated Git Runtime.',
+  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime and explicit Human vs AI Change Tracking.',
 });
