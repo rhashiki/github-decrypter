@@ -9,7 +9,7 @@ const daemon = fs.readFileSync('apps/local/src/daemon.ts', 'utf8');
 const server = fs.readFileSync('apps/local/src/server.ts', 'utf8');
 const guardian = JSON.parse(fs.readFileSync('architecture.guardian.json', 'utf8'));
 
-assert.equal(guardian.currentBuild, 19);
+assert.ok(guardian.currentBuild >= 19, 'Architecture Guardian must not regress below Build 19');
 assert.equal(guardian.workspaceAuthority.ownerRoot, 'apps/local');
 assert.equal(guardian.workspaceAuthority.contractPackage, '@github-decrypter/workspace');
 assert.equal(guardian.workspaceAuthority.projectDetectionBuild, 20);
@@ -41,6 +41,7 @@ assert.doesNotMatch(manager, /\b(?:writeFile|appendFile|rmSync|unlink|mkdir|rena
 console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build19-workspace-manager/1',
+  minimumBuild: 19,
   currentBuild: guardian.currentBuild,
   databaseSchema: 9,
   canonicalRoot: guardian.workspaceAuthority.canonicalRoot,
