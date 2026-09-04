@@ -159,16 +159,12 @@ try {
   await tracker.observeHumanChanges(workspace.id);
 
   const terminalJob = await jobs.enqueue({ kind: 'build22-terminal', payload: null });
-  const terminalClaim = await jobs.claimNext('build22-terminal-worker');
-  assert.ok(terminalClaim);
-  const claimedTerminal = terminalClaim!.job.id === terminalJob.id
-    ? terminalClaim!
-    : await (async () => {
-        await jobs.complete(terminalClaim!.job.id, terminalClaim!.leaseToken, null);
-        const next = await jobs.claimNext('build22-terminal-worker');
-        assert.ok(next && next.job.id === terminalJob.id);
-        return next!;
-      })();
+  let claimedTerminal = await jobs.claimNext('build22-terminal-worker');
+  while (claimedTerminal && claimedTerminal.job.id !== terminalJob.id) {
+    await jobs.complete(claimedTerminal.job.id, claimedTerminal.leaseToken, null);
+    claimedTerminal = await jobs.claimNext('build22-terminal-worker');
+  }
+  assert.ok(claimedTerminal && claimedTerminal.job.id === terminalJob.id, 'terminal job must remain claimable after draining earlier queued jobs');
   await jobs.complete(claimedTerminal.job.id, claimedTerminal.leaseToken, null);
   await assert.rejects(
     () => tracker.beginAiChange(workspace.id, { jobId: terminalJob.id, token: 'allow' }),
