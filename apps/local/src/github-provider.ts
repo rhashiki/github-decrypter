@@ -3,6 +3,7 @@ import { normalizeGitHubInstallationId } from '@github-decrypter/github-app';
 import {
   GITHUB_PROVIDER_OPERATIONS,
   GITHUB_PROVIDER_SCHEMA,
+  normalizeGitHubBranchName,
   normalizeGitHubOwner,
   normalizeGitHubProviderPage,
   normalizeGitHubProviderPerPage,
@@ -129,7 +130,7 @@ function repositoryFromApi(value: unknown): GitHubRepositorySummary {
   const defaultBranchValue = row.default_branch;
   const defaultBranch = defaultBranchValue === null || defaultBranchValue === undefined || defaultBranchValue === ''
     ? null
-    : text(defaultBranchValue, 'repository default_branch');
+    : normalizeGitHubBranchName(text(defaultBranchValue, 'repository default_branch'));
   return Object.freeze({
     ...identity,
     id: integer(row.id, 'repository id'),
@@ -151,7 +152,7 @@ function branchFromApi(value: unknown): GitHubBranchSummary {
   const sha = text(commit.sha, 'branch commit sha');
   if (!/^[a-f0-9]{40,64}$/i.test(sha)) throw new Error('GitHub returned invalid branch commit sha.');
   return Object.freeze({
-    name: text(row.name, 'branch name'),
+    name: normalizeGitHubBranchName(text(row.name, 'branch name')),
     commitSha: sha.toLowerCase(),
     protected: bool(row.protected, 'branch protected flag'),
   });
