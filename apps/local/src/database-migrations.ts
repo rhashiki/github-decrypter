@@ -245,6 +245,44 @@ CREATE INDEX gd_approval_transactions_state_idx
   ON gd_approval_transactions (state, expires_at);
 `;
 
+const MIGRATION_008_SQL = `
+CREATE TABLE gd_audit_entries (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT NOT NULL UNIQUE,
+  occurred_at TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('capability', 'vault', 'approval', 'runtime')),
+  action TEXT NOT NULL,
+  actor TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  job_id TEXT,
+  outcome TEXT NOT NULL CHECK (outcome IN (
+    'requested', 'approved', 'denied', 'consumed', 'cancelled', 'success', 'failed'
+  )),
+  metadata_json TEXT NOT NULL,
+  previous_hash TEXT NOT NULL CHECK (length(previous_hash) = 64),
+  entry_hash TEXT NOT NULL UNIQUE CHECK (length(entry_hash) = 64)
+) STRICT;
+
+CREATE INDEX gd_audit_entries_time_idx
+  ON gd_audit_entries (occurred_at, seq);
+CREATE INDEX gd_audit_entries_job_idx
+  ON gd_audit_entries (job_id, seq);
+CREATE INDEX gd_audit_entries_category_idx
+  ON gd_audit_entries (category, seq);
+
+CREATE TRIGGER gd_audit_entries_no_update
+BEFORE UPDATE ON gd_audit_entries
+BEGIN
+  SELECT RAISE(ABORT, 'gd_audit_entries is append-only');
+END;
+
+CREATE TRIGGER gd_audit_entries_no_delete
+BEFORE DELETE ON gd_audit_entries
+BEGIN
+  SELECT RAISE(ABORT, 'gd_audit_entries is append-only');
+END;
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -311,6 +349,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_007_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_007_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 8,
+    name: 'audit-ledger',
+    sql: MIGRATION_008_SQL,
+    checksum: checksum(MIGRATION_008_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_008_SQL);
     },
   }),
 ]);
