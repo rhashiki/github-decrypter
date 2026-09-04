@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 24,
+  "currentBuild": 25,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -32,6 +32,11 @@
     "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
   },
   "appRules": {
+    "@github-decrypter/extension": {
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
+      "allowedExternalDependencies": [],
+      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\blocalStorage\\b","\\bindexedDB\\b"]
+    },
     "@github-decrypter/local": {
       "allowedWorkspaceDependencies": ["@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
@@ -186,6 +191,30 @@
     "repositoryMutation": false,
     "collaborationMutation": false
   },
+  "extensionAuthority": {
+    "ownerRoot": "apps/extension",
+    "minimumBuild": 25,
+    "repositoryLauncherBuild": 26,
+    "studioReactBuild": 27,
+    "manifestVersion": 3,
+    "bridgeSchema": "gd-extension-bridge/1",
+    "hostAllowlist": ["https://github.com/*"],
+    "serviceWorker": "apps/extension/browser/service-worker.js",
+    "contentScript": "apps/extension/browser/content-script.js",
+    "lightweightBridge": true,
+    "statelessPageContext": true,
+    "networkAuthority": false,
+    "secretAuthority": false,
+    "durableExecution": false,
+    "repositoryDetection": false,
+    "fab": false,
+    "openInFlow": false,
+    "studioLaunch": false,
+    "localRuntimeDirectTransport": false,
+    "contentDomMutation": false,
+    "contextPersistence": false,
+    "externalHosts": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -203,7 +232,7 @@
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
     "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
     "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
-    "studioReactBuild": 27, "releaseAuthorityBuild": 134
+    "repositoryLauncherBuild": 26, "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }

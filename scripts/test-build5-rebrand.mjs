@@ -5,14 +5,28 @@ import assert from 'node:assert/strict';
 const root = process.cwd();
 const exists = relative => fs.existsSync(path.join(root, relative));
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
+const json = relative => JSON.parse(read(relative));
 
-const manifest = JSON.parse(read('manifest.json'));
+const manifest = json('manifest.json');
+const policy = json('architecture.guardian.json');
 assert.equal(manifest.name, 'GitHub Decrypter');
-assert.equal(manifest.version, '0.0.5');
-assert.match(manifest.version_name, /GitHub Decrypter Build 5/);
-assert.ok(!manifest.host_permissions, 'Build 5 shell must not target inherited hosts');
-assert.ok(!manifest.content_scripts, 'Build 5 shell must remain inert');
-assert.ok(!manifest.background, 'Build 5 shell must not own durable execution');
+assert.equal(manifest.manifest_version, 3);
+
+if (policy.currentBuild < policy.phaseGates.extensionActivationBuild) {
+  assert.equal(manifest.version, '0.0.5');
+  assert.match(manifest.version_name, /GitHub Decrypter Build 5/);
+  assert.ok(!manifest.host_permissions, 'pre-Build-25 shell must not target inherited hosts');
+  assert.ok(!manifest.content_scripts, 'pre-Build-25 shell must remain inert');
+  assert.ok(!manifest.background, 'pre-Build-25 shell must not own background behavior');
+} else {
+  const versionMatch = String(manifest.version || '').match(/^(\d+)\.(\d+)\.(\d+)$/);
+  assert.ok(versionMatch, 'activated extension version must be numeric semver');
+  assert.ok(Number(versionMatch[3]) >= 5 || Number(versionMatch[0]) > 0 || Number(versionMatch[1]) > 0);
+  const allowedHosts = policy.extensionAuthority?.hostAllowlist ?? [];
+  for (const host of manifest.host_permissions ?? []) {
+    assert.ok(allowedHosts.includes(host), `activated extension gained host outside the extension authority: ${host}`);
+  }
+}
 
 for (const file of ['README.md', 'CHANGELOG.md', 'runtime/decrypter-local/README.md']) {
   const text = read(file);
@@ -80,6 +94,8 @@ console.log(JSON.stringify({
   schema: 'gd-build5-rebrand/1',
   product: manifest.name,
   version: manifest.version,
+  currentBuild: policy.currentBuild,
+  extensionActivationBuild: policy.phaseGates.extensionActivationBuild,
   storage: 'gd_settings',
   protocolPrefix: 'gd-',
   preservedModernEngines: preserved.length
