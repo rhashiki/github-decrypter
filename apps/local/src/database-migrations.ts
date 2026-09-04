@@ -344,6 +344,39 @@ CREATE INDEX gd_change_path_events_session_idx
   ON gd_change_path_events (session_id, seq);
 `;
 
+const MIGRATION_011_SQL = `
+CREATE TABLE gd_github_app_config (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  app_id TEXT NOT NULL CHECK (length(app_id) > 0),
+  api_base_url TEXT NOT NULL CHECK (api_base_url = 'https://api.github.com'),
+  configured_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE gd_github_app_installations (
+  installation_id INTEGER PRIMARY KEY CHECK (installation_id > 0),
+  account_login TEXT,
+  account_type TEXT,
+  repository_selection TEXT CHECK (repository_selection IS NULL OR repository_selection IN ('all', 'selected')),
+  state TEXT NOT NULL CHECK (state IN ('active', 'suspended')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  suspended_at TEXT
+) STRICT;
+
+CREATE INDEX gd_github_app_installations_state_idx
+  ON gd_github_app_installations (state, updated_at, installation_id);
+
+CREATE TABLE gd_github_webhook_deliveries (
+  delivery_id TEXT PRIMARY KEY,
+  event TEXT NOT NULL,
+  verified_at TEXT NOT NULL
+) STRICT;
+
+CREATE INDEX gd_github_webhook_deliveries_time_idx
+  ON gd_github_webhook_deliveries (verified_at, delivery_id);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -437,6 +470,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_010_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_010_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 11,
+    name: 'github-app',
+    sql: MIGRATION_011_SQL,
+    checksum: checksum(MIGRATION_011_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_011_SQL);
     },
   }),
 ]);
