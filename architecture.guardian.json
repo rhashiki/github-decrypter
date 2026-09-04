@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 20,
+  "currentBuild": 21,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -26,11 +26,12 @@
   "packageRules": {
     "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true },
-    "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
+    "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/git": { "allowedWorkspaceDependencies": ["@github-decrypter/workspace"], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/git","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
       "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
@@ -96,6 +97,26 @@
     "externalTransport": false,
     "maxPackageJsonBytes": 1048576
   },
+  "gitRuntimeAuthority": {
+    "ownerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/git",
+    "minimumBuild": 21,
+    "workspaceManagerBuild": 19,
+    "projectDetectionBuild": 20,
+    "changeTrackingBuild": 22,
+    "githubAppBuild": 23,
+    "commitWorkflowBuild": 109,
+    "pushWorkflowBuild": 110,
+    "gitWriteCapability": "GIT_WRITE",
+    "networkCapability": "NETWORK",
+    "denyByDefault": true,
+    "workspaceScoped": true,
+    "shellExecution": false,
+    "forcePush": false,
+    "hardReset": false,
+    "embeddedRemoteCredentials": false,
+    "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -111,7 +132,7 @@
   "phaseGates": {
     "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "extensionActivationBuild": 25,
+    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21, "extensionActivationBuild": 25,
     "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
