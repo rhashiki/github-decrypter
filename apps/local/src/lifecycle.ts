@@ -1,4 +1,4 @@
-import type { WorkspaceId } from '@github-decrypter/workspace';
+import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
 import type { Capability, CapabilityGrantId } from './capability-security.js';
@@ -37,6 +37,8 @@ export type LocalRuntimeWorkspaceReadyPayload = { readonly registered: number; r
 export type LocalRuntimeWorkspaceRegisteredPayload = { readonly workspaceId: WorkspaceId; readonly registeredAt: string; };
 export type LocalRuntimeWorkspaceOpenedPayload = { readonly workspaceId: WorkspaceId; readonly openedAt: string; };
 export type LocalRuntimeWorkspaceUnregisteredPayload = { readonly workspaceId: WorkspaceId; readonly occurredAt: string; };
+export type LocalRuntimeProjectDetectionReadyPayload = { readonly detections: number; readonly rootOnly: true; readonly readOnly: true; readonly filesystemMutation: false; readonly networkAccess: false; readonly gitAuthority: false; readonly externalTransport: false; };
+export type LocalRuntimeProjectDetectedPayload = { readonly workspaceId: WorkspaceId; readonly packageJsonPresent: boolean; readonly packageManager: ProjectPackageManager; readonly framework: ProjectFramework; readonly confidence: ProjectDetectionConfidence; readonly detectedAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -68,6 +70,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.workspace.registered': LocalRuntimeWorkspaceRegisteredPayload;
   readonly 'gd.local.workspace.opened': LocalRuntimeWorkspaceOpenedPayload;
   readonly 'gd.local.workspace.unregistered': LocalRuntimeWorkspaceUnregisteredPayload;
+  readonly 'gd.local.project-detection.ready': LocalRuntimeProjectDetectionReadyPayload;
+  readonly 'gd.local.project.detected': LocalRuntimeProjectDetectedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
