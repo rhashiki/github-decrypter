@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const PWA_CACHE_PREFIX = 'gd-studio-shell-';
-const PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v28`;
+const PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v29`;
 
 function createServiceWorkerSource(shellFiles: readonly string[]): string {
   const uniqueShellFiles = [...new Set(shellFiles)].sort();
