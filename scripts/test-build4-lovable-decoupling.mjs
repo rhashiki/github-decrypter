@@ -57,11 +57,37 @@ for (const path of mustExist) {
 }
 
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+const policy = JSON.parse(fs.readFileSync('architecture.guardian.json', 'utf8'));
 const serializedManifest = JSON.stringify(manifest).toLowerCase();
 if (serializedManifest.includes('lovable.dev')) failures.push('manifest still targets lovable.dev');
-if ((manifest.host_permissions ?? []).length > 0) failures.push('transition manifest must not keep inherited host permissions');
-if ((manifest.content_scripts ?? []).length > 0) failures.push('transition manifest must not inject inherited content scripts');
-if (manifest.background) failures.push('transition manifest must not reactivate inherited background authority');
+
+const extensionActivationBuild = policy.phaseGates?.extensionActivationBuild ?? Number.POSITIVE_INFINITY;
+if (policy.currentBuild < extensionActivationBuild) {
+  if ((manifest.host_permissions ?? []).length > 0) failures.push('pre-Build-25 transition manifest must not keep inherited host permissions');
+  if ((manifest.content_scripts ?? []).length > 0) failures.push('pre-Build-25 transition manifest must not inject inherited content scripts');
+  if (manifest.background) failures.push('pre-Build-25 transition manifest must not reactivate inherited background authority');
+} else {
+  const extensionRule = policy.extensionAuthority;
+  if (!extensionRule || extensionRule.minimumBuild !== extensionActivationBuild) {
+    failures.push('activated extension requires an explicit Build 25 extension authority');
+  } else {
+    for (const host of manifest.host_permissions ?? []) {
+      if (!(extensionRule.hostAllowlist ?? []).includes(host)) failures.push(`activated extension host is outside GitHub Decrypter authority: ${host}`);
+    }
+    if (manifest.background?.service_worker !== extensionRule.serviceWorker) {
+      failures.push('activated extension background must be the Build 25 lightweight service worker');
+    }
+    const contentScripts = manifest.content_scripts ?? [];
+    for (const entry of contentScripts) {
+      for (const match of entry.matches ?? []) {
+        if (!(extensionRule.hostAllowlist ?? []).includes(match)) failures.push(`activated content script targets non-authorized host: ${match}`);
+      }
+      for (const script of entry.js ?? []) {
+        if (script !== extensionRule.contentScript) failures.push(`activated content script is outside Build 25 authority: ${script}`);
+      }
+    }
+  }
+}
 
 if (fs.existsSync('.github/workflows')) {
   const old = fs.readdirSync('.github/workflows').filter((name) => name === 'release.yml' || /^v2\./.test(name) || name === 'diagnostic-safe-core.yml');
