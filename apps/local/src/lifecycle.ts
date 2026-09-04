@@ -1,5 +1,6 @@
 import type { AiChangeSessionId, GitOperation } from '@github-decrypter/git';
 import type { GitHubInstallationState } from '@github-decrypter/github-app';
+import type { GitHubProviderOperation } from '@github-decrypter/github-provider';
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
@@ -53,6 +54,8 @@ export type LocalRuntimeGitHubAppConfiguredPayload = { readonly appId: string; r
 export type LocalRuntimeGitHubAppInstallationChangedPayload = { readonly installationId: number; readonly state: GitHubInstallationState; readonly updatedAt: string; };
 export type LocalRuntimeGitHubAppInstallationTokenCreatedPayload = { readonly installationId: number; readonly expiresAt: string; readonly persisted: false; };
 export type LocalRuntimeGitHubAppWebhookVerifiedPayload = { readonly deliveryId: string; readonly event: string; readonly valid: boolean; readonly duplicate: boolean; readonly verifiedAt: string; readonly payloadPersistence: false; };
+export type LocalRuntimeGitHubProviderReadyPayload = { readonly configured: boolean; readonly operations: GitHubProviderOperation[]; readonly readOnly: true; readonly installationTokenPersistence: false; readonly responsePersistence: false; readonly genericRequestApi: false; };
+export type LocalRuntimeGitHubProviderOperationPayload = { readonly operation: GitHubProviderOperation; readonly installationId: number; readonly outcome: 'success' | 'failure'; readonly itemCount: number; readonly occurredAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -98,6 +101,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.github-app.installation.changed': LocalRuntimeGitHubAppInstallationChangedPayload;
   readonly 'gd.local.github-app.installation-token.created': LocalRuntimeGitHubAppInstallationTokenCreatedPayload;
   readonly 'gd.local.github-app.webhook.verified': LocalRuntimeGitHubAppWebhookVerifiedPayload;
+  readonly 'gd.local.github-provider.ready': LocalRuntimeGitHubProviderReadyPayload;
+  readonly 'gd.local.github-provider.operation': LocalRuntimeGitHubProviderOperationPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
