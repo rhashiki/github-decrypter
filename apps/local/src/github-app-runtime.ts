@@ -359,7 +359,7 @@ export class GitHubAppRuntime {
     const nowMs = Date.parse(this.#now());
     const expiresMs = Date.parse(expiresAt);
     if (expiresMs <= nowMs || expiresMs > nowMs + 3_700_000) {
-      throw new Error('GitHub installation token expiration is outside the accepted short-lived window.');
+      throw new Error('GitHub installation token expiration is outside the accepted short-lived interval.');
     }
     await this.#eventBus?.publish('gd.local.github-app.installation-token.created', {
       installationId,
