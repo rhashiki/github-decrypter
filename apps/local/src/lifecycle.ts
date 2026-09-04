@@ -1,3 +1,4 @@
+import type { GitOperation } from '@github-decrypter/git';
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
@@ -39,6 +40,8 @@ export type LocalRuntimeWorkspaceOpenedPayload = { readonly workspaceId: Workspa
 export type LocalRuntimeWorkspaceUnregisteredPayload = { readonly workspaceId: WorkspaceId; readonly occurredAt: string; };
 export type LocalRuntimeProjectDetectionReadyPayload = { readonly detections: number; readonly rootOnly: true; readonly readOnly: true; readonly filesystemMutation: false; readonly networkAccess: false; readonly gitAuthority: false; readonly externalTransport: false; };
 export type LocalRuntimeProjectDetectedPayload = { readonly workspaceId: WorkspaceId; readonly packageJsonPresent: boolean; readonly packageManager: ProjectPackageManager; readonly framework: ProjectFramework; readonly confidence: ProjectDetectionConfidence; readonly detectedAt: string; };
+export type LocalRuntimeGitReadyPayload = { readonly available: boolean; readonly version: string | null; readonly shellExecution: false; readonly forcePush: false; readonly hardReset: false; readonly externalTransport: false; };
+export type LocalRuntimeGitOperationPayload = { readonly workspaceId: WorkspaceId; readonly operation: GitOperation; readonly mutating: boolean; readonly network: boolean; readonly outcome: 'success' | 'failure'; readonly exitCode: number | null; readonly occurredAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -72,6 +75,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.workspace.unregistered': LocalRuntimeWorkspaceUnregisteredPayload;
   readonly 'gd.local.project-detection.ready': LocalRuntimeProjectDetectionReadyPayload;
   readonly 'gd.local.project.detected': LocalRuntimeProjectDetectedPayload;
+  readonly 'gd.local.git.ready': LocalRuntimeGitReadyPayload;
+  readonly 'gd.local.git.operation': LocalRuntimeGitOperationPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

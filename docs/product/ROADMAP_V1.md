@@ -32,7 +32,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 19. **Workspace Manager** — ✅
 20. **Project Detection** — ✅
-21. **Git Runtime**
+21. **Git Runtime** — ✅
 22. **Human vs AI Change Tracking**
 23. **GitHub App**
 24. **GitHub Provider**

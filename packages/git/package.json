@@ -1,1 +1,13 @@
-{"name":"@github-decrypter/git","version":"0.0.0","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc -p tsconfig.json"}}
+{
+  "name": "@github-decrypter/git",
+  "version": "0.0.21",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@github-decrypter/workspace": "workspace:*"
+  }
+}
