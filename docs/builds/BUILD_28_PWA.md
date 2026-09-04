@@ -1,6 +1,6 @@
 # Build 28 — PWA
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated Build 28 validation green; PR matrix pending**
 
 ## Objective
 
@@ -62,5 +62,7 @@ Before merge, the Build 28 branch must pass:
 8. Build 28 negative Guardian probes;
 9. modern-engine preservation;
 10. all historical PR workflows.
+
+The isolated branch workflow passed items 1–9 at head `5d06b79625a2315f8393592bee94920515b2b668`. Canonical roadmap/documentation synchronization commits follow that functional head; the PR matrix remains the final merge gate.
 
 No release, tag, production deploy, Chrome Web Store publication, Supabase production mutation or DNS mutation is authorized by this Build.
