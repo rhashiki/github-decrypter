@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "GitHub Decrypter",
-  "version": "0.0.5",
-  "version_name": "GitHub Decrypter Build 5 · Product Rebrand",
-  "description": "Git-native, GitHub-native local-first AI development studio. This Build 5 package is an intentionally inert extension shell while the GitHub launcher, Studio PWA and local runtime are introduced by the frozen roadmap.",
+  "version": "0.0.25",
+  "version_name": "GitHub Decrypter Build 25 · GitHub Chrome Extension",
+  "description": "Lightweight GitHub launcher/bridge foundation for GitHub Decrypter. Repository Launcher and Open in GitHub Decrypter arrive in Build 26.",
   "icons": {
     "16": "assets/icon16.png",
     "32": "assets/icon32.png",
@@ -12,5 +12,22 @@
   },
   "action": {
     "default_title": "GitHub Decrypter"
-  }
+  },
+  "background": {
+    "service_worker": "apps/extension/browser/service-worker.js"
+  },
+  "host_permissions": [
+    "https://github.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "apps/extension/browser/content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
