@@ -1,6 +1,6 @@
 # Build 18 — Audit Ledger
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE — VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -39,6 +39,14 @@ Create the canonical local Audit Ledger for durable, tamper-evident recording of
 ## Architecture Guardian
 
 Build 18 adds AG160–AG169 for Audit Ledger ownership, schema, append-only persistence, hash-chain verification, mutation rejection, external transport exclusion, metadata-only source boundaries, machine-readable invariant protection, Transaction Ledger phase separation and required artifacts.
+
+## Validation
+
+Final implementation validation completed on commit `7f8686228e6d70c0466e5a11486ab2ec8a519430`.
+
+The pull-request CI matrix completed successfully for Builds 5–18, including the Build 18 Audit Ledger workflow. The first CI run exposed one TypeScript-only `node:sqlite` aggregate-row cast issue; the implementation was corrected without changing the ledger design, schema, security model or Guardian invariants, and the full matrix then passed.
+
+Validated boundaries include real SQLite append-only mutation rejection, SHA-256 chain verification, tamper detection, metadata-only security-event capture, daemon readiness integration, Architecture Guardian enforcement, TypeScript workspaces and preservation of the modern engine baseline.
 
 ## Explicit exclusions
 
