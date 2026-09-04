@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { isValidElement } from 'react';
 import {
   Badge,
   Button,
@@ -23,8 +22,6 @@ assert.equal(designTokens.color.accent, '#58a6ff');
 assert.equal(designTokens.color.success, '#3fb950');
 
 const button = Button({ children: 'Run', variant: 'primary', disabled: true });
-assert.equal(isValidElement(button), true);
-if (!isValidElement<{ className: string; type: string; disabled?: boolean }>(button)) throw new Error('Button did not return a React element.');
 assert.equal(button.type, 'button');
 assert.equal(button.props.type, 'button');
 assert.equal(button.props.disabled, true);
@@ -32,35 +29,33 @@ assert.match(button.props.className, /gd-button/);
 assert.match(button.props.className, /gd-button--primary/);
 
 const card = Card({ children: 'Card', tone: 'warning', id: 'card' });
-assert.equal(isValidElement(card), true);
-if (!isValidElement<{ className: string; id?: string }>(card)) throw new Error('Card did not return a React element.');
+assert.equal(card.type, 'div');
 assert.equal(card.props.id, 'card');
 assert.match(card.props.className, /gd-card--warning/);
 
 const badge = Badge({ children: 'Ready', tone: 'success' });
-assert.equal(isValidElement(badge), true);
-if (!isValidElement<{ className: string }>(badge)) throw new Error('Badge did not return a React element.');
+assert.equal(badge.type, 'span');
 assert.match(badge.props.className, /gd-badge--success/);
 
 const stack = Stack({ children: 'Stack', gap: 'xl', direction: 'row', align: 'center' });
-assert.equal(isValidElement(stack), true);
-if (!isValidElement<{ className: string }>(stack)) throw new Error('Stack did not return a React element.');
+assert.equal(stack.type, 'div');
 assert.match(stack.props.className, /gd-stack--row/);
 assert.match(stack.props.className, /gd-stack--gap-xl/);
 assert.match(stack.props.className, /gd-stack--align-center/);
 
 const status = Status({ label: 'Healthy', tone: 'success' });
-assert.equal(isValidElement(status), true);
-if (!isValidElement<{ className: string }>(status)) throw new Error('Status did not return a React element.');
+assert.equal(status.type, 'span');
 assert.match(status.props.className, /gd-status--success/);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build29-unified-design-system-runtime/1',
+  schema: 'gd-build29-unified-design-system-runtime/2',
   tokenSchema: DESIGN_SYSTEM_SCHEMA,
   frozenTokens: true,
+  nativeElementComposition: true,
   buttonDefaultType: 'button',
   semanticVariants: true,
   stackComposition: true,
+  rootReactDependency: false,
   environmentAuthority: false,
 }, null, 2));
