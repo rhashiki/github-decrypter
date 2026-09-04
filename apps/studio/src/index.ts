@@ -4,6 +4,7 @@ import { STUDIO_BUILD, STUDIO_LAUNCH_SCHEMA, STUDIO_VERSION } from './studio-con
 const protocolRole: PeerRole = 'studio';
 
 export * from './studio-context.js';
+export * from './pwa.js';
 export { StudioApp } from './App.js';
 
 export const appIdentity = Object.freeze({
@@ -16,5 +17,7 @@ export const appIdentity = Object.freeze({
   version: STUDIO_VERSION,
   framework: 'React 19' as const,
   bundler: 'Vite 8' as const,
-  role: 'Client-only React Studio foundation. PWA, unified design system and IDE layout remain Builds 28–30.',
+  pwa: true as const,
+  offlineAppShell: true as const,
+  role: 'Client-only React Studio with installable same-origin PWA app shell. Unified design system and IDE layout remain Builds 29–30.',
 });

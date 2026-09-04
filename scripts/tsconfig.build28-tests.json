@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "..",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "../apps/studio/src/**/*.ts",
+    "../apps/studio/src/**/*.tsx",
+    "../packages/protocol/src/**/*.ts",
+    "./test-build28-pwa-runtime.ts"
+  ]
+}

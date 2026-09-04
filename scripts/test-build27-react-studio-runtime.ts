@@ -7,8 +7,8 @@ import {
   STUDIO_VERSION,
 } from '../apps/studio/src/studio-context.js';
 
-assert.equal(STUDIO_BUILD, 27);
-assert.equal(STUDIO_VERSION, '0.0.27');
+assert.ok(STUDIO_BUILD >= 27);
+assert.equal(STUDIO_VERSION, `0.0.${STUDIO_BUILD}`);
 assert.equal(STUDIO_LAUNCH_SCHEMA, 'gd-studio-launch/1');
 
 const empty = parseStudioLaunchContext('');
@@ -49,8 +49,9 @@ assert.throws(() => createStudioRepositoryContext('owner', 'bad/repo'), /name is
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build27-react-studio-runtime/1',
-  build: STUDIO_BUILD,
+  schema: 'gd-build27-react-studio-runtime/2',
+  owningBuild: 27,
+  currentStudioBuild: STUDIO_BUILD,
   launchSchema: STUDIO_LAUNCH_SCHEMA,
   emptyEntry: true,
   repositoryEntry: true,
@@ -59,6 +60,4 @@ console.log(JSON.stringify({
   reservedRoutesRejected: true,
   invalidRepositoryGrammarRejected: true,
   publicGitHubIdentityOnly: true,
-  networkActivity: false,
-  persistence: false,
 }, null, 2));

@@ -37,14 +37,17 @@ try {
   expect('AG255');
 } finally { fs.writeFileSync(appPath, appOriginal); }
 
-const swPath = path.join(root, 'apps/studio/src/service-worker.ts');
-try {
-  fs.writeFileSync(swPath, 'export {};\n');
-  expect('AG256');
-} finally { if (fs.existsSync(swPath)) fs.unlinkSync(swPath); }
-
 const policyPath = path.join(root, 'architecture.guardian.json');
 const policyOriginal = fs.readFileSync(policyPath, 'utf8');
+try {
+  const policy = JSON.parse(policyOriginal);
+  policy.currentBuild = 27;
+  policy.studioAuthority.serviceWorker = false;
+  policy.studioAuthority.webAppManifest = false;
+  fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
+  expect('AG256');
+} finally { fs.writeFileSync(policyPath, policyOriginal); }
+
 try {
   const policy = JSON.parse(policyOriginal);
   policy.studioAuthority.localRuntimeTransport = true;
@@ -84,7 +87,9 @@ assert.equal(final.status, 0, `Studio Guardian did not recover.\n${final.stdout}
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build27-react-studio-guardian-negative/1',
+  schema: 'gd-build27-react-studio-guardian-negative/2',
+  owningBuild: 27,
+  pwaPrematurityStillRejected: true,
   rejected,
   restoredTreePasses: true,
 }, null, 2));
