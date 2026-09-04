@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GitHub Decrypter — Repository Launcher</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0d1117; color: #f0f6fc; }
+    main { width: min(560px, calc(100vw - 40px)); border: 1px solid #30363d; border-radius: 16px; padding: 28px; background: #161b22; box-shadow: 0 18px 60px rgba(0,0,0,.35); }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    .repo { margin: 18px 0; padding: 14px 16px; border: 1px solid #30363d; border-radius: 10px; background: #0d1117; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .status { display: grid; gap: 8px; margin: 18px 0; }
+    .status div { display: flex; justify-content: space-between; gap: 16px; }
+    .ok { color: #3fb950; }
+    .pending { color: #d29922; }
+    p { color: #8b949e; line-height: 1.5; }
+    a { color: #58a6ff; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>GitHub Decrypter</h1>
+    <p>Repository Launcher</p>
+    <div id="invalid" hidden>Invalid repository handoff.</div>
+    <section id="content" hidden>
+      <div class="repo" id="repository"></div>
+      <div class="status">
+        <div><span>GitHub repository</span><strong class="ok">Detected</strong></div>
+        <div><span>Extension bridge</span><strong id="bridge-status" class="pending">Checking</strong></div>
+        <div><span>Studio</span><strong class="pending">Foundation pending</strong></div>
+      </div>
+      <p>The repository handoff is ready. React Studio becomes the receiving surface in Build 27; this launcher does not send repository data to external hosts or the Local Runtime.</p>
+      <a id="github-link" rel="noreferrer">Back to repository on GitHub</a>
+    </section>
+  </main>
+  <script src="launcher.js"></script>
+</body>
+</html>
