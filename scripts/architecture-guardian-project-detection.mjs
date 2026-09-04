@@ -37,7 +37,7 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
     violations.push({ code: 'AG184', message: 'Build 20 Project Detection is root-only and may not recursively enumerate the workspace.' });
   }
 
-  if (/node:(?:child_process|http|https|net|tls|dgram)|\b(?:fetch\s*\(|WebSocket\s*\(|git\s+(?:clone|fetch|pull|status|diff|log)|simple-git|isomorphic-git)\b/i.test(detector)) {
+  if (/(?:node:(?:child_process|http|https|net|tls|dgram)|\bfetch\s*\(|\bWebSocket\s*\(|\bgit\s+(?:clone|fetch|pull|status|diff|log)\b|\bsimple-git\b|\bisomorphic-git\b)/i.test(detector)) {
     violations.push({ code: 'AG185', message: 'Project Detection gained network, process or Git authority before its owning phase.' });
   }
 
