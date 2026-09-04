@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 17,
+  "currentBuild": 18,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -57,6 +57,17 @@
     "payloadDigestBinding": "sha256",
     "jobBinding": true,
     "externalDecisionTransport": false
+  },
+  "auditAuthority": {
+    "ownerRoot": "apps/local",
+    "minimumBuild": 18,
+    "transactionLedgerBuild": 77,
+    "appendOnly": true,
+    "hashChain": "sha256",
+    "integrityVerificationOnStartup": true,
+    "securityEventMetadataOnly": true,
+    "externalTransport": false,
+    "requiredCategories": ["capability", "vault", "approval", "runtime"]
   },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],

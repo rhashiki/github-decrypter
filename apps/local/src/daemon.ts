@@ -1,6 +1,7 @@
 import { createEventBus, type EventBus } from '@github-decrypter/shared';
 import type { AddressInfo } from 'node:net';
 import { createApprovalTransactions, type ApprovalTransactions } from './approval-transactions.js';
+import { createAuditLedger, type AuditLedger } from './audit-ledger.js';
 import { createCapabilitySecurityAuthority, type CapabilitySecurityAuthority } from './capability-security.js';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
@@ -23,6 +24,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly capabilities?: CapabilitySecurityAuthority;
   readonly vault?: SecretsVault;
   readonly approvals?: ApprovalTransactions;
+  readonly audit?: AuditLedger;
   readonly now?: () => string;
 }
 
@@ -40,6 +42,7 @@ export class LocalRuntimeDaemon {
   readonly #capabilities: CapabilitySecurityAuthority;
   readonly #vault: SecretsVault;
   readonly #approvals: ApprovalTransactions;
+  readonly #audit: AuditLedger;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -57,6 +60,7 @@ export class LocalRuntimeDaemon {
     this.#capabilities = options.capabilities ?? createCapabilitySecurityAuthority({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#vault = options.vault ?? createSecretsVault({ database: this.#database, capabilities: this.#capabilities, eventBus: this.#eventBus, keyPath: this.#config.vaultKeyPath, now: this.#now });
     this.#approvals = options.approvals ?? createApprovalTransactions({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
+    this.#audit = options.audit ?? createAuditLedger({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
   }
 
   get state(): LocalRuntimeState { return this.#state; }
@@ -69,6 +73,7 @@ export class LocalRuntimeDaemon {
   get capabilities(): CapabilitySecurityAuthority { return this.#capabilities; }
   get vault(): SecretsVault { return this.#vault; }
   get approvals(): ApprovalTransactions { return this.#approvals; }
+  get audit(): AuditLedger { return this.#audit; }
 
   get address(): LocalRuntimeBoundAddress | null {
     const address = this.#addressInfo();
@@ -91,6 +96,8 @@ export class LocalRuntimeDaemon {
       const databaseStatus = this.#database.open();
       await this.#eventBus.publish('gd.local.database.opened', { schemaVersion: databaseStatus.schemaVersion, journalMode: databaseStatus.journalMode, foreignKeys: databaseStatus.foreignKeys, integrity: databaseStatus.integrity });
 
+      const auditStatus = await this.#audit.initialize();
+      if (!auditStatus.ready || auditStatus.integrity !== 'ok') throw new Error('Audit Ledger is not ready after database startup.');
       if (!this.#jobs.status().ready) throw new Error('Durable Job Engine is not ready after database startup.');
       const recoveryStatus = await this.#recovery.startSession();
       if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
@@ -118,6 +125,7 @@ export class LocalRuntimeDaemon {
         getOfflineExecutionStatus: () => this.#offline.status(),
         getCapabilitySecurityStatus: () => this.#capabilities.status(),
         getSecretsVaultStatus: () => this.#vault.status(),
+        getAuditLedgerStatus: () => this.#audit.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -128,7 +136,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -138,6 +146,7 @@ export class LocalRuntimeDaemon {
       this.#closeVaultBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
+      this.#closeAuditBestEffort();
       await this.#closeDatabaseBestEffort('startup failed');
       this.#instanceLock?.release(); this.#instanceLock = null; this.#startedAt = null;
       await this.#transition('failed', error instanceof Error ? error.message : 'start failed');
@@ -156,6 +165,7 @@ export class LocalRuntimeDaemon {
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
     try { await this.#recovery.stopSession(reason); } catch (error) { recoveryError = error; }
+    this.#audit.shutdown();
     await this.#closeDatabaseBestEffort(reason);
     this.#instanceLock?.release(); this.#instanceLock = null; this.#startedAt = null;
     const shutdownError = vaultError ?? capabilityError ?? recoveryError;
@@ -177,6 +187,7 @@ export class LocalRuntimeDaemon {
   }
   #closeApprovalsBestEffort(): void { try { this.#approvals.shutdown(); } catch {} }
   #closeVaultBestEffort(): void { try { this.#vault.shutdown(); } catch {} }
+  #closeAuditBestEffort(): void { try { this.#audit.shutdown(); } catch {} }
   async #closeCapabilitiesBestEffort(reason: string): Promise<void> {
     if (!this.#database.isOpen || !this.#capabilities.status().ready) return;
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch {}

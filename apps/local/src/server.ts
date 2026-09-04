@@ -12,6 +12,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { AuditLedgerStatus } from './audit-ledger.js';
 import type { CapabilitySecurityStatus } from './capability-security.js';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
@@ -85,6 +86,15 @@ export interface LocalRuntimeHealth {
     readonly plaintextResourcePersistence: false;
     readonly externalTransport: false;
   };
+  readonly audit: {
+    readonly ready: boolean;
+    readonly entryCount: number;
+    readonly headHash: string;
+    readonly integrity: 'ok' | 'unchecked';
+    readonly appendOnly: true;
+    readonly hashChain: 'sha256';
+    readonly externalTransport: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -98,6 +108,7 @@ export interface LocalRuntimeServerContext {
   getOfflineExecutionStatus(): OfflineExecutionStatus;
   getCapabilitySecurityStatus(): CapabilitySecurityStatus;
   getSecretsVaultStatus(): SecretsVaultStatus;
+  getAuditLedgerStatus(): AuditLedgerStatus;
   now(): string;
 }
 
@@ -153,6 +164,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const offline = context.getOfflineExecutionStatus();
   const capabilities = context.getCapabilitySecurityStatus();
   const vault = context.getSecretsVaultStatus();
+  const audit = context.getAuditLedgerStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -214,6 +226,15 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       keyBackend: vault.keyBackend,
       plaintextPersistence: false,
       plaintextResourcePersistence: false,
+      externalTransport: false,
+    },
+    audit: {
+      ready: audit.ready,
+      entryCount: audit.entryCount,
+      headHash: audit.headHash,
+      integrity: audit.integrity,
+      appendOnly: true,
+      hashChain: 'sha256',
       externalTransport: false,
     },
   };
@@ -280,7 +301,9 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.recovery.healthy
         && health.offline.ready
         && health.capabilities.ready
-        && health.vault.ready;
+        && health.vault.ready
+        && health.audit.ready
+        && health.audit.integrity === 'ok';
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -291,6 +314,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         offlineExecutionReady: health.offline.ready,
         capabilitySecurityReady: health.capabilities.ready,
         secretsVaultReady: health.vault.ready,
+        auditLedgerReady: health.audit.ready,
+        auditIntegrity: health.audit.integrity,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,
