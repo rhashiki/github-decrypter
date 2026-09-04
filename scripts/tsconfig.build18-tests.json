@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../apps/local/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "./test-build18-audit-ledger-runtime.ts"
+  ]
+}
