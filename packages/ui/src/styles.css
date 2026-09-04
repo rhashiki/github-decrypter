@@ -1,0 +1,152 @@
+:root,
+[data-gd-theme="dark"] {
+  color-scheme: dark;
+  --gd-color-canvas: #0d1117;
+  --gd-color-surface: #161b22;
+  --gd-color-surface-raised: #1c2128;
+  --gd-color-border: #30363d;
+  --gd-color-border-subtle: #21262d;
+  --gd-color-text: #f0f6fc;
+  --gd-color-text-muted: #8b949e;
+  --gd-color-accent: #58a6ff;
+  --gd-color-accent-strong: #1f6feb;
+  --gd-color-success: #3fb950;
+  --gd-color-warning: #d29922;
+  --gd-color-danger: #f85149;
+  --gd-color-focus: #58a6ff;
+
+  --gd-space-xs: 4px;
+  --gd-space-sm: 8px;
+  --gd-space-md: 12px;
+  --gd-space-lg: 16px;
+  --gd-space-xl: 24px;
+  --gd-space-xxl: 32px;
+  --gd-space-xxxl: 44px;
+
+  --gd-radius-sm: 6px;
+  --gd-radius-md: 10px;
+  --gd-radius-lg: 14px;
+  --gd-radius-pill: 999px;
+
+  --gd-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --gd-font-size-xs: 12px;
+  --gd-font-size-sm: 14px;
+  --gd-font-size-md: 16px;
+  --gd-font-size-lg: 20px;
+  --gd-font-size-xl: 28px;
+  --gd-line-body: 1.55;
+
+  --gd-shadow-focus: 0 0 0 3px rgba(88, 166, 255, 0.32);
+  --gd-shadow-success-halo: 0 0 0 4px rgba(63, 185, 80, 0.12);
+  --gd-motion-fast: 120ms;
+  --gd-motion-normal: 180ms;
+}
+
+.gd-card {
+  border: 1px solid var(--gd-color-border);
+  border-radius: var(--gd-radius-lg);
+  background: var(--gd-color-surface);
+  color: var(--gd-color-text);
+}
+
+.gd-card--warning { border-color: var(--gd-color-warning); }
+.gd-card--success { border-color: var(--gd-color-success); }
+
+.gd-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 7px 10px;
+  border: 1px solid var(--gd-color-border);
+  border-radius: var(--gd-radius-pill);
+  color: var(--gd-color-text-muted);
+  font-size: var(--gd-font-size-xs);
+  line-height: 1;
+}
+
+.gd-badge--accent { border-color: var(--gd-color-accent); color: var(--gd-color-accent); }
+.gd-badge--success { border-color: var(--gd-color-success); color: var(--gd-color-success); }
+.gd-badge--warning { border-color: var(--gd-color-warning); color: var(--gd-color-warning); }
+
+.gd-button {
+  appearance: none;
+  min-height: 36px;
+  padding: 0 var(--gd-space-lg);
+  border: 1px solid transparent;
+  border-radius: var(--gd-radius-md);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--gd-motion-fast) ease,
+    border-color var(--gd-motion-fast) ease,
+    color var(--gd-motion-fast) ease;
+}
+
+.gd-button:disabled { cursor: not-allowed; opacity: .55; }
+.gd-button:focus-visible,
+.gd-card:focus-visible,
+.gd-badge:focus-visible,
+a:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--gd-shadow-focus);
+}
+
+.gd-button--primary {
+  background: var(--gd-color-accent-strong);
+  border-color: var(--gd-color-accent-strong);
+  color: #fff;
+}
+
+.gd-button--secondary {
+  background: var(--gd-color-surface-raised);
+  border-color: var(--gd-color-border);
+  color: var(--gd-color-text);
+}
+
+.gd-button--ghost {
+  background: transparent;
+  color: var(--gd-color-text-muted);
+}
+
+.gd-stack { display: flex; }
+.gd-stack--row { flex-direction: row; }
+.gd-stack--column { flex-direction: column; }
+.gd-stack--gap-xs { gap: var(--gd-space-xs); }
+.gd-stack--gap-sm { gap: var(--gd-space-sm); }
+.gd-stack--gap-md { gap: var(--gd-space-md); }
+.gd-stack--gap-lg { gap: var(--gd-space-lg); }
+.gd-stack--gap-xl { gap: var(--gd-space-xl); }
+.gd-stack--align-start { align-items: flex-start; }
+.gd-stack--align-center { align-items: center; }
+.gd-stack--align-end { align-items: flex-end; }
+.gd-stack--align-stretch { align-items: stretch; }
+
+.gd-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-space-sm);
+  color: var(--gd-color-text-muted);
+  font-size: var(--gd-font-size-sm);
+}
+
+.gd-status__dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--gd-color-text-muted);
+}
+
+.gd-status--success .gd-status__dot { background: var(--gd-color-success); box-shadow: var(--gd-shadow-success-halo); }
+.gd-status--warning .gd-status__dot { background: var(--gd-color-warning); }
+.gd-status--danger .gd-status__dot { background: var(--gd-color-danger); }
+
+.gd-section-heading { display: grid; gap: var(--gd-space-xs); }
+.gd-eyebrow {
+  color: var(--gd-color-text-muted);
+  font-size: var(--gd-font-size-xs);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
