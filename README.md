@@ -29,8 +29,9 @@ Completed:
 - Build 15 — Capability Security Model
 - Build 16 — Secrets Vault
 - Build 17 — Approval Transactions
+- Build 18 — Audit Ledger
 
-Next: **Build 18 — Audit Ledger**.
+Next: **Build 19 — Workspace Manager**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -49,7 +50,7 @@ packages/
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault and durable one-shot Approval Transactions. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault, durable one-shot Approval Transactions and the append-only local Audit Ledger. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
 Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Build 14 adds persistent `unknown | online | offline` connectivity state and explicit network-required job metadata: local-safe work remains claimable without network, while network-required work waits durably and returns to the queue when connectivity is restored.
 
@@ -61,15 +62,17 @@ Vault reads/writes require an existing job-bound `SECRETS` capability, while del
 
 Build 17 adds durable Approval Transactions as a separate authority from Capability Security. An approval is tied to one durable job, an explicit capability/resource requirement snapshot and the SHA-256 digest of the exact proposed payload. Approval receipts are opaque 256-bit values; only their SHA-256 hashes are persisted. Approved receipts are consumed atomically once and their persisted hash is cleared, while replay, denial, cancellation, expiry, terminal-job use and payload mismatch fail closed. Approval therefore cannot silently broaden capabilities or become a reusable grant.
 
+Build 18 adds the canonical local Audit Ledger. Audit entries are append-only under SQLite triggers, carry a monotonic sequence and are chained by SHA-256 previous-hash/entry-hash values. Full ledger integrity is verified before daemon readiness, so sequence gaps, chain mismatches or entry tampering fail closed. The ledger records only security-relevant metadata for capability, Vault and Approval Transaction events; it does not persist capability tokens, approval receipts, secret values or plaintext secret resource names, and it has no external transport authority.
+
 Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. `NETWORK` capability authorizes network use; it does not bypass Build 14 connectivity state.
 
-There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control or job-control HTTP endpoint. In particular, Build 17 does not expose `/v1/approval`, `/v1/approvals` or `/v1/approval-transactions`. The default development endpoint is `127.0.0.1:43110`. Run it with:
+There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control, audit-control or job-control HTTP endpoint. In particular, Build 18 does not expose `/v1/audit`, `/v1/audits` or `/v1/audit-ledger`. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, phase gates, token/receipt-hash-only persistence, encrypted secret/resource persistence, master-key separation, no premature privileged transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, phase gates, token/receipt-hash-only persistence, encrypted secret/resource persistence, master-key separation, append-only audit persistence, SHA-256 audit-chain verification, metadata-only audit capture, no premature privileged transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -145,6 +148,11 @@ Studio PWA                         Local Runtime Daemon
                               Approval Transactions
                          job + requirements + payload digest
                          one-shot / receipt hash only
+                                           │
+                                           ▼
+                                   Audit Ledger
+                         append-only + monotonic sequence
+                          SHA-256 tamper-evident chain
 
             │
             ▼
@@ -170,6 +178,7 @@ See:
 - `docs/architecture/CAPABILITY_SECURITY_MODEL.md` — Build 15 deny-by-default capability boundary
 - `docs/architecture/SECRETS_VAULT.md` — Build 16 encrypted local secret boundary
 - `docs/architecture/APPROVAL_TRANSACTIONS.md` — Build 17 one-shot human approval boundary
+- `docs/architecture/AUDIT_LEDGER.md` — Build 18 append-only tamper-evident local audit boundary
 
 ## Architecture check
 
