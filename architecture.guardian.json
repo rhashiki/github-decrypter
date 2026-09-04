@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 18,
+  "currentBuild": 19,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -25,11 +25,12 @@
   },
   "packageRules": {
     "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
-    "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true }
+    "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true },
+    "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/protocol","@github-decrypter/shared"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
       "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
@@ -69,6 +70,18 @@
     "externalTransport": false,
     "requiredCategories": ["capability", "vault", "approval", "runtime"]
   },
+  "workspaceAuthority": {
+    "ownerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/workspace",
+    "minimumBuild": 19,
+    "projectDetectionBuild": 20,
+    "gitRuntimeBuild": 21,
+    "multiWorkspaceBuild": 114,
+    "canonicalRoot": "realpath",
+    "pathContainment": true,
+    "filesystemMutation": false,
+    "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -84,7 +97,7 @@
   "phaseGates": {
     "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
-    "auditLedgerBuild": 18, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
+    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
