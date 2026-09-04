@@ -20,6 +20,7 @@ import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } fr
 import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
 import type { OfflineExecutionStatus } from './offline-execution.js';
+import type { ProjectDetectionStatus } from './project-detector.js';
 import type { CrashRecoveryStatus } from './recovery-engine.js';
 import type { SecretsVaultStatus } from './secrets-vault.js';
 import type { WorkspaceManagerStatus } from './workspace-manager.js';
@@ -103,6 +104,16 @@ export interface LocalRuntimeHealth {
     readonly filesystemMutation: false;
     readonly externalTransport: false;
   };
+  readonly projectDetection: {
+    readonly ready: boolean;
+    readonly detections: number;
+    readonly rootOnly: true;
+    readonly readOnly: true;
+    readonly filesystemMutation: false;
+    readonly networkAccess: false;
+    readonly gitAuthority: false;
+    readonly externalTransport: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -118,6 +129,7 @@ export interface LocalRuntimeServerContext {
   getSecretsVaultStatus(): SecretsVaultStatus;
   getAuditLedgerStatus(): AuditLedgerStatus;
   getWorkspaceManagerStatus(): WorkspaceManagerStatus;
+  getProjectDetectionStatus(): ProjectDetectionStatus;
   now(): string;
 }
 
@@ -175,6 +187,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const vault = context.getSecretsVaultStatus();
   const audit = context.getAuditLedgerStatus();
   const workspaces = context.getWorkspaceManagerStatus();
+  const projectDetection = context.getProjectDetectionStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -254,6 +267,16 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       filesystemMutation: false,
       externalTransport: false,
     },
+    projectDetection: {
+      ready: projectDetection.ready,
+      detections: projectDetection.detections,
+      rootOnly: true,
+      readOnly: true,
+      filesystemMutation: false,
+      networkAccess: false,
+      gitAuthority: false,
+      externalTransport: false,
+    },
   };
 }
 
@@ -321,7 +344,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.vault.ready
         && health.audit.ready
         && health.audit.integrity === 'ok'
-        && health.workspaces.ready;
+        && health.workspaces.ready
+        && health.projectDetection.ready;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -337,6 +361,8 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         workspaceManagerReady: health.workspaces.ready,
         registeredWorkspaces: health.workspaces.registered,
         availableWorkspaces: health.workspaces.available,
+        projectDetectionReady: health.projectDetection.ready,
+        projectDetections: health.projectDetection.detections,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,
