@@ -1,4 +1,5 @@
 import type { AiChangeSessionId, GitOperation } from '@github-decrypter/git';
+import type { GitHubInstallationState } from '@github-decrypter/github-app';
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
@@ -47,6 +48,11 @@ export type LocalRuntimeHumanChangesObservedPayload = { readonly workspaceId: Wo
 export type LocalRuntimeAiChangeStartedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly baselinePaths: number; readonly startedAt: string; };
 export type LocalRuntimeAiChangeCompletedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly changedPaths: number; readonly ai: number; readonly mixed: number; readonly unknown: number; readonly completedAt: string; };
 export type LocalRuntimeChangeTrackingInvalidatedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly reason: string; readonly occurredAt: string; };
+export type LocalRuntimeGitHubAppReadyPayload = { readonly configured: boolean; readonly installationCount: number; readonly installationTokenPersistence: false; readonly webhookPayloadPersistence: false; readonly genericHttpTransport: false; };
+export type LocalRuntimeGitHubAppConfiguredPayload = { readonly appId: string; readonly configuredAt: string; readonly updatedAt: string; };
+export type LocalRuntimeGitHubAppInstallationChangedPayload = { readonly installationId: number; readonly state: GitHubInstallationState; readonly updatedAt: string; };
+export type LocalRuntimeGitHubAppInstallationTokenCreatedPayload = { readonly installationId: number; readonly expiresAt: string; readonly persisted: false; };
+export type LocalRuntimeGitHubAppWebhookVerifiedPayload = { readonly deliveryId: string; readonly event: string; readonly valid: boolean; readonly duplicate: boolean; readonly verifiedAt: string; readonly payloadPersistence: false; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -87,6 +93,11 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.change-tracking.ai-started': LocalRuntimeAiChangeStartedPayload;
   readonly 'gd.local.change-tracking.ai-completed': LocalRuntimeAiChangeCompletedPayload;
   readonly 'gd.local.change-tracking.invalidated': LocalRuntimeChangeTrackingInvalidatedPayload;
+  readonly 'gd.local.github-app.ready': LocalRuntimeGitHubAppReadyPayload;
+  readonly 'gd.local.github-app.configured': LocalRuntimeGitHubAppConfiguredPayload;
+  readonly 'gd.local.github-app.installation.changed': LocalRuntimeGitHubAppInstallationChangedPayload;
+  readonly 'gd.local.github-app.installation-token.created': LocalRuntimeGitHubAppInstallationTokenCreatedPayload;
+  readonly 'gd.local.github-app.webhook.verified': LocalRuntimeGitHubAppWebhookVerifiedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

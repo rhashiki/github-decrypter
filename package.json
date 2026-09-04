@@ -1,12 +1,12 @@
 {
   "name": "github-decrypter",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.15.0",
   "engines": { "node": ">=22" },
   "scripts": {
-    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs && node scripts/architecture-guardian-offline.mjs && node scripts/architecture-guardian-capabilities.mjs && node scripts/architecture-guardian-vault.mjs && node scripts/architecture-guardian-approvals.mjs && node scripts/architecture-guardian-audit.mjs && node scripts/architecture-guardian-workspace.mjs && node scripts/architecture-guardian-project-detection.mjs && node scripts/architecture-guardian-git-runtime.mjs && node scripts/architecture-guardian-change-tracking.mjs",
+    "guardian": "node scripts/architecture-guardian.mjs && node scripts/architecture-guardian-apps.mjs && node scripts/architecture-guardian-database.mjs && node scripts/architecture-guardian-workflow-write.mjs && node scripts/architecture-guardian-jobs.mjs && node scripts/architecture-guardian-recovery.mjs && node scripts/architecture-guardian-offline.mjs && node scripts/architecture-guardian-capabilities.mjs && node scripts/architecture-guardian-vault.mjs && node scripts/architecture-guardian-approvals.mjs && node scripts/architecture-guardian-audit.mjs && node scripts/architecture-guardian-workspace.mjs && node scripts/architecture-guardian-project-detection.mjs && node scripts/architecture-guardian-git-runtime.mjs && node scripts/architecture-guardian-change-tracking.mjs && node scripts/architecture-guardian-github-app.mjs",
     "check:build4": "node scripts/test-build4-lovable-decoupling.mjs",
     "check:build5": "node scripts/test-build5-rebrand.mjs",
     "check:build6": "node scripts/test-build6-monorepo-foundation.mjs",
@@ -26,8 +26,9 @@
     "check:build20": "node scripts/test-build20-project-detection.mjs && tsc -p scripts/tsconfig.build20-tests.json && tsx scripts/test-build20-project-detection-runtime.ts && node scripts/test-build20-project-detection-guardian-negative.mjs",
     "check:build21": "node scripts/test-build21-git-runtime.mjs && tsc -p scripts/tsconfig.build21-tests.json && tsx scripts/test-build21-git-runtime-runtime.ts && node scripts/test-build21-git-runtime-guardian-negative.mjs",
     "check:build22": "node scripts/test-build22-human-ai-change-tracking.mjs && tsc -p scripts/tsconfig.build22-tests.json && tsx scripts/test-build22-human-ai-change-tracking-runtime.ts && node scripts/test-build22-change-tracking-guardian-negative.mjs",
+    "check:build23": "node scripts/test-build23-github-app.mjs && tsc -p scripts/tsconfig.build23-tests.json && tsx scripts/test-build23-github-app-runtime.ts && node scripts/test-build23-github-app-guardian-negative.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run check:build14 && pnpm run check:build15 && pnpm run check:build16 && pnpm run check:build17 && pnpm run check:build18 && pnpm run check:build19 && pnpm run check:build20 && pnpm run check:build21 && pnpm run check:build22 && pnpm run typecheck"
+    "ci": "pnpm run check:build4 && pnpm run check:build5 && pnpm run check:build6 && pnpm run check:build7 && pnpm run check:build8 && pnpm run check:build9 && pnpm run check:build10 && pnpm run check:build11 && pnpm run check:build12 && pnpm run check:build13 && pnpm run check:build14 && pnpm run check:build15 && pnpm run check:build16 && pnpm run check:build17 && pnpm run check:build18 && pnpm run check:build19 && pnpm run check:build20 && pnpm run check:build21 && pnpm run check:build22 && pnpm run check:build23 && pnpm run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

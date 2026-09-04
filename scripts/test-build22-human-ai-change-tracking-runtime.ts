@@ -46,9 +46,11 @@ try {
 
   const database = new LocalDatabase({ path: join(tempRoot, 'change-tracking.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 10);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 10);
-  assert.equal(database.listMigrations().length, 10);
+  assert.ok(opened.schemaVersion >= 10, 'Build 22 requires Local Database schema 10 or newer.');
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 10, 'Later builds may append migrations after Build 22.');
+  const migrations = database.listMigrations();
+  assert.ok(migrations.length >= 10, 'Build 22 migration history must remain present.');
+  assert.equal(migrations.find((migration) => migration.version === 10)?.name, 'human-ai-change-tracking');
 
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build22-test', now });
   const observed: unknown[] = [];
@@ -258,7 +260,9 @@ try {
   console.log(JSON.stringify({
     ok: true,
     schema: 'gd-build22-human-ai-change-tracking-runtime/1',
-    databaseSchema: 10,
+    minimumDatabaseSchema: 10,
+    currentDatabaseSchema: LOCAL_DATABASE_SCHEMA_VERSION,
+    allowsLaterSchemaMigrations: true,
     explicitHumanObservation: true,
     explicitAiSession: true,
     aiWriteCapability: true,

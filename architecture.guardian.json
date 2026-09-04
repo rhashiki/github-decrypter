@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 22,
+  "currentBuild": 23,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -21,17 +21,18 @@
   },
   "workspace": {
     "apps": ["studio", "extension", "local"],
-    "packages": ["ui", "protocol", "shared", "git", "workspace", "chat", "plan", "build", "preview", "context", "tools", "scope", "ai"]
+    "packages": ["ui", "protocol", "shared", "git", "github-app", "workspace", "chat", "plan", "build", "preview", "context", "tools", "scope", "ai"]
   },
   "packageRules": {
     "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true },
     "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
-    "@github-decrypter/git": { "allowedWorkspaceDependencies": ["@github-decrypter/workspace"], "environmentNeutral": true }
+    "@github-decrypter/git": { "allowedWorkspaceDependencies": ["@github-decrypter/workspace"], "environmentNeutral": true },
+    "@github-decrypter/github-app": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/git","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
       "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
@@ -39,7 +40,7 @@
   "databaseAuthority": { "ownerRoot": "apps/local", "engineImport": "node:sqlite", "minimumBuild": 11, "durableJobSchemaBuild": 12 },
   "jobAuthority": { "ownerRoot": "apps/local", "minimumBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "jobControlTransportBuild": 47 },
   "recoveryAuthority": { "ownerRoot": "apps/local", "minimumBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15 },
-  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
+  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "githubAppNetworkBuild": 23, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
   "capabilityAuthority": {
     "ownerRoot": "apps/local", "minimumBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18,
     "jobControlTransportBuild": 47, "plaintextTokenPersistence": false, "externalGrantTransport": false, "denyByDefault": true,
@@ -135,6 +136,28 @@
     "filesystemMutation": false,
     "externalTransport": false
   },
+  "githubAppAuthority": {
+    "ownerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/github-app",
+    "minimumBuild": 23,
+    "gitRuntimeBuild": 21,
+    "changeTrackingBuild": 22,
+    "githubProviderBuild": 24,
+    "extensionBuild": 25,
+    "commitWorkflowBuild": 109,
+    "jwtAlgorithm": "RS256",
+    "jwtMaxTtlSeconds": 600,
+    "webhookSignatureAlgorithm": "sha256",
+    "webhookRawBodyVerification": true,
+    "privateKeyStorage": "secrets-vault",
+    "webhookSecretStorage": "secrets-vault",
+    "installationTokenPersistence": false,
+    "webhookPayloadPersistence": false,
+    "deliveryReplayMetadataOnly": true,
+    "installationTokenExchange": true,
+    "providerOperations": false,
+    "genericHttpTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -151,7 +174,7 @@
     "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
     "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
     "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
-    "changeTrackingBuild": 22, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
+    "changeTrackingBuild": 22, "githubAppBuild": 23, "extensionActivationBuild": 25, "studioReactBuild": 27, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
