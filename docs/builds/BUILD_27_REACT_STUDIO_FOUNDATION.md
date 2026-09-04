@@ -1,6 +1,6 @@
 # Build 27 — React Studio Foundation
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated Build 27 validation green; PR matrix pending**
 
 ## Objective
 
@@ -65,5 +65,7 @@ Before merge, the Build 27 branch must pass:
 7. Build 27 negative Guardian probes;
 8. modern-engine preservation regression;
 9. all historical PR workflows.
+
+The isolated branch workflow has already passed items 1–8 at head `48e976148f1ceed5c78df96acefbe715bf011325`. The PR matrix remains the final merge gate because documentation synchronization commits follow that validated head.
 
 No release, tag, production deploy, Chrome Web Store publication, Supabase production mutation or DNS mutation is authorized by this Build.
