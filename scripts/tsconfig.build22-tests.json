@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../apps/local/src/**/*.ts",
+    "../packages/git/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts",
+    "./test-build22-human-ai-change-tracking-runtime.ts"
+  ]
+}

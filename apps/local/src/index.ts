@@ -3,6 +3,7 @@ export { PROTOCOL_SCHEMA as localRuntimeProtocolSchema } from '@github-decrypter
 export * from './approval-transactions.js';
 export * from './audit-ledger.js';
 export * from './capability-security.js';
+export * from './change-tracker.js';
 export * from './config.js';
 export * from './database-path.js';
 export * from './database-migrations.js';

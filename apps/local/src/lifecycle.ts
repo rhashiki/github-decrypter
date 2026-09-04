@@ -1,4 +1,4 @@
-import type { GitOperation } from '@github-decrypter/git';
+import type { AiChangeSessionId, GitOperation } from '@github-decrypter/git';
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
@@ -42,6 +42,11 @@ export type LocalRuntimeProjectDetectionReadyPayload = { readonly detections: nu
 export type LocalRuntimeProjectDetectedPayload = { readonly workspaceId: WorkspaceId; readonly packageJsonPresent: boolean; readonly packageManager: ProjectPackageManager; readonly framework: ProjectFramework; readonly confidence: ProjectDetectionConfidence; readonly detectedAt: string; };
 export type LocalRuntimeGitReadyPayload = { readonly available: boolean; readonly version: string | null; readonly shellExecution: false; readonly forcePush: false; readonly hardReset: false; readonly externalTransport: false; };
 export type LocalRuntimeGitOperationPayload = { readonly workspaceId: WorkspaceId; readonly operation: GitOperation; readonly mutating: boolean; readonly network: boolean; readonly outcome: 'success' | 'failure'; readonly exitCode: number | null; readonly occurredAt: string; };
+export type LocalRuntimeChangeTrackingReadyPayload = { readonly activeSessions: number; readonly trackedPaths: number; readonly explicitBoundaries: true; readonly contentPersistence: false; readonly filesystemMutation: false; readonly externalTransport: false; };
+export type LocalRuntimeHumanChangesObservedPayload = { readonly workspaceId: WorkspaceId; readonly changedPaths: number; readonly human: number; readonly mixed: number; readonly unknown: number; readonly observedAt: string; };
+export type LocalRuntimeAiChangeStartedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly baselinePaths: number; readonly startedAt: string; };
+export type LocalRuntimeAiChangeCompletedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly changedPaths: number; readonly ai: number; readonly mixed: number; readonly unknown: number; readonly completedAt: string; };
+export type LocalRuntimeChangeTrackingInvalidatedPayload = { readonly sessionId: AiChangeSessionId; readonly workspaceId: WorkspaceId; readonly jobId: DurableJobId; readonly reason: string; readonly occurredAt: string; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -77,6 +82,11 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.project.detected': LocalRuntimeProjectDetectedPayload;
   readonly 'gd.local.git.ready': LocalRuntimeGitReadyPayload;
   readonly 'gd.local.git.operation': LocalRuntimeGitOperationPayload;
+  readonly 'gd.local.change-tracking.ready': LocalRuntimeChangeTrackingReadyPayload;
+  readonly 'gd.local.change-tracking.human-observed': LocalRuntimeHumanChangesObservedPayload;
+  readonly 'gd.local.change-tracking.ai-started': LocalRuntimeAiChangeStartedPayload;
+  readonly 'gd.local.change-tracking.ai-completed': LocalRuntimeAiChangeCompletedPayload;
+  readonly 'gd.local.change-tracking.invalidated': LocalRuntimeChangeTrackingInvalidatedPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {

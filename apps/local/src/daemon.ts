@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { createApprovalTransactions, type ApprovalTransactions } from './approval-transactions.js';
 import { createAuditLedger, type AuditLedger } from './audit-ledger.js';
 import { createCapabilitySecurityAuthority, type CapabilitySecurityAuthority } from './capability-security.js';
+import { createChangeTracker, type ChangeTracker } from './change-tracker.js';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { createGitRuntime, type GitRuntime } from './git-runtime.js';
@@ -31,6 +32,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly workspaces?: WorkspaceManager;
   readonly projectDetection?: ProjectDetector;
   readonly git?: GitRuntime;
+  readonly changeTracking?: ChangeTracker;
   readonly now?: () => string;
 }
 
@@ -52,6 +54,7 @@ export class LocalRuntimeDaemon {
   readonly #workspaces: WorkspaceManager;
   readonly #projectDetection: ProjectDetector;
   readonly #git: GitRuntime;
+  readonly #changeTracking: ChangeTracker;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -79,6 +82,15 @@ export class LocalRuntimeDaemon {
       eventBus: this.#eventBus,
       now: this.#now,
     });
+    this.#changeTracking = options.changeTracking ?? createChangeTracker({
+      database: this.#database,
+      git: this.#git,
+      workspaces: this.#workspaces,
+      capabilities: this.#capabilities,
+      eventBus: this.#eventBus,
+      processInstanceId: this.#capabilities.processInstanceId,
+      now: this.#now,
+    });
   }
 
   get state(): LocalRuntimeState { return this.#state; }
@@ -95,6 +107,7 @@ export class LocalRuntimeDaemon {
   get workspaces(): WorkspaceManager { return this.#workspaces; }
   get projectDetection(): ProjectDetector { return this.#projectDetection; }
   get git(): GitRuntime { return this.#git; }
+  get changeTracking(): ChangeTracker { return this.#changeTracking; }
 
   get address(): LocalRuntimeBoundAddress | null {
     const address = this.#addressInfo();
@@ -133,6 +146,8 @@ export class LocalRuntimeDaemon {
       if (!capabilityStatus.ready) throw new Error('Capability Security is not ready after offline execution startup.');
       const gitStatus = await this.#git.initialize();
       if (!gitStatus.ready || !gitStatus.available) throw new Error('Git Runtime requires an available Git executable.');
+      const changeTrackingStatus = await this.#changeTracking.initialize();
+      if (!changeTrackingStatus.ready) throw new Error('Human vs AI Change Tracking is not ready after Git Runtime startup.');
       const vaultStatus = await this.#vault.initialize();
       if (!vaultStatus.ready) throw new Error('Secrets Vault is not ready after capability security startup.');
       const approvalStatus = await this.#approvals.initialize();
@@ -156,6 +171,7 @@ export class LocalRuntimeDaemon {
         getWorkspaceManagerStatus: () => this.#workspaces.status(),
         getProjectDetectionStatus: () => this.#projectDetection.status(),
         getGitRuntimeStatus: () => this.#git.status(),
+        getChangeTrackerStatus: () => this.#changeTracking.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -166,7 +182,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -174,6 +190,7 @@ export class LocalRuntimeDaemon {
       await this.#closeServerBestEffort();
       this.#closeApprovalsBestEffort();
       this.#closeVaultBestEffort();
+      await this.#closeChangeTrackingBestEffort('startup failed');
       this.#closeGitBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
@@ -194,6 +211,8 @@ export class LocalRuntimeDaemon {
     this.#approvals.shutdown();
     let vaultError: unknown = null;
     try { this.#vault.shutdown(); } catch (error) { vaultError = error; }
+    let changeTrackingError: unknown = null;
+    try { await this.#changeTracking.shutdown(`runtime stopped: ${reason}`); } catch (error) { changeTrackingError = error; }
     this.#git.shutdown();
     let capabilityError: unknown = null;
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
@@ -204,7 +223,7 @@ export class LocalRuntimeDaemon {
     this.#audit.shutdown();
     await this.#closeDatabaseBestEffort(reason);
     this.#instanceLock?.release(); this.#instanceLock = null; this.#startedAt = null;
-    const shutdownError = vaultError ?? capabilityError ?? recoveryError;
+    const shutdownError = vaultError ?? changeTrackingError ?? capabilityError ?? recoveryError;
     if (shutdownError) {
       const message = shutdownError instanceof Error ? shutdownError.message : 'runtime shutdown failed';
       await this.#transition('failed', message); throw shutdownError;
@@ -223,6 +242,10 @@ export class LocalRuntimeDaemon {
   }
   #closeApprovalsBestEffort(): void { try { this.#approvals.shutdown(); } catch {} }
   #closeVaultBestEffort(): void { try { this.#vault.shutdown(); } catch {} }
+  async #closeChangeTrackingBestEffort(reason: string): Promise<void> {
+    if (!this.#database.isOpen || !this.#changeTracking.status().ready) return;
+    try { await this.#changeTracking.shutdown(reason); } catch {}
+  }
   #closeGitBestEffort(): void { try { this.#git.shutdown(); } catch {} }
   #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }
   #closeWorkspacesBestEffort(): void { try { this.#workspaces.shutdown(); } catch {} }

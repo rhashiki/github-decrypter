@@ -20,9 +20,9 @@ const now = () => new Date(nowMs).toISOString();
 try {
   const database = new LocalDatabase({ path: join(tempRoot, 'workspace.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 9);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 9);
-  assert.equal(database.listMigrations().length, 9);
+  assert.ok(opened.schemaVersion >= 9);
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 9);
+  assert.ok(database.listMigrations().length >= 9);
 
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build19-test', now });
   const observed: Array<{ name: string; payload: unknown }> = [];
@@ -109,14 +109,16 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build19-workspace-manager-runtime/1',
-    databaseSchema: 9,
+    schema: 'gd-build19-workspace-manager-runtime/2',
+    minimumSchemaVersion: 9,
+    currentSchemaVersion: opened.schemaVersion,
     registrationIdempotent: true,
     traversalRejected: true,
     symlinkEscapeChecked: symlinkChecked,
     unregisterPreservesFilesystem: true,
     eventMetadataOnly: true,
     daemonReadinessIntegrated: true,
+    allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
