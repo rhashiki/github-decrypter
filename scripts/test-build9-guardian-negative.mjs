@@ -36,14 +36,17 @@ try {
   fs.writeFileSync(workflow, workflowOriginal);
 }
 
-// 3. Studio React entry point is phase-gated until Build 27.
-const prematureStudio = path.join(root, 'apps/studio/src/main.tsx');
-assert.ok(!fs.existsSync(prematureStudio), 'negative fixture requires main.tsx to be absent before Build 27');
+// 3. Historical Studio gate must still prove React/Vite would have been rejected before Build 27.
+// Build 27 legitimately owns main.tsx now, so replay the policy at Build 26 instead of deleting real Studio files.
+const policyPath = path.join(root, 'architecture.guardian.json');
+const policyOriginal = fs.readFileSync(policyPath, 'utf8');
 try {
-  fs.writeFileSync(prematureStudio, 'export {};\n');
+  const policy = JSON.parse(policyOriginal);
+  policy.currentBuild = 26;
+  fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
   runGuardianExpecting('AG061');
 } finally {
-  fs.rmSync(prematureStudio, { force: true });
+  fs.writeFileSync(policyPath, policyOriginal);
 }
 
 // The real tree must still pass after all probes are restored.
