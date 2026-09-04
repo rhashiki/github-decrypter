@@ -10,6 +10,7 @@ import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
 import { createOfflineExecutionCoordinator, type OfflineExecutionCoordinator } from './offline-execution.js';
+import { createProjectDetector, type ProjectDetector } from './project-detector.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -27,6 +28,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly approvals?: ApprovalTransactions;
   readonly audit?: AuditLedger;
   readonly workspaces?: WorkspaceManager;
+  readonly projectDetection?: ProjectDetector;
   readonly now?: () => string;
 }
 
@@ -46,6 +48,7 @@ export class LocalRuntimeDaemon {
   readonly #approvals: ApprovalTransactions;
   readonly #audit: AuditLedger;
   readonly #workspaces: WorkspaceManager;
+  readonly #projectDetection: ProjectDetector;
   #state: LocalRuntimeState = 'idle';
   #startedAt: string | null = null;
   #server: ReturnType<typeof createLocalRuntimeHttpServer> | null = null;
@@ -65,6 +68,7 @@ export class LocalRuntimeDaemon {
     this.#approvals = options.approvals ?? createApprovalTransactions({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#audit = options.audit ?? createAuditLedger({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#workspaces = options.workspaces ?? createWorkspaceManager({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
+    this.#projectDetection = options.projectDetection ?? createProjectDetector({ workspaces: this.#workspaces, eventBus: this.#eventBus, now: this.#now });
   }
 
   get state(): LocalRuntimeState { return this.#state; }
@@ -79,6 +83,7 @@ export class LocalRuntimeDaemon {
   get approvals(): ApprovalTransactions { return this.#approvals; }
   get audit(): AuditLedger { return this.#audit; }
   get workspaces(): WorkspaceManager { return this.#workspaces; }
+  get projectDetection(): ProjectDetector { return this.#projectDetection; }
 
   get address(): LocalRuntimeBoundAddress | null {
     const address = this.#addressInfo();
@@ -105,6 +110,8 @@ export class LocalRuntimeDaemon {
       if (!auditStatus.ready || auditStatus.integrity !== 'ok') throw new Error('Audit Ledger is not ready after database startup.');
       const workspaceStatus = await this.#workspaces.initialize();
       if (!workspaceStatus.ready) throw new Error('Workspace Manager is not ready after database startup.');
+      const projectDetectionStatus = await this.#projectDetection.initialize();
+      if (!projectDetectionStatus.ready) throw new Error('Project Detection is not ready after Workspace Manager startup.');
       if (!this.#jobs.status().ready) throw new Error('Durable Job Engine is not ready after database startup.');
       const recoveryStatus = await this.#recovery.startSession();
       if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
@@ -134,6 +141,7 @@ export class LocalRuntimeDaemon {
         getSecretsVaultStatus: () => this.#vault.status(),
         getAuditLedgerStatus: () => this.#audit.status(),
         getWorkspaceManagerStatus: () => this.#workspaces.status(),
+        getProjectDetectionStatus: () => this.#projectDetection.status(),
         now: this.#now,
       });
       this.#server = server;
@@ -144,7 +152,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -154,6 +162,7 @@ export class LocalRuntimeDaemon {
       this.#closeVaultBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
+      this.#closeProjectDetectionBestEffort();
       this.#closeWorkspacesBestEffort();
       this.#closeAuditBestEffort();
       await this.#closeDatabaseBestEffort('startup failed');
@@ -174,6 +183,7 @@ export class LocalRuntimeDaemon {
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
     try { await this.#recovery.stopSession(reason); } catch (error) { recoveryError = error; }
+    this.#projectDetection.shutdown();
     this.#workspaces.shutdown();
     this.#audit.shutdown();
     await this.#closeDatabaseBestEffort(reason);
@@ -197,6 +207,7 @@ export class LocalRuntimeDaemon {
   }
   #closeApprovalsBestEffort(): void { try { this.#approvals.shutdown(); } catch {} }
   #closeVaultBestEffort(): void { try { this.#vault.shutdown(); } catch {} }
+  #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }
   #closeWorkspacesBestEffort(): void { try { this.#workspaces.shutdown(); } catch {} }
   #closeAuditBestEffort(): void { try { this.#audit.shutdown(); } catch {} }
   async #closeCapabilitiesBestEffort(reason: string): Promise<void> {
