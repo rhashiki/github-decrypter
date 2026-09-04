@@ -21,7 +21,7 @@ export interface GitHubRepositorySummary extends GitHubRepositoryIdentity {
   readonly fork: boolean;
   readonly archived: boolean;
   readonly disabled: boolean;
-  readonly defaultBranch: string;
+  readonly defaultBranch: string | null;
   readonly htmlUrl: string;
   readonly cloneUrl: string;
   readonly updatedAt: string | null;
@@ -93,7 +93,20 @@ export function normalizeGitHubRepositoryName(value: string): string {
 
 export function normalizeGitHubBranchName(value: string): string {
   const name = value.trim();
-  if (!name || name.length > 255 || /[\u0000-\u001f\u007f~^:?*[\\]/.test(name) || name.includes('..') || name.includes('@{')) {
+  if (
+    !name
+    || name.length > 255
+    || /[\u0000-\u001f\u007f~^:?*[\\]/.test(name)
+    || name.startsWith('/')
+    || name.endsWith('/')
+    || name.startsWith('.')
+    || name.endsWith('.')
+    || name.includes('//')
+    || name.includes('..')
+    || name.includes('/.')
+    || name.includes('@{')
+    || name.endsWith('.lock')
+  ) {
     throw new TypeError('GitHub branch name is invalid.');
   }
   return name;
