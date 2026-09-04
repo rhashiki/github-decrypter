@@ -11,6 +11,12 @@ function read(relative) {
   return fs.existsSync(absolute) ? fs.readFileSync(absolute, 'utf8') : '';
 }
 function exists(relative) { return fs.existsSync(path.join(root, relative)); }
+function functionSlice(source, name) {
+  const start = source.indexOf(`function ${name}(`);
+  if (start < 0) return '';
+  const next = source.indexOf('\nfunction ', start + 1);
+  return source.slice(start, next < 0 ? source.length : next);
+}
 
 if (!rule || rule.ownerRoot !== 'apps/extension' || rule.minimumBuild !== 25) {
   violations.push({ code: 'AG230', message: 'GitHub Chrome Extension authority policy is missing or invalid.' });
@@ -81,10 +87,25 @@ if (!rule || rule.ownerRoot !== 'apps/extension' || rule.minimumBuild !== 25) {
     }
   }
 
-  for (const marker of [
-    'sender.id !== chrome.runtime.id', "url.protocol !== 'https:'", "url.hostname !== 'github.com'",
-    'senderUrl.origin !== message.origin', 'senderUrl.pathname !== message.pathname',
-  ]) if (!serviceWorker.includes(marker)) violations.push({ code: 'AG235', message: 'Extension sender/context trust invariant missing.', detail: marker });
+  const githubSenderTrust = functionSlice(serviceWorker, 'trustedGitHubSender');
+  for (const marker of ['sender.id !== chrome.runtime.id', "url.protocol !== 'https:'", "url.hostname !== 'github.com'"]) {
+    if (!githubSenderTrust.includes(marker)) {
+      violations.push({ code: 'AG235', message: 'GitHub sender trust invariant missing.', detail: marker });
+    }
+  }
+  for (const marker of ['senderUrl.origin !== message.origin', 'senderUrl.pathname !== message.pathname']) {
+    if (!serviceWorker.includes(marker)) {
+      violations.push({ code: 'AG235', message: 'Extension sender/context binding invariant missing.', detail: marker });
+    }
+  }
+  if (policy.currentBuild >= rule.repositoryLauncherBuild) {
+    const launcherSenderTrust = functionSlice(serviceWorker, 'trustedLauncherSender');
+    for (const marker of ['sender.id !== chrome.runtime.id', 'chrome.runtime.getURL(LAUNCHER_PAGE)', 'actual.origin === expected.origin', 'actual.pathname === expected.pathname']) {
+      if (!launcherSenderTrust.includes(marker)) {
+        violations.push({ code: 'AG235', message: 'Launcher sender trust invariant missing.', detail: marker });
+      }
+    }
+  }
 
   if (!contentScript.includes("location.origin !== ALLOWED_ORIGIN")
     || !contentScript.includes("document.addEventListener('turbo:load'")
