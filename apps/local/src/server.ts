@@ -16,6 +16,7 @@ import type { AuditLedgerStatus } from './audit-ledger.js';
 import type { CapabilitySecurityStatus } from './capability-security.js';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
+import type { GitRuntimeStatus } from './git-runtime.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
 import type { DurableJobEngineStatus } from './job-types.js';
 import type { LocalRuntimeState } from './lifecycle.js';
@@ -114,6 +115,16 @@ export interface LocalRuntimeHealth {
     readonly gitAuthority: false;
     readonly externalTransport: false;
   };
+  readonly git: {
+    readonly ready: boolean;
+    readonly available: boolean;
+    readonly version: string | null;
+    readonly operations: number;
+    readonly shellExecution: false;
+    readonly forcePush: false;
+    readonly hardReset: false;
+    readonly externalTransport: false;
+  };
 }
 
 export interface LocalRuntimeServerContext {
@@ -130,6 +141,7 @@ export interface LocalRuntimeServerContext {
   getAuditLedgerStatus(): AuditLedgerStatus;
   getWorkspaceManagerStatus(): WorkspaceManagerStatus;
   getProjectDetectionStatus(): ProjectDetectionStatus;
+  getGitRuntimeStatus(): GitRuntimeStatus;
   now(): string;
 }
 
@@ -188,6 +200,7 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   const audit = context.getAuditLedgerStatus();
   const workspaces = context.getWorkspaceManagerStatus();
   const projectDetection = context.getProjectDetectionStatus();
+  const git = context.getGitRuntimeStatus();
   return {
     schema: 'gd-local-health/1',
     product: 'github-decrypter',
@@ -277,6 +290,16 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
       gitAuthority: false,
       externalTransport: false,
     },
+    git: {
+      ready: git.ready,
+      available: git.available,
+      version: git.version,
+      operations: git.operations,
+      shellExecution: false,
+      forcePush: false,
+      hardReset: false,
+      externalTransport: false,
+    },
   };
 }
 
@@ -345,7 +368,9 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         && health.audit.ready
         && health.audit.integrity === 'ok'
         && health.workspaces.ready
-        && health.projectDetection.ready;
+        && health.projectDetection.ready
+        && health.git.ready
+        && health.git.available;
       writeJson(response, ready ? 200 : 503, {
         schema: 'gd-local-readiness/1',
         ready,
@@ -363,6 +388,9 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
         availableWorkspaces: health.workspaces.available,
         projectDetectionReady: health.projectDetection.ready,
         projectDetections: health.projectDetection.detections,
+        gitRuntimeReady: health.git.ready,
+        gitAvailable: health.git.available,
+        gitVersion: health.git.version,
         connectivity: health.offline.connectivity,
         localExecutionAvailable: health.offline.localExecutionAvailable,
         denyByDefault: health.capabilities.denyByDefault,
