@@ -30,7 +30,9 @@ const localPackage = json('apps/local/package.json');
 assert.ok(patchVersion(localPackage.version) >= 11, 'Local Runtime version must not regress below Build 11');
 assert.equal(localPackage.dependencies?.['@github-decrypter/protocol'], 'workspace:*');
 assert.equal(localPackage.dependencies?.['@github-decrypter/shared'], 'workspace:*');
-assert.equal(Object.keys(localPackage.dependencies ?? {}).length, 2, 'Build 11 must not add external DB dependencies');
+for (const [name, version] of Object.entries(localPackage.dependencies ?? {})) {
+  assert.equal(version, 'workspace:*', `Build 11 Local Runtime dependency ${name} must remain an internal workspace dependency`);
+}
 
 const policy = json('architecture.guardian.json');
 assert.ok(policy.currentBuild >= 11, 'Architecture Guardian must not regress below Build 11');
