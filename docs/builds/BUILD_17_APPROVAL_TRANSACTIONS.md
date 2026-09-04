@@ -1,6 +1,6 @@
 # Build 17 — Approval Transactions
 
-Status: **IMPLEMENTED ON BUILD BRANCH**
+Status: **COMPLETE — VALIDATED FOR MERGE**
 
 ## Purpose
 
@@ -42,6 +42,16 @@ Create a durable, explicit and one-shot approval primitive for privileged action
 ## Architecture Guardian
 
 Build 17 adds AG150–AG158 for approval ownership, schema, receipt-hash-only persistence, one-shot consumption, absence of external decision transport, Audit Ledger phase gate and required artifacts.
+
+## Validation completed
+
+The Build 17 workflow passed the complete Build 4–17 regression chain, full workspace TypeScript checking and modern-engine preservation.
+
+Runtime tests proved job binding, exact SHA-256 payload binding, hash-only receipt persistence, atomic one-shot consumption, replay rejection, fail-closed denial/cancellation/expiry semantics, terminal-job rejection and daemon lifecycle integration without any external approval decision transport.
+
+Failure injection proved the Approval Guardian rejects authority escape, persistence invariant weakening, one-shot invariant removal, premature external decision transport and machine-readable policy weakening, and that the tree returns to a passing state afterward.
+
+Historical SQLite migrations 1–6 remain unchanged so their checksummed provenance stays compatible with existing databases; Build 17 appends migration 7 only.
 
 ## Explicit exclusions
 
