@@ -1,5 +1,5 @@
-export const STUDIO_BUILD = 30 as const;
-export const STUDIO_VERSION = '0.0.30' as const;
+export const STUDIO_BUILD = 31 as const;
+export const STUDIO_VERSION = '0.0.31' as const;
 export const STUDIO_LAUNCH_SCHEMA = 'gd-studio-launch/1' as const;
 
 const REPOSITORY_PART = /^[A-Za-z0-9_.-]{1,100}$/;
