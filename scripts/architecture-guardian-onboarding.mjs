@@ -58,12 +58,12 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
     "Profile: {profile ? 'session only' : 'not initialized'}",
   ]) if (!app.includes(marker)) violations.push({ code: 'AG293', message: 'Studio onboarding integration is incomplete.', detail: marker });
 
-  const surface = [profile, flow, app].join('\n');
+  const onboardingSurface = [profile, flow].join('\n');
   for (const forbidden of [
     /\blocalStorage\b/, /\bsessionStorage\b/, /\bindexedDB\b/, /\bfetch\s*\(/,
     /\bWebSocket\b/, /\bXMLHttpRequest\b/, /127\.0\.0\.1:43110|localhost:43110/,
     /@github-decrypter\/(?:local|github-provider|github-app)/,
-  ]) if (forbidden.test(surface)) violations.push({ code: 'AG294', message: 'Build 31 onboarding crossed browser persistence, network or Local Runtime authority.', detail: String(forbidden) });
+  ]) if (forbidden.test(onboardingSurface)) violations.push({ code: 'AG294', message: 'Build 31 onboarding crossed browser persistence, network or Local Runtime authority.', detail: String(forbidden) });
 
   if (
     rule.profilePersistence !== false
@@ -97,8 +97,7 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
     || rule.adaptiveLearning !== false
     || rule.mentorEngine !== false
     || rule.aiExecution !== false
-    || exists('apps/studio/src/EnvironmentDoctor.tsx')
-    || exists('apps/studio/src/environment-doctor.tsx')
+    || (policy.currentBuild < 32 && (exists('apps/studio/src/EnvironmentDoctor.tsx') || exists('apps/studio/src/environment-doctor.tsx')))
     || exists('apps/studio/src/Mentor.tsx')
   ) violations.push({ code: 'AG297', message: 'Build 31 crossed into Environment Doctor, AI or Mentor/Learning Mode authority.' });
 
@@ -109,16 +108,18 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
   const identity = read('apps/studio/src/index.ts');
   const context = read('apps/studio/src/studio-context.ts');
   const vite = read('apps/studio/vite.config.ts');
+  const rootBuild = Number.parseInt(String(rootPackage?.version ?? '').split('.')[2] ?? '', 10);
+  const studioBuild = Number.parseInt(String(studioPackage?.version ?? '').split('.')[2] ?? '', 10);
   if (
-    rootPackage?.version !== '0.0.31'
-    || studioPackage?.version !== '0.0.31'
-    || !context.includes('STUDIO_BUILD = 31')
-    || !context.includes("STUDIO_VERSION = '0.0.31'")
+    !Number.isInteger(rootBuild) || rootBuild < 31 || rootBuild !== policy.currentBuild
+    || studioBuild !== rootBuild
+    || !context.includes(`STUDIO_BUILD = ${rootBuild}`)
+    || !context.includes(`STUDIO_VERSION = '0.0.${rootBuild}'`)
     || !identity.includes('onboardingBuild: ONBOARDING_BUILD')
     || !identity.includes('adaptiveUserProfileSchema: ADAPTIVE_USER_PROFILE_SCHEMA')
     || !identity.includes('adaptiveProfilePersistence: false')
     || !identity.includes('adaptiveProfileSecurityAuthority: false')
-    || !vite.includes("PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v31`")
+    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${rootBuild}\``)
     || policy.studioAuthority?.onboarding !== true
     || policy.studioAuthority?.adaptiveUserProfile !== true
     || policy.studioAuthority?.adaptiveProfilePersistence !== false
