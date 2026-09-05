@@ -15,6 +15,11 @@ import {
   WorkbenchTopBar,
 } from '@github-decrypter/ui';
 import { useMemo, useState } from 'react';
+import { OnboardingFlow } from './OnboardingFlow.js';
+import {
+  describeAdaptiveExperience,
+  type AdaptiveUserProfile,
+} from './onboarding-profile.js';
 import { parseStudioLaunchContext, STUDIO_BUILD, STUDIO_VERSION } from './studio-context.js';
 
 const RESERVED_SURFACES = Object.freeze([
@@ -27,6 +32,7 @@ const RESERVED_SURFACES = Object.freeze([
 
 export function StudioApp() {
   const launch = useMemo(() => parseStudioLaunchContext(window.location.search), []);
+  const [profile, setProfile] = useState<AdaptiveUserProfile | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
   );
@@ -37,6 +43,8 @@ export function StudioApp() {
     : launch.kind === 'invalid'
       ? 'Launch rejected'
       : 'No repository selected';
+  const experience = profile ? describeAdaptiveExperience(profile) : null;
+  const activeSurface = profile ? 'Overview' : 'Onboarding';
 
   return (
     <Workbench
@@ -101,8 +109,16 @@ export function StudioApp() {
         <div className="studio-sidebar-section">
           <span className="studio-section-label">Current surface</span>
           <div className="studio-sidebar-row is-selected">
-            <span>Overview</span>
-            <span>30</span>
+            <span>{activeSurface}</span>
+            <span>31</span>
+          </div>
+        </div>
+
+        <div className="studio-sidebar-section">
+          <span className="studio-section-label">Adaptive profile</span>
+          <div className="studio-sidebar-row">
+            <span>{profile ? 'Session profile active' : 'Not initialized'}</span>
+            <span>{profile ? '✓' : '—'}</span>
           </div>
         </div>
 
@@ -120,53 +136,65 @@ export function StudioApp() {
       <WorkbenchEditor className="studio-editor" aria-label="Editor workspace">
         <WorkbenchTabBar className="studio-tabs" label="Editor tabs">
           <button className="studio-tab is-active" type="button" role="tab" aria-selected="true">
-            Overview
+            {activeSurface}
           </button>
         </WorkbenchTabBar>
 
         <div className="studio-editor-content">
-          <section className="studio-overview" aria-labelledby="studio-overview-title">
-            <Stack gap="lg">
-              <Status tone="success" label="IDE layout active" />
-              <SectionHeading eyebrow="Build 30 · structural workbench">
-                <h1 id="studio-overview-title">Workspace shell ready</h1>
-              </SectionHeading>
-              <p>
-                The Studio now owns the IDE workbench layout while feature panels remain bounded by their roadmap Builds.
-                Layout visibility is session-only and is not persisted.
-              </p>
-            </Stack>
-          </section>
+          {!profile ? (
+            <OnboardingFlow onComplete={setProfile} />
+          ) : (
+            <>
+              <section className="studio-overview" aria-labelledby="studio-overview-title">
+                <Stack gap="lg">
+                  <Status tone="success" label="Adaptive User Profile active for this session" />
+                  <SectionHeading eyebrow="Build 31 · experience context">
+                    <h1 id="studio-overview-title">{experience?.headline}</h1>
+                  </SectionHeading>
+                  <p>
+                    Onboarding now shapes how the Studio presents information. It does not grant capabilities,
+                    permissions or execution authority, and this profile is not persisted by the browser.
+                  </p>
+                  <div className="studio-profile-summary" aria-label="Adaptive profile summary">
+                    <div><span>Explanation style</span><strong>{experience?.explanationStyle}</strong></div>
+                    <div><span>Learning preference</span><strong>{experience?.learningStyle}</strong></div>
+                    <div><span>Primary objective</span><strong>{profile.objective}</strong></div>
+                  </div>
+                  <div>
+                    <Button variant="ghost" onClick={() => setProfile(null)}>Retake onboarding</Button>
+                  </div>
+                </Stack>
+              </section>
 
-          {launch.kind === 'repository' ? (
-            <Card className="studio-context-card" role="region" aria-labelledby="repository-title">
-              <SectionHeading eyebrow="Repository handoff">
-                <h2 id="repository-title">{launch.repository.fullName}</h2>
-              </SectionHeading>
-              <p>The public repository identity was validated locally from the Studio launch parameters.</p>
-              <a href={launch.repository.githubUrl} target="_blank" rel="noreferrer">
-                View repository on GitHub
-              </a>
-            </Card>
-          ) : null}
+              {launch.kind === 'repository' ? (
+                <Card className="studio-context-card" role="region" aria-labelledby="repository-title">
+                  <SectionHeading eyebrow="Repository handoff">
+                    <h2 id="repository-title">{launch.repository.fullName}</h2>
+                  </SectionHeading>
+                  <p>The public repository identity was validated locally from the Studio launch parameters.</p>
+                  <a href={launch.repository.githubUrl} target="_blank" rel="noreferrer">View repository on GitHub</a>
+                </Card>
+              ) : null}
 
-          {launch.kind === 'invalid' ? (
-            <Card className="studio-context-card" tone="warning" role="status" aria-labelledby="launch-warning-title">
-              <SectionHeading eyebrow="Launch context rejected">
-                <h2 id="launch-warning-title">Repository handoff was not accepted</h2>
-              </SectionHeading>
-              <p>{launch.reason}</p>
-            </Card>
-          ) : null}
+              {launch.kind === 'invalid' ? (
+                <Card className="studio-context-card" tone="warning" role="status" aria-labelledby="launch-warning-title">
+                  <SectionHeading eyebrow="Launch context rejected">
+                    <h2 id="launch-warning-title">Repository handoff was not accepted</h2>
+                  </SectionHeading>
+                  <p>{launch.reason}</p>
+                </Card>
+              ) : null}
 
-          {launch.kind === 'empty' ? (
-            <Card className="studio-context-card" role="region" aria-labelledby="empty-title">
-              <SectionHeading eyebrow="Studio entry">
-                <h2 id="empty-title">No repository selected</h2>
-              </SectionHeading>
-              <p>The workbench can start independently without claiming a GitHub or Local Runtime connection.</p>
-            </Card>
-          ) : null}
+              {launch.kind === 'empty' ? (
+                <Card className="studio-context-card" role="region" aria-labelledby="empty-title">
+                  <SectionHeading eyebrow="Studio entry">
+                    <h2 id="empty-title">No repository selected</h2>
+                  </SectionHeading>
+                  <p>The workbench can start independently without claiming a GitHub or Local Runtime connection.</p>
+                </Card>
+              ) : null}
+            </>
+          )}
         </div>
       </WorkbenchEditor>
 
@@ -188,7 +216,7 @@ export function StudioApp() {
       <WorkbenchStatusBar className="studio-statusbar">
         <span>Build {STUDIO_BUILD}</span>
         <span>Offline-capable shell</span>
-        <span>Layout state: memory only</span>
+        <span>Profile: {profile ? 'session only' : 'not initialized'}</span>
         <span className="studio-statusbar-spacer" />
         <span>Local Runtime: Not connected</span>
       </WorkbenchStatusBar>

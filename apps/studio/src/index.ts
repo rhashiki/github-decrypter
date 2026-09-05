@@ -6,12 +6,15 @@ import {
   IDE_LAYOUT_BUILD,
   IDE_LAYOUT_SCHEMA,
 } from '@github-decrypter/ui';
+import { ADAPTIVE_USER_PROFILE_SCHEMA, ONBOARDING_BUILD } from './onboarding-profile.js';
 import { STUDIO_BUILD, STUDIO_LAUNCH_SCHEMA, STUDIO_VERSION } from './studio-context.js';
 
 const protocolRole: PeerRole = 'studio';
 
 export * from './studio-context.js';
 export * from './pwa.js';
+export * from './onboarding-profile.js';
+export { OnboardingFlow } from './OnboardingFlow.js';
 export { StudioApp } from './App.js';
 
 export const appIdentity = Object.freeze({
@@ -31,6 +34,10 @@ export const appIdentity = Object.freeze({
   designSystemBuild: DESIGN_SYSTEM_BUILD,
   ideLayoutSchema: IDE_LAYOUT_SCHEMA,
   ideLayoutBuild: IDE_LAYOUT_BUILD,
+  onboardingBuild: ONBOARDING_BUILD,
+  adaptiveUserProfileSchema: ADAPTIVE_USER_PROFILE_SCHEMA,
+  adaptiveProfilePersistence: false as const,
+  adaptiveProfileSecurityAuthority: false as const,
   layoutStatePersistence: false as const,
-  role: 'Client-only React Studio with installable PWA shell, unified design system and structural IDE workbench. Feature panels remain owned by later Builds.',
+  role: 'Client-only React Studio with PWA shell, design system, IDE workbench and session-only adaptive onboarding profile. Privileged execution and persistence remain outside frontend authority.',
 });

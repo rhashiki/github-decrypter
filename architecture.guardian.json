@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 30,
+  "currentBuild": 31,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -124,7 +124,7 @@
   },
   "studioAuthority": {
     "ownerRoot": "apps/studio", "minimumBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
-    "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
+    "onboardingBuild": 31, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
     "ssr": false, "reactServerComponents": false, "repositoryLaunchContext": true,
     "repositoryLaunchSchema": "gd-studio-launch/1", "repositoryIdentityPublicOnly": true,
     "networkAuthority": false, "storageAuthority": false, "serviceWorker": true, "webAppManifest": true,
@@ -134,7 +134,8 @@
     "repositoryContextPersistence": false, "localRuntimeTransport": false, "githubProviderDirectAccess": false,
     "extensionDirectAccess": false, "contextPersistence": false, "externalTransport": false,
     "ideLayout": true, "workspaceLayout": true, "layoutStatePersistence": false,
-    "productionHosting": false, "productionPackaging": false
+    "onboarding": true, "adaptiveUserProfile": true, "adaptiveProfileSchema": "gd-adaptive-user-profile/1",
+    "adaptiveProfilePersistence": false, "productionHosting": false, "productionPackaging": false
   },
   "designSystemAuthority": {
     "ownerPackage": "@github-decrypter/ui",
@@ -188,6 +189,34 @@
     "extensionAccess": false,
     "externalTransport": false
   },
+  "adaptiveProfileAuthority": {
+    "ownerRoot": "apps/studio",
+    "minimumBuild": 31,
+    "environmentDoctorBuild": 32,
+    "aiProviderBuild": 33,
+    "learningModeBuild": 108,
+    "mentorEngineBuild": 108,
+    "schema": "gd-adaptive-user-profile/1",
+    "requiredPreferences": ["technicalLevel","objective","learningIntent","explanationDepth"],
+    "conversationalOnboarding": true,
+    "beginnerSafeLanguage": true,
+    "userCanRetake": true,
+    "sessionOnly": true,
+    "profilePersistence": false,
+    "persistenceOwner": "local-runtime",
+    "securityAuthority": false,
+    "capabilitySource": false,
+    "permissionSource": false,
+    "approvalSource": false,
+    "scopeSource": false,
+    "adaptiveLearning": false,
+    "mentorEngine": false,
+    "aiExecution": false,
+    "networkAuthority": false,
+    "storageAuthority": false,
+    "localRuntimeTransport": false,
+    "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -206,7 +235,7 @@
     "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
     "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
-    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }

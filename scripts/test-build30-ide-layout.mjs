@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = process.cwd();
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 const json = (relative) => JSON.parse(read(relative));
+const buildOf = (version) => Number.parseInt(String(version).split('.')[2] ?? '', 10);
 
 const policy = json('architecture.guardian.json');
 const rootPackage = json('package.json');
@@ -18,11 +19,12 @@ const identity = read('apps/studio/src/index.ts');
 const context = read('apps/studio/src/studio-context.ts');
 const vite = read('apps/studio/vite.config.ts');
 
-assert.equal(policy.currentBuild, 30);
+assert.ok(policy.currentBuild >= 30);
 assert.equal(policy.phaseGates.ideLayoutBuild, 30);
-assert.equal(rootPackage.version, '0.0.30');
-assert.equal(studioPackage.version, '0.0.30');
-assert.equal(uiPackage.version, '0.0.30');
+const currentStudioBuild = buildOf(rootPackage.version);
+assert.ok(currentStudioBuild >= 30);
+assert.equal(buildOf(studioPackage.version), currentStudioBuild);
+assert.ok(buildOf(uiPackage.version) >= 30);
 assert.equal(policy.ideLayoutAuthority.schema, 'gd-ide-layout/1');
 assert.equal(policy.ideLayoutAuthority.structuralOnly, true);
 assert.equal(policy.ideLayoutAuthority.featurePanelsOperational, false);
@@ -84,13 +86,14 @@ assert.doesNotMatch(studioCss, /#[0-9a-fA-F]{3,8}\b/);
 assert.doesNotMatch(app, /\blocalStorage\b|\bindexedDB\b|\bsessionStorage\b|\bfetch\s*\(|\bWebSocket\b|\bXMLHttpRequest\b/);
 assert.ok(identity.includes('ideLayoutSchema: IDE_LAYOUT_SCHEMA'));
 assert.ok(identity.includes('layoutStatePersistence: false'));
-assert.ok(context.includes('STUDIO_BUILD = 30'));
-assert.ok(vite.includes("PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v30`"));
+assert.ok(context.includes(`STUDIO_BUILD = ${currentStudioBuild}`));
+assert.ok(vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${currentStudioBuild}\``));
 
 console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build30-ide-layout-static/1',
-  build: 30,
+  owningBuild: 30,
+  currentBuild: policy.currentBuild,
   layoutSchema: 'gd-ide-layout/1',
   regions: policy.ideLayoutAuthority.requiredRegions,
   structuralOnly: true,
