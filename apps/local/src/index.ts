@@ -9,6 +9,7 @@ export * from './database-path.js';
 export * from './database-migrations.js';
 export * from './database.js';
 export * from './daemon.js';
+export * from './environment-doctor.js';
 export * from './git-runtime.js';
 export * from './github-app-runtime.js';
 export * from './github-provider.js';
