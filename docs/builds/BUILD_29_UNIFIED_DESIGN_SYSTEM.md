@@ -1,6 +1,6 @@
 # Build 29 — Unified Design System
 
-Status: **IMPLEMENTED — validation pending**
+Status: **COMPLETED — validation passed**
 
 ## Objective
 
@@ -43,9 +43,9 @@ Build 29 does not authorize:
 - Build 31 — Onboarding;
 - later functional panels and tools remain owned by their numbered Builds.
 
-## Validation gate
+## Validation result
 
-Before merge, the Build 29 branch must pass:
+Validated on the Build 29 branch with:
 
 1. `pnpm run guardian` including AG270–AG279;
 2. accumulated Builds 4–29 CI;
@@ -56,7 +56,8 @@ Before merge, the Build 29 branch must pass:
 7. real Vite production build;
 8. bundled design-system CSS inspection;
 9. Build 29 negative Guardian probes;
-10. modern-engine preservation;
-11. all historical PR workflows.
+10. modern-engine preservation.
+
+The isolated Build 29 workflow passed on commit `860e324486fb22d5ba8589a41b9f888811a0c340` before final documentation/main reconciliation. The final pull-request matrix remains the merge gate.
 
 No release, tag, production deploy, Chrome Web Store publication, production Supabase mutation or DNS mutation is authorized by this Build.
