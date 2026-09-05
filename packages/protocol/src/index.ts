@@ -9,3 +9,4 @@ export * from './envelope.js';
 export * from './messages.js';
 export * from './handshake.js';
 export * from './guards.js';
+export * from './environment-doctor.js';

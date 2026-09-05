@@ -139,12 +139,14 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
 
   const designSystemPremature = policy.currentBuild < rule.designSystemBuild;
   const ideLayoutPremature = policy.currentBuild < rule.ideLayoutBuild;
+  const environmentDoctorActive = policy.currentBuild >= (policy.phaseGates?.environmentDoctorBuild ?? Number.POSITIVE_INFINITY);
   if (
     rule.designSystemBuild !== 29 || rule.ideLayoutBuild !== 30
     || policy.phaseGates?.designSystemBuild !== 29 || policy.phaseGates?.ideLayoutBuild !== 30
     || (designSystemPremature && (!app.includes('Design System') || !app.includes('Build 29')))
     || (ideLayoutPremature && (!app.includes('IDE Layout') || !app.includes('Build 30')))
-    || !app.includes('Not connected')
+    || (!environmentDoctorActive && !app.includes('Not connected'))
+    || (environmentDoctorActive && (!app.includes('Environment Doctor') || !app.includes('runtimeStatusLabel(environmentDoctorOutcome)')))
   ) violations.push({ code: 'AG268', message: 'Later Studio authority arrived before its phase gate or deferral markers disappeared.' });
 
   for (const required of [

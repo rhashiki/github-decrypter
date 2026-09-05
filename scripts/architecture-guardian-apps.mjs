@@ -63,17 +63,20 @@ for (const [packageName, rule] of Object.entries(policy.appRules ?? {})) {
     }
   }
 
-  const forbidden = (rule.forbiddenSourcePatterns ?? []).map((source) => new RegExp(source));
+  const exceptions = rule.sourcePatternExceptions ?? {};
   for (const absolute of walk(`apps/${appName}/src`)) {
     const source = fs.readFileSync(absolute, 'utf8');
-    for (const pattern of forbidden) {
-      if (pattern.test(source)) {
-        violations.push({
-          code: 'AG035',
-          message: `${packageName} crossed into a forbidden platform authority.`,
-          detail: `${path.relative(root, absolute)} :: ${pattern}`,
-        });
-      }
+    const relative = path.relative(root, absolute).split(path.sep).join('/');
+    for (const patternSource of rule.forbiddenSourcePatterns ?? []) {
+      const pattern = new RegExp(patternSource);
+      if (!pattern.test(source)) continue;
+      const allowedPaths = new Set(exceptions[patternSource] ?? []);
+      if (allowedPaths.has(relative)) continue;
+      violations.push({
+        code: 'AG035',
+        message: `${packageName} crossed into a forbidden platform authority.`,
+        detail: `${relative} :: ${pattern}`,
+      });
     }
   }
 }

@@ -17,6 +17,7 @@ import type { CapabilitySecurityStatus } from './capability-security.js';
 import type { ChangeTrackerStatus } from './change-tracker.js';
 import { MAX_REQUEST_BODY_BYTES } from './config.js';
 import type { LocalDatabaseStatus } from './database.js';
+import { buildEnvironmentDoctorReport } from './environment-doctor.js';
 import type { GitRuntimeStatus } from './git-runtime.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
 import type { DurableJobEngineStatus } from './job-types.js';
@@ -334,6 +335,28 @@ function buildHealth(context: LocalRuntimeServerContext): LocalRuntimeHealth {
   };
 }
 
+function isAllowedEnvironmentDoctorOrigin(origin: string): boolean {
+  try {
+    const parsed = new URL(origin);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]';
+  } catch {
+    return false;
+  }
+}
+
+function applyEnvironmentDoctorCors(request: IncomingMessage, response: ServerResponse): boolean {
+  const origin = request.headers.origin;
+  if (origin === undefined) return true;
+  if (!isAllowedEnvironmentDoctorOrigin(origin)) return false;
+  response.setHeader('access-control-allow-origin', origin);
+  response.setHeader('vary', 'Origin');
+  response.setHeader('access-control-allow-methods', 'GET, OPTIONS');
+  response.setHeader('access-control-allow-headers', 'Accept');
+  response.setHeader('access-control-max-age', '600');
+  return true;
+}
+
 async function handleHandshake(request: IncomingMessage, response: ServerResponse, context: LocalRuntimeServerContext): Promise<void> {
   let raw: unknown;
   try {
@@ -432,10 +455,25 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
       });
       return;
     }
+    if ((request.method === 'GET' || request.method === 'OPTIONS') && url.pathname === '/v1/environment-doctor') {
+      if (!applyEnvironmentDoctorCors(request, response)) {
+        writeJson(response, 403, { schema: 'gd-local-http-error/1', error: { code: 'ORIGIN_NOT_ALLOWED', message: 'Environment Doctor accepts only loopback Studio origins.' } });
+        return;
+      }
+      if (request.method === 'OPTIONS') {
+        response.statusCode = 204;
+        response.setHeader('cache-control', 'no-store');
+        response.end();
+        return;
+      }
+      const health = buildHealth(context);
+      writeJson(response, 200, buildEnvironmentDoctorReport(health, context.now()));
+      return;
+    }
     if (request.method === 'POST' && url.pathname === '/v1/handshake') {
       await handleHandshake(request, response, context);
       return;
     }
-    writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'NOT_FOUND', message: 'This Build exposes only health, readiness and protocol handshake endpoints.' } });
+    writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'NOT_FOUND', message: 'This Build exposes only health, readiness, Environment Doctor and protocol handshake endpoints.' } });
   });
 }

@@ -47,7 +47,15 @@ for (const marker of ["framework: 'React 19'", "bundler: 'Vite 8'", 'Client-only
 for (const marker of ["createRoot(root).render", '<StrictMode>', "document.getElementById('root')"]) {
   assert.ok(main.includes(marker), `Missing React bootstrap marker: ${marker}`);
 }
-assert.ok(app.includes('Not connected'));
+
+const environmentDoctorActive = policy.currentBuild >= (policy.phaseGates.environmentDoctorBuild ?? Number.POSITIVE_INFINITY);
+if (environmentDoctorActive) {
+  assert.ok(app.includes('Environment Doctor'));
+  assert.ok(app.includes('runtimeStatusLabel(environmentDoctorOutcome)'));
+} else {
+  assert.ok(app.includes('Not connected'));
+}
+
 assert.ok(html.includes('id="root"'));
 assert.ok(html.includes('/src/main.tsx'));
 assert.ok(vite.includes('react()'));
@@ -74,7 +82,7 @@ assert.equal(policy.studioAuthority.extensionDirectAccess, false);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build27-react-studio-foundation-static/2',
+  schema: 'gd-build27-react-studio-foundation-static/3',
   owningBuild: 27,
   currentBuild: policy.currentBuild,
   framework: 'React 19',
@@ -84,6 +92,7 @@ console.log(JSON.stringify({
   clientOnly: true,
   repositoryLaunchContext: true,
   pwaOwnedByBuild28: true,
-  localRuntimeTransport: false,
+  genericLocalRuntimeTransport: false,
+  environmentDoctorPhaseAware: true,
   networkAuthority: false,
 }, null, 2));

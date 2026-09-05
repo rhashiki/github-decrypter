@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 31,
+  "currentBuild": 32,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -36,7 +36,10 @@
     "@github-decrypter/studio": {
       "allowedWorkspaceDependencies": ["@github-decrypter/protocol", "@github-decrypter/ui"],
       "allowedExternalDependencies": ["react", "react-dom", "@types/react", "@types/react-dom", "@vitejs/plugin-react", "vite"],
-      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."]
+      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."],
+      "sourcePatternExceptions": {
+        "\\bfetch\\s*\\(": ["apps/studio/src/environment-doctor-client.ts"]
+      }
     },
     "@github-decrypter/extension": {
       "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
@@ -124,18 +127,19 @@
   },
   "studioAuthority": {
     "ownerRoot": "apps/studio", "minimumBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
-    "onboardingBuild": 31, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
     "ssr": false, "reactServerComponents": false, "repositoryLaunchContext": true,
     "repositoryLaunchSchema": "gd-studio-launch/1", "repositoryIdentityPublicOnly": true,
     "networkAuthority": false, "storageAuthority": false, "serviceWorker": true, "webAppManifest": true,
     "installable": true, "appShellCache": true, "offlineAppShell": true, "sameOriginShellFetch": true,
     "cacheNamePrefix": "gd-studio-shell-", "manifestPath": "apps/studio/public/manifest.webmanifest",
     "serviceWorkerOwner": "apps/studio/vite.config.ts", "iconSizes": [192,512], "projectDataPersistence": false,
-    "repositoryContextPersistence": false, "localRuntimeTransport": false, "githubProviderDirectAccess": false,
+    "repositoryContextPersistence": false, "localRuntimeTransport": false, "diagnosticLocalRuntimeTransport": true,
+    "genericLocalRuntimeTransport": false, "githubProviderDirectAccess": false,
     "extensionDirectAccess": false, "contextPersistence": false, "externalTransport": false,
     "ideLayout": true, "workspaceLayout": true, "layoutStatePersistence": false,
     "onboarding": true, "adaptiveUserProfile": true, "adaptiveProfileSchema": "gd-adaptive-user-profile/1",
-    "adaptiveProfilePersistence": false, "productionHosting": false, "productionPackaging": false
+    "adaptiveProfilePersistence": false, "environmentDoctor": true, "productionHosting": false, "productionPackaging": false
   },
   "designSystemAuthority": {
     "ownerPackage": "@github-decrypter/ui",
@@ -215,6 +219,32 @@
     "networkAuthority": false,
     "storageAuthority": false,
     "localRuntimeTransport": false,
+    "externalTransport": false
+  },
+  "environmentDoctorAuthority": {
+    "ownerRoot": "apps/studio",
+    "runtimeOwnerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/protocol",
+    "minimumBuild": 32,
+    "aiProviderBuild": 33,
+    "runtimeInstallerBuild": 119,
+    "pwaProductionPackagingBuild": 122,
+    "schema": "gd-environment-doctor/1",
+    "endpoint": "/v1/environment-doctor",
+    "loopbackHost": "127.0.0.1",
+    "defaultPort": 43110,
+    "userInitiated": true,
+    "readOnly": true,
+    "metadataOnly": true,
+    "responsePersistence": false,
+    "automaticProbe": false,
+    "autoRepair": false,
+    "shellExecution": false,
+    "filesystemMutation": false,
+    "credentials": false,
+    "externalNetworkAuthority": false,
+    "genericLocalRuntimeTransport": false,
+    "aiExecution": false,
     "externalTransport": false
   },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
