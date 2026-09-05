@@ -70,7 +70,7 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
   if (/\buseEffect\b|setInterval\s*\(|setTimeout\s*\([^,]+,\s*0\)/.test(surface)) violations.push({ code: 'AG303', message: 'Environment Doctor introduced an automatic/background diagnostic probe.' });
 
   for (const marker of [
-    '<EnvironmentDoctor',
+    '<EnvironmentDoctor\n              onOutcome={setEnvironmentDoctorOutcome}',
     'Environment Doctor',
     'environmentDoctorComplete',
     'environmentDoctorOutcome',
@@ -155,7 +155,7 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-environment-doctor-report/1',
+  schema: 'gd-architecture-guardian-environment-doctor-report/2',
   currentBuild: policy.currentBuild,
   doctorSchema: rule?.schema ?? null,
   endpoint: rule?.endpoint ?? null,
