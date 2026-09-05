@@ -47,7 +47,11 @@ try {
 const appPath = path.join(root, 'apps/studio/src/App.tsx');
 const appOriginal = fs.readFileSync(appPath, 'utf8');
 try {
-  fs.writeFileSync(appPath, appOriginal.replace('<EnvironmentDoctor', '<div'));
+  const doctorJsx = '<EnvironmentDoctor\n              onOutcome={setEnvironmentDoctorOutcome}';
+  assert.ok(appOriginal.includes(doctorJsx), 'AG304 probe precondition failed: Environment Doctor JSX marker is missing.');
+  const mutatedApp = appOriginal.replace(doctorJsx, '<div\n              onOutcome={setEnvironmentDoctorOutcome}');
+  assert.equal(mutatedApp.includes(doctorJsx), false, 'AG304 probe did not remove the Environment Doctor JSX marker.');
+  fs.writeFileSync(appPath, mutatedApp);
   expect('AG304');
 } finally { fs.writeFileSync(appPath, appOriginal); }
 
@@ -95,7 +99,8 @@ assert.equal(final.status, 0, `Environment Doctor Guardian did not recover.\n${f
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build32-environment-doctor-guardian-negative/1',
+  schema: 'gd-build32-environment-doctor-guardian-negative/2',
   rejected,
+  deterministicAg304Probe: true,
   restoredTreePasses: true,
 }, null, 2));
