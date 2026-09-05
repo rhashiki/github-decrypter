@@ -121,7 +121,7 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
     rule.designSystemBuild !== 29 || rule.onboardingBuild !== 31 || rule.environmentDoctorBuild !== 32
     || rule.developerConsoleBuild !== 71 || rule.problemsDiagnosticsBuild !== 72 || rule.codeExplorerBuild !== 73
     || rule.terminalBuild !== 75 || rule.gitPanelBuild !== 76
-    || exists('apps/studio/src/onboarding.tsx') || exists('apps/studio/src/Onboarding.tsx')
+    || (policy.currentBuild === 30 && (exists('apps/studio/src/onboarding.tsx') || exists('apps/studio/src/Onboarding.tsx')))
     || exists('apps/studio/src/environment-doctor.tsx') || exists('apps/studio/src/EnvironmentDoctor.tsx')
   ) violations.push({ code: 'AG287', message: 'Build 30 crossed into a later Studio feature authority.' });
 
@@ -134,12 +134,18 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
   const identity = read('apps/studio/src/index.ts');
   const context = read('apps/studio/src/studio-context.ts');
   const vite = read('apps/studio/vite.config.ts');
+  const rootBuild = Number.parseInt(String(rootPackage?.version ?? '').split('.')[2] ?? '', 10);
+  const studioBuild = Number.parseInt(String(studioPackage?.version ?? '').split('.')[2] ?? '', 10);
+  const uiBuild = Number.parseInt(String(uiPackage?.version ?? '').split('.')[2] ?? '', 10);
   if (
-    rootPackage?.version !== '0.0.30' || studioPackage?.version !== '0.0.30' || uiPackage?.version !== '0.0.30'
-    || !context.includes('STUDIO_BUILD = 30') || !context.includes("STUDIO_VERSION = '0.0.30'")
+    !Number.isInteger(rootBuild) || rootBuild < 30
+    || studioBuild !== rootBuild
+    || !Number.isInteger(uiBuild) || uiBuild < 30
+    || !context.includes(`STUDIO_BUILD = ${rootBuild}`)
+    || !context.includes(`STUDIO_VERSION = '0.0.${rootBuild}'`)
     || !identity.includes('ideLayoutSchema: IDE_LAYOUT_SCHEMA') || !identity.includes('ideLayoutBuild: IDE_LAYOUT_BUILD')
     || !identity.includes('layoutStatePersistence: false')
-    || !vite.includes("PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v30`")
+    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${rootBuild}\``)
     || policy.studioAuthority?.ideLayout !== true || policy.studioAuthority?.workspaceLayout !== true
     || policy.designSystemAuthority?.ideLayoutAuthority !== true || policy.designSystemAuthority?.workspaceLayoutAuthority !== true
   ) violations.push({ code: 'AG288', message: 'Build 30 identity/version/PWA/design-system integration is inconsistent.' });
