@@ -122,7 +122,7 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
     || rule.developerConsoleBuild !== 71 || rule.problemsDiagnosticsBuild !== 72 || rule.codeExplorerBuild !== 73
     || rule.terminalBuild !== 75 || rule.gitPanelBuild !== 76
     || (policy.currentBuild === 30 && (exists('apps/studio/src/onboarding.tsx') || exists('apps/studio/src/Onboarding.tsx')))
-    || exists('apps/studio/src/environment-doctor.tsx') || exists('apps/studio/src/EnvironmentDoctor.tsx')
+    || (policy.currentBuild < 32 && (exists('apps/studio/src/environment-doctor.tsx') || exists('apps/studio/src/EnvironmentDoctor.tsx')))
   ) violations.push({ code: 'AG287', message: 'Build 30 crossed into a later Studio feature authority.' });
 
   let rootPackage = null;
