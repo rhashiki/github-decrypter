@@ -15,6 +15,7 @@ import {
   WorkbenchTopBar,
 } from '@github-decrypter/ui';
 import { useMemo, useState } from 'react';
+import { EnvironmentDoctor, type EnvironmentDoctorOutcome } from './EnvironmentDoctor.js';
 import { OnboardingFlow } from './OnboardingFlow.js';
 import {
   describeAdaptiveExperience,
@@ -30,9 +31,18 @@ const RESERVED_SURFACES = Object.freeze([
   { label: 'Git Panel', build: 76 },
 ]);
 
+function runtimeStatusLabel(outcome: EnvironmentDoctorOutcome): string {
+  if (outcome === 'ready') return 'Diagnostic ready';
+  if (outcome === 'attention') return 'Needs attention';
+  if (outcome === 'unavailable') return 'Unavailable';
+  return 'Not checked';
+}
+
 export function StudioApp() {
   const launch = useMemo(() => parseStudioLaunchContext(window.location.search), []);
   const [profile, setProfile] = useState<AdaptiveUserProfile | null>(null);
+  const [environmentDoctorComplete, setEnvironmentDoctorComplete] = useState(false);
+  const [environmentDoctorOutcome, setEnvironmentDoctorOutcome] = useState<EnvironmentDoctorOutcome>('unchecked');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
   );
@@ -44,7 +54,17 @@ export function StudioApp() {
       ? 'Launch rejected'
       : 'No repository selected';
   const experience = profile ? describeAdaptiveExperience(profile) : null;
-  const activeSurface = profile ? 'Overview' : 'Onboarding';
+  const activeSurface = !profile
+    ? 'Onboarding'
+    : !environmentDoctorComplete
+      ? 'Environment Doctor'
+      : 'Overview';
+
+  function retakeOnboarding(): void {
+    setProfile(null);
+    setEnvironmentDoctorComplete(false);
+    setEnvironmentDoctorOutcome('unchecked');
+  }
 
   return (
     <Workbench
@@ -110,7 +130,7 @@ export function StudioApp() {
           <span className="studio-section-label">Current surface</span>
           <div className="studio-sidebar-row is-selected">
             <span>{activeSurface}</span>
-            <span>31</span>
+            <span>{STUDIO_BUILD}</span>
           </div>
         </div>
 
@@ -119,6 +139,14 @@ export function StudioApp() {
           <div className="studio-sidebar-row">
             <span>{profile ? 'Session profile active' : 'Not initialized'}</span>
             <span>{profile ? '✓' : '—'}</span>
+          </div>
+        </div>
+
+        <div className="studio-sidebar-section">
+          <span className="studio-section-label">Environment</span>
+          <div className="studio-sidebar-row">
+            <span>Local Runtime</span>
+            <span>{runtimeStatusLabel(environmentDoctorOutcome)}</span>
           </div>
         </div>
 
@@ -143,6 +171,11 @@ export function StudioApp() {
         <div className="studio-editor-content">
           {!profile ? (
             <OnboardingFlow onComplete={setProfile} />
+          ) : !environmentDoctorComplete ? (
+            <EnvironmentDoctor
+              onOutcome={setEnvironmentDoctorOutcome}
+              onContinue={() => setEnvironmentDoctorComplete(true)}
+            />
           ) : (
             <>
               <section className="studio-overview" aria-labelledby="studio-overview-title">
@@ -152,8 +185,8 @@ export function StudioApp() {
                     <h1 id="studio-overview-title">{experience?.headline}</h1>
                   </SectionHeading>
                   <p>
-                    Onboarding now shapes how the Studio presents information. It does not grant capabilities,
-                    permissions or execution authority, and this profile is not persisted by the browser.
+                    Onboarding shapes how the Studio presents information. Environment Doctor remains a read-only
+                    readiness signal; neither surface grants capabilities, permissions or execution authority.
                   </p>
                   <div className="studio-profile-summary" aria-label="Adaptive profile summary">
                     <div><span>Explanation style</span><strong>{experience?.explanationStyle}</strong></div>
@@ -161,7 +194,7 @@ export function StudioApp() {
                     <div><span>Primary objective</span><strong>{profile.objective}</strong></div>
                   </div>
                   <div>
-                    <Button variant="ghost" onClick={() => setProfile(null)}>Retake onboarding</Button>
+                    <Button variant="ghost" onClick={retakeOnboarding}>Retake onboarding</Button>
                   </div>
                 </Stack>
               </section>
@@ -218,7 +251,7 @@ export function StudioApp() {
         <span>Offline-capable shell</span>
         <span>Profile: {profile ? 'session only' : 'not initialized'}</span>
         <span className="studio-statusbar-spacer" />
-        <span>Local Runtime: Not connected</span>
+        <span>Local Runtime: {runtimeStatusLabel(environmentDoctorOutcome)}</span>
       </WorkbenchStatusBar>
     </Workbench>
   );
