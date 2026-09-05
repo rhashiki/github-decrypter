@@ -1,6 +1,6 @@
 # Build 32 — Environment Doctor
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated validation passed; PR matrix pending**
 
 ## Objective
 
@@ -54,20 +54,23 @@ Skipping the Doctor is allowed and remains semantically distinct from a successf
 - Build 122 — production PWA packaging;
 - generic privileged Studio ↔ Local Runtime operations owned by their later Builds.
 
-## Validation plan
+## Isolated validation result
 
-Before merge, Build 32 must pass:
+Functional head `f3990b92442240c73a1dedcbbee5a55bfc7ad447` passed the complete Build 32 push workflow before this documentation-only completion update.
+
+Validated successfully:
 
 1. Architecture Guardian including AG300–AG309;
 2. accumulated Builds 4–32 CI;
-3. forward-compatible Build 30 and Build 31 regression gates;
+3. forward-compatible Studio/PWA/IDE Layout/Onboarding regression gates;
 4. TypeScript compilation across browser and Local Runtime workspaces;
 5. protocol/report runtime validation;
-6. live Local Runtime HTTP endpoint checks including CORS isolation;
+6. live Local Runtime HTTP endpoint checks including loopback CORS isolation;
 7. explicit Studio client request behavior with injected fetch;
 8. real Vite production build and built-bundle/PWA inspection;
-9. negative Guardian probes;
-10. modern-engine preservation;
-11. full historical PR workflow matrix.
+9. negative Guardian probes, including deterministic AG304 JSX integration protection;
+10. modern-engine preservation.
+
+The full pull-request workflow matrix remains the final merge gate.
 
 No release, tag, production deploy, store publication, production Supabase mutation or DNS mutation is authorized by this Build.
