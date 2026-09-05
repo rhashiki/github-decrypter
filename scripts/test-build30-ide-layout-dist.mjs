@@ -38,7 +38,7 @@ for (const marker of [
   'Code Explorer',
   'Git Panel',
   'Layout state: memory only',
-  'Local Runtime: not connected',
+  'Local Runtime: Not connected',
 ]) assert.ok(js.includes(marker), `Built JavaScript omitted bounded layout marker: ${marker}`);
 
 const sw = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf8');
