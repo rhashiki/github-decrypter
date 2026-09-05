@@ -39,7 +39,7 @@ export function EnvironmentDoctor({ onContinue, onOutcome }: EnvironmentDoctorPr
   return (
     <section className="studio-doctor" aria-labelledby="environment-doctor-title">
       <Stack gap="lg">
-        <Status tone="info" label="Build 32 · Environment Doctor" />
+        <Status tone="neutral" label="Build 32 · Environment Doctor" />
         <SectionHeading eyebrow="Local readiness check">
           <h1 id="environment-doctor-title">Check the environment before privileged work begins.</h1>
         </SectionHeading>
