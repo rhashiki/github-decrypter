@@ -1,6 +1,6 @@
 # Build 30 — IDE Layout
 
-Status: **IMPLEMENTED — pending validation**
+Status: **IMPLEMENTED — isolated Build 30 validation green; PR matrix pending**
 
 ## Objective
 
@@ -63,5 +63,7 @@ The Build is considered complete only after all of the following pass on the Bui
 8. PWA shell inspection for Build 30 assets;
 9. Build 30 negative Guardian probes;
 10. modern-engine preservation.
+
+The isolated Build 30 workflow passed all ten validation items on implementation head `01cbe29417df481497d326eeeb76ae8e91a33dd5`. The branch was then reconciled with the current `main` Cortex/Graphify map through a two-parent merge without changing Build 30 functional files. Documentation synchronization follows that validated implementation head; the pull-request matrix remains the final merge gate.
 
 No release, tag, production deploy, Chrome Web Store publication, production Supabase mutation or DNS mutation is authorized by this Build.
