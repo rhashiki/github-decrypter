@@ -9,6 +9,7 @@ assert.equal(fs.existsSync(dist), true, 'Studio dist is missing.');
 assert.equal(fs.existsSync(assets), true, 'Studio assets directory is missing.');
 
 const rootPackage = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
 const currentBuild = Number.parseInt(String(rootPackage.version).split('.')[2] ?? '', 10);
 assert.ok(Number.isInteger(currentBuild) && currentBuild >= 30);
 
@@ -35,7 +36,7 @@ for (const marker of [
 const jsFiles = fs.readdirSync(assets).filter((name) => name.endsWith('.js')).sort();
 assert.ok(jsFiles.length > 0, 'Vite did not emit Studio JavaScript.');
 const js = jsFiles.map((name) => fs.readFileSync(path.join(assets, name), 'utf8')).join('\n');
-for (const marker of [
+const boundedLayoutMarkers = [
   'gd-ide-layout/1',
   'Developer Console',
   'Problems & Diagnostics',
@@ -43,8 +44,13 @@ for (const marker of [
   'Git Panel',
   'data-sidebar-collapsed',
   'data-panel-collapsed',
-  'Local Runtime: Not connected',
-]) assert.ok(js.includes(marker), `Built JavaScript omitted bounded layout marker: ${marker}`);
+];
+const environmentDoctorActive = policy.currentBuild >= (policy.phaseGates?.environmentDoctorBuild ?? Number.POSITIVE_INFINITY);
+if (environmentDoctorActive) boundedLayoutMarkers.push('Environment Doctor', 'Local Runtime: ');
+else boundedLayoutMarkers.push('Local Runtime: Not connected');
+for (const marker of boundedLayoutMarkers) {
+  assert.ok(js.includes(marker), `Built JavaScript omitted bounded layout marker: ${marker}`);
+}
 
 const sw = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf8');
 assert.ok(sw.includes(`gd-studio-shell-v${currentBuild}`), `PWA cache did not remain aligned with current Studio Build ${currentBuild}.`);
@@ -57,7 +63,7 @@ for (const jsFile of jsFiles) {
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build30-ide-layout-dist/1',
+  schema: 'gd-build30-ide-layout-dist/2',
   owningBuild: 30,
   currentBuild,
   cssFiles,
@@ -65,5 +71,6 @@ console.log(JSON.stringify({
   workbenchBundled: true,
   sixRegionsBundled: true,
   deferredSurfaceMarkersBundled: true,
+  environmentDoctorPhaseAware: true,
   pwaCacheAligned: true,
 }, null, 2));
