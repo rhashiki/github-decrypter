@@ -80,7 +80,13 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
   for (const marker of ['react()', "host: '127.0.0.1'"]) {
     if (!vite.includes(marker)) violations.push({ code: 'AG254', message: 'Vite client foundation invariant missing.', detail: marker });
   }
-  for (const marker of ['parseStudioLaunchContext(window.location.search)', 'Not connected']) {
+  const shellMarkers = ['parseStudioLaunchContext(window.location.search)'];
+  if (policy.currentBuild >= (policy.phaseGates?.environmentDoctorBuild ?? Number.POSITIVE_INFINITY)) {
+    shellMarkers.push('runtimeStatusLabel(environmentDoctorOutcome)', 'Environment Doctor');
+  } else {
+    shellMarkers.push('Not connected');
+  }
+  for (const marker of shellMarkers) {
     if (!app.includes(marker)) violations.push({ code: 'AG254', message: 'Studio foundation shell invariant missing.', detail: marker });
   }
 
