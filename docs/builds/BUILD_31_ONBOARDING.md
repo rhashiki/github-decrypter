@@ -1,6 +1,6 @@
 # Build 31 — Onboarding / Adaptive User Profile Foundation
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated validation passed; PR matrix pending**
 
 ## Objective
 
@@ -47,19 +47,22 @@ Profile values are experience context and can never grant or modify:
 - durable profile persistence through an authorized Local Runtime boundary;
 - release/deploy/store/DNS authority.
 
-## Validation plan
+## Isolated validation result
 
-Before merge, Build 31 must pass:
+The functional head `1f1d01a66e48e00bb4f64249da988dfff6d34277` passed the Build 31 workflow before documentation-only completion commits were added.
+
+Validated successfully:
 
 1. Architecture Guardian including AG290–AG299;
 2. accumulated Builds 4–31 CI;
 3. historical Build 30 regression in forward-compatible mode;
 4. TypeScript/browser workspace compilation;
-5. executable profile and onboarding render tests;
+5. executable Adaptive User Profile runtime tests;
 6. real Vite production build;
 7. built JS/CSS/PWA inspection;
 8. negative Guardian probes;
-9. modern-engine preservation;
-10. the full historical PR workflow matrix.
+9. modern-engine preservation.
+
+The full pull-request workflow matrix remains the final merge gate.
 
 No release, tag, production deploy, Chrome Web Store publication, production Supabase mutation or DNS mutation is authorized by this Build.
