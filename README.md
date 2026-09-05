@@ -183,12 +183,12 @@ See:
 - `docs/architecture/PROJECT_DETECTION.md` — Build 20 root-only read-only project inspection boundary
 - `docs/architecture/GIT_RUNTIME.md` — Build 21 workspace-scoped capability-gated Git execution boundary
 - `docs/architecture/HUMAN_AI_CHANGE_TRACKING.md` — Build 22 attribution boundary
-- `docs/architecture/GITHUB_APP.md` — Build 23 GitHub App trust foundation
+- `docs/builds/BUILD_23_GITHUB_APP.md` — Build 23 GitHub App trust foundation
 - `docs/architecture/GITHUB_PROVIDER.md` — Build 24 read-only provider authority
 - `docs/architecture/GITHUB_CHROME_EXTENSION.md` — Build 25 lightweight extension bridge
 - `docs/architecture/REPOSITORY_LAUNCHER.md` — Build 26 repository launcher flow
 - `docs/architecture/REACT_STUDIO_FOUNDATION.md` — Build 27 Studio foundation
-- `docs/architecture/PWA.md` — Build 28 installable/offline app shell
+- `docs/architecture/PWA_FOUNDATION.md` — Build 28 installable/offline app shell
 - `docs/architecture/UNIFIED_DESIGN_SYSTEM.md` — Build 29 canonical UI system
 
 ## Architecture check
