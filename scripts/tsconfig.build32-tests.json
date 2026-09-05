@@ -1,0 +1,23 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "..",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "../apps/local/src/**/*.ts",
+    "../apps/studio/src/**/*.ts",
+    "../apps/studio/src/**/*.tsx",
+    "../packages/git/src/**/*.ts",
+    "../packages/github-app/src/**/*.ts",
+    "../packages/github-provider/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/ui/src/**/*.ts",
+    "../packages/ui/src/**/*.tsx",
+    "../packages/workspace/src/**/*.ts",
+    "./test-build32-environment-doctor-runtime.ts"
+  ]
+}
