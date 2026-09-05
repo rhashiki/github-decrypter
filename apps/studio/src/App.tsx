@@ -1,90 +1,197 @@
-import { Badge, Card, SectionHeading, Stack, Status } from '@github-decrypter/ui';
-import { useMemo } from 'react';
+import {
+  Badge,
+  Button,
+  Card,
+  SectionHeading,
+  Stack,
+  Status,
+  Workbench,
+  WorkbenchActivityBar,
+  WorkbenchEditor,
+  WorkbenchPanel,
+  WorkbenchSidebar,
+  WorkbenchStatusBar,
+  WorkbenchTabBar,
+  WorkbenchTopBar,
+} from '@github-decrypter/ui';
+import { useMemo, useState } from 'react';
 import { parseStudioLaunchContext, STUDIO_BUILD, STUDIO_VERSION } from './studio-context.js';
+
+const RESERVED_SURFACES = Object.freeze([
+  { label: 'Developer Console', build: 71 },
+  { label: 'Problems & Diagnostics', build: 72 },
+  { label: 'Code Explorer', build: 73 },
+  { label: 'Terminal', build: 75 },
+  { label: 'Git Panel', build: 76 },
+]);
 
 export function StudioApp() {
   const launch = useMemo(() => parseStudioLaunchContext(window.location.search), []);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
+  );
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+  const workspaceLabel = launch.kind === 'repository'
+    ? launch.repository.fullName
+    : launch.kind === 'invalid'
+      ? 'Launch rejected'
+      : 'No repository selected';
 
   return (
-    <div className="studio-shell" data-build={STUDIO_BUILD} data-gd-theme="dark">
-      <header className="studio-header">
-        <SectionHeading eyebrow="GitHub Decrypter">
-          <h1>Studio</h1>
-        </SectionHeading>
-        <Badge>Build {STUDIO_BUILD} · {STUDIO_VERSION}</Badge>
-      </header>
+    <Workbench
+      className="studio-workbench"
+      sidebarCollapsed={sidebarCollapsed}
+      panelCollapsed={panelCollapsed}
+      data-build={STUDIO_BUILD}
+      data-gd-theme="dark"
+    >
+      <WorkbenchTopBar className="studio-topbar">
+        <div className="studio-brand">
+          <span className="studio-brand-mark" aria-hidden="true">GD</span>
+          <div>
+            <strong>GitHub Decrypter</strong>
+            <span>{workspaceLabel}</span>
+          </div>
+        </div>
+        <div className="studio-layout-actions" aria-label="Layout controls">
+          <Badge>Build {STUDIO_BUILD} · {STUDIO_VERSION}</Badge>
+          <Button
+            className="studio-layout-button"
+            variant="ghost"
+            aria-expanded={!sidebarCollapsed}
+            aria-controls="studio-sidebar"
+            onClick={() => setSidebarCollapsed((value) => !value)}
+          >
+            Sidebar
+          </Button>
+          <Button
+            className="studio-layout-button"
+            variant="ghost"
+            aria-expanded={!panelCollapsed}
+            aria-controls="studio-panel"
+            onClick={() => setPanelCollapsed((value) => !value)}
+          >
+            Panel
+          </Button>
+        </div>
+      </WorkbenchTopBar>
 
-      <main className="studio-main">
-        <Card className="studio-card foundation-card" role="region" aria-labelledby="foundation-title">
-          <Stack gap="lg">
-            <Status tone="success" label="Design system active" />
-            <div>
-              <h2 id="foundation-title">Unified design foundation ready</h2>
-              <p>
-                The Studio now consumes the canonical GitHub Decrypter tokens and accessible UI primitives.
-                IDE chrome and workspace layout remain owned by Build 30.
-              </p>
+      <WorkbenchActivityBar className="studio-activity" aria-label="Workbench navigation">
+        <button className="studio-activity-item is-active" type="button" aria-current="page" title="Workspace">
+          <span aria-hidden="true">W</span>
+          <span className="studio-visually-hidden">Workspace</span>
+        </button>
+        <button className="studio-activity-item" type="button" disabled title="Additional surfaces arrive in later Builds">
+          <span aria-hidden="true">+</span>
+          <span className="studio-visually-hidden">Additional surfaces are not active yet</span>
+        </button>
+      </WorkbenchActivityBar>
+
+      <WorkbenchSidebar id="studio-sidebar" className="studio-sidebar" aria-label="Workspace sidebar">
+        <div className="studio-sidebar-heading">
+          <SectionHeading eyebrow="Workspace">
+            <h2>{workspaceLabel}</h2>
+          </SectionHeading>
+          <Badge tone={launch.kind === 'repository' ? 'accent' : 'neutral'}>
+            {launch.kind === 'repository' ? 'Public launch context' : 'Local shell'}
+          </Badge>
+        </div>
+
+        <div className="studio-sidebar-section">
+          <span className="studio-section-label">Current surface</span>
+          <div className="studio-sidebar-row is-selected">
+            <span>Overview</span>
+            <span>30</span>
+          </div>
+        </div>
+
+        <div className="studio-sidebar-section">
+          <span className="studio-section-label">Reserved by roadmap</span>
+          {RESERVED_SURFACES.filter((surface) => surface.build >= 73).map((surface) => (
+            <div className="studio-sidebar-row is-reserved" key={surface.build}>
+              <span>{surface.label}</span>
+              <span>Build {surface.build}</span>
             </div>
-          </Stack>
-        </Card>
+          ))}
+        </div>
+      </WorkbenchSidebar>
 
-        {launch.kind === 'repository' ? (
-          <Card className="studio-card" role="region" aria-labelledby="repository-title">
-            <SectionHeading eyebrow="Repository handoff">
-              <h2 id="repository-title">{launch.repository.fullName}</h2>
-            </SectionHeading>
-            <p>The public repository identity was validated locally from the Studio launch parameters.</p>
-            <a href={launch.repository.githubUrl} target="_blank" rel="noreferrer">
-              View repository on GitHub
-            </a>
-          </Card>
-        ) : null}
+      <WorkbenchEditor className="studio-editor" aria-label="Editor workspace">
+        <WorkbenchTabBar className="studio-tabs" label="Editor tabs">
+          <button className="studio-tab is-active" type="button" role="tab" aria-selected="true">
+            Overview
+          </button>
+        </WorkbenchTabBar>
 
-        {launch.kind === 'invalid' ? (
-          <Card className="studio-card" tone="warning" role="status" aria-labelledby="launch-warning-title">
-            <SectionHeading eyebrow="Launch context rejected">
-              <h2 id="launch-warning-title">Repository handoff was not accepted</h2>
-            </SectionHeading>
-            <p>{launch.reason}</p>
-          </Card>
-        ) : null}
+        <div className="studio-editor-content">
+          <section className="studio-overview" aria-labelledby="studio-overview-title">
+            <Stack gap="lg">
+              <Status tone="success" label="IDE layout active" />
+              <SectionHeading eyebrow="Build 30 · structural workbench">
+                <h1 id="studio-overview-title">Workspace shell ready</h1>
+              </SectionHeading>
+              <p>
+                The Studio now owns the IDE workbench layout while feature panels remain bounded by their roadmap Builds.
+                Layout visibility is session-only and is not persisted.
+              </p>
+            </Stack>
+          </section>
 
-        {launch.kind === 'empty' ? (
-          <Card className="studio-card" role="region" aria-labelledby="empty-title">
-            <SectionHeading eyebrow="Studio entry">
-              <h2 id="empty-title">No repository selected</h2>
-            </SectionHeading>
-            <p>The Studio can start independently without claiming a GitHub or Local Runtime connection.</p>
-          </Card>
-        ) : null}
+          {launch.kind === 'repository' ? (
+            <Card className="studio-context-card" role="region" aria-labelledby="repository-title">
+              <SectionHeading eyebrow="Repository handoff">
+                <h2 id="repository-title">{launch.repository.fullName}</h2>
+              </SectionHeading>
+              <p>The public repository identity was validated locally from the Studio launch parameters.</p>
+              <a href={launch.repository.githubUrl} target="_blank" rel="noreferrer">
+                View repository on GitHub
+              </a>
+            </Card>
+          ) : null}
 
-        <section className="boundary-grid" aria-label="Build 29 boundaries">
-          <Card className="boundary-item">
-            <span>React</span>
-            <strong>Active</strong>
-          </Card>
-          <Card className="boundary-item">
-            <span>PWA</span>
-            <strong>Active</strong>
-          </Card>
-          <Card className="boundary-item">
-            <span>Design System</span>
-            <strong>Active</strong>
-          </Card>
-          <Card className="boundary-item">
-            <span>IDE Layout</span>
-            <strong>Build 30</strong>
-          </Card>
-          <Card className="boundary-item">
-            <span>Onboarding</span>
-            <strong>Build 31</strong>
-          </Card>
-          <Card className="boundary-item">
-            <span>Local Runtime</span>
-            <strong>Not connected</strong>
-          </Card>
-        </section>
-      </main>
-    </div>
+          {launch.kind === 'invalid' ? (
+            <Card className="studio-context-card" tone="warning" role="status" aria-labelledby="launch-warning-title">
+              <SectionHeading eyebrow="Launch context rejected">
+                <h2 id="launch-warning-title">Repository handoff was not accepted</h2>
+              </SectionHeading>
+              <p>{launch.reason}</p>
+            </Card>
+          ) : null}
+
+          {launch.kind === 'empty' ? (
+            <Card className="studio-context-card" role="region" aria-labelledby="empty-title">
+              <SectionHeading eyebrow="Studio entry">
+                <h2 id="empty-title">No repository selected</h2>
+              </SectionHeading>
+              <p>The workbench can start independently without claiming a GitHub or Local Runtime connection.</p>
+            </Card>
+          ) : null}
+        </div>
+      </WorkbenchEditor>
+
+      <WorkbenchPanel id="studio-panel" className="studio-panel" aria-label="Bottom panel">
+        <div className="studio-panel-heading">
+          <strong>Panel</strong>
+          <span>Structural surface only</span>
+        </div>
+        <div className="studio-reserved-grid">
+          {RESERVED_SURFACES.filter((surface) => surface.build < 73 || surface.build === 75).map((surface) => (
+            <div className="studio-reserved-surface" key={surface.build}>
+              <span>{surface.label}</span>
+              <Badge>Build {surface.build}</Badge>
+            </div>
+          ))}
+        </div>
+      </WorkbenchPanel>
+
+      <WorkbenchStatusBar className="studio-statusbar">
+        <span>Build {STUDIO_BUILD}</span>
+        <span>Offline-capable shell</span>
+        <span>Layout state: memory only</span>
+        <span className="studio-statusbar-spacer" />
+        <span>Local Runtime: Not connected</span>
+      </WorkbenchStatusBar>
+    </Workbench>
   );
 }

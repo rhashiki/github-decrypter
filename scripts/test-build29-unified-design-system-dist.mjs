@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = process.cwd();
 const dist = path.join(root, 'apps/studio/dist');
 const assets = path.join(dist, 'assets');
+const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
 assert.equal(fs.existsSync(dist), true, 'Studio dist is missing.');
 assert.equal(fs.existsSync(assets), true, 'Studio assets directory is missing.');
 
@@ -25,10 +26,12 @@ for (const marker of [
   '.gd-stack',
   '.gd-status',
   ':focus-visible',
-  '.studio-header',
 ]) assert.ok(css.includes(marker), `Built CSS omitted design-system marker: ${marker}`);
 
-assert.doesNotMatch(css, /\.gd-(?:sidebar|editor|terminal|activity-bar|panel-resizer)\b/);
+if (policy.currentBuild === 29) {
+  assert.ok(css.includes('.studio-header'), 'Build 29 Studio composition marker is missing.');
+  assert.doesNotMatch(css, /\.gd-workbench\b/);
+}
 
 const sw = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf8');
 for (const cssFile of cssFiles) {
@@ -37,11 +40,13 @@ for (const cssFile of cssFiles) {
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build29-unified-design-system-dist/1',
+  schema: 'gd-build29-unified-design-system-dist/2',
+  owningBuild: 29,
+  currentBuild: policy.currentBuild,
   cssFiles,
   semanticVariablesBundled: true,
   primitivesBundled: true,
   studioCompositionBundled: true,
   pwaShellIncludesDesignSystemCss: true,
-  ideLayoutAbsent: true,
+  laterIdeLayoutAllowed: policy.currentBuild >= 30,
 }, null, 2));

@@ -3,3 +3,4 @@ export const DESIGN_SYSTEM_ID = 'github-decrypter-unified-design-system' as cons
 
 export * from './tokens.js';
 export * from './primitives.js';
+export * from './workbench.js';

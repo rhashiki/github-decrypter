@@ -68,7 +68,7 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
     ':focus-visible',
   ]) if (!css.includes(marker)) violations.push({ code: 'AG273', message: 'Shared CSS design-system invariant is missing.', detail: marker });
   if (/\.studio-|\.ide-|\.editor-|\.terminal-|\.sidebar-|\.activity-bar/.test(css) || /!important/.test(css)) {
-    violations.push({ code: 'AG273', message: 'Reusable UI CSS contains app/IDE-specific layout or unscoped override authority.' });
+    violations.push({ code: 'AG273', message: 'Reusable UI CSS contains app-specific layout or unscoped override authority.' });
   }
 
   const primitives = read('packages/ui/src/primitives.tsx');
@@ -84,6 +84,8 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
     "`gd-card--${tone}`",
     "`gd-button--${variant}`",
   ]) if (!primitives.includes(marker)) violations.push({ code: 'AG274', message: 'React UI primitive invariant is missing.', detail: marker });
+
+  const workbench = read('packages/ui/src/workbench.tsx');
   for (const forbidden of [
     /\bwindow\b/,
     /\bdocument\b/,
@@ -93,7 +95,7 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
     /\blocalStorage\b/,
     /\bindexedDB\b/,
     /@github-decrypter\/(?:studio|extension|local)/,
-  ]) if (forbidden.test(`${tokens}\n${primitives}`)) {
+  ]) if (forbidden.test(`${tokens}\n${primitives}\n${workbench}`)) {
     violations.push({ code: 'AG274', message: 'UI package crossed environment/application authority.', detail: String(forbidden) });
   }
 
@@ -112,15 +114,26 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
     || /#[0-9a-fA-F]{3,8}\b/.test(localCss)
   ) violations.push({ code: 'AG275', message: 'Studio is not consistently consuming the canonical design system.' });
 
-  const sourceSurface = [tokens, primitives, css, app, localCss].join('\n');
-  if (
-    rule.ideLayoutBuild !== 30 || policy.phaseGates?.ideLayoutBuild !== 30
-    || rule.ideLayoutAuthority !== false || rule.workspaceLayoutAuthority !== false
-    || /\bgd-(?:sidebar|editor|terminal|activity-bar|panel-resizer)\b/.test(sourceSurface)
-    || exists('apps/studio/src/ide-layout.tsx')
-    || exists('apps/studio/src/IDELayout.tsx')
-    || !app.includes('IDE Layout') || !app.includes('Build 30')
-  ) violations.push({ code: 'AG276', message: 'Build 30 IDE layout authority arrived during Build 29 or its deferral marker disappeared.' });
+  const ideLayoutActive = policy.currentBuild >= 30;
+  if (rule.ideLayoutBuild !== 30 || policy.phaseGates?.ideLayoutBuild !== 30) {
+    violations.push({ code: 'AG276', message: 'Build 30 IDE layout phase gate is invalid.' });
+  } else if (!ideLayoutActive) {
+    const sourceSurface = [tokens, primitives, css, app, localCss].join('\n');
+    if (
+      rule.ideLayoutAuthority !== false || rule.workspaceLayoutAuthority !== false
+      || /\bgd-(?:sidebar|editor|terminal|activity-bar|panel-resizer|workbench)\b/.test(sourceSurface)
+      || exists('packages/ui/src/workbench.tsx')
+      || exists('apps/studio/src/ide-layout.tsx')
+      || exists('apps/studio/src/IDELayout.tsx')
+      || !app.includes('IDE Layout') || !app.includes('Build 30')
+    ) violations.push({ code: 'AG276', message: 'Build 30 IDE layout authority arrived during Build 29 or its deferral marker disappeared.' });
+  } else if (
+    rule.ideLayoutAuthority !== true
+    || rule.workspaceLayoutAuthority !== true
+    || !exists('packages/ui/src/workbench.tsx')
+  ) {
+    violations.push({ code: 'AG276', message: 'Build 30 IDE layout authority is not active after its phase gate.' });
+  }
 
   if (
     rule.ownerPackage !== '@github-decrypter/ui'
@@ -162,7 +175,7 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-design-system-report/1',
+  schema: 'gd-architecture-guardian-design-system-report/2',
   currentBuild: policy.currentBuild,
   ownerPackage: rule?.ownerPackage ?? null,
   schemaVersion: rule?.schema ?? null,

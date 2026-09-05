@@ -64,7 +64,9 @@ try {
 
 try {
   const policy = JSON.parse(policyOriginal);
+  policy.currentBuild = 29;
   policy.designSystemAuthority.ideLayoutAuthority = true;
+  policy.designSystemAuthority.workspaceLayoutAuthority = true;
   fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
   expect('AG276');
 } finally { fs.writeFileSync(policyPath, policyOriginal); }
@@ -97,7 +99,9 @@ assert.equal(final.status, 0, `Design System Guardian did not recover.\n${final.
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build29-design-system-guardian-negative/1',
+  schema: 'gd-build29-design-system-guardian-negative/2',
+  currentPhaseAware: true,
+  ideLayoutPrematurityStillRejected: true,
   rejected,
   restoredTreePasses: true,
 }, null, 2));

@@ -1,5 +1,11 @@
 import { PROTOCOL_SCHEMA, type PeerRole } from '@github-decrypter/protocol';
-import { DESIGN_SYSTEM_BUILD, DESIGN_SYSTEM_ID, DESIGN_SYSTEM_SCHEMA } from '@github-decrypter/ui';
+import {
+  DESIGN_SYSTEM_BUILD,
+  DESIGN_SYSTEM_ID,
+  DESIGN_SYSTEM_SCHEMA,
+  IDE_LAYOUT_BUILD,
+  IDE_LAYOUT_SCHEMA,
+} from '@github-decrypter/ui';
 import { STUDIO_BUILD, STUDIO_LAUNCH_SCHEMA, STUDIO_VERSION } from './studio-context.js';
 
 const protocolRole: PeerRole = 'studio';
@@ -23,5 +29,8 @@ export const appIdentity = Object.freeze({
   designSystem: DESIGN_SYSTEM_ID,
   designSystemSchema: DESIGN_SYSTEM_SCHEMA,
   designSystemBuild: DESIGN_SYSTEM_BUILD,
-  role: 'Client-only React Studio with installable PWA shell and unified design system. IDE layout remains Build 30.',
+  ideLayoutSchema: IDE_LAYOUT_SCHEMA,
+  ideLayoutBuild: IDE_LAYOUT_BUILD,
+  layoutStatePersistence: false as const,
+  role: 'Client-only React Studio with installable PWA shell, unified design system and structural IDE workbench. Feature panels remain owned by later Builds.',
 });
