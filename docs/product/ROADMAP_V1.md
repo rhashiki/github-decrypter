@@ -46,7 +46,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 29. **Unified Design System** — ✅
 30. **IDE Layout** — ✅
 31. **Onboarding** — ✅ — North Star: **Adaptive User Profile foundation**, technical level, objective, learning intent and explanation preference.
-32. **Environment Doctor**
+32. **Environment Doctor** — ✅
 
 ## AI and model foundation
 
