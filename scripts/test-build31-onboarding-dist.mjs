@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const dist = path.join(root, 'apps/studio/dist');
+const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
 assert.ok(fs.existsSync(dist), 'Studio dist is missing; run the Vite build first.');
 
 function collect(directory, extension) {
@@ -38,16 +39,23 @@ for (const marker of [
 
 assert.ok(css.includes('.studio-onboarding-option'), 'Built CSS is missing onboarding choice styling.');
 assert.ok(css.includes('.studio-profile-summary'), 'Built CSS is missing adaptive profile summary styling.');
-assert.ok(serviceWorker.includes('gd-studio-shell-v31'), 'PWA shell cache was not advanced to Build 31.');
-assert.doesNotMatch(js, /\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|127\.0\.0\.1:43110|localhost:43110/);
+assert.ok(serviceWorker.includes(`gd-studio-shell-v${policy.currentBuild}`), 'PWA shell cache is not aligned with the current Studio Build.');
+assert.doesNotMatch(js, /\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b/);
+if (policy.currentBuild === 31) {
+  assert.doesNotMatch(js, /127\.0\.0\.1:43110|localhost:43110/);
+} else if (policy.currentBuild >= 32) {
+  assert.ok(js.includes('127.0.0.1:43110/v1/environment-doctor'), 'Later Environment Doctor transport is missing from the current bundle.');
+}
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build31-onboarding-dist/1',
+  schema: 'gd-build31-onboarding-dist/2',
+  owningBuild: 31,
+  currentBuild: policy.currentBuild,
   profileSchemaPresent: true,
   conversationalQuestionsPresent: true,
   onboardingCssPresent: true,
-  pwaCacheBuild: 31,
+  pwaCacheAligned: true,
   browserPersistenceMarkers: false,
-  localRuntimeTransportMarkers: false,
+  laterEnvironmentDoctorAllowed: policy.currentBuild >= 32,
 }, null, 2));
