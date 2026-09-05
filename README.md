@@ -6,7 +6,7 @@ Target workflow:
 
 `GitHub repository → local workspace → Plan → approved Build → live local preview → diff → commit → push → pull request → optional deploy/domain workflow`
 
-The browser extension is a lightweight GitHub launcher/bridge. The main interface will be a React + TypeScript + Vite PWA Studio, while privileged and durable execution belongs to an independent local runtime rather than browser state.
+The browser extension is a lightweight GitHub launcher/bridge. The main interface is a React + TypeScript + Vite PWA Studio, while privileged and durable execution belongs to an independent local runtime rather than browser state.
 
 ## Current implementation status
 
@@ -33,8 +33,16 @@ Completed:
 - Build 19 — Workspace Manager
 - Build 20 — Project Detection
 - Build 21 — Git Runtime
+- Build 22 — Human vs AI Change Tracking
+- Build 23 — GitHub App
+- Build 24 — GitHub Provider
+- Build 25 — GitHub Chrome Extension
+- Build 26 — Repository Launcher
+- Build 27 — React Studio Foundation
+- Build 28 — PWA
+- Build 29 — Unified Design System
 
-Next: **Build 22 — Human vs AI Change Tracking**.
+Next: **Build 30 — IDE Layout**.
 
 The repository has the canonical pnpm/TypeScript topology:
 
@@ -46,14 +54,14 @@ apps/
 
 packages/
   ui/ protocol/ shared/ git/ workspace/ chat/ plan/ build/
-  preview/ context/ tools/ scope/ ai/
+  preview/ context/ tools/ scope/ ai/ github-app/ github-provider/
 ```
 
 `@github-decrypter/protocol` is the single transport-neutral wire contract shared by Studio, Extension and Local Runtime. Its current schema is `gd-protocol/1`.
 
 `@github-decrypter/shared` owns the deterministic in-process Central Event Bus. Events use the `gd.*` namespace, JSON-safe payloads, correlation/causation/trace metadata and isolated sequential delivery. The bus is intentionally not a network transport, durable queue, retry engine or security authority.
 
-`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault, durable one-shot Approval Transactions, the append-only local Audit Ledger, the local Workspace Manager, read-only Project Detection and the capability-gated Git Runtime. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
+`@github-decrypter/local` is a real independent Node.js daemon. It owns loopback-only process/transport authority, file-backed SQLite persistence, the durable job queue, crash/power recovery, connectivity-aware offline scheduling, the deny-by-default Capability Security boundary, the encrypted local Secrets Vault, durable one-shot Approval Transactions, the append-only local Audit Ledger, the local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, Human-vs-AI change attribution, GitHub App authentication/webhook trust and the read-only installation-scoped GitHub Provider. SQLite uses Node 22 `node:sqlite`, WAL, foreign keys, checksummed migrations and integrity-gated readiness.
 
 Build 12 supplies stable queue ordering, prerequisite DAGs, atomic claims, worker leases, attempt budgets and durable checkpoints. Build 13 adds durable runtime-session journaling plus deterministic recovery of interrupted jobs. Build 14 adds persistent `unknown | online | offline` connectivity state and explicit network-required job metadata: local-safe work remains claimable without network, while network-required work waits durably and returns to the queue when connectivity is restored.
 
@@ -73,15 +81,19 @@ Build 20 adds read-only Project Detection on top of Workspace Manager. It inspec
 
 Build 21 adds the canonical Git Runtime. The environment-neutral `@github-decrypter/git` contract defines normalized status, diff, log, branch, merge-base, blame and mutation results, while the real process authority stays in `apps/local`. Git is launched as the fixed `git` executable with argument arrays, `shell: false`, bounded output, command timeouts and `GIT_TERMINAL_PROMPT=0`. Read operations are workspace-scoped. Every mutation requires a job-bound `GIT_WRITE` capability for `gd://workspace/<workspace-id>/git`; clone/fetch/pull/push additionally require `NETWORK` and Build 14 connectivity state `online`. Clone is restricted to an existing empty registered workspace root, pull is fast-forward-only, embedded remote credentials are rejected, and Build 21 deliberately introduces no force push, hard reset or forced branch deletion.
 
+Build 22 adds explicit Human-vs-AI change attribution boundaries without persisting source content. Build 23 adds GitHub App JWT, installation-token and webhook-verification foundations with private material confined to the local Secrets Vault and installation tokens kept ephemeral. Build 24 adds a read-only, installation-scoped GitHub Provider for repository and branch discovery without generic request or collaboration mutation authority.
+
+Build 25 activates the Manifest V3 GitHub Chrome Extension as a lightweight GitHub-only bridge. Build 26 adds repository detection and the extension-owned `Open in GitHub Decrypter` launcher flow while deliberately stopping short of direct Studio launch/runtime authority. Build 27 rebuilds the Studio foundation on React 19 + TypeScript + Vite 8. Build 28 makes that Studio an installable PWA with a bounded same-origin offline app shell. Build 29 activates `@github-decrypter/ui` as the canonical reusable design-system authority with semantic tokens, `--gd-*` CSS variables and reusable accessible React primitives; IDE/workspace layout remains reserved for Build 30.
+
 Build 14 deliberately performs no automatic outbound connectivity probe. `unknown` fails closed for network-required work, but network availability is not required for the daemon to be healthy and ready for local execution. `NETWORK` capability authorizes network use; it does not bypass Build 14 connectivity state.
 
-There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control, audit-control, workspace-control, project-detection-control or job-control HTTP endpoint. In particular, Build 18 does not expose `/v1/audit`, `/v1/audits` or `/v1/audit-ledger`, Build 19 does not expose `/v1/workspace` or `/v1/workspaces`, Build 20 does not expose `/v1/project-detection`, and Build 21 does not expose `/v1/git` or `/v1/git-runtime`. The default development endpoint is `127.0.0.1:43110`. Run it with:
+There is still no generic SQL, coding, tool, Git, model, connectivity-control, capability-control, secret-control, approval-control, audit-control, workspace-control, project-detection-control, GitHub-provider-control or job-control HTTP endpoint. In particular, the GitHub App and GitHub Provider remain internal Local Runtime authorities rather than generic browser-callable transports. The default development endpoint is `127.0.0.1:43110`. Run it with:
 
 ```bash
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, Project Detection ownership, Git Runtime ownership, phase gates, token/receipt-hash-only persistence, encrypted secret/resource persistence, master-key separation, append-only audit persistence, SHA-256 audit-chain verification, metadata-only audit capture, canonical workspace roots, workspace path containment, root-only read-only project inspection, workspace-scoped Git process authority, capability-gated Git mutations, network-gated remote Git operations, no force push/hard reset, no premature privileged Git transport, outbound-probe restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, Project Detection ownership, Git Runtime ownership, Human-vs-AI attribution boundaries, GitHub App authority, GitHub Provider read-only scope, Extension/Repository Launcher authority, React Studio/PWA ownership, Unified Design System ownership, phase gates, sensitive persistence rules, outbound-network restrictions and the narrow write scope of the generated project-map workflow.
 
 ## North Star
 
@@ -122,61 +134,25 @@ Chrome Extension
        ├──── gd-protocol/1 ───────────────┐
        │                                  │
 Studio PWA                         Local Runtime Daemon
-   │                               127.0.0.1 / ::1 only
+React + Vite                      127.0.0.1 / ::1 only
    │                                      │
-   └─ EventBus                      EventBus
-      (in-process)                  (in-process)
-                                           │
-                                           ▼
-                                   SQLite runtime.sqlite3
-                                   WAL + migrations
-                                           │
-                                           ▼
+   └─ @github-decrypter/ui         EventBus + SQLite
+      design system                       │
+                                          ▼
                                   Durable Job Engine
-                                  queue + DAG + leases
-                                           │
-                                           ▼
-                                Crash & Power Recovery
-                              sessions + reconciliation
-                                           │
-                                           ▼
-                                   Offline Execution
-                          local work runs / network work waits
-                                           │
-                                           ▼
-                                Capability Security
-                         job + capability + resource scope
-                           deny by default / hash-only token
-                                           │
-                                           ▼
-                                   Secrets Vault
-                         AES-256-GCM + HKDF + HMAC lookup
-                           key file separate from SQLite
-                                           │
-                                           ▼
-                              Approval Transactions
-                         job + requirements + payload digest
-                         one-shot / receipt hash only
-                                           │
-                                           ▼
-                                   Audit Ledger
-                         append-only + monotonic sequence
-                          SHA-256 tamper-evident chain
-                                           │
-                                           ▼
-                                Workspace Manager
-                         canonical realpath registry
-                       containment + metadata-only events
-                                           │
-                                           ▼
-                                Project Detection
-                       root-only read-only inspection
-                    package manager + framework + dev command
-                                           │
-                                           ▼
-                                    Git Runtime
-                       fixed git executable / shell false
-                  scoped reads + capability-gated mutations
+                                          │
+                                          ▼
+                                  Security foundation
+                         capabilities + vault + approvals + audit
+                                          │
+                                          ▼
+                                  Workspace + Project
+                                          │
+                                          ▼
+                                   Git Runtime
+                                          │
+                                          ▼
+                              GitHub App + Provider
 
             │
             ▼
@@ -206,6 +182,14 @@ See:
 - `docs/architecture/WORKSPACE_MANAGER.md` — Build 19 canonical local workspace registry and path boundary
 - `docs/architecture/PROJECT_DETECTION.md` — Build 20 root-only read-only project inspection boundary
 - `docs/architecture/GIT_RUNTIME.md` — Build 21 workspace-scoped capability-gated Git execution boundary
+- `docs/architecture/HUMAN_AI_CHANGE_TRACKING.md` — Build 22 attribution boundary
+- `docs/architecture/GITHUB_APP.md` — Build 23 GitHub App trust foundation
+- `docs/architecture/GITHUB_PROVIDER.md` — Build 24 read-only provider authority
+- `docs/architecture/GITHUB_CHROME_EXTENSION.md` — Build 25 lightweight extension bridge
+- `docs/architecture/REPOSITORY_LAUNCHER.md` — Build 26 repository launcher flow
+- `docs/architecture/REACT_STUDIO_FOUNDATION.md` — Build 27 Studio foundation
+- `docs/architecture/PWA.md` — Build 28 installable/offline app shell
+- `docs/architecture/UNIFIED_DESIGN_SYSTEM.md` — Build 29 canonical UI system
 
 ## Architecture check
 
