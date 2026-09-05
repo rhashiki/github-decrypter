@@ -1,4 +1,9 @@
-import { PROTOCOL_SCHEMA, type PeerRole } from '@github-decrypter/protocol';
+import {
+  ENVIRONMENT_DOCTOR_BUILD,
+  ENVIRONMENT_DOCTOR_SCHEMA,
+  PROTOCOL_SCHEMA,
+  type PeerRole,
+} from '@github-decrypter/protocol';
 import {
   DESIGN_SYSTEM_BUILD,
   DESIGN_SYSTEM_ID,
@@ -14,7 +19,9 @@ const protocolRole: PeerRole = 'studio';
 export * from './studio-context.js';
 export * from './pwa.js';
 export * from './onboarding-profile.js';
+export * from './environment-doctor-client.js';
 export { OnboardingFlow } from './OnboardingFlow.js';
+export { EnvironmentDoctor } from './EnvironmentDoctor.js';
 export { StudioApp } from './App.js';
 
 export const appIdentity = Object.freeze({
@@ -38,6 +45,11 @@ export const appIdentity = Object.freeze({
   adaptiveUserProfileSchema: ADAPTIVE_USER_PROFILE_SCHEMA,
   adaptiveProfilePersistence: false as const,
   adaptiveProfileSecurityAuthority: false as const,
+  environmentDoctorBuild: ENVIRONMENT_DOCTOR_BUILD,
+  environmentDoctorSchema: ENVIRONMENT_DOCTOR_SCHEMA,
+  environmentDoctorUserInitiated: true as const,
+  diagnosticLocalRuntimeTransport: true as const,
+  genericLocalRuntimeTransport: false as const,
   layoutStatePersistence: false as const,
-  role: 'Client-only React Studio with PWA shell, design system, IDE workbench and session-only adaptive onboarding profile. Privileged execution and persistence remain outside frontend authority.',
+  role: 'Client-only React Studio with PWA shell, design system, IDE workbench, session-only adaptive onboarding and a user-initiated read-only loopback Environment Doctor. Privileged execution and persistence remain outside frontend authority.',
 });
