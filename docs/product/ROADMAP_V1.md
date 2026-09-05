@@ -43,7 +43,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 27. **React Studio Foundation** — ✅
 28. **PWA** — ✅
-29. **Unified Design System**
+29. **Unified Design System** — ✅
 30. **IDE Layout**
 31. **Onboarding** — North Star: **Adaptive User Profile foundation**, technical level, objective, learning intent and explanation preference.
 32. **Environment Doctor**
