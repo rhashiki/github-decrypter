@@ -190,7 +190,7 @@ export function StudioApp() {
         <span>Offline-capable shell</span>
         <span>Layout state: memory only</span>
         <span className="studio-statusbar-spacer" />
-        <span>Local Runtime: not connected</span>
+        <span>Local Runtime: Not connected</span>
       </WorkbenchStatusBar>
     </Workbench>
   );
