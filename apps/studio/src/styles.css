@@ -273,6 +273,81 @@ a { color: var(--gd-color-accent); }
 
 .studio-profile-summary strong { font-size: var(--gd-font-size-sm); }
 
+.studio-doctor {
+  padding: clamp(var(--gd-space-lg), 4vw, var(--gd-space-xxxl));
+}
+
+.studio-doctor-intro {
+  max-width: 760px;
+  color: var(--gd-color-text-muted);
+  line-height: var(--gd-line-body);
+}
+
+.studio-doctor-browser,
+.studio-doctor-result {
+  padding: var(--gd-space-xl);
+}
+
+.studio-doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gd-space-sm);
+  margin-top: var(--gd-space-lg);
+}
+
+.studio-doctor-grid > div {
+  min-width: 0;
+  display: grid;
+  gap: var(--gd-space-xs);
+  padding: var(--gd-space-md);
+  border: 1px solid var(--gd-color-border-subtle);
+  border-radius: var(--gd-radius-sm);
+  background: var(--gd-color-surface);
+}
+
+.studio-doctor-grid span:first-child {
+  color: var(--gd-color-text-muted);
+  font-size: var(--gd-font-size-xs);
+}
+
+.studio-doctor-actions,
+.studio-doctor-result-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-space-md);
+  flex-wrap: wrap;
+}
+
+.studio-doctor-checks {
+  display: grid;
+  gap: var(--gd-space-sm);
+  margin: var(--gd-space-lg) 0;
+}
+
+.studio-doctor-check {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gd-space-lg);
+  padding: var(--gd-space-md);
+  border: 1px solid var(--gd-color-border-subtle);
+  border-radius: var(--gd-radius-sm);
+  background: var(--gd-color-surface);
+}
+
+.studio-doctor-check p {
+  margin-bottom: 0;
+  color: var(--gd-color-text-muted);
+  font-size: var(--gd-font-size-sm);
+  line-height: var(--gd-line-body);
+}
+
+.studio-doctor-remediation {
+  padding-top: var(--gd-space-xs);
+  color: var(--gd-color-text) !important;
+}
+
 .studio-panel { padding: var(--gd-space-md) var(--gd-space-lg); }
 .studio-panel-heading {
   display: flex;
@@ -312,7 +387,8 @@ a { color: var(--gd-color-accent); }
 @media (max-width: 900px) {
   .studio-layout-actions .gd-badge { display: none; }
   .studio-reserved-grid,
-  .studio-profile-summary { grid-template-columns: 1fr; }
+  .studio-profile-summary,
+  .studio-doctor-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
@@ -326,4 +402,5 @@ a { color: var(--gd-color-accent); }
   .studio-statusbar { gap: var(--gd-space-sm); }
   .studio-statusbar span:nth-child(2),
   .studio-statusbar span:nth-child(3) { display: none; }
+  .studio-doctor-check { flex-direction: column; }
 }
