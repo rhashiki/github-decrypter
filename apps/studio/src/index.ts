@@ -1,4 +1,5 @@
 import { PROTOCOL_SCHEMA, type PeerRole } from '@github-decrypter/protocol';
+import { DESIGN_SYSTEM_BUILD, DESIGN_SYSTEM_ID, DESIGN_SYSTEM_SCHEMA } from '@github-decrypter/ui';
 import { STUDIO_BUILD, STUDIO_LAUNCH_SCHEMA, STUDIO_VERSION } from './studio-context.js';
 
 const protocolRole: PeerRole = 'studio';
@@ -19,5 +20,8 @@ export const appIdentity = Object.freeze({
   bundler: 'Vite 8' as const,
   pwa: true as const,
   offlineAppShell: true as const,
-  role: 'Client-only React Studio with installable same-origin PWA app shell. Unified design system and IDE layout remain Builds 29–30.',
+  designSystem: DESIGN_SYSTEM_ID,
+  designSystemSchema: DESIGN_SYSTEM_SCHEMA,
+  designSystemBuild: DESIGN_SYSTEM_BUILD,
+  role: 'Client-only React Studio with installable PWA shell and unified design system. IDE layout remains Build 30.',
 });

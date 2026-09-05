@@ -25,6 +25,7 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
       manifest.name !== '@github-decrypter/studio'
       || versionBuild < 27
       || dependencies['@github-decrypter/protocol'] !== 'workspace:*'
+      || (policy.currentBuild >= rule.designSystemBuild && dependencies['@github-decrypter/ui'] !== 'workspace:*')
       || dependencies.react !== '19.2.7'
       || dependencies['react-dom'] !== '19.2.7'
       || devDependencies.vite !== '8.2.2'
@@ -139,9 +140,12 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
   ) violations.push({ code: 'AG257', message: 'Build 27+ machine-readable Studio boundaries were weakened.' });
 
   const studioRule = policy.appRules?.['@github-decrypter/studio'];
+  const expectedWorkspaceDependencies = policy.currentBuild >= rule.designSystemBuild
+    ? ['@github-decrypter/protocol', '@github-decrypter/ui']
+    : ['@github-decrypter/protocol'];
   if (
     !studioRule
-    || JSON.stringify(studioRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/protocol'])
+    || JSON.stringify(studioRule.allowedWorkspaceDependencies) !== JSON.stringify(expectedWorkspaceDependencies)
     || !Array.isArray(studioRule.allowedExternalDependencies)
     || !studioRule.allowedExternalDependencies.includes('react')
     || !studioRule.allowedExternalDependencies.includes('react-dom')
@@ -167,7 +171,7 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-studio-report/2',
+  schema: 'gd-architecture-guardian-studio-report/3',
   currentBuild: policy.currentBuild,
   framework: rule?.framework ?? null,
   bundler: rule?.bundler ?? null,

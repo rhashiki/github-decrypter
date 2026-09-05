@@ -6,6 +6,10 @@ const root = process.cwd();
 const dist = path.join(root, 'apps/studio/dist');
 const read = (relative) => fs.readFileSync(path.join(dist, relative), 'utf8');
 const exists = (relative) => fs.existsSync(path.join(dist, relative));
+const studioPackage = JSON.parse(fs.readFileSync(path.join(root, 'apps/studio/package.json'), 'utf8'));
+const versionMatch = /^0\.0\.(\d+)$/.exec(studioPackage.version);
+assert.ok(versionMatch && Number(versionMatch[1]) >= 28, 'Studio version regressed below Build 28.');
+const studioBuild = Number(versionMatch[1]);
 
 for (const required of [
   'index.html',
@@ -24,7 +28,7 @@ assert.equal(manifest.scope, './');
 assert.equal(manifest.display, 'standalone');
 assert.ok(index.includes('rel="manifest"'));
 assert.ok(sw.includes("const CACHE_PREFIX = \"gd-studio-shell-\""));
-assert.ok(sw.includes("const CACHE_NAME = \"gd-studio-shell-v28\""));
+assert.ok(sw.includes(`const CACHE_NAME = \"gd-studio-shell-v${studioBuild}\"`));
 assert.ok(sw.includes("request.method !== 'GET'"));
 assert.ok(sw.includes('requestUrl.origin !== self.location.origin'));
 assert.ok(sw.includes("request.mode === 'navigate'"));
@@ -56,7 +60,9 @@ assert.deepEqual(pngDimensions('icons/icon-512.png'), { width: 512, height: 512 
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build28-pwa-dist/1',
+  schema: 'gd-build28-pwa-dist/2',
+  owningBuild: 28,
+  studioBuild,
   builtAssets,
   manifestIncluded: true,
   serviceWorkerIncluded: true,

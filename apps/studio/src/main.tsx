@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import '@github-decrypter/ui/styles.css';
 import { StudioApp } from './App.js';
 import { registerStudioPwa } from './pwa.js';
 import './styles.css';

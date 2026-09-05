@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "..",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "../packages/ui/src/**/*.ts",
+    "../packages/ui/src/**/*.tsx",
+    "../packages/protocol/src/**/*.ts",
+    "../apps/studio/src/**/*.ts",
+    "../apps/studio/src/**/*.tsx",
+    "./test-build29-unified-design-system-runtime.tsx"
+  ]
+}

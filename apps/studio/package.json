@@ -1,6 +1,6 @@
 {
   "name": "@github-decrypter/studio",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@github-decrypter/protocol": "workspace:*",
+    "@github-decrypter/ui": "workspace:*",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
