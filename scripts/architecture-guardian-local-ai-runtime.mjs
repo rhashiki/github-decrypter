@@ -13,6 +13,10 @@ const versionBuild = (value) => {
   const match = typeof value === 'string' ? value.match(/^0\.0\.(\d+)$/) : null;
   return match ? Number(match[1]) : null;
 };
+const sourceBuild = (source, pattern) => {
+  const match = source.match(pattern);
+  return match ? Number(match[1]) : null;
+};
 
 if (
   !rule || policy.currentBuild < 34 || rule.minimumBuild !== 34 || policy.phaseGates?.localAIRuntimeBuild !== 34
@@ -29,12 +33,14 @@ if (
   const localPackage = json('apps/local/package.json');
   const rootPackage = json('package.json');
   const appRule = policy.appRules?.['@github-decrypter/local'];
+  const identityBuild = sourceBuild(identity, /LOCAL_RUNTIME_BUILD = (\d+)/);
+  const identityVersionBuild = sourceBuild(identity, /LOCAL_RUNTIME_VERSION = '0\.0\.(\d+)'/);
 
   if (
     localPackage.name !== '@github-decrypter/local' || versionBuild(localPackage.version) === null || versionBuild(localPackage.version) < 34
     || localPackage.dependencies?.['@github-decrypter/ai'] !== 'workspace:*'
     || !appRule?.allowedWorkspaceDependencies?.includes('@github-decrypter/ai')
-    || !identity.includes('LOCAL_RUNTIME_BUILD = 34') || !identity.includes("LOCAL_RUNTIME_VERSION = '0.0.34'")
+    || identityBuild === null || identityBuild < 34 || identityVersionBuild === null || identityVersionBuild < 34
   ) violations.push({ code: 'AG321', message: 'Local Runtime identity/dependency activation is inconsistent.' });
 
   for (const marker of [
@@ -74,7 +80,7 @@ if (
     violations.push({ code: 'AG324', message: 'Provider/model-specific implementation arrived in Build 34.' });
   }
   if (/\b(?:installModel|downloadModel|removeModel|setDefaultModel|routeModel|selectModel|registerProvider|unregisterProvider)\b/.test(runtime)) {
-    violations.push({ code: 'AG324', message: 'Installer, model-manager or routing authority arrived before Builds 35–37.' });
+    violations.push({ code: 'AG324', message: 'Installer, model-manager or routing authority leaked into the Build 34 runtime owner.' });
   }
   if (
     rule.networkAuthority !== false || rule.secretsAuthority !== false || rule.promptPersistence !== false
