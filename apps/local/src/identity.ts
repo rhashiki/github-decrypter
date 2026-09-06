@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 34 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.34' as const;
+export const LOCAL_RUNTIME_BUILD = 35 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.35' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http','health','readiness','protocol-handshake','persistent-sqlite','schema-migrations',
   'durable-jobs','job-dependencies','job-leases','crash-recovery','runtime-sessions','lease-recovery',
@@ -25,6 +25,10 @@ export const LOCAL_RUNTIME_FEATURES = [
   'local-ai-runtime','local-ai-provider-discovery','local-ai-model-discovery','capability-gated-ai-execution',
   'local-ai-construction-only-adapters','no-local-ai-prompt-persistence','no-local-ai-response-persistence',
   'no-external-ai-execution','no-ai-network-authority','no-ai-secret-authority','no-ai-automatic-routing',
+  'local-ai-installer','local-ai-installer-discovery','capability-gated-model-installation','conditional-network-installation',
+  'ollama-compatible-installer-family','vllm-compatible-installer-family','custom-local-installer-family',
+  'no-arbitrary-model-source-url','no-installer-secret-authority','no-installer-state-persistence',
+  'no-model-removal','no-model-update','no-model-default-selection','no-installer-automatic-routing',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -35,5 +39,5 @@ export const localRuntimeIdentity = Object.freeze({
   id: 'local', packageName: '@github-decrypter/local', product: 'GitHub Decrypter',
   build: LOCAL_RUNTIME_BUILD, version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const, protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor and capability-gated local-only AI provider/model execution without network, secret, persistence, installer, model-manager or routing authority.',
+  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor, capability-gated local-only AI execution, and explicit local model installation through construction-time provider-neutral installer adapters with conditional network authority; model management and routing remain later authorities.',
 });
