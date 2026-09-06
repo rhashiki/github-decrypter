@@ -112,14 +112,14 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
   const studioBuild = Number.parseInt(String(studioPackage?.version ?? '').split('.')[2] ?? '', 10);
   if (
     !Number.isInteger(rootBuild) || rootBuild < 31 || rootBuild !== policy.currentBuild
-    || studioBuild !== rootBuild
-    || !context.includes(`STUDIO_BUILD = ${rootBuild}`)
-    || !context.includes(`STUDIO_VERSION = '0.0.${rootBuild}'`)
+    || !Number.isInteger(studioBuild) || studioBuild < 31
+    || !context.includes(`STUDIO_BUILD = ${studioBuild}`)
+    || !context.includes(`STUDIO_VERSION = '${studioPackage?.version}'`)
     || !identity.includes('onboardingBuild: ONBOARDING_BUILD')
     || !identity.includes('adaptiveUserProfileSchema: ADAPTIVE_USER_PROFILE_SCHEMA')
     || !identity.includes('adaptiveProfilePersistence: false')
     || !identity.includes('adaptiveProfileSecurityAuthority: false')
-    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${rootBuild}\``)
+    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${studioBuild}\``)
     || policy.studioAuthority?.onboarding !== true
     || policy.studioAuthority?.adaptiveUserProfile !== true
     || policy.studioAuthority?.adaptiveProfilePersistence !== false
@@ -142,7 +142,7 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-onboarding-report/1',
+  schema: 'gd-architecture-guardian-onboarding-report/2',
   currentBuild: policy.currentBuild,
   profileSchema: rule?.schema ?? null,
   conversationalOnboarding: rule?.conversationalOnboarding ?? null,

@@ -12,7 +12,7 @@ const client = read('apps/studio/src/environment-doctor-client.ts');
 const surface = read('apps/studio/src/EnvironmentDoctor.tsx');
 const app = read('apps/studio/src/App.tsx');
 
-assert.equal(policy.currentBuild, 32);
+assert.ok(policy.currentBuild >= 32);
 assert.equal(policy.phaseGates.environmentDoctorBuild, 32);
 assert.equal(policy.environmentDoctorAuthority.minimumBuild, 32);
 assert.equal(policy.environmentDoctorAuthority.schema, 'gd-environment-doctor/1');
@@ -57,8 +57,9 @@ assert.deepEqual(
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build32-environment-doctor-static/1',
+  schema: 'gd-build32-environment-doctor-static/2',
   build: 32,
+  currentBuild: policy.currentBuild,
   doctorSchema: 'gd-environment-doctor/1',
   endpoint: policy.environmentDoctorAuthority.endpoint,
   userInitiated: true,

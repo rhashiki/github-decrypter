@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = process.cwd();
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 const json = (relative) => JSON.parse(read(relative));
+const buildOf = (version) => Number.parseInt(String(version).split('.')[2] ?? '', 10);
 
 const policy = json('architecture.guardian.json');
 const rootPackage = json('package.json');
@@ -13,12 +14,15 @@ const profile = read('apps/studio/src/onboarding-profile.ts');
 const flow = read('apps/studio/src/OnboardingFlow.tsx');
 const app = read('apps/studio/src/App.tsx');
 const identity = read('apps/studio/src/index.ts');
-const currentBuild = Number.parseInt(String(rootPackage.version).split('.')[2] ?? '', 10);
+const context = read('apps/studio/src/studio-context.ts');
+const vite = read('apps/studio/vite.config.ts');
+const rootBuild = buildOf(rootPackage.version);
+const studioBuild = buildOf(studioPackage.version);
 
 assert.ok(policy.currentBuild >= 31);
-assert.equal(policy.currentBuild, currentBuild);
+assert.equal(policy.currentBuild, rootBuild);
 assert.equal(policy.phaseGates.onboardingBuild, 31);
-assert.equal(studioPackage.version, rootPackage.version);
+assert.ok(studioBuild >= 31);
 assert.equal(policy.adaptiveProfileAuthority.schema, 'gd-adaptive-user-profile/1');
 assert.equal(policy.adaptiveProfileAuthority.profilePersistence, false);
 assert.equal(policy.adaptiveProfileAuthority.persistenceOwner, 'local-runtime');
@@ -52,6 +56,9 @@ for (const marker of [
 assert.ok(app.includes('<OnboardingFlow onComplete={setProfile} />'));
 assert.ok(app.includes('Retake onboarding'));
 assert.ok(identity.includes('adaptiveProfilePersistence: false'));
+assert.ok(context.includes(`STUDIO_BUILD = ${studioBuild}`));
+assert.ok(context.includes(`STUDIO_VERSION = '${studioPackage.version}'`));
+assert.ok(vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${studioBuild}\``));
 assert.doesNotMatch([profile, flow].join('\n'), /\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|127\.0\.0\.1:43110|localhost:43110/);
 if (policy.currentBuild === 31) {
   assert.doesNotMatch(app, /127\.0\.0\.1:43110|localhost:43110|<EnvironmentDoctor/);
@@ -59,9 +66,10 @@ if (policy.currentBuild === 31) {
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build31-onboarding-static/2',
+  schema: 'gd-build31-onboarding-static/3',
   owningBuild: 31,
   currentBuild: policy.currentBuild,
+  studioBuild,
   adaptiveUserProfileSchema: policy.adaptiveProfileAuthority.schema,
   requiredPreferences: policy.adaptiveProfileAuthority.requiredPreferences,
   conversationalOnboarding: true,

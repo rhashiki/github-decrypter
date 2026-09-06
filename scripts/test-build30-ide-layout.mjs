@@ -21,9 +21,10 @@ const vite = read('apps/studio/vite.config.ts');
 
 assert.ok(policy.currentBuild >= 30);
 assert.equal(policy.phaseGates.ideLayoutBuild, 30);
-const currentStudioBuild = buildOf(rootPackage.version);
+const rootBuild = buildOf(rootPackage.version);
+const currentStudioBuild = buildOf(studioPackage.version);
+assert.ok(rootBuild >= 30);
 assert.ok(currentStudioBuild >= 30);
-assert.equal(buildOf(studioPackage.version), currentStudioBuild);
 assert.ok(buildOf(uiPackage.version) >= 30);
 assert.equal(policy.ideLayoutAuthority.schema, 'gd-ide-layout/1');
 assert.equal(policy.ideLayoutAuthority.structuralOnly, true);
@@ -87,13 +88,15 @@ assert.doesNotMatch(app, /\blocalStorage\b|\bindexedDB\b|\bsessionStorage\b|\bfe
 assert.ok(identity.includes('ideLayoutSchema: IDE_LAYOUT_SCHEMA'));
 assert.ok(identity.includes('layoutStatePersistence: false'));
 assert.ok(context.includes(`STUDIO_BUILD = ${currentStudioBuild}`));
+assert.ok(context.includes(`STUDIO_VERSION = '${studioPackage.version}'`));
 assert.ok(vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${currentStudioBuild}\``));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build30-ide-layout-static/1',
+  schema: 'gd-build30-ide-layout-static/2',
   owningBuild: 30,
   currentBuild: policy.currentBuild,
+  studioBuild: currentStudioBuild,
   layoutSchema: 'gd-ide-layout/1',
   regions: policy.ideLayoutAuthority.requiredRegions,
   structuralOnly: true,

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/ai/src/**/*.ts",
+    "./test-build33-ai-provider-api-runtime.ts"
+  ]
+}

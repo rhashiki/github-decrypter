@@ -5,6 +5,9 @@ import path from 'node:path';
 const root = process.cwd();
 const dist = path.join(root, 'apps/studio/dist');
 const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
+const studioPackage = JSON.parse(fs.readFileSync(path.join(root, 'apps/studio/package.json'), 'utf8'));
+const studioBuild = Number.parseInt(String(studioPackage.version).split('.')[2] ?? '', 10);
+assert.ok(Number.isInteger(studioBuild) && studioBuild >= 31);
 assert.ok(fs.existsSync(dist), 'Studio dist is missing; run the Vite build first.');
 
 function collect(directory, extension) {
@@ -39,7 +42,7 @@ for (const marker of [
 
 assert.ok(css.includes('.studio-onboarding-option'), 'Built CSS is missing onboarding choice styling.');
 assert.ok(css.includes('.studio-profile-summary'), 'Built CSS is missing adaptive profile summary styling.');
-assert.ok(serviceWorker.includes(`gd-studio-shell-v${policy.currentBuild}`), 'PWA shell cache is not aligned with the current Studio Build.');
+assert.ok(serviceWorker.includes(`gd-studio-shell-v${studioBuild}`), 'PWA shell cache is not aligned with the current Studio Build.');
 assert.doesNotMatch(js, /\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b/);
 if (policy.currentBuild === 31) {
   assert.doesNotMatch(js, /127\.0\.0\.1:43110|localhost:43110/);
@@ -49,9 +52,10 @@ if (policy.currentBuild === 31) {
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build31-onboarding-dist/2',
+  schema: 'gd-build31-onboarding-dist/3',
   owningBuild: 31,
   currentBuild: policy.currentBuild,
+  studioBuild,
   profileSchemaPresent: true,
   conversationalQuestionsPresent: true,
   onboardingCssPresent: true,
