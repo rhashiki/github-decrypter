@@ -109,7 +109,10 @@ if (
   if (exists('apps/local/src/ai-provider-runtime.ts')) {
     violations.push({ code: 'AG315', message: 'Deprecated/ambiguous AI provider runtime path is forbidden.', detail: 'apps/local/src/ai-provider-runtime.ts' });
   }
-  const allowedRuntimeImports = new Set(policy.currentBuild >= 34 ? ['apps/local/src/ai-runtime.ts'] : []);
+  const allowedRuntimeImports = new Set([
+    ...(policy.currentBuild >= 34 ? ['apps/local/src/ai-runtime.ts'] : []),
+    ...(policy.currentBuild >= 35 ? ['apps/local/src/ai-installer.ts'] : []),
+  ]);
   for (const appRoot of ['apps/local/src', 'apps/studio/src', 'apps/extension/src']) {
     if (!exists(appRoot)) continue;
     const stack = [path.join(root, appRoot)];
