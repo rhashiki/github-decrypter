@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const read = (file) => fs.readFileSync(file, 'utf8');
 const json = (file) => JSON.parse(read(file));
 const versionBuild = (value) => Number(/^0\.0\.(\d+)$/.exec(value)?.[1] ?? NaN);
+const sourceBuild = (source, pattern) => Number(pattern.exec(source)?.[1] ?? NaN);
 
 const policy = json('architecture.guardian.json');
 const rootPackage = json('package.json');
@@ -32,11 +33,11 @@ assert.equal(policy.localAIRuntimeAuthority.modelInstallation, false);
 assert.equal(policy.localAIRuntimeAuthority.modelManagement, false);
 assert.deepEqual(policy.localAIRuntimeAuthority.allowedOperations, ['providers.list','models.list','generate']);
 
-assert.equal(localPackage.version, '0.0.34');
+assert.ok(versionBuild(localPackage.version) >= 34);
 assert.equal(localPackage.dependencies['@github-decrypter/ai'], 'workspace:*');
 assert.ok(policy.appRules['@github-decrypter/local'].allowedWorkspaceDependencies.includes('@github-decrypter/ai'));
-assert.match(identity, /LOCAL_RUNTIME_BUILD = 34/);
-assert.match(identity, /LOCAL_RUNTIME_VERSION = '0\.0\.34'/);
+assert.ok(sourceBuild(identity, /LOCAL_RUNTIME_BUILD = (\d+)/) >= 34);
+assert.ok(sourceBuild(identity, /LOCAL_RUNTIME_VERSION = '0\.0\.(\d+)'/) >= 34);
 
 for (const marker of [
   "LOCAL_AI_RUNTIME_BUILD = 34",
@@ -84,10 +85,11 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build34-local-ai-runtime-static/1',
   build: 34,
+  forwardCompatibleIdentity: true,
   localOnly: true,
   capabilityGated: true,
   externalProviderExecution: false,
   networkAuthority: false,
   persistence: false,
-  installerManagerRoutingDeferred: true,
+  installerManagerRoutingDeferredFromRuntimeOwner: true,
 }, null, 2));
