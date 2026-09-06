@@ -23,13 +23,9 @@ jobs:
         run: corepack enable
       - name: Install workspace toolchain
         run: pnpm install --no-frozen-lockfile
-      - name: Validate Build 35 installer core contract
-        run: node scripts/test-build35-local-ai-installer-core.mjs
-      - name: Compile Build 35 installer core
-        run: tsc -p scripts/tsconfig.build35-core-tests.json
-      - name: Validate Build 35 installer core runtime
-        run: pnpm exec tsx scripts/test-build35-local-ai-installer-core-runtime.ts
-      - name: Preserve Build 34 authority while phase activation is pending
-        run: pnpm run check:build34
+      - name: Run Architecture Guardian
+        run: pnpm run guardian
+      - name: Validate Build 4–35 and TypeScript workspaces
+        run: pnpm run ci
       - name: Validate modern engine preservation
         run: node scripts/test-build4-modern-engine-preservation.mjs
