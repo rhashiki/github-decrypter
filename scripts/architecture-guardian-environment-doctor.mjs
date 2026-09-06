@@ -7,6 +7,8 @@ const exists = (relative) => fs.existsSync(path.join(root, relative));
 const policy = JSON.parse(read('architecture.guardian.json'));
 const rule = policy.environmentDoctorAuthority;
 const violations = [];
+const versionBuild = (value) => Number(/^0\.0\.(\d+)$/.exec(typeof value === 'string' ? value : '')?.[1] ?? NaN);
+const sourceBuild = (source, name) => Number(new RegExp(`${name} = (\\d+)`).exec(source)?.[1] ?? NaN);
 
 if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phaseGates?.environmentDoctorBuild !== 32) {
   violations.push({ code: 'AG300', message: 'Build 32 Environment Doctor authority is missing or inactive.' });
@@ -123,14 +125,17 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
   const studioContext = read('apps/studio/src/studio-context.ts');
   const localIdentity = read('apps/local/src/identity.ts');
   const vite = read('apps/studio/vite.config.ts');
+  const studioBuild = sourceBuild(studioContext, 'STUDIO_BUILD');
+  const localBuild = sourceBuild(localIdentity, 'LOCAL_RUNTIME_BUILD');
+  const pwaBuild = Number(/PWA_CACHE_NAME = `\$\{PWA_CACHE_PREFIX\}v(\d+)`/.exec(vite)?.[1] ?? NaN);
   if (
-    rootPackage?.version !== '0.0.32' || studioPackage?.version !== '0.0.32' || localPackage?.version !== '0.0.32'
-    || !studioContext.includes('STUDIO_BUILD = 32') || !studioContext.includes("STUDIO_VERSION = '0.0.32'")
-    || !localIdentity.includes('LOCAL_RUNTIME_BUILD = 32') || !localIdentity.includes("LOCAL_RUNTIME_VERSION = '0.0.32'")
+    versionBuild(rootPackage?.version) < 32 || versionBuild(studioPackage?.version) < 32 || versionBuild(localPackage?.version) < 32
+    || studioBuild < 32 || localBuild < 32 || pwaBuild < 32
+    || !studioContext.includes(`STUDIO_VERSION = '${studioPackage?.version}'`)
+    || !localIdentity.includes(`LOCAL_RUNTIME_VERSION = '${localPackage?.version}'`)
     || !identity.includes('environmentDoctorBuild: ENVIRONMENT_DOCTOR_BUILD')
     || !identity.includes('diagnosticLocalRuntimeTransport: true')
     || !identity.includes('genericLocalRuntimeTransport: false')
-    || !vite.includes("PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v32`")
     || policy.studioAuthority?.environmentDoctor !== true
     || policy.studioAuthority?.diagnosticLocalRuntimeTransport !== true
     || policy.studioAuthority?.genericLocalRuntimeTransport !== false
@@ -155,7 +160,7 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-environment-doctor-report/2',
+  schema: 'gd-architecture-guardian-environment-doctor-report/3',
   currentBuild: policy.currentBuild,
   doctorSchema: rule?.schema ?? null,
   endpoint: rule?.endpoint ?? null,

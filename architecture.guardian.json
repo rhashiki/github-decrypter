@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 32,
+  "currentBuild": 33,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -30,7 +30,8 @@
     "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/git": { "allowedWorkspaceDependencies": ["@github-decrypter/workspace"], "environmentNeutral": true },
     "@github-decrypter/github-app": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
-    "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
+    "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/ai": { "allowedWorkspaceDependencies": [], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/studio": {
@@ -247,6 +248,39 @@
     "aiExecution": false,
     "externalTransport": false
   },
+  "aiProviderAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "contractPackage": "@github-decrypter/ai",
+    "runtimeOwnerRoot": "apps/local",
+    "minimumBuild": 33,
+    "localAIRuntimeBuild": 34,
+    "localAIInstallerBuild": 35,
+    "modelManagerBuild": 36,
+    "modelRoutingBuild": 37,
+    "conversationEngineBuild": 44,
+    "toolRuntimeBuild": 53,
+    "agentRuntimeBuild": 58,
+    "schema": "gd-ai-provider/1",
+    "providerKinds": ["local", "external"],
+    "localFirstClass": true,
+    "externalProvidersOptional": true,
+    "mandatoryProvider": null,
+    "contractOnly": true,
+    "environmentNeutral": true,
+    "runtimeExecution": false,
+    "directNetworkAuthority": false,
+    "secretFields": false,
+    "rawProviderResponse": false,
+    "providerEndpointConfiguration": false,
+    "promptPersistence": false,
+    "responsePersistence": false,
+    "providerConfigurationPersistence": false,
+    "studioTransport": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "toolAuthority": false,
+    "agentAuthority": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -265,7 +299,7 @@
     "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
     "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
-    "onboardingBuild": 31, "environmentDoctorBuild": 32, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
