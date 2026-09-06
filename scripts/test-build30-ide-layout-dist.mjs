@@ -8,10 +8,10 @@ const assets = path.join(dist, 'assets');
 assert.equal(fs.existsSync(dist), true, 'Studio dist is missing.');
 assert.equal(fs.existsSync(assets), true, 'Studio assets directory is missing.');
 
-const rootPackage = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const studioPackage = JSON.parse(fs.readFileSync(path.join(root, 'apps/studio/package.json'), 'utf8'));
 const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
-const currentBuild = Number.parseInt(String(rootPackage.version).split('.')[2] ?? '', 10);
-assert.ok(Number.isInteger(currentBuild) && currentBuild >= 30);
+const studioBuild = Number.parseInt(String(studioPackage.version).split('.')[2] ?? '', 10);
+assert.ok(Number.isInteger(studioBuild) && studioBuild >= 30);
 
 const cssFiles = fs.readdirSync(assets).filter((name) => name.endsWith('.css')).sort();
 assert.ok(cssFiles.length > 0, 'Vite did not emit Studio CSS.');
@@ -53,7 +53,7 @@ for (const marker of boundedLayoutMarkers) {
 }
 
 const sw = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf8');
-assert.ok(sw.includes(`gd-studio-shell-v${currentBuild}`), `PWA cache did not remain aligned with current Studio Build ${currentBuild}.`);
+assert.ok(sw.includes(`gd-studio-shell-v${studioBuild}`), `PWA cache did not remain aligned with current Studio Build ${studioBuild}.`);
 for (const cssFile of cssFiles) {
   assert.ok(sw.includes(`./assets/${cssFile}`), `PWA shell omitted IDE layout CSS: ${cssFile}`);
 }
@@ -63,9 +63,10 @@ for (const jsFile of jsFiles) {
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build30-ide-layout-dist/2',
+  schema: 'gd-build30-ide-layout-dist/3',
   owningBuild: 30,
-  currentBuild,
+  currentBuild: policy.currentBuild,
+  studioBuild,
   cssFiles,
   jsFiles,
   workbenchBundled: true,
