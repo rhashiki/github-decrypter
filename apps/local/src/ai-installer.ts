@@ -182,10 +182,12 @@ export function assertLocalAIInstallerAdapter(value: unknown): asserts value is 
 }
 
 export function createLocalAIInstallRequest(input: LocalAIInstallRequest): LocalAIInstallRequest {
-  return Object.freeze({
-    providerId: normalizeAIProviderId(input.providerId),
-    modelId: normalizeAIModelId(input.modelId),
-  });
+  const providerId = normalizeAIProviderId(input.providerId);
+  const modelId = normalizeAIModelId(input.modelId);
+  if (modelId.includes('://')) {
+    throw new TypeError('Local AI installer model id cannot be a URL.');
+  }
+  return Object.freeze({ providerId, modelId });
 }
 
 export function assertLocalAIInstallResult(value: unknown, request: LocalAIInstallRequest): asserts value is LocalAIInstallResult {
