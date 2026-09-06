@@ -45,11 +45,21 @@ assert.doesNotMatch(contract, /\bnode:|\bprocess\.|\bwindow\.|\bdocument\.|\bfet
 assert.doesNotMatch(contract, /\b(?:apiKey|accessToken|authorization|bearerToken|rawResponse|baseUrl|endpointUrl)\b/);
 assert.doesNotMatch(contract, /\b(?:openai|anthropic|gemini|ollama|vllm|qwen)\b/i);
 
-for (const manifestPath of ['apps/local/package.json', 'apps/studio/package.json', 'apps/extension/package.json']) {
-  const manifest = json(manifestPath);
-  const dependencies = { ...manifest.dependencies, ...manifest.devDependencies, ...manifest.peerDependencies, ...manifest.optionalDependencies };
-  assert.equal(dependencies['@github-decrypter/ai'], undefined, `${manifestPath} must not activate AI Provider API in Build 33.`);
+const localManifest = json('apps/local/package.json');
+const studioManifest = json('apps/studio/package.json');
+const extensionManifest = json('apps/extension/package.json');
+const localDependencies = { ...localManifest.dependencies, ...localManifest.devDependencies, ...localManifest.peerDependencies, ...localManifest.optionalDependencies };
+const studioDependencies = { ...studioManifest.dependencies, ...studioManifest.devDependencies, ...studioManifest.peerDependencies, ...studioManifest.optionalDependencies };
+const extensionDependencies = { ...extensionManifest.dependencies, ...extensionManifest.devDependencies, ...extensionManifest.peerDependencies, ...extensionManifest.optionalDependencies };
+if (policy.currentBuild === 33) {
+  assert.equal(localDependencies['@github-decrypter/ai'], undefined, 'Build 33 must remain contract-only.');
+  assert.equal(fs.existsSync('apps/local/src/ai-runtime.ts'), false, 'Local AI Runtime must not exist before Build 34.');
+} else {
+  assert.equal(policy.phaseGates.localAIRuntimeBuild, 34);
+  assert.equal(localDependencies['@github-decrypter/ai'], 'workspace:*', 'Build 34+ Local Runtime must consume the neutral AI contract.');
 }
+assert.equal(studioDependencies['@github-decrypter/ai'], undefined, 'Studio must not directly consume AI Provider API at this phase.');
+assert.equal(extensionDependencies['@github-decrypter/ai'], undefined, 'Extension must not directly consume AI Provider API at this phase.');
 assert.equal(fs.existsSync('apps/local/src/ai-provider-runtime.ts'), false);
 assert.ok(versionBuild(rootPackage.version) >= 33);
 assert.match(rootPackage.scripts.guardian, /architecture-guardian-ai-provider\.mjs/);
@@ -58,11 +68,11 @@ assert.match(rootPackage.scripts.ci, /check:build33/);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build33-ai-provider-static/1',
+  schema: 'gd-build33-ai-provider-static/2',
   build: 33,
   contractOnly: true,
   localFirstClass: true,
   externalProvidersOptional: true,
-  appExecutionActivated: false,
+  localRuntimeActivated: policy.currentBuild >= 34,
   directNetworkAuthority: false,
 }, null, 2));
