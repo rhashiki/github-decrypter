@@ -12,6 +12,7 @@ import {
   LOCAL_AI_INSTALLERS_RESOURCE,
   LOCAL_AI_INSTALLER_SCHEMA,
   createLocalAIInstallerDescriptor,
+  type LocalAIInstallRequest,
   type LocalAIInstallerAdapter,
   type LocalAIInstallerEventCatalog,
 } from '../apps/local/src/index.js';
@@ -46,7 +47,7 @@ try {
   let installCalls = 0;
   const adapter: LocalAIInstallerAdapter = Object.freeze({
     descriptor,
-    async installModel(request) {
+    installModel: async (request: LocalAIInstallRequest) => {
       installCalls += 1;
       return Object.freeze({
         schema: 'gd-local-ai-install-result/1' as const,
@@ -71,7 +72,7 @@ try {
   let cacheCalls = 0;
   const cacheAdapter: LocalAIInstallerAdapter = Object.freeze({
     descriptor: localOnlyDescriptor,
-    async installModel(request) {
+    installModel: async (request: LocalAIInstallRequest) => {
       cacheCalls += 1;
       return Object.freeze({
         schema: 'gd-local-ai-install-result/1' as const,
