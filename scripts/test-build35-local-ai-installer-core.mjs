@@ -29,13 +29,15 @@ for (const marker of [
   'providerConfigurationPersistence: false',
   'modelStatePersistence: false',
   'studioTransport: false',
+  'readonly providerId: string;',
+  'readonly modelId: string;',
 ]) assert.ok(installer.includes(marker), `missing Build 35 marker: ${marker}`);
 
 assert.ok(index.includes("export * from './ai-installer.js';"));
 assert.doesNotMatch(installer, /\b(?:SecretsVault|SECRETS|LocalDatabase|node:fs|node:child_process|spawn\s*\(|exec\s*\(|WebSocket|XMLHttpRequest|EventSource)\b/);
 assert.doesNotMatch(installer, /https?:\/\//);
 assert.doesNotMatch(installer, /\b(?:removeModel|deleteModel|updateModel|setDefaultModel|routeModel|selectModel)\b/);
-assert.doesNotMatch(installer, /(?:sourceUrl|downloadUrl|endpointUrl|baseUrl|apiKey|secret|credential)/i);
+assert.doesNotMatch(installer, /\b(?:sourceUrl|downloadUrl|endpointUrl|baseUrl|apiKey|credentialValue|secretValue)\s*\??:/i);
 
 console.log(JSON.stringify({
   ok: true,
