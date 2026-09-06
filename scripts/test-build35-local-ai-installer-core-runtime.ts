@@ -14,7 +14,7 @@ import {
   createLocalAIInstallerDescriptor,
   type LocalAIInstallRequest,
   type LocalAIInstallerAdapter,
-  type LocalAIInstallerEventCatalog,
+  type LocalRuntimeEventCatalog,
 } from '../apps/local/src/index.js';
 import type { ConnectivityState } from '../apps/local/src/offline-execution.js';
 
@@ -103,7 +103,7 @@ try {
   );
 
   const events: string[] = [];
-  const eventBus = createEventBus<LocalAIInstallerEventCatalog>({ defaultSource: 'build35-core-test' });
+  const eventBus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build35-core-test' });
   eventBus.subscribe('gd.local.ai-installer.ready', (event) => { events.push(JSON.stringify(event.payload)); });
   eventBus.subscribe('gd.local.ai-installer.operation', (event) => { events.push(JSON.stringify(event.payload)); });
 
