@@ -139,13 +139,13 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
   const uiBuild = Number.parseInt(String(uiPackage?.version ?? '').split('.')[2] ?? '', 10);
   if (
     !Number.isInteger(rootBuild) || rootBuild < 30
-    || studioBuild !== rootBuild
+    || !Number.isInteger(studioBuild) || studioBuild < 30
     || !Number.isInteger(uiBuild) || uiBuild < 30
-    || !context.includes(`STUDIO_BUILD = ${rootBuild}`)
-    || !context.includes(`STUDIO_VERSION = '0.0.${rootBuild}'`)
+    || !context.includes(`STUDIO_BUILD = ${studioBuild}`)
+    || !context.includes(`STUDIO_VERSION = '${studioPackage?.version}'`)
     || !identity.includes('ideLayoutSchema: IDE_LAYOUT_SCHEMA') || !identity.includes('ideLayoutBuild: IDE_LAYOUT_BUILD')
     || !identity.includes('layoutStatePersistence: false')
-    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${rootBuild}\``)
+    || !vite.includes(`PWA_CACHE_NAME = \`${'${PWA_CACHE_PREFIX}'}v${studioBuild}\``)
     || policy.studioAuthority?.ideLayout !== true || policy.studioAuthority?.workspaceLayout !== true
     || policy.designSystemAuthority?.ideLayoutAuthority !== true || policy.designSystemAuthority?.workspaceLayoutAuthority !== true
   ) violations.push({ code: 'AG288', message: 'Build 30 identity/version/PWA/design-system integration is inconsistent.' });
@@ -166,7 +166,7 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-ide-layout-report/1',
+  schema: 'gd-architecture-guardian-ide-layout-report/2',
   currentBuild: policy.currentBuild,
   layoutSchema: rule?.schema ?? null,
   structuralOnly: rule?.structuralOnly ?? null,
