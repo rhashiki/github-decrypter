@@ -208,7 +208,7 @@ try {
   );
   await assert.rejects(
     () => installer.installModel({ jobId: job.id, token: cacheGrant.token, providerId: 'fake-cache', modelId: 'https://example.com/model' }),
-    /AI model id is invalid/i,
+    /cannot be a URL/i,
   );
 
   await new Promise<void>((resolve) => setImmediate(resolve));
