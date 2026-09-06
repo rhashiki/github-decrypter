@@ -74,7 +74,7 @@ try {
   assert.equal(response.headers.get('access-control-allow-credentials'), null);
   const livePayload: unknown = await response.json();
   assertEnvironmentDoctorReport(livePayload);
-  assert.equal(livePayload.runtime.build, 32);
+  assert.ok(livePayload.runtime.build >= 32, 'Environment Doctor must report Build 32 or a later Local Runtime build.');
 
   const preflight = await fetch(endpoint, { method: 'OPTIONS', headers: { origin: allowedOrigin } });
   assert.equal(preflight.status, 204);
@@ -113,7 +113,7 @@ await assert.rejects(
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build32-environment-doctor-runtime/1',
+  schema: 'gd-build32-environment-doctor-runtime/2',
   reportReadyWithWarnings: true,
   metadataOnly: true,
   httpEndpoint: true,
@@ -121,4 +121,5 @@ console.log(JSON.stringify({
   externalOriginRejected: true,
   credentials: false,
   injectedStudioClient: true,
+  laterLocalRuntimeBuildsAllowed: true,
 }, null, 2));

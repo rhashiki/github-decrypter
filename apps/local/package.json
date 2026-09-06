@@ -1,6 +1,6 @@
 {
   "name": "@github-decrypter/local",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@github-decrypter/ai": "workspace:*",
     "@github-decrypter/git": "workspace:*",
     "@github-decrypter/github-app": "workspace:*",
     "@github-decrypter/github-provider": "workspace:*",

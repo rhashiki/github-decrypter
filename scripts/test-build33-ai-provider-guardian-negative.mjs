@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const guardian = 'scripts/architecture-guardian-ai-provider.mjs';
+const policy = JSON.parse(fs.readFileSync('architecture.guardian.json', 'utf8'));
 
 function runGuardian() {
   return spawnSync(process.execPath, [guardian], { encoding: 'utf8' });
@@ -34,8 +35,9 @@ expectFailure(
   'AG313',
 );
 
+const unauthorizedAppManifest = policy.currentBuild >= 34 ? 'apps/studio/package.json' : 'apps/local/package.json';
 expectFailure(
-  'apps/local/package.json',
+  unauthorizedAppManifest,
   (source) => {
     const manifest = JSON.parse(source);
     manifest.dependencies = { ...(manifest.dependencies ?? {}), '@github-decrypter/ai': 'workspace:*' };
@@ -47,9 +49,9 @@ expectFailure(
 expectFailure(
   'architecture.guardian.json',
   (source) => {
-    const policy = JSON.parse(source);
-    policy.aiProviderAuthority.contractOnly = false;
-    return `${JSON.stringify(policy, null, 2)}\n`;
+    const next = JSON.parse(source);
+    next.aiProviderAuthority.contractOnly = false;
+    return `${JSON.stringify(next, null, 2)}\n`;
   },
   'AG310',
 );
@@ -70,10 +72,10 @@ assert.equal(final.status, 0, `${final.stdout}\n${final.stderr}`);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build33-ai-provider-guardian-negative/1',
+  schema: 'gd-build33-ai-provider-guardian-negative/2',
   environmentSpecificTransportRejected: true,
   credentialFieldRejected: true,
-  prematureRuntimeActivationRejected: true,
+  unauthorizedAppActivationRejected: true,
   contractOnlyPolicyProtected: true,
   requiredArtifactsProtected: true,
 }, null, 2));

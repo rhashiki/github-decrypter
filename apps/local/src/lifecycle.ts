@@ -2,6 +2,7 @@ import type { AiChangeSessionId, GitOperation } from '@github-decrypter/git';
 import type { GitHubInstallationState } from '@github-decrypter/github-app';
 import type { GitHubProviderOperation } from '@github-decrypter/github-provider';
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
+import type { LocalAIRuntimeOperation } from './ai-runtime.js';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
 import type { Capability, CapabilityGrantId } from './capability-security.js';
@@ -56,6 +57,8 @@ export type LocalRuntimeGitHubAppInstallationTokenCreatedPayload = { readonly in
 export type LocalRuntimeGitHubAppWebhookVerifiedPayload = { readonly deliveryId: string; readonly event: string; readonly valid: boolean; readonly duplicate: boolean; readonly verifiedAt: string; readonly payloadPersistence: false; };
 export type LocalRuntimeGitHubProviderReadyPayload = { readonly configured: boolean; readonly operations: GitHubProviderOperation[]; readonly readOnly: true; readonly installationTokenPersistence: false; readonly responsePersistence: false; readonly genericRequestApi: false; };
 export type LocalRuntimeGitHubProviderOperationPayload = { readonly operation: GitHubProviderOperation; readonly installationId: number; readonly outcome: 'success' | 'failure'; readonly itemCount: number; readonly occurredAt: string; };
+export type LocalRuntimeAIRuntimeReadyPayload = { readonly registeredProviders: number; readonly localOnly: true; readonly runtimeExecution: true; readonly networkAuthority: false; readonly secretsAuthority: false; readonly persistence: false; readonly automaticRouting: false; };
+export type LocalRuntimeAIRuntimeOperationPayload = { readonly operation: LocalAIRuntimeOperation; readonly providerId: string | null; readonly modelId: string | null; readonly outcome: 'success' | 'failure'; readonly itemCount: number; readonly occurredAt: string; readonly promptPersistence: false; readonly responsePersistence: false; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -103,6 +106,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.github-app.webhook.verified': LocalRuntimeGitHubAppWebhookVerifiedPayload;
   readonly 'gd.local.github-provider.ready': LocalRuntimeGitHubProviderReadyPayload;
   readonly 'gd.local.github-provider.operation': LocalRuntimeGitHubProviderOperationPayload;
+  readonly 'gd.local.ai-runtime.ready': LocalRuntimeAIRuntimeReadyPayload;
+  readonly 'gd.local.ai-runtime.operation': LocalRuntimeAIRuntimeOperationPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
