@@ -51,7 +51,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 ## AI and model foundation
 
 33. **AI Provider API** — ✅
-34. **Local AI Runtime**
+34. **Local AI Runtime** — ✅
 35. **Local AI Installer**
 36. **Model Manager**
 37. **Model Routing**
