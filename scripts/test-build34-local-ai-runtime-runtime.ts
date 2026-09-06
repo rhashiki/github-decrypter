@@ -8,6 +8,7 @@ import {
   createAIProviderGenerateRequest,
   createAIProviderModelDescriptor,
   type AIProviderAdapter,
+  type AIProviderGenerateRequest,
 } from '../packages/ai/src/index.js';
 import { createEventBus } from '../packages/shared/src/index.js';
 import {
@@ -29,8 +30,12 @@ try {
   database.open();
   const bus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build34-test' });
   const eventPayloads: string[] = [];
-  bus.subscribe('gd.local.ai-runtime.ready', (event) => eventPayloads.push(JSON.stringify(event.payload)));
-  bus.subscribe('gd.local.ai-runtime.operation', (event) => eventPayloads.push(JSON.stringify(event.payload)));
+  bus.subscribe('gd.local.ai-runtime.ready', (event) => {
+    eventPayloads.push(JSON.stringify(event.payload));
+  });
+  bus.subscribe('gd.local.ai-runtime.operation', (event) => {
+    eventPayloads.push(JSON.stringify(event.payload));
+  });
 
   const jobs = new DurableJobEngine({ database, eventBus: bus, now });
   const capabilities = new CapabilitySecurityAuthority({
@@ -58,7 +63,7 @@ try {
   const localAdapter: AIProviderAdapter = Object.freeze({
     descriptor: localDescriptor,
     async listModels() { return Object.freeze([localModel]); },
-    async generate(request) {
+    async generate(request: AIProviderGenerateRequest) {
       generationCalls += 1;
       return Object.freeze({
         schema: AI_PROVIDER_RESPONSE_SCHEMA,
@@ -79,7 +84,7 @@ try {
       credentialMode: 'runtime-vault',
     }),
     async listModels() { return Object.freeze([]); },
-    async generate(request) {
+    async generate(request: AIProviderGenerateRequest) {
       return Object.freeze({
         schema: AI_PROVIDER_RESPONSE_SCHEMA,
         providerId: request.providerId,
