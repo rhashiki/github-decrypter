@@ -1,6 +1,6 @@
 # Build 33 — AI Provider API
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated validation passed; PR matrix pending**
 
 ## Objective
 
@@ -59,17 +59,21 @@ It does not:
 - Build 53 — Tool Runtime;
 - Build 58 — Agent Runtime.
 
-## Validation plan
+## Isolated validation result
 
-Before merge, Build 33 must pass:
+Branch head `4b707c99370d214669e4f5431159df0476c1a0eb` passed the complete Build 33 push workflow before this documentation-only completion update.
+
+Validated successfully:
 
 1. Architecture Guardian including AG310–AG319;
 2. accumulated Builds 4–33 CI;
-3. forward-compatible Build 32 regression gates;
-4. TypeScript compilation for `@github-decrypter/ai`;
+3. forward-compatible Studio/PWA/IDE Layout/Onboarding/Environment Doctor regression gates;
+4. TypeScript compilation for `@github-decrypter/ai` and all workspaces;
 5. contract runtime validation with fake local/external adapters only;
-6. negative Guardian probes for network/provider-specific/secret/execution drift;
-7. modern-engine preservation;
-8. full historical pull-request workflow matrix.
+6. fail-closed rejection of unknown credential, endpoint and raw-response fields;
+7. negative Guardian probes for network/provider-specific/secret/execution drift;
+8. modern-engine preservation.
+
+The full pull-request workflow matrix remains the final merge gate.
 
 No release, tag, production deploy, browser-store publication, production Supabase mutation or DNS mutation is authorized by this Build.
