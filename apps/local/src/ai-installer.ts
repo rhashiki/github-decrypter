@@ -12,6 +12,7 @@ import type {
   CapabilityToken,
 } from './capability-security.js';
 import type { DurableJobId } from './job-types.js';
+import type { LocalRuntimeEventCatalog } from './lifecycle.js';
 import type { ConnectivityState } from './offline-execution.js';
 
 export const LOCAL_AI_INSTALLER_BUILD = 35 as const;
@@ -108,16 +109,16 @@ export type LocalAIInstallerOperationPayload = {
   readonly persistence: false;
 };
 
-export type LocalAIInstallerEventCatalog = {
-  readonly 'gd.local.ai-installer.ready': LocalAIInstallerReadyPayload;
-  readonly 'gd.local.ai-installer.operation': LocalAIInstallerOperationPayload;
-};
+export type LocalAIInstallerEventCatalog = Pick<
+  LocalRuntimeEventCatalog,
+  'gd.local.ai-installer.ready' | 'gd.local.ai-installer.operation'
+>;
 
 export interface LocalAIInstallerOptions {
   readonly capabilities: CapabilitySecurityAuthority;
   readonly offline: LocalAIInstallerConnectivity;
   readonly adapters?: readonly LocalAIInstallerAdapter[];
-  readonly eventBus?: EventBus<LocalAIInstallerEventCatalog>;
+  readonly eventBus?: EventBus<LocalRuntimeEventCatalog>;
   readonly now?: () => string;
 }
 
@@ -210,7 +211,7 @@ function modelInstallResource(providerId: string, modelId: string): string {
 export class LocalAIInstaller {
   readonly #capabilities: CapabilitySecurityAuthority;
   readonly #offline: LocalAIInstallerConnectivity;
-  readonly #eventBus?: EventBus<LocalAIInstallerEventCatalog>;
+  readonly #eventBus?: EventBus<LocalRuntimeEventCatalog>;
   readonly #now: () => string;
   readonly #adapters = new Map<string, LocalAIInstallerAdapter>();
   #ready = false;
