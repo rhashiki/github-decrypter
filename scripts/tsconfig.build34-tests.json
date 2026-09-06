@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/ai/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build34-local-ai-runtime-runtime.ts"
+  ]
+}
