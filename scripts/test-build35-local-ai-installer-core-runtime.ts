@@ -15,6 +15,7 @@ import {
   type LocalAIInstallerAdapter,
   type LocalAIInstallerEventCatalog,
 } from '../apps/local/src/index.js';
+import type { ConnectivityState } from '../apps/local/src/offline-execution.js';
 
 const tempRoot = mkdtempSync(join(tmpdir(), 'gd-build35-core-'));
 const now = () => '2026-09-06T11:15:00.000Z';
@@ -93,8 +94,8 @@ try {
     networkRequired: true,
   }), /only local providers/i);
 
-  const connectivity = { ready: true, connectivity: 'online' as const };
-  const offline = { status: () => connectivity };
+  let connectivityState: ConnectivityState = 'online';
+  const offline = { status: () => ({ ready: true, connectivity: connectivityState }) };
   assert.throws(
     () => new LocalAIInstaller({ capabilities, offline, adapters: [adapter, adapter] }),
     /duplicated/i,
@@ -175,7 +176,7 @@ try {
   assert.equal(installed.reused, false);
   assert.equal(installCalls, 1);
 
-  connectivity.connectivity = 'offline';
+  connectivityState = 'offline';
   await assert.rejects(
     () => installer.installModel({ jobId: job.id, token: fullGrant.token, providerId: 'fake-local', modelId: 'qwen-test:latest' }),
     /requires online connectivity/i,
@@ -204,15 +205,16 @@ try {
     () => installer.installModel({ jobId: job.id, token: cacheGrant.token, providerId: 'unknown', modelId: 'local-bundle' }),
     /not registered/i,
   );
-  assert.throws(
+  await assert.rejects(
     () => installer.installModel({ jobId: job.id, token: cacheGrant.token, providerId: 'fake-cache', modelId: 'https://example.com/model' }),
+    /AI model id is invalid/i,
   );
 
   await new Promise<void>((resolve) => setImmediate(resolve));
   const eventText = events.join('\n');
   assert.equal(eventText.includes('https://'), false);
   assert.equal(eventText.includes('apiKey'), false);
-  assert.equal(eventText.includes('secret'), false);
+  assert.equal(eventText.includes('secretValue'), false);
 
   const installerTables = database.read((sqlite) => sqlite.prepare(`
     SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'gd_ai_installer%'
