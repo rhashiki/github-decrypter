@@ -81,17 +81,35 @@ if (
     violations.push({ code: 'AG314', message: 'Build 33 activated a provider/model-specific implementation inside the neutral contract.' });
   }
 
-  const appManifests = ['apps/local/package.json', 'apps/studio/package.json', 'apps/extension/package.json'];
-  for (const manifestPath of appManifests) {
-    const appManifest = json(manifestPath);
-    const blocks = [appManifest.dependencies, appManifest.devDependencies, appManifest.peerDependencies, appManifest.optionalDependencies].filter(Boolean);
-    if (blocks.some((block) => Object.prototype.hasOwnProperty.call(block, '@github-decrypter/ai'))) {
-      violations.push({ code: 'AG315', message: 'Build 33 crossed into active app AI execution authority.', detail: manifestPath });
+  const localManifest = json('apps/local/package.json');
+  const studioManifest = json('apps/studio/package.json');
+  const extensionManifest = json('apps/extension/package.json');
+  const deps = (manifest) => [manifest.dependencies, manifest.devDependencies, manifest.peerDependencies, manifest.optionalDependencies]
+    .filter(Boolean).some((block) => Object.prototype.hasOwnProperty.call(block, '@github-decrypter/ai'));
+  if (policy.currentBuild === 33) {
+    for (const [manifestPath, appManifest] of [
+      ['apps/local/package.json', localManifest],
+      ['apps/studio/package.json', studioManifest],
+      ['apps/extension/package.json', extensionManifest],
+    ]) if (deps(appManifest)) violations.push({ code: 'AG315', message: 'Build 33 crossed into active app AI execution authority.', detail: manifestPath });
+    if (exists('apps/local/src/ai-runtime.ts') || exists('apps/local/src/ai-provider-runtime.ts')) {
+      violations.push({ code: 'AG315', message: 'Local AI runtime arrived before Build 34.' });
+    }
+  } else {
+    if (!deps(localManifest) || policy.phaseGates?.localAIRuntimeBuild !== 34) {
+      violations.push({ code: 'AG315', message: 'Build 34+ must activate the neutral AI contract only in Local Runtime.' });
+    }
+    if (deps(studioManifest) || deps(extensionManifest)) {
+      violations.push({ code: 'AG315', message: 'Studio or extension gained direct AI contract authority before its owning phase.' });
+    }
+    if (!exists('apps/local/src/ai-runtime.ts')) {
+      violations.push({ code: 'AG315', message: 'Build 34+ Local AI Runtime artifact is missing.' });
     }
   }
   if (exists('apps/local/src/ai-provider-runtime.ts')) {
-    violations.push({ code: 'AG315', message: 'Local AI runtime arrived before Build 34.', detail: 'apps/local/src/ai-provider-runtime.ts' });
+    violations.push({ code: 'AG315', message: 'Deprecated/ambiguous AI provider runtime path is forbidden.', detail: 'apps/local/src/ai-provider-runtime.ts' });
   }
+  const allowedRuntimeImports = new Set(policy.currentBuild >= 34 ? ['apps/local/src/ai-runtime.ts'] : []);
   for (const appRoot of ['apps/local/src', 'apps/studio/src', 'apps/extension/src']) {
     if (!exists(appRoot)) continue;
     const stack = [path.join(root, appRoot)];
@@ -101,7 +119,10 @@ if (
         const absolute = path.join(current, entry.name);
         if (entry.isDirectory()) stack.push(absolute);
         else if (entry.isFile() && /\.[cm]?[jt]sx?$/.test(entry.name) && fs.readFileSync(absolute, 'utf8').includes("@github-decrypter/ai")) {
-          violations.push({ code: 'AG315', message: 'Build 33 app source imports the AI provider contract before runtime activation.', detail: path.relative(root, absolute) });
+          const relative = path.relative(root, absolute).replaceAll('\\', '/');
+          if (!allowedRuntimeImports.has(relative)) {
+            violations.push({ code: 'AG315', message: 'AI provider contract import escaped its currently authorized runtime boundary.', detail: relative });
+          }
         }
       }
     }
@@ -110,7 +131,7 @@ if (
   if (
     rule.runtimeExecution !== false || rule.directNetworkAuthority !== false || rule.promptPersistence !== false
     || rule.responsePersistence !== false || rule.providerConfigurationPersistence !== false || rule.studioTransport !== false
-  ) violations.push({ code: 'AG316', message: 'Build 33 machine policy granted execution, network, persistence or Studio transport authority.' });
+  ) violations.push({ code: 'AG316', message: 'Build 33 contract package gained execution, network, persistence or Studio transport authority.' });
 
   if (
     rule.localAIRuntimeBuild !== 34 || rule.localAIInstallerBuild !== 35 || rule.modelManagerBuild !== 36
@@ -119,12 +140,10 @@ if (
   ) violations.push({ code: 'AG317', message: 'AI Provider future roadmap authority boundaries drifted.' });
 
   const rootPackage = json('package.json');
-  const localPackage = json('apps/local/package.json');
-  const studioPackage = json('apps/studio/package.json');
   if (
     versionBuild(rootPackage.version) === null || versionBuild(rootPackage.version) < 33
-    || policy.currentBuild === 33 && localPackage.version !== '0.0.32'
-    || policy.currentBuild === 33 && studioPackage.version !== '0.0.32'
+    || policy.currentBuild === 33 && localManifest.version !== '0.0.32'
+    || policy.currentBuild === 33 && studioManifest.version !== '0.0.32'
     || !rootPackage.scripts?.guardian?.includes('architecture-guardian-ai-provider.mjs')
     || !rootPackage.scripts?.['check:build33']?.includes('test-build33-ai-provider-api.mjs')
     || !rootPackage.scripts?.ci?.includes('check:build33')
@@ -146,13 +165,13 @@ if (
 
 console.log(JSON.stringify({
   ok: violations.length === 0,
-  schema: 'gd-architecture-guardian-ai-provider-report/1',
+  schema: 'gd-architecture-guardian-ai-provider-report/2',
   currentBuild: policy.currentBuild,
   contractSchema: rule?.schema ?? null,
   contractOnly: rule?.contractOnly ?? null,
   localFirstClass: rule?.localFirstClass ?? null,
   externalProvidersOptional: rule?.externalProvidersOptional ?? null,
-  runtimeExecution: rule?.runtimeExecution ?? null,
+  localRuntimeActivated: policy.currentBuild >= 34,
   violations,
 }, null, 2));
 if (violations.length) process.exit(1);
