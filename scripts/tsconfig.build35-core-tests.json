@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2023"]
+  },
+  "include": [
+    "../packages/ai/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build35-local-ai-installer-core-runtime.ts"
+  ]
+}
