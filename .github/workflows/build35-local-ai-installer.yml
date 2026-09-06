@@ -28,7 +28,7 @@ jobs:
       - name: Compile Build 35 installer core
         run: tsc -p scripts/tsconfig.build35-core-tests.json
       - name: Validate Build 35 installer core runtime
-        run: tsx scripts/test-build35-local-ai-installer-core-runtime.ts
+        run: pnpm exec tsx scripts/test-build35-local-ai-installer-core-runtime.ts
       - name: Preserve Build 34 authority while phase activation is pending
         run: pnpm run check:build34
       - name: Validate modern engine preservation
