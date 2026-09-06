@@ -1,6 +1,6 @@
 # Build 34 — Local AI Runtime
 
-Status: **IMPLEMENTED — validation pending**
+Status: **IMPLEMENTED — isolated validation passed; PR matrix pending**
 
 ## Objective
 
@@ -63,21 +63,22 @@ No database migration or AI persistence table is introduced in Build 34.
 - Build 53 — Tool Runtime;
 - Build 58 — Agent Runtime.
 
-## Validation plan
+## Isolated validation
 
-Before merge, Build 34 must pass:
+Branch head `baa8e433f07cd13c2fd0302eb4e7ec662e0295e9` passed the complete Build 34 push workflow (run `34011000290`):
 
 1. Architecture Guardian including AG320–AG329;
 2. accumulated Builds 4–34 CI;
-3. forward-compatible Build 33 contract-only regression gates;
-4. TypeScript compilation across Local Runtime and AI contract;
+3. forward-compatible Build 32/33 regression gates;
+4. TypeScript compilation across all workspaces;
 5. fake-local-adapter execution validation;
 6. external-provider rejection validation;
 7. READ-vs-EXECUTE authorization separation;
 8. prompt/response Event Bus leakage checks;
 9. absence of Build 34 AI persistence tables;
 10. negative Guardian probes for network/provider-manager/external-execution drift;
-11. modern-engine preservation;
-12. full historical pull-request workflow matrix.
+11. modern-engine preservation.
+
+The remaining merge gate is the full historical pull-request workflow matrix on the final documentation/roadmap head.
 
 No release, tag, production deploy, browser-store publication, production Supabase mutation or DNS mutation is authorized by this Build.
