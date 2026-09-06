@@ -6,7 +6,11 @@ import {
   type AIProviderDescriptor,
 } from '@github-decrypter/ai';
 import type { EventBus } from '@github-decrypter/shared';
-import type { CapabilitySecurityAuthority, CapabilityToken } from './capability-security.js';
+import type {
+  CapabilityRequirement,
+  CapabilitySecurityAuthority,
+  CapabilityToken,
+} from './capability-security.js';
 import type { DurableJobId } from './job-types.js';
 import type { ConnectivityState } from './offline-execution.js';
 
@@ -279,11 +283,11 @@ export class LocalAIInstaller {
     const request = createLocalAIInstallRequest({ providerId: input.providerId, modelId: input.modelId });
     const adapter = this.#requireAdapter(request.providerId);
     const resource = modelInstallResource(request.providerId, request.modelId);
-    const requirements = [
-      { capability: 'WRITE' as const, resource },
-      { capability: 'EXECUTE' as const, resource },
+    const requirements: CapabilityRequirement[] = [
+      { capability: 'WRITE', resource },
+      { capability: 'EXECUTE', resource },
     ];
-    if (adapter.descriptor.networkRequired) requirements.push({ capability: 'NETWORK' as const, resource });
+    if (adapter.descriptor.networkRequired) requirements.push({ capability: 'NETWORK', resource });
 
     if (adapter.descriptor.networkRequired) {
       const connectivity = this.#offline.status().connectivity;
