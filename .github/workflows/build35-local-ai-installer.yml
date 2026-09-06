@@ -1,0 +1,35 @@
+name: GitHub Decrypter Build 35 — Local AI Installer
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - build/35-local-ai-installer
+
+permissions:
+  contents: read
+
+jobs:
+  local-ai-installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Validate Build 35 installer core contract
+        run: node scripts/test-build35-local-ai-installer-core.mjs
+      - name: Compile Build 35 installer core
+        run: tsc -p scripts/tsconfig.build35-core-tests.json
+      - name: Validate Build 35 installer core runtime
+        run: tsx scripts/test-build35-local-ai-installer-core-runtime.ts
+      - name: Preserve Build 34 authority while phase activation is pending
+        run: pnpm run check:build34
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs
