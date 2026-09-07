@@ -80,7 +80,7 @@ if (
   if (/secrets-vault|SecretsVault|\bSECRETS\b|database\.js|LocalDatabase|node:fs|node:child_process|spawn\s*\(|exec\s*\(/.test(routing)) {
     violations.push({ code: 'AG354', message: 'Model Routing gained secret, database, filesystem or process authority.' });
   }
-  if (/\b(?:installModel|removeModel|updateModel|setDefaultModel|clearDefaultModel|generate|registerProvider|unregisterProvider)\s*\(/.test(routing)) {
+  if (/\b(?:installModel|removeModel|updateModel|setDefaultModel|clearDefaultModel|generate|registerProvider|unregisterProvider)\b/.test(routing)) {
     violations.push({ code: 'AG354', message: 'Model Routing gained installer, manager, execution or provider-registration authority.' });
   }
   if (/\b(?:openai|anthropic|gemini|ollama|vllm|qwen)\b/i.test(routing)) {
