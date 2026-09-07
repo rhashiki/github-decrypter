@@ -2,6 +2,7 @@ import { createEventBus, type EventBus } from '@github-decrypter/shared';
 import type { AddressInfo } from 'node:net';
 import { createLocalAIInstaller, type LocalAIInstaller } from './ai-installer.js';
 import { createLocalAIModelManager, type LocalAIModelManager } from './ai-model-manager.js';
+import { createLocalAIModelRouting, type LocalAIModelRouting } from './ai-model-routing.js';
 import { createLocalAIRuntime, type LocalAIRuntime } from './ai-runtime.js';
 import { createApprovalTransactions, type ApprovalTransactions } from './approval-transactions.js';
 import { createAuditLedger, type AuditLedger } from './audit-ledger.js';
@@ -34,6 +35,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly aiRuntime?: LocalAIRuntime;
   readonly aiInstaller?: LocalAIInstaller;
   readonly aiModelManager?: LocalAIModelManager;
+  readonly aiModelRouting?: LocalAIModelRouting;
   readonly vault?: SecretsVault;
   readonly approvals?: ApprovalTransactions;
   readonly audit?: AuditLedger;
@@ -61,6 +63,7 @@ export class LocalRuntimeDaemon {
   readonly #aiRuntime: LocalAIRuntime;
   readonly #aiInstaller: LocalAIInstaller;
   readonly #aiModelManager: LocalAIModelManager;
+  readonly #aiModelRouting: LocalAIModelRouting;
   readonly #vault: SecretsVault;
   readonly #approvals: ApprovalTransactions;
   readonly #audit: AuditLedger;
@@ -88,6 +91,7 @@ export class LocalRuntimeDaemon {
     this.#aiRuntime = options.aiRuntime ?? createLocalAIRuntime({ capabilities: this.#capabilities, eventBus: this.#eventBus, now: this.#now });
     this.#aiInstaller = options.aiInstaller ?? createLocalAIInstaller({ capabilities: this.#capabilities, offline: this.#offline, eventBus: this.#eventBus, now: this.#now });
     this.#aiModelManager = options.aiModelManager ?? createLocalAIModelManager({ capabilities: this.#capabilities, offline: this.#offline, eventBus: this.#eventBus, now: this.#now });
+    this.#aiModelRouting = options.aiModelRouting ?? createLocalAIModelRouting({ capabilities: this.#capabilities, modelManager: this.#aiModelManager, eventBus: this.#eventBus, now: this.#now });
     this.#vault = options.vault ?? createSecretsVault({ database: this.#database, capabilities: this.#capabilities, eventBus: this.#eventBus, keyPath: this.#config.vaultKeyPath, now: this.#now });
     this.#approvals = options.approvals ?? createApprovalTransactions({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#audit = options.audit ?? createAuditLedger({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
@@ -137,6 +141,7 @@ export class LocalRuntimeDaemon {
   get aiRuntime(): LocalAIRuntime { return this.#aiRuntime; }
   get aiInstaller(): LocalAIInstaller { return this.#aiInstaller; }
   get aiModelManager(): LocalAIModelManager { return this.#aiModelManager; }
+  get aiModelRouting(): LocalAIModelRouting { return this.#aiModelRouting; }
   get vault(): SecretsVault { return this.#vault; }
   get approvals(): ApprovalTransactions { return this.#approvals; }
   get audit(): AuditLedger { return this.#audit; }
@@ -188,6 +193,8 @@ export class LocalRuntimeDaemon {
       if (!aiInstallerStatus.ready) throw new Error('Local AI Installer is not ready after Local AI Runtime startup.');
       const aiModelManagerStatus = await this.#aiModelManager.initialize();
       if (!aiModelManagerStatus.ready) throw new Error('Local AI Model Manager is not ready after Local AI Installer startup.');
+      const aiModelRoutingStatus = await this.#aiModelRouting.initialize();
+      if (!aiModelRoutingStatus.ready) throw new Error('Local AI Model Routing is not ready after Model Manager startup.');
       const gitStatus = await this.#git.initialize();
       if (!gitStatus.ready || !gitStatus.available) throw new Error('Git Runtime requires an available Git executable.');
       const changeTrackingStatus = await this.#changeTracking.initialize();
@@ -230,7 +237,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -242,6 +249,7 @@ export class LocalRuntimeDaemon {
       this.#closeVaultBestEffort();
       await this.#closeChangeTrackingBestEffort('startup failed');
       this.#closeGitBestEffort();
+      this.#closeAIModelRoutingBestEffort();
       this.#closeAIModelManagerBestEffort();
       this.#closeAIInstallerBestEffort();
       this.#closeAIRuntimeBestEffort();
@@ -269,6 +277,7 @@ export class LocalRuntimeDaemon {
     let changeTrackingError: unknown = null;
     try { await this.#changeTracking.shutdown(`runtime stopped: ${reason}`); } catch (error) { changeTrackingError = error; }
     this.#git.shutdown();
+    this.#aiModelRouting.shutdown();
     this.#aiModelManager.shutdown();
     this.#aiInstaller.shutdown();
     this.#aiRuntime.shutdown();
@@ -307,6 +316,7 @@ export class LocalRuntimeDaemon {
     try { await this.#changeTracking.shutdown(reason); } catch {}
   }
   #closeGitBestEffort(): void { try { this.#git.shutdown(); } catch {} }
+  #closeAIModelRoutingBestEffort(): void { try { this.#aiModelRouting.shutdown(); } catch {} }
   #closeAIModelManagerBestEffort(): void { try { this.#aiModelManager.shutdown(); } catch {} }
   #closeAIInstallerBestEffort(): void { try { this.#aiInstaller.shutdown(); } catch {} }
   #closeAIRuntimeBestEffort(): void { try { this.#aiRuntime.shutdown(); } catch {} }
