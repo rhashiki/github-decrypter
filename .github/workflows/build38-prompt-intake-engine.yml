@@ -23,13 +23,9 @@ jobs:
         run: corepack enable
       - name: Install workspace toolchain
         run: pnpm install --no-frozen-lockfile
-      - name: Validate Build 38 prompt intake contract
-        run: node scripts/test-build38-prompt-intake.mjs
-      - name: Compile Build 38 prompt intake engine
-        run: pnpm exec tsc -p scripts/tsconfig.build38-tests.json
-      - name: Validate Build 38 prompt intake runtime
-        run: pnpm exec tsx scripts/test-build38-prompt-intake-runtime.ts
-      - name: Preserve Build 37 authority while phase activation is pending
-        run: pnpm run check:build37
+      - name: Validate Architecture Guardian through Build 38
+        run: pnpm run guardian
+      - name: Validate Builds 4–38 and TypeScript workspaces
+        run: pnpm run ci
       - name: Validate modern engine preservation
         run: node scripts/test-build4-modern-engine-preservation.mjs
