@@ -1,6 +1,6 @@
 # Build 36 — Model Manager
 
-Status: implementation complete; accumulated validation pending.
+Status: implementation and isolated/accumulated branch validation complete; pull-request matrix pending.
 
 ## Delivered
 
@@ -31,4 +31,14 @@ Status: implementation complete; accumulated validation pending.
 
 ## Validation
 
-The isolated Model Manager contract/runtime validation passed before global Build 36 policy activation. Full Builds 4–36 accumulated CI and pull-request matrix remain required before merge.
+The isolated Model Manager contract/runtime validation passed before global Build 36 policy activation.
+
+The accumulated Build 36 push workflow passed on functional head `6d3b71f816433ba2021f77e2659c1ea1118029ec`, including:
+
+- Architecture Guardian through AG349;
+- Builds 4–36 accumulated regression;
+- TypeScript workspace validation;
+- Model Manager static/runtime/negative coverage;
+- modern-engine preservation.
+
+The pull-request matrix against `main` remains the final merge gate.
