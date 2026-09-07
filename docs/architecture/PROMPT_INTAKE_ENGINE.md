@@ -26,19 +26,32 @@ It performs only deterministic structural intake:
 
 Maximum normalized input length is 262,144 JavaScript string characters.
 
+## Downstream ownership
+
+The next pipeline stages remain separately owned:
+
+- Build 39 — Requirement Compiler
+- Build 40 — Task Graph Compiler
+- Build 41 — Hierarchical Context Engine
+- Build 42 — Context Continuation Engine
+- Build 43 — Token Abstraction Layer
+- Build 44 — Conversation Engine
+- Build 45 — Attachment Engine
+- Build 46 — Context Mentions
+
 ## Explicit non-authority
 
 Build 38 does **not**:
 
 - infer user intent semantically;
-- compile requirements (Build 39);
-- compile task graphs (Build 40);
-- build hierarchical context (Build 41);
-- continue context (Build 42);
-- abstract tokens (Build 43);
-- own conversation history (Build 44);
-- ingest attachments (Build 45);
-- resolve context mentions (Build 46);
+- compile requirements;
+- compile task graphs;
+- build hierarchical context;
+- continue context;
+- abstract tokens;
+- own conversation history;
+- ingest attachments;
+- resolve context mentions;
 - call AI providers or route models;
 - access network, filesystem, database, browser storage or Local Runtime;
 - persist prompt text or fingerprints.
