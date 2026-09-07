@@ -1,6 +1,6 @@
 # Build 38 — Prompt Intake Engine
 
-Status: implementation in progress; isolated core validation passed before phase activation.
+Status: implementation and isolated validation complete; PR matrix and protected merge pending.
 
 ## Goal
 
@@ -22,6 +22,8 @@ Create the deterministic, environment-neutral intake boundary that turns raw use
 - Immutable record and digest object.
 - Explicit false flags for deferred semantic/AI/context/conversation authorities.
 - No app activation, persistence, filesystem, network, database or Local Runtime transport.
+- Added Prompt Intake authority and AG360–AG369.
+- Integrated `check:build38` into the canonical Guardian/CI chain.
 
 ## Deferred by roadmap
 
@@ -36,6 +38,14 @@ Create the deterministic, environment-neutral intake boundary that turns raw use
 
 ## Validation
 
-The isolated pre-activation workflow passed static contract validation, TypeScript, executable runtime tests, Build 37 regression and modern-engine preservation.
+The pre-activation isolated workflow passed static contract validation, TypeScript, executable runtime tests, Build 37 regression and modern-engine preservation.
 
-Final completion requires AG360–AG369, accumulated Builds 4–38 validation, full TypeScript workspaces, PR matrix and protected merge.
+The activated Build 38 head `e013081db4f533a09cb145403ceb96335413bc1f` passed:
+
+- Architecture Guardian through Build 38;
+- accumulated Builds 4–38 regression;
+- TypeScript workspaces;
+- Prompt Intake static/runtime/negative tests;
+- modern-engine preservation.
+
+The remaining completion gate is the pull-request matrix followed by a protected merge of the validated head lineage.
