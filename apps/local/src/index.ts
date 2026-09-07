@@ -2,6 +2,7 @@ export { PROTOCOL_SCHEMA as localRuntimeProtocolSchema } from '@github-decrypter
 
 export * from './ai-installer.js';
 export * from './ai-model-manager.js';
+export * from './ai-model-routing.js';
 export * from './ai-runtime.js';
 export * from './approval-transactions.js';
 export * from './audit-ledger.js';
