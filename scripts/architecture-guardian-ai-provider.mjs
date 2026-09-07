@@ -113,6 +113,7 @@ if (
     ...(policy.currentBuild >= 34 ? ['apps/local/src/ai-runtime.ts'] : []),
     ...(policy.currentBuild >= 35 ? ['apps/local/src/ai-installer.ts'] : []),
     ...(policy.currentBuild >= 36 ? ['apps/local/src/ai-model-manager.ts'] : []),
+    ...(policy.currentBuild >= 37 ? ['apps/local/src/ai-model-routing.ts'] : []),
   ]);
   for (const appRoot of ['apps/local/src', 'apps/studio/src', 'apps/extension/src']) {
     if (!exists(appRoot)) continue;
