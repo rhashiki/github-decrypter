@@ -23,13 +23,9 @@ jobs:
         run: corepack enable
       - name: Install workspace toolchain
         run: pnpm install --no-frozen-lockfile
-      - name: Validate Build 36 model manager contract
-        run: node scripts/test-build36-model-manager.mjs
-      - name: Compile Build 36 model manager
-        run: pnpm exec tsc -p scripts/tsconfig.build36-core-tests.json
-      - name: Validate Build 36 model manager runtime
-        run: pnpm exec tsx scripts/test-build36-model-manager-runtime.ts
-      - name: Preserve Build 35 authority while Build 36 policy activation is pending
-        run: pnpm run check:build35
+      - name: Validate Architecture Guardian through Build 36
+        run: pnpm run guardian
+      - name: Validate Builds 4–36 and TypeScript workspaces
+        run: pnpm run ci
       - name: Validate modern engine preservation
         run: node scripts/test-build4-modern-engine-preservation.mjs
