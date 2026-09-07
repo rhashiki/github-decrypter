@@ -1,0 +1,35 @@
+name: GitHub Decrypter Build 37 — Model Routing
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - build/37-model-routing
+
+permissions:
+  contents: read
+
+jobs:
+  model-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Validate Build 37 routing core contract
+        run: node scripts/test-build37-model-routing.mjs
+      - name: Compile Build 37 routing core
+        run: pnpm exec tsc -p scripts/tsconfig.build37-tests.json
+      - name: Validate Build 37 routing runtime
+        run: pnpm exec tsx scripts/test-build37-model-routing-runtime.ts
+      - name: Preserve Build 36 authority while phase activation is pending
+        run: pnpm run check:build36
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs
