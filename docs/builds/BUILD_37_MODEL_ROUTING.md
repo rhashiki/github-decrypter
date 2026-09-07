@@ -1,6 +1,6 @@
 # Build 37 — Model Routing
 
-Status: implementation in progress; isolated routing core validation passed before full phase activation.
+Status: implementation complete; isolated validation green on the Cortex-synchronized final functional head. PR matrix and merge remain the final gates.
 
 ## Goal
 
@@ -30,6 +30,17 @@ Introduce deterministic local model routing without moving installation, managem
 
 ## Validation
 
-The isolated routing workflow passed static contract validation, TypeScript compilation, executable routing behavior, Build 36 regression preservation, and modern-engine preservation before full Build 37 policy activation.
+The final functional head `c6cdd8f61f839c79d81b330c91acda71333ee80c`, synchronized with the current `main` Cortex map, passed:
 
-Full Architecture Guardian AG350–AG359, accumulated Builds 4–37 CI, PR matrix and merge remain required before this Build is considered complete.
+- Architecture Guardian through AG350–AG359;
+- accumulated Builds 4–37 regression;
+- TypeScript workspaces;
+- executable deterministic routing behavior;
+- preferred → manual default → sorted fallback precedence;
+- composed `READ` capability checks;
+- fail-closed empty/missing/URL-shaped selection cases;
+- sanitized events and zero routing persistence;
+- hardened negative probes, including forbidden authority declarations;
+- modern-engine preservation.
+
+The PR matrix and protected merge remain required before Build 37 is considered incorporated into `main`.
