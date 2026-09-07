@@ -4,6 +4,7 @@ import type { GitHubProviderOperation } from '@github-decrypter/github-provider'
 import type { ProjectDetectionConfidence, ProjectFramework, ProjectPackageManager, WorkspaceId } from '@github-decrypter/workspace';
 import type { LocalAIInstallerOperation } from './ai-installer.js';
 import type { LocalAIModelManagerOperation } from './ai-model-manager.js';
+import type { LocalAIModelRoutingOperation, LocalAIModelRouteReason } from './ai-model-routing.js';
 import type { LocalAIRuntimeOperation } from './ai-runtime.js';
 import type { ApprovalTransactionId } from './approval-transactions.js';
 import type { AuditCategory, AuditEntryId, AuditOutcome } from './audit-ledger.js';
@@ -65,6 +66,8 @@ export type LocalRuntimeAIInstallerReadyPayload = { readonly registeredInstaller
 export type LocalRuntimeAIInstallerOperationPayload = { readonly operation: LocalAIInstallerOperation; readonly providerId: string | null; readonly modelId: string | null; readonly outcome: 'success' | 'failure'; readonly networkRequired: boolean | null; readonly reused: boolean | null; readonly occurredAt: string; readonly persistence: false; };
 export type LocalRuntimeAIModelManagerReadyPayload = { readonly registeredManagers: number; readonly modelInventory: true; readonly modelRemoval: true; readonly modelUpdate: true; readonly defaultSelection: true; readonly automaticRouting: false; readonly persistence: false; };
 export type LocalRuntimeAIModelManagerOperationPayload = { readonly operation: LocalAIModelManagerOperation; readonly providerId: string | null; readonly modelId: string | null; readonly outcome: 'success' | 'failure'; readonly networkRequired: boolean | null; readonly changed: boolean | null; readonly occurredAt: string; readonly persistence: false; };
+export type LocalRuntimeAIModelRoutingReadyPayload = { readonly automaticRouting: true; readonly deterministic: true; readonly localOnly: true; readonly decisionOnly: true; readonly persistence: false; };
+export type LocalRuntimeAIModelRoutingOperationPayload = { readonly operation: LocalAIModelRoutingOperation; readonly providerId: string | null; readonly modelId: string | null; readonly reason: LocalAIModelRouteReason | null; readonly outcome: 'success' | 'failure'; readonly candidatesConsidered: number; readonly occurredAt: string; readonly persistence: false; };
 
 export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.lifecycle': LocalRuntimeLifecyclePayload;
@@ -118,6 +121,8 @@ export type LocalRuntimeEventCatalog = {
   readonly 'gd.local.ai-installer.operation': LocalRuntimeAIInstallerOperationPayload;
   readonly 'gd.local.ai-model-manager.ready': LocalRuntimeAIModelManagerReadyPayload;
   readonly 'gd.local.ai-model-manager.operation': LocalRuntimeAIModelManagerOperationPayload;
+  readonly 'gd.local.ai-model-routing.ready': LocalRuntimeAIModelRoutingReadyPayload;
+  readonly 'gd.local.ai-model-routing.operation': LocalRuntimeAIModelRoutingOperationPayload;
 };
 
 export function isLocalRuntimeState(value: unknown): value is LocalRuntimeState {
