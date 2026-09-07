@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "../packages/ai/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/git/src/**/*.ts",
+    "../packages/github-app/src/**/*.ts",
+    "../packages/github-provider/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build36-model-manager-runtime.ts"
+  ]
+}

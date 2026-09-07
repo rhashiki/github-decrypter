@@ -1,0 +1,31 @@
+name: GitHub Decrypter Build 36 — Model Manager
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - build/36-model-manager
+
+permissions:
+  contents: read
+
+jobs:
+  model-manager:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Validate Architecture Guardian through Build 36
+        run: pnpm run guardian
+      - name: Validate Builds 4–36 and TypeScript workspaces
+        run: pnpm run ci
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs

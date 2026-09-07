@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 35,
+  "currentBuild": 36,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -343,6 +343,41 @@
     "automaticRouting": false,
     "providerSpecificImplementation": false
   },
+  "modelManagerAuthority": {
+    "ownerRoot": "apps/local",
+    "contractPackage": "@github-decrypter/ai",
+    "minimumBuild": 36,
+    "localAIRuntimeBuild": 34,
+    "localAIInstallerBuild": 35,
+    "modelRoutingBuild": 37,
+    "schema": "gd-local-ai-model-manager/1",
+    "allowedOperations": ["managers.list","models.list","models.remove","models.update","default.get","default.set","default.clear"],
+    "runtimeFamilies": ["ollama-compatible","vllm-compatible","custom-local"],
+    "localOnly": true,
+    "constructionOnlyAdapters": true,
+    "readCapability": "READ",
+    "writeCapability": "WRITE",
+    "executeCapability": "EXECUTE",
+    "destructiveCapability": "DESTRUCTIVE",
+    "networkCapability": "NETWORK",
+    "updateNetworkConditional": true,
+    "adapterOwnedManagement": true,
+    "modelInventory": true,
+    "modelRemoval": true,
+    "modelUpdate": true,
+    "defaultSelection": true,
+    "defaultSelectionPersistence": false,
+    "automaticRouting": false,
+    "arbitrarySourceUrl": false,
+    "externalProviderManagement": false,
+    "secretsAuthority": false,
+    "providerConfigurationPersistence": false,
+    "modelStatePersistence": false,
+    "directFilesystemAuthority": false,
+    "databaseAuthority": false,
+    "studioTransport": false,
+    "providerSpecificImplementation": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -362,7 +397,7 @@
     "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
-    "localAIInstallerBuild": 35, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "localAIInstallerBuild": 35, "modelManagerBuild": 36, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
