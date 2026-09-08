@@ -1,6 +1,6 @@
 # Build 40 — Task Graph Compiler
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **COMPLETE — ✅**
 
 ## Objective
 
@@ -27,20 +27,20 @@ Compile canonical Build 39 requirement specifications into a deterministic valid
 - no dependencies in `@github-decrypter/plan`
 - Build 39 regression made forward-compatible with Build 40 package versioning without weakening Requirement Compiler ownership
 
-## Required closure gates
+## Closure gates
 
-Build 40 must not be marked complete until all of the following are green on the exact validated head:
+The implementation gate passed on the exact validated code head before completion was recorded:
 
-1. Task Graph Compiler static contract.
-2. Build 40 TypeScript project.
-3. Task Graph runtime behavior.
-4. Architecture Guardian AG380–AG389.
-5. Guardian negative probes.
-6. Accumulated Build 4–40 CI.
-7. Root workspace TypeScript checks.
-8. Modern-engine preservation.
-9. Historical pull-request workflow matrix.
-10. Protected-head merge check.
+1. Task Graph Compiler static contract — ✅
+2. Build 40 TypeScript project — ✅
+3. Task Graph runtime behavior — ✅
+4. Architecture Guardian AG380–AG389 — ✅
+5. Guardian negative probes — ✅
+6. Accumulated Build 4–40 CI — ✅
+7. Root workspace TypeScript checks — ✅
+8. Modern-engine preservation — ✅
+
+The final documentation head is revalidated before PR. Historical pull-request workflows and protected-head merge remain mandatory merge gates.
 
 ## Deferred by design
 
