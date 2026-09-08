@@ -73,7 +73,12 @@ for (const marker of [
 const server = read('apps/local/src/server.ts');
 assert.ok(server.includes('jobsReady'));
 assert.ok(server.includes('expiredLeases'));
-assert.ok(!/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 12 must not expose job control HTTP endpoints');
+const jobControlActive = policy.currentBuild >= policy.jobAuthority.jobControlTransportBuild;
+if (jobControlActive) {
+  assert.ok(/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 47+ must preserve the Durable Job Engine and add the authorized Jobs Center transport');
+} else {
+  assert.ok(!/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 12 must not expose job control HTTP endpoints before Build 47');
+}
 
 const identity = read('apps/local/src/identity.ts');
 assert.ok(identity.includes("'durable-jobs'"));
@@ -82,7 +87,7 @@ assert.ok(identity.includes("'job-leases'"));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build12-durable-job-engine/1',
+  schema: 'gd-build12-durable-job-engine/2',
   minimumBuild: 12,
   currentBuild: policy.currentBuild,
   authority: policy.jobAuthority.ownerRoot,
@@ -90,5 +95,6 @@ console.log(JSON.stringify({
   dependencyDag: true,
   leaseTokens: true,
   automaticCrashRecovery: false,
-  jobControlTransport: false,
+  jobControlTransport: jobControlActive,
+  jobControlTransportBuild: policy.jobAuthority.jobControlTransportBuild,
 }, null, 2));
