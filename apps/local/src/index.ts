@@ -5,6 +5,7 @@ export * from './ai-model-manager.js';
 export * from './ai-model-routing.js';
 export * from './ai-runtime.js';
 export * from './approval-transactions.js';
+export * from './attachment-store.js';
 export * from './audit-ledger.js';
 export * from './capability-security.js';
 export * from './change-tracker.js';

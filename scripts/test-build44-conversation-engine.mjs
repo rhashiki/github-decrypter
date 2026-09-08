@@ -13,9 +13,9 @@ const server = read('apps/local/src/server.ts');
 const versionMatch = typeof pkg.version === 'string' ? pkg.version.match(/^0\.0\.(\d+)$/) : null;
 const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
 
-assert.equal(policy.currentBuild, 44);
+assert.ok(policy.currentBuild >= 44);
 assert.equal(pkg.name, '@github-decrypter/chat');
-assert.equal(packageBuild, 44);
+assert.ok(packageBuild !== null && packageBuild >= 44 && packageBuild <= policy.currentBuild);
 assert.deepEqual(pkg.dependencies ?? {}, {
   '@github-decrypter/ai': 'workspace:*',
   '@github-decrypter/context': 'workspace:*',

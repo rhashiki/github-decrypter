@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 44,
+  "currentBuild": 45,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -343,6 +343,21 @@
     "directDatabaseAuthority": false, "networkAuthority": false, "filesystemAuthority": false,
     "browserAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
   },
+  "attachmentEngineAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/attachments.ts", "runtimeOwnerRoot": "apps/local",
+    "runtimeStoreSource": "apps/local/src/attachment-store.ts", "minimumBuild": 45, "conversationEngineBuild": 44,
+    "contextMentionsBuild": 46, "jobsCenterBuild": 47, "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "schema": "gd-attachment/1", "ingestionSchema": "gd-attachment-ingestion/1", "storeSchema": "gd-local-attachment-store/1",
+    "kinds": ["image","document","code","log","screenshot","structured-data","audio","media"],
+    "maxBytes": 33554432, "maxNameCharacters": 255, "maxPersistedPerConversation": 256,
+    "digestAlgorithm": "sha256", "environmentNeutralCore": true, "workspaceScoped": true, "conversationScoped": true,
+    "messageBindingOptional": true, "localPersistence": true, "persistenceMedium": "filesystem",
+    "atomicDirectoryCommit": true, "payloadIntegrityVerification": true,
+    "conversationContextShared": true, "voiceContextShared": true, "voiceSecondStateAuthority": false,
+    "voiceTransport": false, "speechToText": false, "ocr": false, "contentInterpretation": false,
+    "providerExecution": false, "mentionResolution": false, "jobCreation": false,
+    "networkAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -364,7 +379,8 @@
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
-    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45,
+    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
