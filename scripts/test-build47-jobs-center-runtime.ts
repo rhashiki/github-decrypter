@@ -124,7 +124,9 @@ try {
   assert.equal(listResponse.status, 200);
   const listPayload: unknown = await listResponse.json();
   assertJobsCenterListView(listPayload);
-  assert.equal(JSON.stringify(listPayload).includes('payload'), false);
+  const serializedListPayload = JSON.stringify(listPayload);
+  assert.doesNotMatch(serializedListPayload, /"payload"\s*:/, 'Jobs Center list must not expose the durable job payload field.');
+  assert.equal(serializedListPayload.includes('"hidden"'), false, 'Jobs Center list must not expose payload content.');
 
   const detailResponse = await fetch(`${address.origin}/v1/jobs/${encodeURIComponent(daemonJob.id)}`, {
     headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
@@ -132,6 +134,9 @@ try {
   assert.equal(detailResponse.status, 200);
   const detailPayload: unknown = await detailResponse.json();
   assertJobsCenterDetailView(detailPayload);
+  const serializedDetailPayload = JSON.stringify(detailPayload);
+  assert.doesNotMatch(serializedDetailPayload, /"payload"\s*:/, 'Jobs Center detail must not expose the durable job payload field.');
+  assert.equal(serializedDetailPayload.includes('"hidden"'), false, 'Jobs Center detail must not expose payload content.');
 
   const controlResponse = await fetch(`${address.origin}/v1/jobs/${encodeURIComponent(daemonJob.id)}/control`, {
     method: 'POST',
@@ -183,10 +188,11 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build47-jobs-center-runtime/1',
+    schema: 'gd-build47-jobs-center-runtime/2',
     build: 47,
     durableJobEngineSovereign: true,
     safeProjectionOnly: true,
+    structuralPayloadLeakCheck: true,
     allowedActions: ['pause','resume','cancel','retry'],
     forbiddenActions: ['enqueue','skip','priority'],
     payloadExposed: false,
