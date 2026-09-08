@@ -65,8 +65,12 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
   ]) {
     if (!migrations.includes(marker)) violations.push({ code: 'AG202', message: 'Change Tracking persistence invariant missing.', detail: marker });
   }
-  const changeSchema = migrations.slice(migrations.indexOf('const MIGRATION_010_SQL'), migrations.indexOf('function checksum'));
-  if (/\b(?:content|file_content|source_text|patch_text|diff_text|blob_content)\s+(?:TEXT|BLOB)\b/i.test(changeSchema)) {
+  const migration10Start = migrations.indexOf('const MIGRATION_010_SQL');
+  const migration10End = migrations.indexOf('const MIGRATION_011_SQL');
+  const changeSchema = migration10Start >= 0 && migration10End > migration10Start
+    ? migrations.slice(migration10Start, migration10End)
+    : '';
+  if (!changeSchema || /\b(?:content|file_content|source_text|patch_text|diff_text|blob_content)\s+(?:TEXT|BLOB)\b/i.test(changeSchema)) {
     violations.push({ code: 'AG203', message: 'Change Tracking may not persist project source/file contents.' });
   }
 
