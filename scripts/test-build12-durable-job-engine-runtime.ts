@@ -147,7 +147,7 @@ try {
   assert.equal(ready.jobsReady, true);
 
   const jobsTransport = await fetch(`${address.origin}/v1/jobs`, {
-    headers: { 'x-gd-studio-client': 'gd-studio-jobs-center/1' },
+    headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
   });
   if (LOCAL_RUNTIME_BUILD >= 47) {
     assert.equal(jobsTransport.status, 200, 'Build 47+ must expose only the authorized Jobs Center transport');
