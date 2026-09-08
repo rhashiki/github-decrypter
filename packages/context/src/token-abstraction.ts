@@ -189,7 +189,7 @@ function assertModelWindow(value: unknown): asserts value is ModelTokenWindow {
   }
   if (!Number.isSafeInteger(row.reservedOutputTokens) || (row.reservedOutputTokens as number) < 0
       || (row.reservedOutputTokens as number) >= (row.contextWindowTokens as number)) {
-    throw new RangeError('Token Abstraction reservedOutputTokens must be a non-negative safe integer below the context window.');
+    throw new RangeError('Token Abstraction reservedOutputTokens must be a non-negative safe integer below total context capacity.');
   }
 }
 
