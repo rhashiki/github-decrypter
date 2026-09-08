@@ -67,7 +67,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 44. **Conversation Engine** — ✅ — North Star: **Voice Interaction** shares the same conversation/project context and authority model.
 45. **Attachment Engine** — ✅ — North Star: supported voice/audio/media ingestion used by conversational interaction.
 46. **Context Mentions** — ✅
-47. **Jobs Center**
+47. **Jobs Center** — ✅
 
 ## Plan, decision and execution
 
