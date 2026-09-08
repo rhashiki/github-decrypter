@@ -36,7 +36,10 @@ probe(
 );
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"jobsCenterBuild": 47', '"jobsCenterBuild": 46'),
+  (source) => source.replace(
+    '"ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,\n    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 47,',
+    '"ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,\n    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 46,',
+  ),
   'AG447',
 );
 probe(
