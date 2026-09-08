@@ -1,6 +1,6 @@
 # Build 45 — Attachment Engine
 
-Status: 🚧 IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED
+Status: ✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN
 
 ## Objective
 
@@ -10,6 +10,7 @@ Introduce bounded, integrity-verified attachment ingestion for the same workspac
 
 - `@github-decrypter/chat` advanced to `0.0.45`
 - `@github-decrypter/local` advanced to `0.0.45`
+- Local Runtime identity advanced to Build 45 / `0.0.45`
 - canonical `gd-attachment/1` contract
 - canonical `gd-attachment-ingestion/1` result
 - canonical `gd-local-attachment-store/1`
@@ -26,9 +27,11 @@ Introduce bounded, integrity-verified attachment ingestion for the same workspac
 - payload tamper detection
 - maximum 256 persisted attachments per conversation
 - no Durable Job creation
+- no Attachment RPC
 - Architecture Guardian AG430–AG439
 - static, TypeScript, runtime and negative-guardian gates
 - accumulated Build 4–45 CI workflow
+- Build 45 AG435 negative probe made deterministic against the protected persisted-attachment limit
 
 ## Correctness boundaries
 
@@ -53,17 +56,17 @@ Voice/audio remains part of the same conversation authority. Build 45 stores aud
 - Build 67 — Context Engine vFinal
 - deployment/release/tag/DNS/Chrome Store/Supabase/production mutation
 
-## Completion gate
+## Implementation validation
 
-This build must not be marked complete until the exact implementation head passes:
+Implementation head `a827a62d02e834fa596bb33eaabea84ed9bc6678` passed GitHub Actions run `34264991810` with:
 
-1. Build 45 Architecture Guardian AG430–AG439
-2. Build 45 static contract gate
-3. Build 45 TypeScript gate
-4. Build 45 runtime gate
-5. Build 45 negative Guardian gate
-6. accumulated Builds 4–45 CI
-7. all workspace typechecks
-8. Build 4 modern-engine preservation
+1. Architecture Guardian including AG430–AG439 ✅
+2. Build 45 static contract gate ✅
+3. Build 45 TypeScript gate ✅
+4. Build 45 runtime gate ✅
+5. Build 45 negative Guardian gate ✅
+6. accumulated Builds 4–45 CI ✅
+7. all workspace typechecks ✅
+8. Build 4 modern-engine preservation ✅
 
-After the implementation head is green, this document and the canonical roadmap may be marked complete. The resulting documentation head must then pass the same accumulated gate before a protected PR is opened.
+The documentation/roadmap completion head created after this record must pass the same accumulated gate before a protected pull request is opened. The PR historical matrix must then be green on that exact final head before merge.
