@@ -46,8 +46,9 @@ const repo = (name: string, defaultBranch: string | null = 'main') => ({
 try {
   const database = new LocalDatabase({ path: join(tempRoot, 'github-provider.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 11);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 11);
+  assert.ok(opened.schemaVersion >= 11, 'database schema must not regress below Build 24');
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 11, 'local database schema must not regress below Build 24');
+  assert.equal(opened.schemaVersion, LOCAL_DATABASE_SCHEMA_VERSION);
 
   const jobs = new DurableJobEngine({ database, now });
   const offline = new OfflineExecutionCoordinator({ database, jobs, now });
@@ -278,7 +279,9 @@ try {
   console.log(JSON.stringify({
     ok: true,
     schema: 'gd-build24-github-provider-runtime/1',
-    databaseSchema: 11,
+    minimumDatabaseSchema: 11,
+    currentDatabaseSchema: LOCAL_DATABASE_SCHEMA_VERSION,
+    allowsLaterSchemaMigrations: true,
     operations: ['repositories.list', 'repository.get', 'branches.list'],
     readOnly: true,
     installationScoped: true,
