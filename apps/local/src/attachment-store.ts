@@ -4,7 +4,7 @@ import {
   verifyAttachmentPayload,
   type AttachmentId,
   type AttachmentRecord,
-} from '@github-decrypter/chat';
+} from '@github-decrypter/chat/attachments';
 import { mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import type { LocalConversationStore } from './conversation-store.js';
