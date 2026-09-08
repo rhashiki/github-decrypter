@@ -149,12 +149,13 @@ assert.throws(() => resolveContextMentions({
   catalog: [catalog[0]!],
 }), /committed user message/i);
 
-assert.throws(() => createContextMention({
+const normalizedMention = createContextMention({
   id: 'gd_mention_00000000-0000-4000-8000-000000000100',
   kind: 'file',
   reference: ' src/index.ts ',
   label: null,
-}), /canonical|invalid/i);
+});
+assert.equal(normalizedMention.reference, 'src/index.ts');
 
 console.log(JSON.stringify({
   ok: true,
