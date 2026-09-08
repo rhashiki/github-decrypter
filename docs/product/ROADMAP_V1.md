@@ -57,7 +57,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 37. **Model Routing** — ✅
 38. **Prompt Intake Engine** — ✅
 39. **Requirement Compiler** — ✅
-40. **Task Graph Compiler**
+40. **Task Graph Compiler** — ✅
 41. **Hierarchical Context Engine**
 42. **Context Continuation Engine**
 43. **Token Abstraction Layer**

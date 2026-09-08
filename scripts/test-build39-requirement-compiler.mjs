@@ -4,9 +4,12 @@ import fs from 'node:fs';
 const read = (path) => fs.readFileSync(path, 'utf8');
 const source = read('packages/plan/src/index.ts');
 const pkg = JSON.parse(read('packages/plan/package.json'));
+const policy = JSON.parse(read('architecture.guardian.json'));
+const versionMatch = typeof pkg.version === 'string' ? pkg.version.match(/^0\.0\.(\d+)$/) : null;
+const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
 
 assert.equal(pkg.name, '@github-decrypter/plan');
-assert.equal(pkg.version, '0.0.39');
+assert.ok(packageBuild !== null && packageBuild >= 39 && packageBuild <= policy.currentBuild);
 assert.equal(Object.keys(pkg.dependencies ?? {}).length, 0);
 
 for (const marker of [
@@ -41,6 +44,7 @@ console.log(JSON.stringify({
   schema: 'gd-build39-requirement-compiler-static/1',
   build: 39,
   package: '@github-decrypter/plan',
+  packageBuild,
   syntaxDirected: true,
   deterministic: true,
   semanticInterpretation: false,
