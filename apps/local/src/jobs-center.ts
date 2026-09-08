@@ -1,84 +1,28 @@
+import {
+  JOBS_CENTER_ACTIONS,
+  JOBS_CENTER_CONTROL_RESULT_SCHEMA,
+  JOBS_CENTER_DETAIL_SCHEMA,
+  JOBS_CENTER_JOB_SCHEMA,
+  JOBS_CENTER_LIST_SCHEMA,
+  type JobsCenterAction,
+  type JobsCenterControlResult,
+  type JobsCenterDetailView,
+  type JobsCenterJobView,
+  type JobsCenterListView,
+  type JobsCenterTransitionView,
+} from '@github-decrypter/protocol';
 import type { DurableJobEngine } from './job-engine.js';
 import {
   asDurableJobId,
-  type DurableJobId,
   type DurableJobRecord,
-  type DurableJobState,
   type DurableJobTransition,
 } from './job-types.js';
 
-export const JOBS_CENTER_BUILD = 47 as const;
-export const JOBS_CENTER_JOB_SCHEMA = 'gd-jobs-center-job/1' as const;
-export const JOBS_CENTER_LIST_SCHEMA = 'gd-jobs-center-list/1' as const;
-export const JOBS_CENTER_DETAIL_SCHEMA = 'gd-jobs-center-detail/1' as const;
-export const JOBS_CENTER_CONTROL_SCHEMA = 'gd-jobs-center-control/1' as const;
-export const JOBS_CENTER_ACTIONS = ['pause', 'resume', 'cancel', 'retry'] as const;
-
-export type JobsCenterAction = (typeof JOBS_CENTER_ACTIONS)[number];
-
-export interface JobsCenterJobView {
-  readonly schema: typeof JOBS_CENTER_JOB_SCHEMA;
-  readonly id: DurableJobId;
-  readonly kind: string;
-  readonly state: DurableJobState;
-  readonly priority: number;
-  readonly queueOrder: number;
-  readonly availableAt: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly startedAt: string | null;
-  readonly finishedAt: string | null;
-  readonly attemptCount: number;
-  readonly maxAttempts: number;
-  readonly pauseRequested: boolean;
-  readonly cancelRequested: boolean;
-  readonly workerAssigned: boolean;
-  readonly hasCheckpoint: boolean;
-  readonly hasResult: boolean;
-  readonly hasError: boolean;
-  readonly allowedActions: readonly JobsCenterAction[];
-}
-
-export interface JobsCenterTransitionView {
-  readonly id: number;
-  readonly fromState: DurableJobState | null;
-  readonly toState: DurableJobState;
-  readonly occurredAt: string;
-}
-
-export interface JobsCenterListView {
-  readonly schema: typeof JOBS_CENTER_LIST_SCHEMA;
-  readonly jobs: readonly JobsCenterJobView[];
-  readonly total: number;
-  readonly nonTerminal: number;
-  readonly expiredLeases: number;
-  readonly counts: Readonly<Record<DurableJobState, number>>;
-  readonly payloadExposed: false;
-  readonly leaseTokenExposed: false;
-}
-
-export interface JobsCenterDetailView {
-  readonly schema: typeof JOBS_CENTER_DETAIL_SCHEMA;
-  readonly job: JobsCenterJobView;
-  readonly dependencies: readonly DurableJobId[];
-  readonly transitions: readonly JobsCenterTransitionView[];
-  readonly payloadExposed: false;
-  readonly checkpointContentExposed: false;
-  readonly resultContentExposed: false;
-  readonly errorContentExposed: false;
-  readonly workerIdentityExposed: false;
-  readonly leaseTokenExposed: false;
-}
+export const JOBS_CENTER_RUNTIME_BUILD = 47 as const;
 
 export interface JobsCenterControlInput {
   readonly jobId: string;
   readonly action: JobsCenterAction;
-}
-
-export interface JobsCenterControlResult {
-  readonly schema: typeof JOBS_CENTER_CONTROL_SCHEMA;
-  readonly action: JobsCenterAction;
-  readonly job: JobsCenterJobView;
 }
 
 export interface JobsCenterOptions {
@@ -198,7 +142,7 @@ export class JobsCenter {
     }
 
     return Object.freeze({
-      schema: JOBS_CENTER_CONTROL_SCHEMA,
+      schema: JOBS_CENTER_CONTROL_RESULT_SCHEMA,
       action: input.action,
       job: projectJob(next),
     });
