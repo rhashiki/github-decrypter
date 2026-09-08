@@ -198,7 +198,14 @@ try {
   const readiness = await (await fetch(`${address.origin}/readyz`)).json() as Record<string, any>;
   assert.equal(readiness.ready, true);
   assert.equal(readiness.recoveryReady, true);
-  assert.equal((await fetch(`${address.origin}/v1/jobs`)).status, 404);
+  const jobsResponse = await fetch(`${address.origin}/v1/jobs`, {
+    headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
+  });
+  if (Number(health.build) >= 47) {
+    assert.equal(jobsResponse.status, 200, 'Build 47+ may expose the authorized Jobs Center transport without weakening recovery');
+  } else {
+    assert.equal(jobsResponse.status, 404, 'Build 13 must not expose job control transport before Build 47');
+  }
 
   const daemonJob = await daemon.jobs.enqueue({ kind: 'daemon.clean-handoff', payload: { survives: true }, maxAttempts: 2 });
   const daemonClaim = await daemon.jobs.claimNext('daemon-worker');
@@ -219,7 +226,7 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build13-crash-power-recovery-runtime/2',
+    schema: 'gd-build13-crash-power-recovery-runtime/3',
     minimumSchemaVersion: 3,
     currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     uncleanSessionDetection: true,
@@ -234,6 +241,8 @@ try {
     gracefulShutdownHandoff: true,
     cleanSessionMarkers: true,
     daemonReadinessIntegration: true,
+    jobControlTransport: Number(health.build) >= 47,
+    jobControlTransportBuild: 47,
     allowsLaterSchemaMigrations: true,
   }, null, 2));
 } finally {
