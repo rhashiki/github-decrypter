@@ -1,6 +1,6 @@
 # Build 39 — Requirement Compiler
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Objective
 
@@ -20,20 +20,20 @@ Add the first structured-requirement authority after Build 38 Prompt Intake with
 - no dependencies in `@github-decrypter/plan`
 - Build 38 regression updated to permit the Build 39 authority without weakening Prompt Intake boundaries
 
-## Required closure gates
+## Closure evidence
 
-Build 39 must not be marked complete until all of the following are green on the exact validated head:
+The implementation head `c9bba37f037c72f44a6729d028330340bff10011` passed the Build 39 push gate before completion was recorded:
 
-1. Requirement Compiler static contract.
-2. Build 39 TypeScript project.
-3. Requirement Compiler runtime behavior.
-4. Architecture Guardian AG370–AG379.
-5. Guardian negative probes.
-6. Accumulated Build 4–39 CI.
-7. Root workspace TypeScript checks.
-8. Modern-engine preservation.
-9. Historical pull-request workflow matrix.
-10. Protected-head merge check.
+1. Requirement Compiler static contract — ✅
+2. Build 39 TypeScript project — ✅
+3. Requirement Compiler runtime behavior — ✅
+4. Architecture Guardian AG370–AG379 — ✅
+5. Guardian negative probes — ✅
+6. Accumulated Build 4–39 CI — ✅
+7. Root workspace TypeScript checks — ✅
+8. Modern-engine preservation — ✅
+
+The completion-documentation head must pass the same accumulated gate again before the pull request is opened. The historical pull-request workflow matrix and protected-head merge check remain merge gates rather than implementation gates.
 
 ## Deferred by design
 
