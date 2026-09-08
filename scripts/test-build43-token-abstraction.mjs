@@ -8,7 +8,7 @@ const policy = JSON.parse(read('architecture.guardian.json'));
 const versionMatch = typeof pkg.version === 'string' ? pkg.version.match(/^0\.0\.(\d+)$/) : null;
 const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
 
-assert.equal(policy.currentBuild, 43);
+assert.ok(policy.currentBuild >= 43, 'Architecture Guardian must not regress below Build 43');
 assert.equal(pkg.name, '@github-decrypter/context');
 assert.equal(packageBuild, 43);
 assert.deepEqual(pkg.dependencies ?? {}, { '@github-decrypter/plan': 'workspace:*' });
@@ -61,6 +61,7 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build43-token-abstraction-static/1',
   build: 43,
+  currentBuild: policy.currentBuild,
   package: '@github-decrypter/context',
   packageBuild,
   deterministic: true,
