@@ -191,9 +191,9 @@ function declaredRequirementDependencies(statement: string): readonly string[] {
 }
 
 function topologicalOrder(nodes: readonly TaskGraphNode[], edges: readonly TaskGraphEdge[]): readonly string[] {
-  const nodeById = new Map(nodes.map((node) => [node.id, node] as const));
-  const indegree = new Map(nodes.map((node) => [node.id, 0] as const));
-  const outgoing = new Map(nodes.map((node) => [node.id, [] as string[]] as const));
+  const nodeById = new Map<string, TaskGraphNode>(nodes.map((node) => [node.id, node]));
+  const indegree = new Map<string, number>(nodes.map((node) => [node.id, 0]));
+  const outgoing = new Map<string, string[]>(nodes.map((node) => [node.id, []]));
 
   for (const edge of edges) {
     indegree.set(edge.to, (indegree.get(edge.to) ?? 0) + 1);
