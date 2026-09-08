@@ -68,7 +68,12 @@ if (
   if (/\b(?:fetch|WebSocket|XMLHttpRequest|EventSource|localStorage|indexedDB|caches)\b/.test(source)) {
     violations.push({ code: 'AG384', message: 'Task Graph Compiler gained network/browser authority.' });
   }
-  if (/\b(?:node:|process\.|child_process|spawn\s*\(|exec\s*\(|LocalDatabase|SecretsVault)\b/.test(source)) {
+  if (
+    /^\s*import\s+(?!type\b)/m.test(source)
+    || /\bnode:[A-Za-z0-9_/-]+/.test(source)
+    || /\bprocess\./.test(source)
+    || /\b(?:child_process|LocalDatabase|SecretsVault)\b/.test(source)
+  ) {
     violations.push({ code: 'AG384', message: 'Task Graph Compiler gained Node/filesystem/process/database/secret authority.' });
   }
   if (/@github-decrypter\/(?:ai|chat|context|tools|workspace|git)/.test(source)) {
