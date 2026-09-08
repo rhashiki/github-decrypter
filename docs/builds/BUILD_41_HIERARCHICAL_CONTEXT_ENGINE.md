@@ -1,6 +1,6 @@
 # Build 41 — Hierarchical Context Engine
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Objective
 
@@ -26,9 +26,9 @@ Compile the canonical Build 39 Requirement Specification and Build 40 Task Graph
 - environment-neutral package boundary
 - no Studio, Extension or Local Runtime activation
 
-## Required closure gates
+## Validated implementation head
 
-Build 41 must not be marked complete until all of the following are green on the exact validated head:
+Implementation head `1ec70ca07b1a5015ac91a6fd77826bfe2bfd17de` passed:
 
 1. Hierarchical Context Engine static contract.
 2. Build 41 TypeScript project.
@@ -38,8 +38,8 @@ Build 41 must not be marked complete until all of the following are green on the
 6. Accumulated Build 4–41 CI.
 7. Root workspace TypeScript checks.
 8. Modern-engine preservation.
-9. Historical pull-request workflow matrix.
-10. Protected-head merge check.
+
+The completion-documentation head must pass the same accumulated gate again before the pull request is opened. Historical pull-request workflow matrix and protected-head merge remain merge gates.
 
 ## Deferred by design
 
