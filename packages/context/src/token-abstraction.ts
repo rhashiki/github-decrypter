@@ -229,7 +229,7 @@ export function abstractTokenWindow(input: TokenAbstractionInput): TokenAbstract
     metering: 'unmeasured' as const,
     fitStatus: 'unknown' as const,
     overflowDecision: 'deferred' as const,
-  }))));
+  })));
   const sourceDigest: PromptIntakeDigest = Object.freeze({
     algorithm: continuation.sourceDigest.algorithm,
     hex: continuation.sourceDigest.hex,
