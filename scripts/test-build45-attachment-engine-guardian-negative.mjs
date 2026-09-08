@@ -31,7 +31,7 @@ probe(
 );
 probe(
   'apps/local/src/attachment-store.ts',
-  (source) => source.replace('verifyAttachmentPayload({ attachment, bytes })', 'Promise.resolve()'),
+  (source) => source.replace('LOCAL_ATTACHMENT_STORE_MAX_ITEMS_PER_CONVERSATION = 256', 'LOCAL_ATTACHMENT_STORE_MAX_ITEMS_PER_CONVERSATION = 255'),
   'AG435',
 );
 probe(
