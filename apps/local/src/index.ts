@@ -23,6 +23,7 @@ export * from './identity.js';
 export * from './instance-lock.js';
 export * from './job-engine.js';
 export * from './job-types.js';
+export * from './jobs-center.js';
 export * from './lifecycle.js';
 export * from './offline-execution.js';
 export * from './project-detector.js';
