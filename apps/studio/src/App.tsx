@@ -16,6 +16,7 @@ import {
 } from '@github-decrypter/ui';
 import { useMemo, useState } from 'react';
 import { EnvironmentDoctor, type EnvironmentDoctorOutcome } from './EnvironmentDoctor.js';
+import { JobsCenter } from './JobsCenter.js';
 import { OnboardingFlow } from './OnboardingFlow.js';
 import {
   describeAdaptiveExperience,
@@ -31,6 +32,8 @@ const RESERVED_SURFACES = Object.freeze([
   { label: 'Git Panel', build: 76 },
 ]);
 
+type WorkspaceSurface = 'overview' | 'jobs';
+
 function runtimeStatusLabel(outcome: EnvironmentDoctorOutcome): string {
   if (outcome === 'ready') return 'Diagnostic ready';
   if (outcome === 'attention') return 'Needs attention';
@@ -43,6 +46,7 @@ export function StudioApp() {
   const [profile, setProfile] = useState<AdaptiveUserProfile | null>(null);
   const [environmentDoctorComplete, setEnvironmentDoctorComplete] = useState(false);
   const [environmentDoctorOutcome, setEnvironmentDoctorOutcome] = useState<EnvironmentDoctorOutcome>('unchecked');
+  const [workspaceSurface, setWorkspaceSurface] = useState<WorkspaceSurface>('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => window.matchMedia?.('(max-width: 760px)').matches ?? false,
   );
@@ -54,16 +58,20 @@ export function StudioApp() {
       ? 'Launch rejected'
       : 'No repository selected';
   const experience = profile ? describeAdaptiveExperience(profile) : null;
+  const workspaceReady = profile !== null && environmentDoctorComplete;
   const activeSurface = !profile
     ? 'Onboarding'
     : !environmentDoctorComplete
       ? 'Environment Doctor'
-      : 'Overview';
+      : workspaceSurface === 'jobs'
+        ? 'Jobs Center'
+        : 'Overview';
 
   function retakeOnboarding(): void {
     setProfile(null);
     setEnvironmentDoctorComplete(false);
     setEnvironmentDoctorOutcome('unchecked');
+    setWorkspaceSurface('overview');
   }
 
   return (
@@ -106,13 +114,26 @@ export function StudioApp() {
       </WorkbenchTopBar>
 
       <WorkbenchActivityBar className="studio-activity" aria-label="Workbench navigation">
-        <button className="studio-activity-item is-active" type="button" aria-current="page" title="Workspace">
+        <button
+          className={`studio-activity-item${workspaceReady && workspaceSurface === 'overview' ? ' is-active' : ''}`}
+          type="button"
+          aria-current={workspaceReady && workspaceSurface === 'overview' ? 'page' : undefined}
+          title="Workspace"
+          onClick={() => workspaceReady && setWorkspaceSurface('overview')}
+        >
           <span aria-hidden="true">W</span>
           <span className="studio-visually-hidden">Workspace</span>
         </button>
-        <button className="studio-activity-item" type="button" disabled title="Additional surfaces arrive in later Builds">
-          <span aria-hidden="true">+</span>
-          <span className="studio-visually-hidden">Additional surfaces are not active yet</span>
+        <button
+          className={`studio-activity-item${workspaceReady && workspaceSurface === 'jobs' ? ' is-active' : ''}`}
+          type="button"
+          disabled={!workspaceReady}
+          aria-current={workspaceReady && workspaceSurface === 'jobs' ? 'page' : undefined}
+          title={workspaceReady ? 'Jobs Center' : 'Jobs Center becomes available after setup'}
+          onClick={() => setWorkspaceSurface('jobs')}
+        >
+          <span aria-hidden="true">J</span>
+          <span className="studio-visually-hidden">Jobs Center</span>
         </button>
       </WorkbenchActivityBar>
 
@@ -148,6 +169,10 @@ export function StudioApp() {
             <span>Local Runtime</span>
             <span>{runtimeStatusLabel(environmentDoctorOutcome)}</span>
           </div>
+          <div className="studio-sidebar-row">
+            <span>Jobs Center</span>
+            <span>{workspaceReady ? 'Available' : 'Setup required'}</span>
+          </div>
         </div>
 
         <div className="studio-sidebar-section">
@@ -176,6 +201,8 @@ export function StudioApp() {
               onOutcome={setEnvironmentDoctorOutcome}
               onContinue={() => setEnvironmentDoctorComplete(true)}
             />
+          ) : workspaceSurface === 'jobs' ? (
+            <JobsCenter />
           ) : (
             <>
               <section className="studio-overview" aria-labelledby="studio-overview-title">
