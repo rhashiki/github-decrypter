@@ -252,7 +252,16 @@ try {
   assert.equal(readiness.denyByDefault, true);
   assert.equal((await fetch(`${address.origin}/v1/capabilities`)).status, 404);
   assert.equal((await fetch(`${address.origin}/v1/grants`, { method: 'POST' })).status, 404);
-  assert.equal((await fetch(`${address.origin}/v1/jobs`)).status, 404);
+
+  const jobsResponse = await fetch(`${address.origin}/v1/jobs`, {
+    headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
+  });
+  const jobControlHttp = Number(health.build) >= 47;
+  if (jobControlHttp) {
+    assert.equal(jobsResponse.status, 200, 'Build 47+ may expose the authorized Jobs Center without exposing capability grant transport');
+  } else {
+    assert.equal(jobsResponse.status, 404, 'Build 15 must not expose job control transport before Build 47');
+  }
   await daemon.stop('Build 15 verified');
 
   await new Promise((resolve) => setImmediate(resolve));
@@ -263,7 +272,7 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build15-capability-security-runtime/2',
+    schema: 'gd-build15-capability-security-runtime/3',
     minimumSchemaVersion: 5,
     currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     capabilities: CAPABILITIES,
@@ -280,6 +289,8 @@ try {
     restartFailsClosed: true,
     daemonReadinessIntegration: true,
     externalGrantTransport: false,
+    jobControlHttp,
+    jobControlTransportBuild: 47,
     allowsLaterSecretsVault: true,
     approvalTransactions: false,
   }, null, 2));
