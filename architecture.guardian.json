@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 42,
+  "currentBuild": 43,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -307,6 +307,24 @@
     "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "tokenAbstractionAuthority": {
+    "ownerPackage": "@github-decrypter/context", "ownerSource": "packages/context/src/token-abstraction.ts", "minimumBuild": 43,
+    "contextContinuationBuild": 42, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-context-continuation/1", "schema": "gd-token-abstraction/1",
+    "rootContextId": "ctx-root", "maxFrames": 4096, "sourceDigestBinding": "sha256",
+    "deterministic": true, "finiteModelWindow": true, "environmentNeutral": true,
+    "exactInputFields": ["continuation","window"], "windowFields": ["contextWindowTokens","reservedOutputTokens"],
+    "metering": "unmeasured", "fitStatus": "unknown", "overflowDecision": "deferred",
+    "requirementCompilation": true, "taskGraphCompilation": true, "contextCompilation": true,
+    "contextContinuation": true, "tokenAbstraction": true, "userFacingRawTokenBudget": false,
+    "infiniteContextClaim": false, "tokenizerExecution": false, "contentTokenEstimation": false,
+    "silentTruncation": false, "semanticCompression": false, "orchestrationRequired": true,
+    "attachmentIngestion": false, "mentionResolution": false, "conversationHistory": false,
+    "projectMemory": false, "contextPackPersistence": false, "aiExecution": false, "execution": false,
+    "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -328,7 +346,7 @@
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
-    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "tokenAbstractionBuild": 43, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
