@@ -5,7 +5,9 @@ import path from 'node:path';
 
 const root = process.cwd();
 const guardian = path.join(root, 'scripts/architecture-guardian-jobs.mjs');
-const policy = JSON.parse(fs.readFileSync(path.join(root, 'architecture.guardian.json'), 'utf8'));
+const policyPath = path.join(root, 'architecture.guardian.json');
+const policyOriginal = fs.readFileSync(policyPath, 'utf8');
+const policy = JSON.parse(policyOriginal);
 const rejected = [];
 
 function runExpecting(code) {
@@ -34,13 +36,24 @@ if (policy.currentBuild < policy.jobAuthority.crashRecoveryBuild) {
   }
 }
 
-const serverPath = path.join(root, 'apps/local/src/server.ts');
-const serverOriginal = fs.readFileSync(serverPath, 'utf8');
-try {
-  fs.writeFileSync(serverPath, `${serverOriginal}\nexport const prematureJobsRoute = '/v1/jobs';\n`);
-  runExpecting('AG103');
-} finally {
-  fs.writeFileSync(serverPath, serverOriginal);
+if (policy.currentBuild < policy.jobAuthority.jobControlTransportBuild) {
+  const serverPath = path.join(root, 'apps/local/src/server.ts');
+  const serverOriginal = fs.readFileSync(serverPath, 'utf8');
+  try {
+    fs.writeFileSync(serverPath, `${serverOriginal}\nexport const prematureJobsRoute = '/v1/jobs';\n`);
+    runExpecting('AG103');
+  } finally {
+    fs.writeFileSync(serverPath, serverOriginal);
+  }
+} else {
+  try {
+    const prematurePolicy = JSON.parse(policyOriginal);
+    prematurePolicy.currentBuild = policy.jobAuthority.jobControlTransportBuild - 1;
+    fs.writeFileSync(policyPath, `${JSON.stringify(prematurePolicy, null, 2)}\n`, 'utf8');
+    runExpecting('AG103');
+  } finally {
+    fs.writeFileSync(policyPath, policyOriginal, 'utf8');
+  }
 }
 
 const final = spawnSync(process.execPath, [guardian], { cwd: root, encoding: 'utf8' });
@@ -48,10 +61,12 @@ assert.equal(final.status, 0, `Job Guardian did not recover.\n${final.stdout}\n$
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build12-job-guardian-negative/2',
+  schema: 'gd-build12-job-guardian-negative/3',
   currentBuild: policy.currentBuild,
   crashRecoveryBuild: policy.jobAuthority.crashRecoveryBuild,
+  jobControlTransportBuild: policy.jobAuthority.jobControlTransportBuild,
   rejected,
   prematureRecoveryProbeRequired: policy.currentBuild < policy.jobAuthority.crashRecoveryBuild,
+  prematureTransportBoundaryProved: true,
   restoredTreePasses: true,
 }, null, 2));
