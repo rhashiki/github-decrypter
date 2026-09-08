@@ -147,7 +147,16 @@ try {
   assert.equal(ready.offlineExecutionReady, true);
   assert.equal(ready.localExecutionAvailable, true);
   assert.equal((await fetch(`${address.origin}/v1/connectivity`, { method: 'POST' })).status, 404);
-  assert.equal((await fetch(`${address.origin}/v1/jobs`)).status, 404);
+
+  const jobsResponse = await fetch(`${address.origin}/v1/jobs`, {
+    headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
+  });
+  const jobControlHttp = Number(health.build) >= 47;
+  if (jobControlHttp) {
+    assert.equal(jobsResponse.status, 200, 'Build 47+ may expose authorized Jobs Center transport while offline execution remains intact');
+  } else {
+    assert.equal(jobsResponse.status, 404, 'Build 14 must not expose job control transport before Build 47');
+  }
   await daemon.stop('Build 14 verified');
 
   assert.ok(events.some((entry) => entry.startsWith('connectivity:')));
@@ -156,7 +165,7 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build14-offline-execution-runtime/2',
+    schema: 'gd-build14-offline-execution-runtime/3',
     minimumSchemaVersion: 4,
     currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     unknownFailsClosedForNetwork: true,
@@ -170,7 +179,8 @@ try {
     connectivityPersistsAcrossRestart: true,
     daemonReadyOffline: true,
     automaticNetworkProbe: false,
-    jobControlHttp: false,
+    jobControlHttp,
+    jobControlTransportBuild: 47,
     allowsLaterSecurityBuilds: true,
   }, null, 2));
 } finally {
