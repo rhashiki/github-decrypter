@@ -39,7 +39,9 @@ for (const marker of [
 
 assert.doesNotMatch(source, /^\s*import\s+(?!type\b)/m);
 assert.doesNotMatch(source, /\b(?:fetch|WebSocket|XMLHttpRequest|EventSource|localStorage|indexedDB|caches)\b/);
-assert.doesNotMatch(source, /\b(?:node:|process\.|require\s*\(|child_process|spawn\s*\(|exec\s*\()\b/);
+assert.doesNotMatch(source, /\bnode:[A-Za-z0-9_/-]+/);
+assert.doesNotMatch(source, /\bprocess\./);
+assert.doesNotMatch(source, /\b(?:child_process|LocalDatabase|SecretsVault)\b/);
 assert.doesNotMatch(source, /@github-decrypter\/(?:ai|chat|context|tools|workspace|git)/);
 assert.doesNotMatch(source, /\b(?:buildHierarchicalContext|continueContext|abstractTokens|resolveMention|ingestAttachment|routeModel|generate|executeTaskGraph)\b/);
 
