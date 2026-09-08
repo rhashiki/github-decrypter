@@ -26,9 +26,10 @@ if (
   const studioPackage = json('apps/studio/package.json');
   const extensionPackage = json('apps/extension/package.json');
   const localPackage = json('apps/local/package.json');
+  const packageBuild = versionBuild(planPackage.version);
 
   if (
-    planPackage.name !== '@github-decrypter/plan' || versionBuild(planPackage.version) !== 38
+    planPackage.name !== '@github-decrypter/plan' || packageBuild === null || packageBuild < 38 || packageBuild > policy.currentBuild
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
     || !packageRule || packageRule.environmentNeutral !== true
     || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify([])
@@ -96,7 +97,10 @@ if (
     || rule.contextContinuationBuild !== 42 || rule.tokenAbstractionBuild !== 43 || rule.conversationEngineBuild !== 44
     || rule.attachmentEngineBuild !== 45 || rule.contextMentionsBuild !== 46
   ) violations.push({ code: 'AG367', message: 'Prompt Intake future ownership boundaries drifted.' });
-  if (/\b(?:compileRequirements|compileTaskGraph|buildContext|continueContext|resolveMention|ingestAttachment|routeModel|generate)\b/.test(source)) {
+  if (policy.currentBuild < rule.requirementCompilerBuild && /\bcompileRequirements\b/.test(source)) {
+    violations.push({ code: 'AG367', message: 'Requirement Compiler leaked into Prompt Intake before Build 39.' });
+  }
+  if (/\b(?:compileTaskGraph|buildHierarchicalContext|continueContext|abstractTokens|resolveMention|ingestAttachment|routeModel|generate)\b/.test(source)) {
     violations.push({ code: 'AG367', message: 'A later-roadmap engine leaked into Prompt Intake.' });
   }
 
