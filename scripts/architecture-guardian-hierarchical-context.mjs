@@ -28,10 +28,14 @@ if (
   const extensionPackage = json('apps/extension/package.json');
   const localPackage = json('apps/local/package.json');
   const packageBuild = versionBuild(contextPackage.version);
+  const build41Exports = './src/index.ts';
+  const build42Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
+  const exportsValid = contextPackage.exports === build41Exports
+    || (policy.currentBuild >= 42 && JSON.stringify(contextPackage.exports) === JSON.stringify(build42Exports));
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 41 || packageBuild > policy.currentBuild
-    || contextPackage.exports !== './src/index.ts'
+    || !exportsValid
     || JSON.stringify(contextPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/plan': 'workspace:*' })
     || !packageRule || packageRule.environmentNeutral !== true
     || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/plan'])

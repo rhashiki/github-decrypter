@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 41,
+  "currentBuild": 42,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -292,6 +292,21 @@
     "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "contextContinuationAuthority": {
+    "ownerPackage": "@github-decrypter/context", "ownerSource": "packages/context/src/continuation.ts", "minimumBuild": 42,
+    "hierarchicalContextBuild": 41, "tokenAbstractionBuild": 43, "conversationEngineBuild": 44,
+    "attachmentEngineBuild": 45, "contextMentionsBuild": 46, "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-hierarchical-context/1", "schema": "gd-context-continuation/1",
+    "rootContextId": "ctx-root", "maxFrames": 4096, "maxLevels": 4096,
+    "sourceDigestBinding": "sha256", "deterministic": true, "sequentialHandoff": true,
+    "dependencyContextCarry": true, "environmentNeutral": true, "exactInputFields": ["context"],
+    "requirementCompilation": true, "taskGraphCompilation": true, "contextCompilation": true,
+    "contextContinuation": true, "semanticExpansion": false, "tokenAbstraction": false,
+    "projectMemory": false, "contextPackPersistence": false, "attachmentIngestion": false,
+    "mentionResolution": false, "conversationHistory": false, "aiExecution": false, "execution": false,
+    "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -312,7 +327,7 @@
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
-    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41,
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
     "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
