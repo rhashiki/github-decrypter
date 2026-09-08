@@ -10,3 +10,4 @@ export * from './messages.js';
 export * from './handshake.js';
 export * from './guards.js';
 export * from './environment-doctor.js';
+export * from './jobs-center.js';
