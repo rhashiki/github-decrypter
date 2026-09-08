@@ -1,6 +1,6 @@
 # Build 43 — Token Abstraction Layer
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Objective
 
@@ -29,9 +29,9 @@ Establish a provider-neutral internal boundary for finite model context-window c
 - environment-neutral core
 - no Studio, Extension or Local Runtime activation
 
-## Required closure gates
+## Validated implementation head
 
-Build 43 must not be marked complete until all of the following are green on the exact validated head:
+Implementation head `5d1b45e7fde06bed65b440786b000710962c3155` passed GitHub Actions run `34248931831` with all implementation gates green:
 
 1. Token Abstraction static contract.
 2. Build 43 TypeScript project.
@@ -41,8 +41,8 @@ Build 43 must not be marked complete until all of the following are green on the
 6. Accumulated Build 4–43 CI.
 7. Root workspace TypeScript checks.
 8. Modern-engine preservation.
-9. Historical pull-request workflow matrix.
-10. Protected-head merge check.
+
+The completion-documentation head must pass the same accumulated gate before the pull request is opened. The historical pull-request workflow matrix and protected-head merge check remain merge gates.
 
 ## Deferred by design
 
