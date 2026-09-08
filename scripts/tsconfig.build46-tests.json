@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "types": ["node"]
+  },
+  "include": [
+    "../packages/ai/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/context/src/**/*.ts",
+    "../packages/chat/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "./test-build46-context-mentions-runtime.ts"
+  ]
+}

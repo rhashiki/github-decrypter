@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 45,
+  "currentBuild": 46,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -358,6 +358,20 @@
     "providerExecution": false, "mentionResolution": false, "jobCreation": false,
     "networkAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
   },
+  "contextMentionsAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,
+    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 47,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "schema": "gd-context-mention/1", "targetSchema": "gd-context-mention-target/1", "resolutionSchema": "gd-context-mention-resolution/1",
+    "kinds": ["file","folder","repository","commit","branch","pull-request","issue","database","preview","terminal"],
+    "maxItems": 64, "maxCatalogItems": 4096, "maxReferenceCharacters": 2048, "maxLabelCharacters": 256,
+    "environmentNeutral": true, "workspaceScoped": true, "conversationScoped": true, "committedUserMessageBinding": true,
+    "explicitCatalogOnly": true, "exactReferenceMatch": true, "structuredReferencesOnly": true, "textualMentionParsing": false,
+    "contentMaterialization": false, "sourceReads": false, "filesystemRead": false, "gitRead": false, "githubRead": false,
+    "databaseRead": false, "previewRead": false, "terminalRead": false, "attachmentIngestion": false,
+    "providerExecution": false, "jobCreation": false, "persistenceMutation": false, "networkAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -379,7 +393,7 @@
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
-    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
     "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],

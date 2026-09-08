@@ -8,12 +8,18 @@ const policy = JSON.parse(read('architecture.guardian.json'));
 const source = read('packages/chat/src/attachments.ts');
 const store = read('apps/local/src/attachment-store.ts');
 const localIndex = read('apps/local/src/index.ts');
+const versionBuild = (value) => {
+  const match = typeof value === 'string' ? value.match(/^0\.0\.(\d+)$/) : null;
+  return match ? Number(match[1]) : null;
+};
+const chatBuild = versionBuild(chatPkg.version);
+const localBuild = versionBuild(localPkg.version);
 
 assert.equal(chatPkg.name, '@github-decrypter/chat');
-assert.equal(chatPkg.version, '0.0.45');
+assert.ok(policy.currentBuild >= 45);
+assert.ok(chatBuild !== null && chatBuild >= 45 && chatBuild <= policy.currentBuild);
 assert.equal(chatPkg.exports?.['./attachments'], './src/attachments.ts');
-assert.equal(localPkg.version, '0.0.45');
-assert.equal(policy.currentBuild, 45);
+assert.ok(localBuild !== null && localBuild >= 45 && localBuild <= policy.currentBuild);
 
 for (const marker of [
   'ATTACHMENT_BUILD = 45',

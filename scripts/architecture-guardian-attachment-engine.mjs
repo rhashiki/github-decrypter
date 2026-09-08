@@ -27,9 +27,12 @@ if (
   const localPackage = json('apps/local/package.json');
   const chatRule = policy.packageRules?.['@github-decrypter/chat'];
   const localRule = policy.appRules?.['@github-decrypter/local'];
+  const chatBuild = versionBuild(chatPackage.version);
+  const localBuild = versionBuild(localPackage.version);
 
   if (
-    versionBuild(chatPackage.version) !== 45 || versionBuild(localPackage.version) !== 45
+    chatBuild === null || chatBuild < 45 || chatBuild > policy.currentBuild
+    || localBuild === null || localBuild < 45 || localBuild > policy.currentBuild
     || chatPackage.exports?.['./attachments'] !== './src/attachments.ts'
     || !chatRule?.environmentNeutral
     || JSON.stringify(chatRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/ai','@github-decrypter/context','@github-decrypter/workspace'])
