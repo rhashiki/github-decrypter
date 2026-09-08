@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 38,
+  "currentBuild": 39,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -245,6 +245,20 @@
     "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "requirementCompilerAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "minimumBuild": 39, "promptIntakeBuild": 38,
+    "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "inputSchema": "gd-prompt-intake/1", "schema": "gd-requirement-spec/1", "maxItems": 4096,
+    "kinds": ["goal","requirement","constraint","acceptance","non-goal","context"],
+    "sourceDigestBinding": "sha256", "deterministic": true, "syntaxDirected": true,
+    "environmentNeutral": true, "exactInputFields": ["intake"], "requirementCompilation": true,
+    "semanticInterpretation": false, "taskGraphCompilation": false, "contextCompilation": false,
+    "contextContinuation": false, "tokenAbstraction": false, "attachmentIngestion": false,
+    "mentionResolution": false, "conversationHistory": false, "aiExecution": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -265,7 +279,7 @@
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
-    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "requirementCompilerBuild": 39, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
