@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 37 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.37' as const;
+export const LOCAL_RUNTIME_BUILD = 44 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.44' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http','health','readiness','protocol-handshake','persistent-sqlite','schema-migrations',
   'durable-jobs','job-dependencies','job-leases','crash-recovery','runtime-sessions','lease-recovery',
@@ -34,6 +34,8 @@ export const LOCAL_RUNTIME_FEATURES = [
   'local-ai-model-routing','deterministic-model-routing','preferred-model-routing','manual-default-routing',
   'deterministic-routing-fallback','routing-decision-only','no-routing-state-persistence','no-routing-network-authority',
   'no-routing-secret-authority','no-routing-prompt-inspection','no-adaptive-model-routing',
+  'conversation-engine','persistent-conversations','workspace-scoped-conversations','conversation-history',
+  'conversation-revisions','conversation-store','job-lifecycle-independent-conversations','no-conversation-rpc',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -44,5 +46,5 @@ export const localRuntimeIdentity = Object.freeze({
   id: 'local', packageName: '@github-decrypter/local', product: 'GitHub Decrypter',
   build: LOCAL_RUNTIME_BUILD, version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const, protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor, capability-gated local-only AI execution, explicit local model installation, provider-neutral local model inventory/removal/update with session-only manual default selection, and deterministic local model routing decisions. Model Routing does not install, manage, execute, persist, inspect prompts, access secrets, or call external providers.'
+  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor, capability-gated local-only AI execution, explicit local model installation, provider-neutral local model inventory/removal/update with session-only manual default selection, deterministic local model routing decisions, and persistent workspace-scoped Conversation Store independent from Durable Job lifecycle. Conversation persistence does not expose Chat RPC, does not create jobs, and does not own attachment ingestion or context mention resolution.'
 });
