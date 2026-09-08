@@ -28,7 +28,9 @@ if (
   const extensionPackage = json('apps/extension/package.json');
   const localPackage = json('apps/local/package.json');
   const packageBuild = versionBuild(contextPackage.version);
-  const expectedExports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
+  const build42Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
+  const build43Exports = { ...build42Exports, './token-abstraction': './src/token-abstraction.ts' };
+  const expectedExports = policy.currentBuild >= 43 ? build43Exports : build42Exports;
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 42 || packageBuild > policy.currentBuild

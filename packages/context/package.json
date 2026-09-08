@@ -1,11 +1,12 @@
 {
   "name": "@github-decrypter/context",
-  "version": "0.0.42",
+  "version": "0.0.43",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./continuation": "./src/continuation.ts"
+    "./continuation": "./src/continuation.ts",
+    "./token-abstraction": "./src/token-abstraction.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
