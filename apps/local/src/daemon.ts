@@ -9,6 +9,7 @@ import { createAuditLedger, type AuditLedger } from './audit-ledger.js';
 import { createCapabilitySecurityAuthority, type CapabilitySecurityAuthority } from './capability-security.js';
 import { createChangeTracker, type ChangeTracker } from './change-tracker.js';
 import { assertLoopbackHost, localRuntimeConfigFromEnv, type LocalRuntimeConfig } from './config.js';
+import { createLocalConversationStore, type LocalConversationStore } from './conversation-store.js';
 import { createLocalDatabase, type LocalDatabase } from './database.js';
 import { createGitRuntime, type GitRuntime } from './git-runtime.js';
 import { createGitHubAppRuntime, type GitHubAppRuntime } from './github-app-runtime.js';
@@ -28,6 +29,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly config?: LocalRuntimeConfig;
   readonly eventBus?: EventBus<LocalRuntimeEventCatalog>;
   readonly database?: LocalDatabase;
+  readonly conversationStore?: LocalConversationStore;
   readonly jobs?: DurableJobEngine;
   readonly recovery?: CrashPowerRecovery;
   readonly offline?: OfflineExecutionCoordinator;
@@ -56,6 +58,7 @@ export class LocalRuntimeDaemon {
   readonly #now: () => string;
   readonly #peer = createLocalRuntimePeer();
   readonly #database: LocalDatabase;
+  readonly #conversationStore: LocalConversationStore;
   readonly #jobs: DurableJobEngine;
   readonly #recovery: CrashPowerRecovery;
   readonly #offline: OfflineExecutionCoordinator;
@@ -84,6 +87,7 @@ export class LocalRuntimeDaemon {
     this.#eventBus = options.eventBus ?? createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'local-runtime' });
     this.#now = options.now ?? (() => new Date().toISOString());
     this.#database = options.database ?? createLocalDatabase({ path: this.#config.databasePath, now: this.#now });
+    this.#conversationStore = options.conversationStore ?? createLocalConversationStore(this.#database);
     this.#jobs = options.jobs ?? createDurableJobEngine({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#recovery = options.recovery ?? createCrashPowerRecovery({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#offline = options.offline ?? createOfflineExecutionCoordinator({ database: this.#database, jobs: this.#jobs, eventBus: this.#eventBus, now: this.#now });
@@ -134,6 +138,7 @@ export class LocalRuntimeDaemon {
   get startedAt(): string | null { return this.#startedAt; }
   get events(): EventBus<LocalRuntimeEventCatalog> { return this.#eventBus; }
   get database(): LocalDatabase { return this.#database; }
+  get conversationStore(): LocalConversationStore { return this.#conversationStore; }
   get jobs(): DurableJobEngine { return this.#jobs; }
   get recovery(): CrashPowerRecovery { return this.#recovery; }
   get offline(): OfflineExecutionCoordinator { return this.#offline; }
@@ -237,7 +242,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
