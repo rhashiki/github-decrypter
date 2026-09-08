@@ -147,3 +147,258 @@ export function createPromptIntakeRecord(input: PromptIntakeInput): PromptIntake
     persistence: false,
   });
 }
+
+export const REQUIREMENT_COMPILER_BUILD = 39 as const;
+export const REQUIREMENT_SPEC_SCHEMA = 'gd-requirement-spec/1' as const;
+export const REQUIREMENT_MAX_ITEMS = 4096 as const;
+export const REQUIREMENT_KINDS = ['goal', 'requirement', 'constraint', 'acceptance', 'non-goal', 'context'] as const;
+
+export type RequirementKind = (typeof REQUIREMENT_KINDS)[number];
+
+export interface RequirementCompilerInput {
+  readonly intake: PromptIntakeRecord;
+}
+
+export interface RequirementItem {
+  readonly id: string;
+  readonly ordinal: number;
+  readonly kind: RequirementKind;
+  readonly statement: string;
+  readonly startLine: number;
+  readonly endLine: number;
+}
+
+export interface RequirementCounts {
+  readonly total: number;
+  readonly goal: number;
+  readonly requirement: number;
+  readonly constraint: number;
+  readonly acceptance: number;
+  readonly 'non-goal': number;
+  readonly context: number;
+}
+
+export interface RequirementSpec {
+  readonly schema: typeof REQUIREMENT_SPEC_SCHEMA;
+  readonly sourceSchema: typeof PROMPT_INTAKE_SCHEMA;
+  readonly sourceDigest: PromptIntakeDigest;
+  readonly sourceCharacterCount: number;
+  readonly sourceLineCount: number;
+  readonly items: readonly RequirementItem[];
+  readonly counts: RequirementCounts;
+  readonly requirementCompilation: true;
+  readonly syntaxDirected: true;
+  readonly deterministic: true;
+  readonly semanticInterpretation: false;
+  readonly taskGraphCompilation: false;
+  readonly contextCompilation: false;
+  readonly contextContinuation: false;
+  readonly tokenAbstraction: false;
+  readonly attachmentIngestion: false;
+  readonly mentionResolution: false;
+  readonly conversationHistory: false;
+  readonly aiExecution: false;
+  readonly persistence: false;
+}
+
+const REQUIREMENT_SECTION_KIND = Object.freeze<Record<string, RequirementKind>>({
+  goal: 'goal',
+  goals: 'goal',
+  requirement: 'requirement',
+  requirements: 'requirement',
+  constraint: 'constraint',
+  constraints: 'constraint',
+  acceptance: 'acceptance',
+  'acceptance criteria': 'acceptance',
+  'acceptance criterion': 'acceptance',
+  'non-goal': 'non-goal',
+  'non-goals': 'non-goal',
+  'non goal': 'non-goal',
+  'non goals': 'non-goal',
+  context: 'context',
+});
+
+const REQUIREMENT_PREFIX_KIND = Object.freeze([
+  ['acceptance criteria:', 'acceptance'],
+  ['acceptance criterion:', 'acceptance'],
+  ['requirement:', 'requirement'],
+  ['constraint:', 'constraint'],
+  ['non-goal:', 'non-goal'],
+  ['non goal:', 'non-goal'],
+  ['acceptance:', 'acceptance'],
+  ['context:', 'context'],
+  ['goal:', 'goal'],
+] as const satisfies readonly (readonly [string, RequirementKind])[]);
+
+function assertPromptIntakeRecordForRequirements(value: unknown): asserts value is PromptIntakeRecord {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Requirement Compiler intake must be a PromptIntakeRecord.');
+  const row = value as Record<string, unknown>;
+  const digest = row.digest as Record<string, unknown> | undefined;
+  if (row.schema !== PROMPT_INTAKE_SCHEMA || row.source !== PROMPT_INTAKE_SOURCE || row.normalized !== true) {
+    throw new TypeError('Requirement Compiler requires canonical Prompt Intake output.');
+  }
+  if (typeof row.normalizedText !== 'string' || row.normalizedText.length === 0 || row.normalizedText !== normalizePromptText(row.normalizedText)) {
+    throw new TypeError('Requirement Compiler intake text is not canonically normalized.');
+  }
+  if (!digest || digest.algorithm !== PROMPT_INTAKE_DIGEST_ALGORITHM || typeof digest.hex !== 'string' || !/^[0-9a-f]{64}$/.test(digest.hex)) {
+    throw new TypeError('Requirement Compiler intake digest is invalid.');
+  }
+  if (digest.hex !== sha256Hex(row.normalizedText)) throw new TypeError('Requirement Compiler intake digest does not match normalized text.');
+  const expectedLines = row.normalizedText.split('\n').length;
+  if (row.characterCount !== row.normalizedText.length || row.lineCount !== expectedLines) {
+    throw new TypeError('Requirement Compiler intake structural metadata is invalid.');
+  }
+  if (row.shape !== (expectedLines === 1 ? 'single-line' : 'multi-line')) throw new TypeError('Requirement Compiler intake shape is invalid.');
+  if (typeof row.hasFencedCode !== 'boolean') throw new TypeError('Requirement Compiler intake fenced-code signal is invalid.');
+  for (const field of ['semanticInterpretation','requirementCompilation','taskGraphCompilation','contextCompilation','attachmentIngestion','mentionResolution','conversationHistory','aiExecution','persistence'] as const) {
+    if (row[field] !== false) throw new TypeError(`Requirement Compiler intake ${field} boundary is invalid.`);
+  }
+}
+
+function asRequirementCompilerInput(value: unknown): RequirementCompilerInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Requirement Compiler input must be an object.');
+  const row = value as Record<string, unknown>;
+  const keys = Object.keys(row);
+  if (keys.length !== 1 || keys[0] !== 'intake') throw new TypeError('Requirement Compiler input accepts only the intake field.');
+  assertPromptIntakeRecordForRequirements(row.intake);
+  return { intake: row.intake };
+}
+
+function normalizeRequirementHeading(line: string): string | null {
+  const match = line.trim().match(/^#{1,6}\s+(.+?)\s*#*$/);
+  return match ? match[1]!.trim().toLowerCase().replace(/\s+/g, ' ') : null;
+}
+
+function stripListMarker(line: string): { readonly value: string; readonly listed: boolean } {
+  const match = line.match(/^\s*(?:[-*+]\s+|\d+[.)]\s+)(.*)$/);
+  return match ? { value: match[1]!, listed: true } : { value: line, listed: false };
+}
+
+function classifyRequirementStatement(value: string, fallback: RequirementKind): { readonly kind: RequirementKind; readonly statement: string } {
+  const trimmed = value.trim();
+  const lower = trimmed.toLowerCase();
+  for (const [prefix, kind] of REQUIREMENT_PREFIX_KIND) {
+    if (lower.startsWith(prefix)) {
+      const statement = trimmed.slice(prefix.length).trim();
+      return { kind, statement: statement || trimmed };
+    }
+  }
+  return { kind: fallback, statement: trimmed };
+}
+
+export function compileRequirements(input: RequirementCompilerInput): RequirementSpec {
+  const { intake } = asRequirementCompilerInput(input);
+  const lines = intake.normalizedText.split('\n');
+  const items: RequirementItem[] = [];
+  let sectionKind: RequirementKind = 'requirement';
+  let inFence = false;
+  let buffer: string[] = [];
+  let bufferKind: RequirementKind = sectionKind;
+  let bufferStartLine = 1;
+  let bufferEndLine = 1;
+
+  const flush = (): void => {
+    const statement = buffer.join('\n').trim();
+    buffer = [];
+    if (!statement) return;
+    if (items.length >= REQUIREMENT_MAX_ITEMS) throw new RangeError(`Requirement Compiler exceeds ${REQUIREMENT_MAX_ITEMS} items.`);
+    const ordinal = items.length + 1;
+    items.push(Object.freeze({
+      id: `req-${String(ordinal).padStart(4, '0')}`,
+      ordinal,
+      kind: bufferKind,
+      statement,
+      startLine: bufferStartLine,
+      endLine: bufferEndLine,
+    }));
+  };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const sourceLine = lines[index]!;
+    const lineNumber = index + 1;
+    const trimmed = sourceLine.trim();
+    const fenceLine = /^```/.test(trimmed);
+
+    if (!inFence) {
+      const heading = normalizeRequirementHeading(sourceLine);
+      const headingKind = heading ? REQUIREMENT_SECTION_KIND[heading] : undefined;
+      if (headingKind) {
+        flush();
+        sectionKind = headingKind;
+        continue;
+      }
+
+      if (trimmed.length === 0) {
+        flush();
+        continue;
+      }
+
+      const listed = stripListMarker(sourceLine);
+      if (listed.listed) {
+        flush();
+        const classified = classifyRequirementStatement(listed.value, sectionKind);
+        bufferKind = classified.kind;
+        bufferStartLine = lineNumber;
+        bufferEndLine = lineNumber;
+        if (classified.statement) buffer.push(classified.statement);
+        continue;
+      }
+
+      if (buffer.length === 0) {
+        const classified = classifyRequirementStatement(sourceLine, sectionKind);
+        bufferKind = classified.kind;
+        bufferStartLine = lineNumber;
+        bufferEndLine = lineNumber;
+        if (classified.statement) buffer.push(classified.statement);
+      } else {
+        buffer.push(sourceLine.trimEnd());
+        bufferEndLine = lineNumber;
+      }
+    } else {
+      if (buffer.length === 0) {
+        bufferKind = sectionKind;
+        bufferStartLine = lineNumber;
+      }
+      buffer.push(sourceLine);
+      bufferEndLine = lineNumber;
+    }
+
+    if (fenceLine) inFence = !inFence;
+  }
+  flush();
+
+  const countsMutable: Record<RequirementKind, number> = {
+    goal: 0,
+    requirement: 0,
+    constraint: 0,
+    acceptance: 0,
+    'non-goal': 0,
+    context: 0,
+  };
+  for (const item of items) countsMutable[item.kind] += 1;
+  const counts: RequirementCounts = Object.freeze({ total: items.length, ...countsMutable });
+  const sourceDigest: PromptIntakeDigest = Object.freeze({ algorithm: intake.digest.algorithm, hex: intake.digest.hex });
+
+  return Object.freeze({
+    schema: REQUIREMENT_SPEC_SCHEMA,
+    sourceSchema: PROMPT_INTAKE_SCHEMA,
+    sourceDigest,
+    sourceCharacterCount: intake.characterCount,
+    sourceLineCount: intake.lineCount,
+    items: Object.freeze(items),
+    counts,
+    requirementCompilation: true,
+    syntaxDirected: true,
+    deterministic: true,
+    semanticInterpretation: false,
+    taskGraphCompilation: false,
+    contextCompilation: false,
+    contextContinuation: false,
+    tokenAbstraction: false,
+    attachmentIngestion: false,
+    mentionResolution: false,
+    conversationHistory: false,
+    aiExecution: false,
+    persistence: false,
+  });
+}
