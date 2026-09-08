@@ -26,8 +26,9 @@ const tick = (milliseconds = 1_000) => { nowMs += milliseconds; };
 try {
   const database = new LocalDatabase({ path: join(tempRoot, 'github-app.sqlite3'), now });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 11);
-  assert.equal(LOCAL_DATABASE_SCHEMA_VERSION, 11);
+  assert.ok(opened.schemaVersion >= 11, 'database schema must not regress below Build 23');
+  assert.ok(LOCAL_DATABASE_SCHEMA_VERSION >= 11, 'local database schema must not regress below Build 23');
+  assert.equal(opened.schemaVersion, LOCAL_DATABASE_SCHEMA_VERSION);
 
   const jobs = new DurableJobEngine({ database, now });
   const offline = new OfflineExecutionCoordinator({ database, jobs, now });
@@ -213,7 +214,9 @@ try {
   console.log(JSON.stringify({
     ok: true,
     schema: 'gd-build23-github-app-runtime/1',
-    databaseSchema: 11,
+    minimumDatabaseSchema: 11,
+    currentDatabaseSchema: LOCAL_DATABASE_SCHEMA_VERSION,
+    allowsLaterSchemaMigrations: true,
     rs256Jwt: true,
     jwtTtlSeconds: 600,
     installationTokenShortLived: true,

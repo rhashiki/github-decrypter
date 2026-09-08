@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 43,
+  "currentBuild": 44,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -33,7 +33,8 @@
     "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/ai": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/plan": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
-    "@github-decrypter/context": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true }
+    "@github-decrypter/context": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
+    "@github-decrypter/chat": { "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/context","@github-decrypter/workspace"], "environmentNeutral": true }
   },
   "appRules": {
     "@github-decrypter/studio": {
@@ -48,7 +49,7 @@
       "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\blocalStorage\\b","\\bindexedDB\\b"]
     },
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/chat","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
       "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
@@ -325,6 +326,23 @@
     "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "conversationEngineAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/index.ts", "runtimeOwnerRoot": "apps/local",
+    "minimumBuild": 44, "tokenAbstractionBuild": 43, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-token-abstraction/1", "schema": "gd-conversation/1",
+    "messageSchema": "gd-conversation-message/1", "dispatchSchema": "gd-conversation-dispatch/1",
+    "storeSchema": "gd-local-conversation-store/1", "maxMessages": 256, "maxTitleCharacters": 160,
+    "maxMessageCharacters": 262144, "roles": ["user","assistant"], "environmentNeutral": true,
+    "workspaceScoped": true, "persistentConversation": true, "jobLifecycleIndependent": true,
+    "localPersistence": true, "persistenceMigration": 12,
+    "persistenceTables": ["gd_conversations","gd_conversation_messages"], "jobForeignKey": false,
+    "fullHistoryOrReject": true, "silentTruncation": false, "tokenAbstraction": true, "finiteModelWindow": true,
+    "voiceContextShared": true, "voiceTransport": false, "providerExecution": false,
+    "attachmentIngestion": false, "mentionResolution": false, "projectMemory": false,
+    "directDatabaseAuthority": false, "networkAuthority": false, "filesystemAuthority": false,
+    "browserAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -346,7 +364,7 @@
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
-    "tokenAbstractionBuild": 43, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
