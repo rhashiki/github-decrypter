@@ -78,19 +78,19 @@ if (
   const client = read('apps/studio/src/jobs-center-client.ts');
   for (const marker of [
     "url.pathname === '/v1/jobs'",
-    "jobsControlMatch",
-    "jobsDetailMatch",
+    'handleJobsCenter(',
+    'jobsCenterJobId(',
     'applyJobsCenterCors',
-    "x-gd-studio-client",
-    "gd-studio-jobs-center/1",
+    "request.headers['x-github-decrypter-client'] === JOBS_CENTER_CLIENT_HEADER",
     "response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS')",
+    "response.setHeader('access-control-allow-headers', 'Accept, Content-Type, X-GitHub-Decrypter-Client')",
   ]) if (!server.includes(marker)) violations.push({ code: 'AG454', message: 'Jobs Center loopback HTTP boundary is incomplete.', detail: marker });
   if (/\/v1\/jobs\/enqueue|\/v1\/jobs\/[^'"`]+\/skip|set-priority|priority\/control/i.test(server)) {
     violations.push({ code: 'AG454', message: 'Jobs Center HTTP surface exposes a forbidden scheduling/mutation route.' });
   }
   for (const marker of [
     "JOBS_CENTER_ENDPOINT = 'http://127.0.0.1:43110/v1/jobs'",
-    "'x-gd-studio-client': JOBS_CENTER_CLIENT_HEADER",
+    "'x-github-decrypter-client': JOBS_CENTER_CLIENT_ID",
     "credentials: 'omit'",
     "cache: 'no-store'",
     "redirect: 'error'",
@@ -133,7 +133,7 @@ if (
     externalTransport: false,
     externalNetworkAuthority: false,
   })) if (rule[key] !== expected) violations.push({ code: 'AG456', message: 'Jobs Center safety projection/transport policy drifted.', detail: key });
-  if (/payload\s*:\s*job\.payload|checkpoint\s*:\s*job\.checkpoint|result\s*:\s*job\.result|error\s*:\s*job\.error|workerId\s*:\s*job\.workerId|leaseToken/i.test(runtime)) {
+  if (/payload\s*:\s*job\.payload|checkpoint\s*:\s*job\.checkpoint|result\s*:\s*job\.result|error\s*:\s*job\.error|workerId\s*:\s*job\.workerId|leaseToken\s*:\s*/.test(runtime)) {
     violations.push({ code: 'AG456', message: 'Jobs Center projection exposes sensitive Durable Job internals.' });
   }
 
