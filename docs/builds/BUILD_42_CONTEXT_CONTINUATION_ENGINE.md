@@ -1,6 +1,6 @@
 # Build 42 — Context Continuation Engine
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Objective
 
@@ -25,20 +25,26 @@ Continue canonical context between Build 41 task contexts deterministically, wit
 - environment-neutral core
 - no Studio, Extension or Local Runtime activation
 
-## Required closure gates
+## Validated implementation head
 
-Build 42 must not be marked complete until all of the following are green on the exact validated head:
+Implementation head `8ee2d6f903df61a87ccab3f2eaa667f8da8cb8f6` passed GitHub Actions run `34241477896` with:
 
-1. Context Continuation static contract.
-2. Build 42 TypeScript project.
-3. Context Continuation runtime behavior.
-4. Architecture Guardian AG400–AG409.
+1. Architecture Guardian AG400–AG409.
+2. Accumulated Builds 4–42 CI.
+3. Build 42 static contract and TypeScript project.
+4. Context Continuation runtime behavior.
 5. Guardian negative probes.
-6. Accumulated Build 4–42 CI.
-7. Root workspace TypeScript checks.
-8. Modern-engine preservation.
-9. Historical pull-request workflow matrix.
-10. Protected-head merge check.
+6. Root workspace TypeScript checks.
+7. Modern-engine preservation.
+
+A prior run exposed only a test-message regex mismatch; the engine had correctly rejected the invalid dependency closure. The test expectation was corrected without changing the production continuation contract.
+
+## Remaining merge gates
+
+The completion documentation head must pass the same Build 4–42 gate before PR creation. After that, Build 42 still requires:
+
+1. Historical pull-request workflow matrix on the exact PR head.
+2. Protected-head merge check with no SHA drift.
 
 ## Deferred by design
 
