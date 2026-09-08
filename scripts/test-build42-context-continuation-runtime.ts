@@ -120,7 +120,7 @@ const closureDrift = {
 };
 assert.throws(
   () => compileContextContinuation({ context: closureDrift as typeof context }),
-  /dependency closure is invalid/i,
+  /invalid dependency closure/i,
 );
 
 const missingDirect = {
