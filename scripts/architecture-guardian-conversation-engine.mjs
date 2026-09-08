@@ -38,7 +38,7 @@ if (
     '@github-decrypter/workspace': 'workspace:*',
   };
   if (
-    chatPackage.name !== '@github-decrypter/chat' || packageBuild !== 44
+    chatPackage.name !== '@github-decrypter/chat' || packageBuild === null || packageBuild < 44 || packageBuild > policy.currentBuild
     || JSON.stringify(chatPackage.dependencies ?? {}) !== JSON.stringify(expectedDependencies)
     || !chatRule || chatRule.environmentNeutral !== true
     || JSON.stringify(chatRule.allowedWorkspaceDependencies) !== JSON.stringify(Object.keys(expectedDependencies))
