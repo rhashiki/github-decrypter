@@ -114,7 +114,7 @@ assert.throws(
 );
 assert.throws(
   () => abstractTokenWindow({ continuation, window: { contextWindowTokens: 8192, reservedOutputTokens: 8192 } }),
-  /below the context window/i,
+  /below total context capacity/i,
 );
 assert.throws(
   () => abstractTokenWindow({ continuation, window: { contextWindowTokens: Number.MAX_SAFE_INTEGER + 1, reservedOutputTokens: 0 } }),
