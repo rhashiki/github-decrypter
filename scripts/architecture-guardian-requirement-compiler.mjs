@@ -27,9 +27,10 @@ if (
   const studioPackage = json('apps/studio/package.json');
   const extensionPackage = json('apps/extension/package.json');
   const localPackage = json('apps/local/package.json');
+  const packageBuild = versionBuild(planPackage.version);
 
   if (
-    planPackage.name !== '@github-decrypter/plan' || versionBuild(planPackage.version) !== 39
+    planPackage.name !== '@github-decrypter/plan' || packageBuild === null || packageBuild < 39 || packageBuild > policy.currentBuild
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
     || !packageRule || packageRule.environmentNeutral !== true
     || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify([])
