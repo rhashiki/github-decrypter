@@ -1,6 +1,6 @@
 # Build 47 — Jobs Center
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Purpose
 
@@ -24,7 +24,7 @@ Expose a safe, inspectable and user-controlled Jobs Center over the existing Dur
 - manual refresh without interval polling;
 - Build 47 Architecture Guardian AG450–AG459;
 - static, runtime and negative-guardian tests;
-- Build 12 and Build 32 historical gates made forward-compatible with the authorized Build 47 transport.
+- historical gates in Builds 12–15, 32 and 46 made forward-compatible with the authorized Build 47 transport while preserving their original pre-Build-47 prohibitions.
 
 ## Safe projection
 
@@ -67,16 +67,30 @@ Build 47 does not implement:
 - background polling or streaming;
 - release/deploy/store/DNS/Supabase mutation.
 
-## Validation gate
+## Validation record
 
-The implementation must not be marked complete until:
+Validated implementation head:
 
-1. Architecture Guardian is green;
-2. Build 47 static/runtime/negative tests are green;
-3. accumulated Builds 4–47 and workspace TypeScript are green on the exact implementation head;
-4. only then the canonical roadmap may mark Build 47 ✅;
-5. the exact documentation head must pass accumulated CI again before PR;
-6. the PR historical workflow matrix must be fully green before protected merge.
+`bb2834cdd0f3f1338ecce3a02c11e30a0e9b9749`
+
+On that exact head:
+
+1. Architecture Guardian — ✅
+2. Build 47 static/runtime/negative tests — ✅
+3. accumulated Builds 4–47 — ✅
+4. workspace TypeScript — ✅
+5. modern engine preservation — ✅
+
+The completion documentation and canonical roadmap are intentionally committed only after this implementation gate. Their exact final head must pass the same accumulated CI before the PR is opened.
+
+## Closure gate
+
+Build 47 is not merged until:
+
+1. the canonical roadmap marks Build 47 ✅;
+2. the exact completion-documentation head passes accumulated Builds 4–47 and modern engine preservation;
+3. the PR historical workflow matrix is fully green;
+4. the protected merge uses the exact validated PR head.
 
 ## Next Build
 
