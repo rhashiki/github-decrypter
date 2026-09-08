@@ -208,11 +208,11 @@ function asTokenAbstractionInput(value: unknown): TokenAbstractionInput {
 }
 
 export function abstractTokenWindow(input: TokenAbstractionInput): TokenAbstractionPlan {
-  const { continuation, window } = asTokenAbstractionInput(input);
-  const usableInputTokens = window.contextWindowTokens - window.reservedOutputTokens;
+  const { continuation, window: modelWindowInput } = asTokenAbstractionInput(input);
+  const usableInputTokens = modelWindowInput.contextWindowTokens - modelWindowInput.reservedOutputTokens;
   const modelWindow = Object.freeze({
-    contextWindowTokens: window.contextWindowTokens,
-    reservedOutputTokens: window.reservedOutputTokens,
+    contextWindowTokens: modelWindowInput.contextWindowTokens,
+    reservedOutputTokens: modelWindowInput.reservedOutputTokens,
     usableInputTokens,
   });
   const envelopes = Object.freeze(continuation.frames.map((frame, index) => Object.freeze({
