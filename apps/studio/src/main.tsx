@@ -4,6 +4,7 @@ import '@github-decrypter/ui/styles.css';
 import { StudioApp } from './App.js';
 import { registerStudioPwa } from './pwa.js';
 import './styles.css';
+import './jobs-center.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('GitHub Decrypter Studio root element is missing.');
