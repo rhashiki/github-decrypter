@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 39,
+  "currentBuild": 40,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -259,6 +259,21 @@
     "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "taskGraphCompilerAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/task-graph.ts", "minimumBuild": 40,
+    "requirementCompilerBuild": 39, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "inputSchema": "gd-requirement-spec/1", "schema": "gd-task-graph/1", "maxNodes": 4096, "maxEdges": 16384,
+    "taskKinds": ["requirement"], "supportingKinds": ["goal","constraint","acceptance","non-goal","context"],
+    "dependencySyntax": "[depends: req-NNNN]", "explicitDependenciesOnly": true, "dependencyInference": false,
+    "dagValidation": true, "dagValidated": true, "cycleRejection": true, "invalidDependencyRejection": true,
+    "deterministic": true, "syntaxDirected": true, "environmentNeutral": true, "exactInputFields": ["spec"],
+    "requirementCompilation": true, "taskGraphCompilation": true, "execution": false, "scheduling": false,
+    "contextCompilation": false, "contextContinuation": false, "tokenAbstraction": false,
+    "attachmentIngestion": false, "mentionResolution": false, "conversationHistory": false,
+    "aiExecution": false, "persistence": false, "networkAuthority": false, "filesystemAuthority": false,
+    "databaseAuthority": false, "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -279,7 +294,8 @@
     "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
     "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
-    "requirementCompilerBuild": 39, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40,
+    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
