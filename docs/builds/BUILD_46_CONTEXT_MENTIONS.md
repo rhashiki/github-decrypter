@@ -1,6 +1,6 @@
 # Build 46 — Context Mentions
 
-Status: 🚧 IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED
+Status: ✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN
 
 ## Objective
 
@@ -51,17 +51,17 @@ Build 46 also does not introduce a second conversation authority. Mentions remai
 - Build 67 — Context Engine vFinal
 - deployment/release/tag/DNS/Chrome Store/Supabase/production mutation
 
-## Completion gate
+## Implementation validation
 
-This build must not be marked complete until the exact implementation head passes:
+Implementation head `bc62b1c50b31106ba6c93787d197b2dfb630ff5c` passed GitHub Actions run `34268965569` with:
 
-1. Build 46 Architecture Guardian AG440–AG449
-2. Build 46 static contract gate
-3. Build 46 TypeScript gate
-4. Build 46 runtime gate
-5. Build 46 negative Guardian gate
-6. accumulated Builds 4–46 CI
-7. all workspace typechecks
-8. Build 4 modern-engine preservation
+1. Build 46 Architecture Guardian AG440–AG449 ✅
+2. Build 46 static contract gate ✅
+3. Build 46 TypeScript gate ✅
+4. Build 46 runtime gate ✅
+5. Build 46 negative Guardian gate ✅
+6. accumulated Builds 4–46 CI ✅
+7. all workspace typechecks ✅
+8. Build 4 modern-engine preservation ✅
 
-After the implementation head is green, this document and the canonical roadmap may be marked complete. The resulting documentation head must then pass the same accumulated gate before a protected PR is opened. The full historical PR workflow matrix must be green on that exact final head before merge.
+The documentation/roadmap completion head created after this record must pass the same accumulated gate before a protected pull request is opened. The full historical PR workflow matrix must then be green on that exact final head before merge.
