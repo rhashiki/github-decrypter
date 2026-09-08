@@ -1,1 +1,15 @@
-{"name":"@github-decrypter/chat","version":"0.0.0","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc -p tsconfig.json"}}
+{
+  "name": "@github-decrypter/chat",
+  "version": "0.0.44",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@github-decrypter/ai": "workspace:*",
+    "@github-decrypter/context": "workspace:*",
+    "@github-decrypter/workspace": "workspace:*"
+  }
+}
