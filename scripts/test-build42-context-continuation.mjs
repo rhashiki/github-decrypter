@@ -7,15 +7,21 @@ const pkg = JSON.parse(read('packages/context/package.json'));
 const policy = JSON.parse(read('architecture.guardian.json'));
 const versionMatch = typeof pkg.version === 'string' ? pkg.version.match(/^0\.0\.(\d+)$/) : null;
 const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
+const build42Exports = {
+  '.': './src/index.ts',
+  './continuation': './src/continuation.ts',
+};
+const build43Exports = {
+  ...build42Exports,
+  './token-abstraction': './src/token-abstraction.ts',
+};
+const expectedExports = policy.currentBuild >= 43 ? build43Exports : build42Exports;
 
 assert.equal(pkg.name, '@github-decrypter/context');
 assert.ok(packageBuild !== null && packageBuild >= 42 && packageBuild <= policy.currentBuild);
 assert.deepEqual(pkg.dependencies ?? {}, { '@github-decrypter/plan': 'workspace:*' });
 assert.equal(Object.keys(pkg.dependencies ?? {}).length, 1);
-assert.deepEqual(pkg.exports, {
-  '.': './src/index.ts',
-  './continuation': './src/continuation.ts',
-});
+assert.deepEqual(pkg.exports, expectedExports);
 
 for (const marker of [
   'CONTEXT_CONTINUATION_BUILD = 42',
