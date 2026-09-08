@@ -377,6 +377,35 @@ CREATE INDEX gd_github_webhook_deliveries_time_idx
   ON gd_github_webhook_deliveries (verified_at, delivery_id);
 `;
 
+const MIGRATION_012_SQL = `
+CREATE TABLE gd_conversations (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  revision INTEGER NOT NULL DEFAULT 0 CHECK (revision >= 0),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_conversations_workspace_updated_idx
+  ON gd_conversations (workspace_id, updated_at DESC, id ASC);
+
+CREATE TABLE gd_conversation_messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL,
+  ordinal INTEGER NOT NULL CHECK (ordinal >= 1),
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (conversation_id, ordinal),
+  FOREIGN KEY (conversation_id) REFERENCES gd_conversations(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE INDEX gd_conversation_messages_conversation_idx
+  ON gd_conversation_messages (conversation_id, ordinal ASC);
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -479,6 +508,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_011_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_011_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 12,
+    name: 'conversation-engine',
+    sql: MIGRATION_012_SQL,
+    checksum: checksum(MIGRATION_012_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_012_SQL);
     },
   }),
 ]);
