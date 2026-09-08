@@ -18,6 +18,9 @@ import {
   type DurableJobTransition,
 } from './job-types.js';
 
+export { JOBS_CENTER_ACTIONS } from '@github-decrypter/protocol';
+export type { JobsCenterAction } from '@github-decrypter/protocol';
+
 export const JOBS_CENTER_RUNTIME_BUILD = 47 as const;
 
 export interface JobsCenterControlInput {
