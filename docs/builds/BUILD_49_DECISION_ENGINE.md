@@ -1,6 +1,6 @@
 # Build 49 — Decision Engine
 
-Status: IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED
+Status: ✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN
 
 ## Objective
 
@@ -38,18 +38,19 @@ It also adds no Local Runtime transport, persistence, scheduler, job creation, c
 
 ## Validation gate
 
-The Build is not complete until all of the following are green on one exact implementation SHA:
+Validated implementation head:
 
-1. Architecture Guardian including AG470–AG479.
-2. Static Build 49 contract test.
-3. TypeScript compile test.
-4. Decision Engine runtime test.
-5. Negative Guardian probes.
-6. Accumulated Builds 4–49 CI.
-7. Workspace TypeScript checks.
-8. Modern-engine preservation.
+- SHA: `5d2f05c7b97accacc7e376241972a2b7b285ad05`
+- GitHub Actions run: `34331710855`
+- Architecture Guardian including AG470–AG479: ✅
+- static Build 49 contract test: ✅
+- TypeScript compile/runtime coverage: ✅
+- negative Guardian probes: ✅
+- accumulated Builds 4–49 CI: ✅
+- workspace TypeScript checks: ✅
+- modern-engine preservation: ✅
 
-Only after that implementation head is green may this document and `docs/product/ROADMAP_V1.md` be marked complete. The final documentation head must then pass the same gates again before PR creation.
+The final documentation head must pass the same gates again before PR creation.
 
 ## Next owner
 
