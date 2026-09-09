@@ -26,6 +26,7 @@ export * from './job-types.js';
 export * from './jobs-center.js';
 export * from './lifecycle.js';
 export * from './offline-execution.js';
+export * from './plan-authority.js';
 export * from './project-detector.js';
 export * from './recovery-engine.js';
 export * from './secrets-vault.js';
