@@ -4,6 +4,10 @@ import fs from 'node:fs';
 const read = (file) => fs.readFileSync(file, 'utf8');
 const json = (file) => JSON.parse(read(file));
 const patch = (value) => Number(/^0\.0\.(\d+)$/.exec(String(value ?? ''))?.[1] ?? NaN);
+const assertBuildAtLeast = (value, minimum, maximum, label) => {
+  const build = patch(value);
+  assert.ok(Number.isInteger(build) && build >= minimum && build <= maximum, `${label} must remain within Build ${minimum}..${maximum}.`);
+};
 
 const policy = json('architecture.guardian.json');
 const rule = policy.jobsCenterAuthority;
@@ -18,7 +22,7 @@ const client = read('apps/studio/src/jobs-center-client.ts');
 const surface = read('apps/studio/src/JobsCenter.tsx');
 const app = read('apps/studio/src/App.tsx');
 
-assert.equal(policy.currentBuild, 47);
+assert.ok(policy.currentBuild >= 47);
 assert.equal(policy.phaseGates.jobsCenterBuild, 47);
 assert.equal(rule.minimumBuild, 47);
 assert.equal(rule.durableJobEngineBuild, 12);
@@ -40,9 +44,9 @@ assert.equal(rule.backgroundPolling, false);
 assert.equal(rule.genericLocalRuntimeTransport, false);
 assert.equal(rule.externalNetworkAuthority, false);
 
-assert.equal(patch(rootPackage.version), 47);
-assert.equal(patch(studioPackage.version), 47);
-assert.equal(patch(localPackage.version), 47);
+assertBuildAtLeast(rootPackage.version, 47, policy.currentBuild, 'Root package');
+assertBuildAtLeast(studioPackage.version, 47, policy.currentBuild, 'Studio package');
+assertBuildAtLeast(localPackage.version, 47, policy.currentBuild, 'Local package');
 assert.ok(rootPackage.scripts.guardian.includes('architecture-guardian-jobs-center.mjs'));
 assert.ok(rootPackage.scripts['check:build47']);
 
@@ -111,6 +115,7 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build47-jobs-center-static/1',
   build: 47,
+  currentBuild: policy.currentBuild,
   durableJobEngineBuild: 12,
   allowedActions: rule.allowedActions,
   safeProjectionOnly: true,
