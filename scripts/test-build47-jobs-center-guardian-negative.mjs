@@ -19,9 +19,17 @@ function probe(path, mutate, expectedCode) {
   }
 }
 
+function mutatePolicy(source, mutate) {
+  const policy = JSON.parse(source);
+  mutate(policy);
+  return `${JSON.stringify(policy, null, 2)}\n`;
+}
+
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"schedulerAuthority": false', '"schedulerAuthority": true'),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.jobsCenterAuthority.schedulerAuthority = true;
+  }),
   'AG453',
 );
 probe(
