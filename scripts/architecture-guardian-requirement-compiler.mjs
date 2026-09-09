@@ -94,8 +94,24 @@ if (
     rule.networkAuthority !== false || rule.filesystemAuthority !== false || rule.databaseAuthority !== false
     || rule.storageAuthority !== false || rule.studioTransport !== false || rule.localRuntimeTransport !== false
   ) violations.push({ code: 'AG376', message: 'Requirement Compiler policy granted transport or persistence authority.' });
-  for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage], ['local', localPackage]]) {
+  for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage]]) {
     if (pkg.dependencies?.['@github-decrypter/plan']) violations.push({ code: 'AG376', message: `Build 39 activated Requirement Compiler inside ${name} prematurely.` });
+  }
+  if (localPackage.dependencies?.['@github-decrypter/plan']) {
+    const localSourceRoot = path.join(root, 'apps/local/src');
+    const localSources = fs.readdirSync(localSourceRoot)
+      .filter((entry) => entry.endsWith('.ts'))
+      .map((entry) => fs.readFileSync(path.join(localSourceRoot, entry), 'utf8'))
+      .join('\n');
+    const authorizedPlanAuthorityConsumer = policy.currentBuild >= 48
+      && policy.phaseGates?.planAuthorityBuild === 48
+      && policy.planAuthority?.minimumBuild === 48
+      && policy.planAuthority?.runtimeOwnerRoot === 'apps/local';
+    const requirementCompilerActivated = /from\s+['"]@github-decrypter\/plan['"]/.test(localSources)
+      || /\b(?:createPromptIntakeRecord|normalizePromptText|compileRequirements)\b/.test(localSources);
+    if (!authorizedPlanAuthorityConsumer || requirementCompilerActivated) {
+      violations.push({ code: 'AG376', message: 'Build 39 activated Requirement Compiler inside local prematurely.' });
+    }
   }
 
   if (
