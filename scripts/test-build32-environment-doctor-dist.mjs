@@ -29,17 +29,27 @@ for (const marker of ['.studio-doctor', '.studio-doctor-grid', '.studio-doctor-a
 }
 
 const sw = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf8');
-assert.ok(sw.includes('gd-studio-shell-v32'), 'PWA cache did not advance to Build 32.');
+const cacheMatch = sw.match(/gd-studio-shell-v(\d+)/);
+assert.ok(cacheMatch, 'PWA cache marker is missing.');
+const cacheBuild = Number(cacheMatch[1]);
+const studioPackage = JSON.parse(fs.readFileSync(path.join(root, 'apps/studio/package.json'), 'utf8'));
+const studioVersionMatch = String(studioPackage.version ?? '').match(/^0\.0\.(\d+)$/);
+assert.ok(studioVersionMatch, `expected pre-V1 Studio version, got ${String(studioPackage.version)}`);
+const studioBuild = Number(studioVersionMatch[1]);
+assert.ok(cacheBuild >= 32, `PWA cache regressed below Build 32: ${cacheBuild}.`);
+assert.equal(cacheBuild, studioBuild, `PWA cache Build ${cacheBuild} must match Studio Build ${studioBuild}.`);
 assert.equal(sw.includes('127.0.0.1:43110/v1/environment-doctor'), false, 'Service worker must not own or prefetch the Local Runtime diagnostic endpoint.');
 for (const jsFile of jsFiles) assert.ok(sw.includes(`./assets/${jsFile}`), `PWA shell omitted JavaScript asset: ${jsFile}`);
 for (const cssFile of cssFiles) assert.ok(sw.includes(`./assets/${cssFile}`), `PWA shell omitted CSS asset: ${cssFile}`);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build32-environment-doctor-dist/1',
+  schema: 'gd-build32-environment-doctor-dist/2',
   jsFiles,
   cssFiles,
   doctorBundled: true,
-  pwaCacheBuild: 32,
+  pwaCacheBuild: cacheBuild,
+  studioBuild,
+  forwardCompatibleCacheGate: true,
   serviceWorkerOwnsDoctorEndpoint: false,
 }, null, 2));

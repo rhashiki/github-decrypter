@@ -50,9 +50,11 @@ assert.match(app, /<EnvironmentDoctor/);
 assert.match(app, /environmentDoctorComplete/);
 assert.match(app, /environmentDoctorOutcome/);
 
+const allowedStudioFetchClients = ['apps/studio/src/environment-doctor-client.ts'];
+if (policy.currentBuild >= 47) allowedStudioFetchClients.push('apps/studio/src/jobs-center-client.ts');
 assert.deepEqual(
   policy.appRules['@github-decrypter/studio'].sourcePatternExceptions['\\bfetch\\s*\\('],
-  ['apps/studio/src/environment-doctor-client.ts'],
+  allowedStudioFetchClients,
 );
 
 console.log(JSON.stringify({

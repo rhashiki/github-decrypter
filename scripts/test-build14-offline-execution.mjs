@@ -68,7 +68,13 @@ const server = read('apps/local/src/server.ts');
 assert.ok(server.includes('offlineExecutionReady'));
 assert.ok(server.includes('localExecutionAvailable'));
 assert.ok(server.includes('automaticNetworkProbe: false'));
-assert.ok(!/\/v1\/(?:jobs|connectivity|offline)(?:\/|['"`])/.test(server));
+assert.ok(!/\/v1\/(?:connectivity|offline)(?:\/|['"`])/.test(server), 'Build 14 connectivity/offline transport remains forbidden');
+const jobControlTransport = policy.currentBuild >= policy.offlineAuthority.jobControlTransportBuild;
+if (jobControlTransport) {
+  assert.ok(/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 47+ must preserve offline execution while allowing authorized Jobs Center transport');
+} else {
+  assert.ok(!/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 14 must not expose job control transport before Build 47');
+}
 
 const identity = read('apps/local/src/identity.ts');
 assert.ok(identity.includes("'offline-execution'"));
@@ -77,7 +83,7 @@ assert.ok(identity.includes("'network-wait-resume'"));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build14-offline-execution/1',
+  schema: 'gd-build14-offline-execution/2',
   minimumBuild: 14,
   currentBuild: policy.currentBuild,
   localWorkOffline: true,
@@ -85,5 +91,6 @@ console.log(JSON.stringify({
   connectivityPersistent: true,
   automaticNetworkProbe: false,
   capabilitySecurity: false,
-  jobControlTransport: false,
+  jobControlTransport,
+  jobControlTransportBuild: policy.offlineAuthority.jobControlTransportBuild,
 }, null, 2));

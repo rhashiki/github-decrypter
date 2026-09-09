@@ -8,6 +8,7 @@ import {
   LocalDatabase,
   LocalRuntimeDaemon,
   LOCAL_DATABASE_SCHEMA_VERSION,
+  LOCAL_RUNTIME_BUILD,
   type LocalRuntimeEventCatalog,
 } from '../apps/local/src/index.js';
 
@@ -32,23 +33,9 @@ try {
   const engine = new DurableJobEngine({ database, eventBus: bus, now });
   assert.equal(engine.status().ready, true);
 
-  const root = await engine.enqueue({
-    kind: 'build.root',
-    payload: { task: 'root' },
-    maxAttempts: 3,
-  });
-  const dependent = await engine.enqueue({
-    kind: 'build.dependent',
-    payload: { task: 'dependent' },
-    priority: 100,
-    maxAttempts: 2,
-    dependencies: [root.id],
-  });
-  const priority = await engine.enqueue({
-    kind: 'build.priority',
-    payload: { task: 'priority' },
-    priority: 10,
-  });
+  const root = await engine.enqueue({ kind: 'build.root', payload: { task: 'root' }, maxAttempts: 3 });
+  const dependent = await engine.enqueue({ kind: 'build.dependent', payload: { task: 'dependent' }, priority: 100, maxAttempts: 2, dependencies: [root.id] });
+  const priority = await engine.enqueue({ kind: 'build.priority', payload: { task: 'priority' }, priority: 10 });
 
   const first = await engine.claimNext('worker-a');
   assert.ok(first);
@@ -145,9 +132,7 @@ try {
   const daemonLockPath = join(tempRoot, 'daemon.lock');
   const daemonEvents: string[] = [];
   const daemonBus = createEventBus<LocalRuntimeEventCatalog>({ defaultSource: 'build12-daemon-test' });
-  daemonBus.subscribe('gd.local.jobs.ready', (event) => {
-    daemonEvents.push(`ready:${event.payload.schemaVersion}`);
-  });
+  daemonBus.subscribe('gd.local.jobs.ready', (event) => { daemonEvents.push(`ready:${event.payload.schemaVersion}`); });
   const config = { host: '127.0.0.1', port: 0, lockPath: daemonLockPath, databasePath: daemonDatabasePath } as const;
   const daemon = new LocalRuntimeDaemon({ config, eventBus: daemonBus, now });
   const address = await daemon.start();
@@ -160,7 +145,19 @@ try {
   assert.equal(health.jobs.ready, true);
   const ready = await (await fetch(`${address.origin}/readyz`)).json() as Record<string, any>;
   assert.equal(ready.jobsReady, true);
-  assert.equal((await fetch(`${address.origin}/v1/jobs`)).status, 404, 'job control transport must not arrive in Build 12');
+
+  const jobsTransport = await fetch(`${address.origin}/v1/jobs`, {
+    headers: { 'x-github-decrypter-client': 'gd-studio-jobs-center/1' },
+  });
+  if (LOCAL_RUNTIME_BUILD >= 47) {
+    assert.equal(jobsTransport.status, 200, 'Build 47+ must expose only the authorized Jobs Center transport');
+    const jobsView = await jobsTransport.json() as Record<string, any>;
+    assert.equal(jobsView.schema, 'gd-jobs-center-list/1');
+    assert.equal(jobsView.payloadExposed, false);
+    assert.equal(jobsView.leaseTokenExposed, false);
+  } else {
+    assert.equal(jobsTransport.status, 404, 'job control transport must not arrive before Build 47');
+  }
 
   const daemonJob = await daemon.jobs.enqueue({ kind: 'daemon.persist', payload: { survives: true } });
   await daemon.stop('Build 12 restart test');
@@ -178,7 +175,7 @@ try {
 
   console.log(JSON.stringify({
     ok: true,
-    schema: 'gd-build12-durable-job-engine-runtime/2',
+    schema: 'gd-build12-durable-job-engine-runtime/3',
     minimumSchemaVersion: 2,
     currentSchemaVersion: LOCAL_DATABASE_SCHEMA_VERSION,
     persistenceAcrossRestart: true,
@@ -195,7 +192,8 @@ try {
     retryBudget: true,
     expiredLeaseDetection: true,
     standaloneEngineDoesNotAutoRecover: true,
-    jobControlHttp: false,
+    jobControlHttp: LOCAL_RUNTIME_BUILD >= 47,
+    jobControlTransportBuild: 47,
     daemonIntegration: true,
   }, null, 2));
 } finally {

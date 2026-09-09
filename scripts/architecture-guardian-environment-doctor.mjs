@@ -105,8 +105,10 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
     violations.push({ code: 'AG306', message: 'Environment Doctor CORS must not use wildcard origins or credentials.' });
   }
   const exception = policy.appRules?.['@github-decrypter/studio']?.sourcePatternExceptions?.['\\bfetch\\s*\\('];
-  if (JSON.stringify(exception) !== JSON.stringify(['apps/studio/src/environment-doctor-client.ts'])) {
-    violations.push({ code: 'AG306', message: 'Studio fetch exception is broader than the Environment Doctor client.' });
+  const allowedStudioFetchClients = ['apps/studio/src/environment-doctor-client.ts'];
+  if (policy.currentBuild >= 47) allowedStudioFetchClients.push('apps/studio/src/jobs-center-client.ts');
+  if (JSON.stringify(exception) !== JSON.stringify(allowedStudioFetchClients)) {
+    violations.push({ code: 'AG306', message: 'Studio fetch exception is broader than the Build-authorized loopback clients.' });
   }
 
   if (

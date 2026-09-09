@@ -16,6 +16,7 @@ import { createGitHubAppRuntime, type GitHubAppRuntime } from './github-app-runt
 import { createGitHubProvider, type GitHubProvider } from './github-provider.js';
 import { acquireLocalRuntimeInstanceLock, type LocalRuntimeInstanceLock } from './instance-lock.js';
 import { createDurableJobEngine, type DurableJobEngine } from './job-engine.js';
+import { createJobsCenter, type JobsCenter } from './jobs-center.js';
 import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
 import { createOfflineExecutionCoordinator, type OfflineExecutionCoordinator } from './offline-execution.js';
@@ -31,6 +32,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly database?: LocalDatabase;
   readonly conversationStore?: LocalConversationStore;
   readonly jobs?: DurableJobEngine;
+  readonly jobsCenter?: JobsCenter;
   readonly recovery?: CrashPowerRecovery;
   readonly offline?: OfflineExecutionCoordinator;
   readonly capabilities?: CapabilitySecurityAuthority;
@@ -60,6 +62,7 @@ export class LocalRuntimeDaemon {
   readonly #database: LocalDatabase;
   readonly #conversationStore: LocalConversationStore;
   readonly #jobs: DurableJobEngine;
+  readonly #jobsCenter: JobsCenter;
   readonly #recovery: CrashPowerRecovery;
   readonly #offline: OfflineExecutionCoordinator;
   readonly #capabilities: CapabilitySecurityAuthority;
@@ -89,6 +92,7 @@ export class LocalRuntimeDaemon {
     this.#database = options.database ?? createLocalDatabase({ path: this.#config.databasePath, now: this.#now });
     this.#conversationStore = options.conversationStore ?? createLocalConversationStore(this.#database);
     this.#jobs = options.jobs ?? createDurableJobEngine({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
+    this.#jobsCenter = options.jobsCenter ?? createJobsCenter({ jobs: this.#jobs });
     this.#recovery = options.recovery ?? createCrashPowerRecovery({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#offline = options.offline ?? createOfflineExecutionCoordinator({ database: this.#database, jobs: this.#jobs, eventBus: this.#eventBus, now: this.#now });
     this.#capabilities = options.capabilities ?? createCapabilitySecurityAuthority({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
@@ -140,6 +144,7 @@ export class LocalRuntimeDaemon {
   get database(): LocalDatabase { return this.#database; }
   get conversationStore(): LocalConversationStore { return this.#conversationStore; }
   get jobs(): DurableJobEngine { return this.#jobs; }
+  get jobsCenter(): JobsCenter { return this.#jobsCenter; }
   get recovery(): CrashPowerRecovery { return this.#recovery; }
   get offline(): OfflineExecutionCoordinator { return this.#offline; }
   get capabilities(): CapabilitySecurityAuthority { return this.#capabilities; }
@@ -223,6 +228,7 @@ export class LocalRuntimeDaemon {
         getAddress: () => this.#addressInfo(),
         getDatabaseStatus: () => this.#database.status,
         getJobEngineStatus: () => this.#jobs.status(),
+        getJobsCenter: () => this.#jobsCenter,
         getRecoveryStatus: () => this.#recovery.status,
         getOfflineExecutionStatus: () => this.#offline.status(),
         getCapabilitySecurityStatus: () => this.#capabilities.status(),
@@ -242,7 +248,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with safe Jobs Center control, persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;

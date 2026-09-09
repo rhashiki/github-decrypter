@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 46,
+  "currentBuild": 47,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -41,7 +41,7 @@
       "allowedWorkspaceDependencies": ["@github-decrypter/protocol", "@github-decrypter/ui"],
       "allowedExternalDependencies": ["react", "react-dom", "@types/react", "@types/react-dom", "@vitejs/plugin-react", "vite"],
       "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."],
-      "sourcePatternExceptions": { "\\bfetch\\s*\\(": ["apps/studio/src/environment-doctor-client.ts"] }
+      "sourcePatternExceptions": { "\\bfetch\\s*\\(": ["apps/studio/src/environment-doctor-client.ts","apps/studio/src/jobs-center-client.ts"] }
     },
     "@github-decrypter/extension": {
       "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
@@ -129,7 +129,7 @@
   },
   "studioAuthority": {
     "ownerRoot": "apps/studio", "minimumBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
-    "onboardingBuild": 31, "environmentDoctorBuild": 32, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "jobsCenterBuild": 47, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
     "ssr": false, "reactServerComponents": false, "repositoryLaunchContext": true,
     "repositoryLaunchSchema": "gd-studio-launch/1", "repositoryIdentityPublicOnly": true,
     "networkAuthority": false, "storageAuthority": false, "serviceWorker": true, "webAppManifest": true,
@@ -137,11 +137,11 @@
     "cacheNamePrefix": "gd-studio-shell-", "manifestPath": "apps/studio/public/manifest.webmanifest",
     "serviceWorkerOwner": "apps/studio/vite.config.ts", "iconSizes": [192,512], "projectDataPersistence": false,
     "repositoryContextPersistence": false, "localRuntimeTransport": false, "diagnosticLocalRuntimeTransport": true,
-    "genericLocalRuntimeTransport": false, "githubProviderDirectAccess": false,
+    "jobsCenterLocalRuntimeTransport": true, "genericLocalRuntimeTransport": false, "githubProviderDirectAccess": false,
     "extensionDirectAccess": false, "contextPersistence": false, "externalTransport": false,
     "ideLayout": true, "workspaceLayout": true, "layoutStatePersistence": false,
     "onboarding": true, "adaptiveUserProfile": true, "adaptiveProfileSchema": "gd-adaptive-user-profile/1",
-    "adaptiveProfilePersistence": false, "environmentDoctor": true, "productionHosting": false, "productionPackaging": false
+    "adaptiveProfilePersistence": false, "environmentDoctor": true, "jobsCenter": true, "productionHosting": false, "productionPackaging": false
   },
   "designSystemAuthority": {
     "ownerPackage": "@github-decrypter/ui", "ownerRoot": "packages/ui", "minimumBuild": 29,
@@ -372,6 +372,18 @@
     "providerExecution": false, "jobCreation": false, "persistenceMutation": false, "networkAuthority": false,
     "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
   },
+  "jobsCenterAuthority": {
+    "ownerRoot": "apps/local", "studioOwnerRoot": "apps/studio", "contractPackage": "@github-decrypter/protocol", "minimumBuild": 47,
+    "durableJobEngineBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15,
+    "protocolSource": "packages/protocol/src/jobs-center.ts", "runtimeSource": "apps/local/src/jobs-center.ts", "studioClient": "apps/studio/src/jobs-center-client.ts", "studioSurface": "apps/studio/src/JobsCenter.tsx",
+    "jobSchema": "gd-jobs-center-job/1", "listSchema": "gd-jobs-center-list/1", "detailSchema": "gd-jobs-center-detail/1", "controlResultSchema": "gd-jobs-center-control-result/1",
+    "allowedActions": ["pause","resume","cancel","retry"], "enqueue": false, "skip": false, "priorityMutation": false, "schedulerAuthority": false,
+    "durableJobEngineSovereign": true, "safeProjectionOnly": true, "payloadExposed": false, "checkpointContentExposed": false, "resultContentExposed": false,
+    "errorContentExposed": false, "workerIdentityExposed": false, "leaseTokenExposed": false,
+    "loopbackOnly": true, "defaultPort": 43110, "listEndpoint": "/v1/jobs", "detailEndpoint": "/v1/jobs/:id", "controlEndpoint": "/v1/jobs/:id/control",
+    "clientHeader": "gd-studio-jobs-center/1", "corsLoopbackOnly": true, "credentials": false, "backgroundPolling": false,
+    "studioTransport": true, "genericLocalRuntimeTransport": false, "externalTransport": false, "externalNetworkAuthority": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -394,7 +406,7 @@
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
     "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
-    "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "jobsCenterBuild": 47, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }

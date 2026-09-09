@@ -74,7 +74,12 @@ assert.ok(daemon.includes('stopSession(reason)'));
 const server = read('apps/local/src/server.ts');
 assert.ok(server.includes('recoveryReady'));
 assert.ok(server.includes('health.recovery.ready'));
-assert.ok(!/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 13 must not expose job control HTTP endpoints');
+const jobControlTransport = policy.currentBuild >= policy.jobAuthority.jobControlTransportBuild;
+if (jobControlTransport) {
+  assert.ok(/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 47+ must preserve recovery while allowing the authorized Jobs Center transport');
+} else {
+  assert.ok(!/\/v1\/jobs(?:\/|['"`])/.test(server), 'Build 13 must not expose job control HTTP endpoints before Build 47');
+}
 
 const identity = read('apps/local/src/identity.ts');
 assert.ok(identity.includes("'crash-recovery'"));
@@ -83,7 +88,7 @@ assert.ok(identity.includes("'lease-recovery'"));
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build13-crash-power-recovery/1',
+  schema: 'gd-build13-crash-power-recovery/2',
   minimumBuild: 13,
   currentBuild: policy.currentBuild,
   sessionJournal: true,
@@ -92,5 +97,6 @@ console.log(JSON.stringify({
   expiredLeaseSweep: true,
   offlineExecution: false,
   capabilitySecurity: false,
-  jobControlTransport: false,
+  jobControlTransport,
+  jobControlTransportBuild: policy.jobAuthority.jobControlTransportBuild,
 }, null, 2));

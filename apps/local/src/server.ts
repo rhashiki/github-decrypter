@@ -21,12 +21,15 @@ import { buildEnvironmentDoctorReport } from './environment-doctor.js';
 import type { GitRuntimeStatus } from './git-runtime.js';
 import { LOCAL_RUNTIME_BUILD, LOCAL_RUNTIME_FEATURES, LOCAL_RUNTIME_VERSION } from './identity.js';
 import type { DurableJobEngineStatus } from './job-types.js';
+import { JOBS_CENTER_ACTIONS, type JobsCenter, type JobsCenterAction } from './jobs-center.js';
 import type { LocalRuntimeState } from './lifecycle.js';
 import type { OfflineExecutionStatus } from './offline-execution.js';
 import type { ProjectDetectionStatus } from './project-detector.js';
 import type { CrashRecoveryStatus } from './recovery-engine.js';
 import type { SecretsVaultStatus } from './secrets-vault.js';
 import type { WorkspaceManagerStatus } from './workspace-manager.js';
+
+export const JOBS_CENTER_CLIENT_HEADER = 'gd-studio-jobs-center/1' as const;
 
 export interface LocalRuntimeHealth {
   readonly schema: 'gd-local-health/1';
@@ -150,6 +153,7 @@ export interface LocalRuntimeServerContext {
   getAddress(): AddressInfo | null;
   getDatabaseStatus(): LocalDatabaseStatus | null;
   getJobEngineStatus(): DurableJobEngineStatus;
+  getJobsCenter(): JobsCenter;
   getRecoveryStatus(): CrashRecoveryStatus;
   getOfflineExecutionStatus(): OfflineExecutionStatus;
   getCapabilitySecurityStatus(): CapabilitySecurityStatus;
@@ -357,6 +361,138 @@ function applyEnvironmentDoctorCors(request: IncomingMessage, response: ServerRe
   return true;
 }
 
+function isAllowedJobsCenterOrigin(origin: string): boolean {
+  return isAllowedEnvironmentDoctorOrigin(origin);
+}
+
+function applyJobsCenterCors(request: IncomingMessage, response: ServerResponse): boolean {
+  const origin = request.headers.origin;
+  if (origin !== undefined && !isAllowedJobsCenterOrigin(origin)) return false;
+  if (origin !== undefined) {
+    response.setHeader('access-control-allow-origin', origin);
+    response.setHeader('vary', 'Origin');
+  }
+  response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+  response.setHeader('access-control-allow-headers', 'Accept, Content-Type, X-GitHub-Decrypter-Client');
+  response.setHeader('access-control-max-age', '600');
+  return true;
+}
+
+function hasJobsCenterClientHeader(request: IncomingMessage): boolean {
+  return request.headers['x-github-decrypter-client'] === JOBS_CENTER_CLIENT_HEADER;
+}
+
+function jobsCenterJobId(pathname: string, suffix = ''): string | null {
+  const escapedSuffix = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = new RegExp(`^/v1/jobs/([^/]+)${escapedSuffix}$`).exec(pathname);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]!);
+  } catch {
+    return null;
+  }
+}
+
+function isJobsCenterAction(value: unknown): value is JobsCenterAction {
+  return typeof value === 'string' && (JOBS_CENTER_ACTIONS as readonly string[]).includes(value);
+}
+
+function rejectJobsCenterOrigin(response: ServerResponse): void {
+  writeJson(response, 403, {
+    schema: 'gd-local-http-error/1',
+    error: { code: 'ORIGIN_NOT_ALLOWED', message: 'Jobs Center accepts only loopback Studio origins.' },
+  });
+}
+
+function rejectJobsCenterClient(response: ServerResponse): void {
+  writeJson(response, 403, {
+    schema: 'gd-local-http-error/1',
+    error: { code: 'CLIENT_NOT_ALLOWED', message: 'Jobs Center requires the canonical Studio client header.' },
+  });
+}
+
+async function handleJobsCenter(
+  request: IncomingMessage,
+  response: ServerResponse,
+  context: LocalRuntimeServerContext,
+  url: URL,
+): Promise<boolean> {
+  const isJobsPath = url.pathname === '/v1/jobs' || url.pathname.startsWith('/v1/jobs/');
+  if (!isJobsPath) return false;
+  if (!applyJobsCenterCors(request, response)) {
+    rejectJobsCenterOrigin(response);
+    return true;
+  }
+  if (request.method === 'OPTIONS') {
+    response.statusCode = 204;
+    response.setHeader('cache-control', 'no-store');
+    response.end();
+    return true;
+  }
+  if (!hasJobsCenterClientHeader(request)) {
+    rejectJobsCenterClient(response);
+    return true;
+  }
+
+  const center = context.getJobsCenter();
+  if (request.method === 'GET' && url.pathname === '/v1/jobs') {
+    writeJson(response, 200, center.list());
+    return true;
+  }
+
+  const detailId = jobsCenterJobId(url.pathname);
+  if (request.method === 'GET' && detailId !== null) {
+    const detail = center.get(detailId);
+    if (!detail) {
+      writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'JOB_NOT_FOUND', message: 'Durable job was not found.' } });
+      return true;
+    }
+    writeJson(response, 200, detail);
+    return true;
+  }
+
+  const controlId = jobsCenterJobId(url.pathname, '/control');
+  if (request.method === 'POST' && controlId !== null) {
+    let body: unknown;
+    try {
+      body = await readJsonBody(request);
+    } catch (error) {
+      const tooLarge = (error as NodeJS.ErrnoException).code === 'ERR_BODY_TOO_LARGE';
+      writeJson(response, tooLarge ? 413 : 400, {
+        schema: 'gd-local-http-error/1',
+        error: { code: tooLarge ? 'BODY_TOO_LARGE' : 'MALFORMED_MESSAGE', message: 'Jobs Center control body is invalid.' },
+      });
+      return true;
+    }
+    if (!isRecord(body) || Object.keys(body).length !== 1 || !isJobsCenterAction(body.action)) {
+      writeJson(response, 400, {
+        schema: 'gd-local-http-error/1',
+        error: { code: 'INVALID_JOB_CONTROL', message: 'Jobs Center accepts exactly one canonical control action.' },
+      });
+      return true;
+    }
+    if (!center.get(controlId)) {
+      writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'JOB_NOT_FOUND', message: 'Durable job was not found.' } });
+      return true;
+    }
+    try {
+      writeJson(response, 200, await center.control({ jobId: controlId, action: body.action }));
+    } catch (error) {
+      writeJson(response, 409, {
+        schema: 'gd-local-http-error/1',
+        error: { code: 'JOB_CONTROL_REJECTED', message: error instanceof Error ? error.message : 'Jobs Center control was rejected.' },
+      });
+    }
+    return true;
+  }
+
+  writeJson(response, 405, {
+    schema: 'gd-local-http-error/1',
+    error: { code: 'METHOD_NOT_ALLOWED', message: 'Jobs Center route or method is not supported.' },
+  });
+  return true;
+}
+
 async function handleHandshake(request: IncomingMessage, response: ServerResponse, context: LocalRuntimeServerContext): Promise<void> {
   let raw: unknown;
   try {
@@ -470,10 +606,11 @@ export function createLocalRuntimeHttpServer(context: LocalRuntimeServerContext)
       writeJson(response, 200, buildEnvironmentDoctorReport(health, context.now()));
       return;
     }
+    if (await handleJobsCenter(request, response, context, url)) return;
     if (request.method === 'POST' && url.pathname === '/v1/handshake') {
       await handleHandshake(request, response, context);
       return;
     }
-    writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'NOT_FOUND', message: 'This Build exposes only health, readiness, Environment Doctor and protocol handshake endpoints.' } });
+    writeJson(response, 404, { schema: 'gd-local-http-error/1', error: { code: 'NOT_FOUND', message: 'This Build exposes only health, readiness, Environment Doctor, Jobs Center and protocol handshake endpoints.' } });
   });
 }

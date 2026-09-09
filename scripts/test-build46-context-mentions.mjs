@@ -8,7 +8,9 @@ const source = read('packages/chat/src/mentions.ts');
 const versionMatch = typeof pkg.version === 'string' ? pkg.version.match(/^0\.0\.(\d+)$/) : null;
 const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
 
-assert.equal(policy.currentBuild, 46);
+assert.ok(policy.currentBuild >= 46, 'Architecture Guardian must not regress below Build 46');
+assert.equal(policy.phaseGates.contextMentionsBuild, 46);
+assert.equal(policy.phaseGates.jobsCenterBuild, 47);
 assert.equal(pkg.name, '@github-decrypter/chat');
 assert.equal(packageBuild, 46);
 assert.equal(pkg.exports?.['./mentions'], './src/mentions.ts');
@@ -79,9 +81,12 @@ assert.equal(rule.persistenceMutation, false);
 
 console.log(JSON.stringify({
   ok: true,
-  schema: 'gd-build46-context-mentions-static/1',
-  build: 46,
+  schema: 'gd-build46-context-mentions-static/2',
+  owningBuild: 46,
+  currentBuild: policy.currentBuild,
   package: '@github-decrypter/chat',
+  packageBuild,
+  jobsCenterBuild: policy.phaseGates.jobsCenterBuild,
   kinds: rule.kinds.length,
   explicitCatalogOnly: rule.explicitCatalogOnly,
   contentMaterialization: rule.contentMaterialization,
