@@ -1,8 +1,8 @@
 import { asPeerId, PROTOCOL_SCHEMA, type ProtocolPeer } from '@github-decrypter/protocol';
 import { randomUUID } from 'node:crypto';
 
-export const LOCAL_RUNTIME_BUILD = 48 as const;
-export const LOCAL_RUNTIME_VERSION = '0.0.48' as const;
+export const LOCAL_RUNTIME_BUILD = 50 as const;
+export const LOCAL_RUNTIME_VERSION = '0.0.50' as const;
 export const LOCAL_RUNTIME_FEATURES = [
   'loopback-http','health','readiness','protocol-handshake','persistent-sqlite','schema-migrations',
   'durable-jobs','job-dependencies','job-leases','crash-recovery','runtime-sessions','lease-recovery',
@@ -41,6 +41,8 @@ export const LOCAL_RUNTIME_FEATURES = [
   'jobs-center','jobs-center-safe-projection','jobs-center-loopback-control','jobs-center-pause-resume-cancel-retry',
   'no-jobs-center-enqueue','no-jobs-center-lease-token-exposure','no-jobs-center-payload-exposure',
   'plan-authority','plan-runtime-read-only','plan-explicit-approval','no-plan-build-transition',
+  'project-rules','workspace-project-constitution','project-rules-store','project-rules-stage-selection',
+  'no-project-rules-semantic-inference','no-project-rules-build-transition','no-project-rules-rpc',
 ] as const;
 
 export function createLocalRuntimePeer(): ProtocolPeer {
@@ -51,5 +53,5 @@ export const localRuntimeIdentity = Object.freeze({
   id: 'local', packageName: '@github-decrypter/local', product: 'GitHub Decrypter',
   build: LOCAL_RUNTIME_BUILD, version: LOCAL_RUNTIME_VERSION,
   protocolRole: 'local-runtime' as const, protocolSchema: PROTOCOL_SCHEMA,
-  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor, capability-gated local-only AI execution, explicit local model installation, provider-neutral local model inventory/removal/update with session-only manual default selection, deterministic local model routing decisions, persistent workspace-scoped Conversation Store independent from Durable Job lifecycle, bounded workspace/conversation-scoped Attachment Store persistence, a loopback-only Jobs Center projection/control surface over the existing Durable Job Engine, and runtime-enforced read-only PLAN capability guarding. PLAN approval does not grant Build, scheduling, tool execution, filesystem/database/Git mutation, or Durable Job scheduling authority.'
+  authority: 'Independent local daemon lifecycle, durable execution, capability security, encrypted Secrets Vault, one-shot Approval Transactions, append-only Audit Ledger, local Workspace Manager, read-only Project Detection, capability-gated Git Runtime, explicit Human vs AI Change Tracking, GitHub App authentication/webhook trust, installation-scoped read-only GitHub Provider, read-only metadata-only Environment Doctor, capability-gated local-only AI execution, explicit local model installation, provider-neutral local model inventory/removal/update with session-only manual default selection, deterministic local model routing decisions, persistent workspace-scoped Conversation Store independent from Durable Job lifecycle, bounded workspace/conversation-scoped Attachment Store persistence, a loopback-only Jobs Center projection/control surface over the existing Durable Job Engine, runtime-enforced read-only PLAN capability guarding, and durable workspace-scoped Project Rules constitution storage. Project Rules do not grant Build, scheduling, tool execution, capability grants, semantic compliance decisions, impact simulation, filesystem/database/Git mutation, or Durable Job scheduling authority.'
 });
