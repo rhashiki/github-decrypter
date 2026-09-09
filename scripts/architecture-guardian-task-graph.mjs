@@ -112,8 +112,24 @@ if (
     rule.networkAuthority !== false || rule.filesystemAuthority !== false || rule.databaseAuthority !== false
     || rule.storageAuthority !== false || rule.studioTransport !== false || rule.localRuntimeTransport !== false
   ) violations.push({ code: 'AG386', message: 'Task Graph Compiler policy granted transport or persistence authority.' });
-  for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage], ['local', localPackage]]) {
+  for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage]]) {
     if (pkg.dependencies?.['@github-decrypter/plan']) violations.push({ code: 'AG386', message: `Build 40 activated plan compilation inside ${name} prematurely.` });
+  }
+  if (localPackage.dependencies?.['@github-decrypter/plan']) {
+    const localSourceRoot = path.join(root, 'apps/local/src');
+    const localSources = fs.readdirSync(localSourceRoot)
+      .filter((entry) => entry.endsWith('.ts'))
+      .map((entry) => fs.readFileSync(path.join(localSourceRoot, entry), 'utf8'))
+      .join('\n');
+    const authorizedPlanAuthorityConsumer = policy.currentBuild >= 48
+      && policy.phaseGates?.planAuthorityBuild === 48
+      && policy.planAuthority?.minimumBuild === 48
+      && policy.planAuthority?.runtimeOwnerRoot === 'apps/local';
+    const taskGraphActivated = /from\s+['"]@github-decrypter\/plan(?:\/task-graph)?['"]/.test(localSources)
+      || /\bcompileTaskGraph\b/.test(localSources);
+    if (!authorizedPlanAuthorityConsumer || taskGraphActivated) {
+      violations.push({ code: 'AG386', message: 'Build 40 activated plan compilation inside local prematurely.' });
+    }
   }
 
   if (
