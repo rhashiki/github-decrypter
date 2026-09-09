@@ -126,9 +126,8 @@ function sha256Hex(text: string): string {
       const temp1 = (h + sum1 + choice + SHA256_K[index]! + words[index]!) >>> 0;
       const sum0 = rotateRight(a, 2) ^ rotateRight(a, 13) ^ rotateRight(a, 22);
       const majority = (a & b) ^ (a & c) ^ (b & c);
-      const temp2 = (sum0 + temp1) >>> 0;
-      h = g; g = f; f = e; e = (d + temp1) >>> 0; d = c; c = b; b = a; a = (temp2 - temp1 + temp1) >>> 0;
-      a = (sum0 + ((a - sum0) >>> 0)) >>> 0;
+      const temp2 = (sum0 + majority) >>> 0;
+      h = g; g = f; f = e; e = (d + temp1) >>> 0; d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
     }
     h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
     h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + h) >>> 0;
