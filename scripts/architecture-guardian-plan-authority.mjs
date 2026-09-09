@@ -25,9 +25,13 @@ if (
   const planPackage = json('packages/plan/package.json');
   const localPackage = json('apps/local/package.json');
   const localRule = policy.appRules?.['@github-decrypter/local'];
+  const planBuild = versionBuild(planPackage.version);
+  const expectedPlanExports = planBuild !== null && planBuild >= 49
+    ? { '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts', './decision': './src/decision.ts' }
+    : { '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts' };
   if (
-    planPackage.name !== '@github-decrypter/plan' || versionBuild(planPackage.version) !== 48
-    || JSON.stringify(planPackage.exports) !== JSON.stringify({ '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts' })
+    planPackage.name !== '@github-decrypter/plan' || planBuild === null || planBuild < 48
+    || JSON.stringify(planPackage.exports) !== JSON.stringify(expectedPlanExports)
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
   ) violations.push({ code: 'AG461', message: '@github-decrypter/plan package identity/exports drifted.' });
   if (versionBuild(localPackage.version) !== 48 || localPackage.dependencies?.['@github-decrypter/plan'] !== 'workspace:*'
@@ -121,7 +125,8 @@ if (
 
   const rootPackage = json('package.json');
   const localIdentity = read('apps/local/src/identity.ts');
-  if (versionBuild(rootPackage.version) !== 48 || !localIdentity.includes('LOCAL_RUNTIME_BUILD = 48')
+  const rootBuild = versionBuild(rootPackage.version);
+  if (rootBuild === null || rootBuild < 48 || !localIdentity.includes('LOCAL_RUNTIME_BUILD = 48')
       || !localIdentity.includes("LOCAL_RUNTIME_VERSION = '0.0.48'") || !localIdentity.includes("'plan-authority'")
       || !localIdentity.includes("'plan-runtime-read-only'")) {
     violations.push({ code: 'AG467', message: 'Build 48 root/Local Runtime identity is inconsistent.' });

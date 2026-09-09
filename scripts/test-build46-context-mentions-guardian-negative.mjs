@@ -19,9 +19,17 @@ function probe(path, mutate, expectedCode) {
   }
 }
 
+function mutatePolicy(source, mutate) {
+  const policy = JSON.parse(source);
+  mutate(policy);
+  return `${JSON.stringify(policy, null, 2)}\n`;
+}
+
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"explicitCatalogOnly": true', '"explicitCatalogOnly": false'),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.contextMentionsAuthority.explicitCatalogOnly = false;
+  }),
   'AG445',
 );
 probe(
@@ -31,15 +39,16 @@ probe(
 );
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"contentMaterialization": false', '"contentMaterialization": true'),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.contextMentionsAuthority.contentMaterialization = true;
+  }),
   'AG446',
 );
 probe(
   'architecture.guardian.json',
-  (source) => source.replace(
-    '"ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,\n    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 47,',
-    '"ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,\n    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 46,',
-  ),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.contextMentionsAuthority.jobsCenterBuild = 46;
+  }),
   'AG447',
 );
 probe(
