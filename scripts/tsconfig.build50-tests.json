@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build50-project-rules-runtime.ts",
+    "../apps/local/src/**/*.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/protocol/src/**/*.ts",
+    "../packages/shared/src/**/*.ts",
+    "../packages/workspace/src/**/*.ts"
+  ]
+}
