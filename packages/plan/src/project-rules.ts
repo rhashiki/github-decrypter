@@ -242,7 +242,7 @@ function assertCanonicalSourcePlan(value: unknown): asserts value is PlanAuthori
   }
 }
 
-function normalizeText(value: unknown, label: string, max = PROJECT_RULES_MAX_TEXT): string {
+function normalizeText(value: unknown, label: string, max: number = PROJECT_RULES_MAX_TEXT): string {
   if (typeof value !== 'string') throw new TypeError(`${label} must be a string.`);
   const normalized = value.normalize('NFC').replace(/\r\n?/g, '\n').trim();
   if (normalized.length === 0) throw new TypeError(`${label} must not be empty.`);
