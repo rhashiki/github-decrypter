@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build49-decision-engine-runtime.ts",
+    "../packages/plan/src/**/*.ts"
+  ]
+}
