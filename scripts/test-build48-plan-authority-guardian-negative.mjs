@@ -31,7 +31,7 @@ try {
   });
 
   expectFailure('AG462', () => {
-    fs.writeFileSync(sourcePath, originals.get(sourcePath).replace('buildTransitionAuthorized: false', 'buildTransitionAuthorized: true'));
+    fs.writeFileSync(sourcePath, originals.get(sourcePath).replace('createPlanAuthority(', 'createPlanAuthorityBroken('));
   });
 
   expectFailure('AG465', () => {
