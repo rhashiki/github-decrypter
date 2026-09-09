@@ -20,7 +20,13 @@ const planBuild = versionBuild(planPackage.version);
 assert.ok(rootBuild !== null && rootBuild >= 48);
 assert.equal(planPackage.name, '@github-decrypter/plan');
 assert.ok(planBuild !== null && planBuild >= 48);
-assert.deepEqual(planPackage.exports, planBuild >= 49 ? {
+assert.deepEqual(planPackage.exports, planBuild >= 50 ? {
+  '.': './src/index.ts',
+  './task-graph': './src/task-graph.ts',
+  './authority': './src/authority.ts',
+  './decision': './src/decision.ts',
+  './project-rules': './src/project-rules.ts',
+} : planBuild >= 49 ? {
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
@@ -72,6 +78,7 @@ assert.equal(policy.planAuthority.runtimeEnforcedReadOnly, true);
 assert.equal(policy.planAuthority.explicitApproval, true);
 assert.equal(policy.planAuthority.buildTransitionAuthorized, false);
 assert.equal(policy.planAuthority.decisionEngine, false);
+assert.equal(policy.planAuthority.projectRules, false);
 assert.equal(policy.planAuthority.toolExecution, false);
 
 console.log(JSON.stringify({
