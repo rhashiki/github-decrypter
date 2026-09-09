@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 47,
+  "currentBuild": 48,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -49,7 +49,7 @@
       "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\blocalStorage\\b","\\bindexedDB\\b"]
     },
     "@github-decrypter/local": {
-      "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/chat","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
+      "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/chat","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/plan","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
       "allowedExternalDependencies": [],
       "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
     }
@@ -384,6 +384,23 @@
     "clientHeader": "gd-studio-jobs-center/1", "corsLoopbackOnly": true, "credentials": false, "backgroundPolling": false,
     "studioTransport": true, "genericLocalRuntimeTransport": false, "externalTransport": false, "externalNetworkAuthority": false
   },
+  "planAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/authority.ts", "runtimeOwnerRoot": "apps/local",
+    "runtimeGuardSource": "apps/local/src/plan-authority.ts", "minimumBuild": 48,
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "decisionEngineBuild": 49, "projectRulesBuild": 50,
+    "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54,
+    "scopeLockBuild": 55, "checkpointEngineBuild": 56, "validationPipelineBuild": 57,
+    "inputSchemas": ["gd-requirement-spec/1","gd-task-graph/1"], "schema": "gd-plan-authority/1",
+    "runtimeGuardSchema": "gd-plan-runtime-guard/1", "mode": "PLAN", "maxTasks": 4096, "digestAlgorithm": "sha256",
+    "deterministic": true, "environmentNeutralCore": true, "exactInputFields": ["spec","graph"],
+    "readOnly": true, "runtimeEnforcedReadOnly": true, "explicitApproval": true,
+    "mutatingCapabilitiesBlocked": ["WRITE","EXECUTE","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE"],
+    "buildTransitionAuthorized": false, "decisionEngine": false, "projectRules": false, "impactSimulation": false,
+    "buildOrchestration": false, "toolExecution": false, "scopeIntelligence": false, "scopeLock": false,
+    "checkpoints": false, "validationPipeline": false, "execution": false, "scheduling": false, "persistence": false,
+    "networkAuthority": false, "coreFilesystemAuthority": false, "coreDatabaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -406,7 +423,7 @@
     "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
     "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
-    "jobsCenterBuild": 47, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "jobsCenterBuild": 47, "planAuthorityBuild": 48, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
