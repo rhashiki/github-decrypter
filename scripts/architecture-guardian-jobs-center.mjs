@@ -144,11 +144,16 @@ if (
   const localIdentity = read('apps/local/src/identity.ts');
   const vite = read('apps/studio/vite.config.ts');
   const exceptions = policy.appRules?.['@github-decrypter/studio']?.sourcePatternExceptions?.['\\bfetch\\s*\\('];
+  const rootBuild = versionBuild(rootPackage.version);
+  const studioBuild = versionBuild(studioPackage.version);
+  const localBuild = versionBuild(localPackage.version);
   if (
-    versionBuild(rootPackage.version) !== 47 || versionBuild(studioPackage.version) !== 47 || versionBuild(localPackage.version) !== 47
-    || !studioContext.includes('STUDIO_BUILD = 47') || !studioContext.includes("STUDIO_VERSION = '0.0.47'")
-    || !localIdentity.includes('LOCAL_RUNTIME_BUILD = 47') || !localIdentity.includes("LOCAL_RUNTIME_VERSION = '0.0.47'")
-    || !vite.includes('PWA_CACHE_NAME = `${PWA_CACHE_PREFIX}v47`')
+    rootBuild !== policy.currentBuild
+    || studioBuild === null || studioBuild < 47 || studioBuild > policy.currentBuild
+    || localBuild === null || localBuild < 47 || localBuild > policy.currentBuild
+    || !studioContext.includes(`STUDIO_BUILD = ${studioBuild}`) || !studioContext.includes(`STUDIO_VERSION = '0.0.${studioBuild}'`)
+    || !localIdentity.includes(`LOCAL_RUNTIME_BUILD = ${localBuild}`) || !localIdentity.includes(`LOCAL_RUNTIME_VERSION = '0.0.${localBuild}'`)
+    || !vite.includes(`PWA_CACHE_NAME = \`\${PWA_CACHE_PREFIX}v${studioBuild}\``)
     || JSON.stringify(exceptions) !== JSON.stringify(['apps/studio/src/environment-doctor-client.ts','apps/studio/src/jobs-center-client.ts'])
   ) violations.push({ code: 'AG457', message: 'Build 47 root/Studio/Local/PWA identity or fetch allowlist is inconsistent.' });
 
