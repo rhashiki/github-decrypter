@@ -19,9 +19,17 @@ function probe(path, mutate, expectedCode) {
   }
 }
 
+function mutatePolicy(source, mutate) {
+  const policy = JSON.parse(source);
+  mutate(policy);
+  return `${JSON.stringify(policy, null, 2)}\n`;
+}
+
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"voiceTransport": false, "speechToText": false', '"voiceTransport": true, "speechToText": false'),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.attachmentEngineAuthority.voiceTransport = true;
+  }),
   'AG437',
 );
 probe(
@@ -41,7 +49,9 @@ probe(
 );
 probe(
   'architecture.guardian.json',
-  (source) => source.replace('"contextMentionsBuild": 46, "jobsCenterBuild": 47', '"contextMentionsBuild": 45, "jobsCenterBuild": 47'),
+  (source) => mutatePolicy(source, (policy) => {
+    policy.attachmentEngineAuthority.contextMentionsBuild = 45;
+  }),
   'AG437',
 );
 
