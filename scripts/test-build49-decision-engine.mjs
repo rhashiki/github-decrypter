@@ -7,13 +7,25 @@ const policy = json('architecture.guardian.json');
 const rootPackage = json('package.json');
 const planPackage = json('packages/plan/package.json');
 const source = read('packages/plan/src/decision.ts');
+const versionBuild = (value) => {
+  const match = typeof value === 'string' ? value.match(/^0\.0\.(\d+)$/) : null;
+  return match ? Number(match[1]) : null;
+};
 
-assert.equal(policy.currentBuild, 49);
+const rootBuild = versionBuild(rootPackage.version);
+const planBuild = versionBuild(planPackage.version);
+assert.ok(policy.currentBuild >= 49);
 assert.equal(policy.phaseGates?.decisionEngineBuild, 49);
-assert.equal(rootPackage.version, '0.0.49');
+assert.ok(rootBuild !== null && rootBuild >= 49);
 assert.equal(planPackage.name, '@github-decrypter/plan');
-assert.equal(planPackage.version, '0.0.49');
-assert.deepEqual(planPackage.exports, {
+assert.ok(planBuild !== null && planBuild >= 49);
+assert.deepEqual(planPackage.exports, planBuild >= 50 ? {
+  '.': './src/index.ts',
+  './task-graph': './src/task-graph.ts',
+  './authority': './src/authority.ts',
+  './decision': './src/decision.ts',
+  './project-rules': './src/project-rules.ts',
+} : {
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
@@ -94,6 +106,7 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build49-decision-engine-static/1',
   build: 49,
+  currentBuild: policy.currentBuild,
   decisionSchema: authority.schema,
   sourcePlanSchema: authority.sourcePlanSchema,
   planReadOnlyPreserved: true,
