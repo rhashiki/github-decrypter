@@ -1,6 +1,6 @@
 # Build 48 — Plan Authority
 
-Status: **IMPLEMENTATION IN PROGRESS — CI GATE NOT YET CLOSED**
+Status: **✅ IMPLEMENTATION COMPLETE — ACCUMULATED CI GREEN**
 
 ## Purpose
 
@@ -58,14 +58,15 @@ No generic Local Runtime RPC, Studio Plan surface, filesystem mutation, database
 
 ## Validation gate
 
-The implementation must not be marked complete until:
+The implementation is closed on the exact validated implementation head:
 
-1. Architecture Guardian AG460–AG469 is green;
-2. Build 48 static/runtime/negative tests are green;
-3. accumulated Builds 4–48 and workspace TypeScript are green on the exact implementation head;
-4. only then the canonical roadmap may mark Build 48 ✅;
-5. the exact documentation head must pass accumulated CI again before PR;
-6. the complete historical PR workflow matrix must be green before protected-head merge.
+- implementation head: `70400fba263bc33bf5536b767e7115f0324c7407`;
+- Build 48 workflow run: `34300016034`;
+- Architecture Guardian AG460–AG469: ✅;
+- accumulated Builds 4–48 and workspace TypeScript: ✅;
+- modern engine preservation: ✅.
+
+The remaining release gate is documentation-head revalidation, followed by the complete historical PR workflow matrix and protected-head merge.
 
 ## Next Build
 
