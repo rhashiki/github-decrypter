@@ -208,6 +208,12 @@ function assertCanonicalSourcePlan(value: unknown): asserts value is PlanAuthori
     }
   }
 
+  const supporting = row.supportingRequirementIds as unknown[];
+  if (new Set(supporting).size !== supporting.length
+      || supporting.some((id) => typeof id !== 'string' || !/^req-\d{4}$/.test(id))) {
+    throw new TypeError('Project Rules source Plan supporting requirement identities are invalid.');
+  }
+
   for (const [field, expected] of Object.entries({
     requirementCompilation: true,
     taskGraphCompilation: true,
