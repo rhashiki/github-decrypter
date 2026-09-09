@@ -1,8 +1,8 @@
 import {
   PLAN_AUTHORITY_SCHEMA,
-  assertPlanAuthorityRecord,
   type PlanAuthorityDigest,
   type PlanAuthorityRecord,
+  type PlanTask,
 } from './authority.js';
 
 export const DECISION_ENGINE_BUILD = 49 as const;
@@ -139,6 +139,112 @@ function sha256Hex(text: string): string {
   return [h0,h1,h2,h3,h4,h5,h6,h7].map((value) => value.toString(16).padStart(8, '0')).join('');
 }
 
+function canonicalPlanMaterial(plan: PlanAuthorityRecord): string {
+  return JSON.stringify({
+    schema: PLAN_AUTHORITY_SCHEMA,
+    sourceDigest: plan.sourceDigest,
+    tasks: plan.tasks.map((task) => ({
+      id: task.id,
+      ordinal: task.ordinal,
+      requirementId: task.requirementId,
+      statement: task.statement,
+      sourceStartLine: task.sourceStartLine,
+      sourceEndLine: task.sourceEndLine,
+      dependsOn: [...task.dependsOn],
+    })),
+    taskOrder: [...plan.taskOrder],
+    supportingRequirementIds: [...plan.supportingRequirementIds],
+  });
+}
+
+function assertCanonicalSourcePlan(value: unknown): asserts value is PlanAuthorityRecord {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Decision Engine requires a canonical Plan Authority record.');
+  const row = value as Record<string, unknown>;
+  if (row.schema !== PLAN_AUTHORITY_SCHEMA || row.sourceSpecSchema !== 'gd-requirement-spec/1'
+      || row.sourceGraphSchema !== 'gd-task-graph/1' || row.revision !== 1 || row.mode !== 'PLAN'
+      || row.readOnly !== true || row.runtimeReadOnlyRequired !== true || row.planAuthority !== true
+      || !Array.isArray(row.tasks) || !Array.isArray(row.taskOrder) || !Array.isArray(row.supportingRequirementIds)) {
+    throw new TypeError('Decision Engine requires a canonical Plan Authority record.');
+  }
+  if (!row.sourceDigest || typeof row.sourceDigest !== 'object' || Array.isArray(row.sourceDigest)
+      || (row.sourceDigest as Record<string, unknown>).algorithm !== DECISION_ENGINE_DIGEST_ALGORITHM
+      || typeof (row.sourceDigest as Record<string, unknown>).hex !== 'string'
+      || !/^[0-9a-f]{64}$/.test((row.sourceDigest as Record<string, unknown>).hex as string)) {
+    throw new TypeError('Decision Engine source Plan digest is invalid.');
+  }
+  if (!row.authorityDigest || typeof row.authorityDigest !== 'object' || Array.isArray(row.authorityDigest)
+      || (row.authorityDigest as Record<string, unknown>).algorithm !== DECISION_ENGINE_DIGEST_ALGORITHM
+      || typeof (row.authorityDigest as Record<string, unknown>).hex !== 'string'
+      || !/^[0-9a-f]{64}$/.test((row.authorityDigest as Record<string, unknown>).hex as string)) {
+    throw new TypeError('Decision Engine source Plan authority digest is invalid.');
+  }
+
+  const tasks = row.tasks as unknown[];
+  const taskIds = new Set<string>();
+  tasks.forEach((task, index) => {
+    if (!task || typeof task !== 'object' || Array.isArray(task)) throw new TypeError(`Decision Engine source Plan task ${index + 1} is invalid.`);
+    const item = task as Record<string, unknown>;
+    const expectedId = `task-${String(index + 1).padStart(4, '0')}`;
+    if (item.id !== expectedId || item.ordinal !== index + 1 || typeof item.requirementId !== 'string'
+        || !/^req-\d{4}$/.test(item.requirementId) || typeof item.statement !== 'string' || item.statement.trim().length === 0
+        || !Number.isInteger(item.sourceStartLine) || !Number.isInteger(item.sourceEndLine)
+        || (item.sourceStartLine as number) < 1 || (item.sourceEndLine as number) < (item.sourceStartLine as number)
+        || !Array.isArray(item.dependsOn)) {
+      throw new TypeError(`Decision Engine source Plan task ${expectedId} is non-canonical.`);
+    }
+    for (const dependency of item.dependsOn) {
+      if (typeof dependency !== 'string' || !/^task-\d{4}$/.test(dependency)) throw new TypeError(`Decision Engine source Plan task ${expectedId} dependency is invalid.`);
+    }
+    taskIds.add(expectedId);
+  });
+
+  const order = row.taskOrder as unknown[];
+  if (order.length !== taskIds.size || new Set(order).size !== order.length
+      || order.some((id) => typeof id !== 'string' || !taskIds.has(id))) {
+    throw new TypeError('Decision Engine source Plan task order is invalid.');
+  }
+  const orderIndex = new Map<string, number>((order as string[]).map((id, index) => [id, index]));
+  for (const task of tasks as PlanTask[]) {
+    for (const dependency of task.dependsOn) {
+      if (!taskIds.has(dependency) || (orderIndex.get(dependency) ?? -1) >= (orderIndex.get(task.id) ?? -1)) {
+        throw new TypeError(`Decision Engine source Plan task ${task.id} dependency order is invalid.`);
+      }
+    }
+  }
+  const supporting = row.supportingRequirementIds as unknown[];
+  if (new Set(supporting).size !== supporting.length
+      || supporting.some((id) => typeof id !== 'string' || !/^req-\d{4}$/.test(id))) {
+    throw new TypeError('Decision Engine source Plan supporting requirement identities are invalid.');
+  }
+
+  for (const [field, expected] of Object.entries({
+    requirementCompilation: true,
+    taskGraphCompilation: true,
+    planAuthority: true,
+    buildTransitionAuthorized: false,
+    decisionEngineApplied: false,
+    projectRulesApplied: false,
+    impactSimulationApplied: false,
+    buildOrchestration: false,
+    toolExecution: false,
+    scopeLock: false,
+    execution: false,
+    scheduling: false,
+    persistence: false,
+  })) {
+    if (row[field] !== expected) throw new TypeError(`Decision Engine source Plan ${field} boundary is invalid.`);
+  }
+  if ((row.status !== 'draft' && row.status !== 'approved') || row.approved !== (row.status === 'approved')) {
+    throw new TypeError('Decision Engine source Plan status is invalid.');
+  }
+
+  const plan = value as PlanAuthorityRecord;
+  const expectedDigest = sha256Hex(canonicalPlanMaterial(plan));
+  if ((row.authorityDigest as PlanAuthorityDigest).hex !== expectedDigest || row.id !== `plan-${expectedDigest.slice(0, 16)}`) {
+    throw new TypeError('Decision Engine source Plan authority digest does not match canonical Plan material.');
+  }
+}
+
 function normalizeText(value: unknown, label: string): string {
   if (typeof value !== 'string') throw new TypeError(`${label} must be a string.`);
   const normalized = value.normalize('NFC').replace(/\r\n?/g, '\n').trim();
@@ -200,7 +306,7 @@ export function resolveDecision(input: DecisionEngineInput): DecisionRecord {
     throw new TypeError('Decision Engine input accepts only plan, question, alternatives, selectedAlternativeOrdinal and rationale.');
   }
 
-  assertPlanAuthorityRecord(row.plan);
+  assertCanonicalSourcePlan(row.plan);
   const plan = row.plan;
   if (plan.status !== 'draft' || plan.approved !== false) {
     throw new TypeError('Decision Engine resolves architectural alternatives only while the source Plan remains draft.');
