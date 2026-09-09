@@ -10,11 +10,22 @@ const policy = json('architecture.guardian.json');
 const source = read('packages/plan/src/authority.ts');
 const runtime = read('apps/local/src/plan-authority.ts');
 const localIndex = read('apps/local/src/index.ts');
+const versionBuild = (value) => {
+  const match = typeof value === 'string' ? value.match(/^0\.0\.(\d+)$/) : null;
+  return match ? Number(match[1]) : null;
+};
 
-assert.equal(rootPackage.version, '0.0.48');
+const rootBuild = versionBuild(rootPackage.version);
+const planBuild = versionBuild(planPackage.version);
+assert.ok(rootBuild !== null && rootBuild >= 48);
 assert.equal(planPackage.name, '@github-decrypter/plan');
-assert.equal(planPackage.version, '0.0.48');
-assert.deepEqual(planPackage.exports, {
+assert.ok(planBuild !== null && planBuild >= 48);
+assert.deepEqual(planPackage.exports, planBuild >= 49 ? {
+  '.': './src/index.ts',
+  './task-graph': './src/task-graph.ts',
+  './authority': './src/authority.ts',
+  './decision': './src/decision.ts',
+} : {
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
@@ -51,7 +62,7 @@ assert.ok(runtime.includes("'DESTRUCTIVE'"));
 assert.ok(runtime.includes('assertPlanReadOnly('));
 assert.doesNotMatch(runtime, /\.grant\s*\(|\.authorize\s*\(|\.enqueue\s*\(|\.claimNext\s*\(|child_process|spawn\s*\(|exec\s*\(/);
 
-assert.equal(policy.currentBuild, 48);
+assert.ok(policy.currentBuild >= 48);
 assert.equal(policy.phaseGates.planAuthorityBuild, 48);
 assert.equal(policy.planAuthority.minimumBuild, 48);
 assert.equal(policy.planAuthority.schema, 'gd-plan-authority/1');
@@ -67,6 +78,7 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build48-plan-authority-static/1',
   build: 48,
+  currentBuild: policy.currentBuild,
   planSchema: policy.planAuthority.schema,
   runtimeGuardSchema: policy.planAuthority.runtimeGuardSchema,
 }, null, 2));
