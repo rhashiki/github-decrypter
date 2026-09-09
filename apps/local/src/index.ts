@@ -28,6 +28,7 @@ export * from './lifecycle.js';
 export * from './offline-execution.js';
 export * from './plan-authority.js';
 export * from './project-detector.js';
+export * from './project-rules-store.js';
 export * from './recovery-engine.js';
 export * from './secrets-vault.js';
 export * from './server.js';
