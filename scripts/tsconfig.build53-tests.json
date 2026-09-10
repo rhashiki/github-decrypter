@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build53-tool-runtime-runtime.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/build/src/**/*.ts",
+    "../packages/tools/src/**/*.ts"
+  ]
+}
