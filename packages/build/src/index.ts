@@ -219,7 +219,7 @@ function assertCanonicalApprovedPlan(value: unknown): asserts value is PlanAutho
     }
   }
   const expectedDigest = sha256Hex(canonicalPlanMaterial(value as PlanAuthorityRecord));
-  if ((digest as PlanAuthorityDigest).hex !== expectedDigest || row.id !== `plan-${expectedDigest.slice(0, 16)}`) {
+  if (digest.hex !== expectedDigest || row.id !== `plan-${expectedDigest.slice(0, 16)}`) {
     throw new TypeError('Build Orchestrator source Plan authority digest does not match canonical Plan material.');
   }
 }
