@@ -95,6 +95,13 @@ for (const authority of policy.authorities ?? []) {
   if (!exists(authority)) violation('AG010', `Required product authority missing: ${authority}`);
 }
 
+// Constitutional Amendment 002 makes Viktor a protected V1 product authority
+// without reopening completed voice Builds or granting a new execution authority.
+const viktorAmendmentPath = 'docs/product/CONSTITUTION_AMENDMENT_002_VIKTOR_INTERACTION_LAYER.md';
+if (!exists(viktorAmendmentPath)) {
+  violation('AG016', `Required constitutional amendment missing: ${viktorAmendmentPath}`);
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;
@@ -126,6 +133,16 @@ if (exists('docs/product/NORTH_STAR_ROADMAP_MAPPING.md')) {
   }
   if (!mapping.includes('1 → 134')) {
     violation('AG015', 'Roadmap mapping must preserve canonical Build sequence 1 → 134.');
+  }
+  if (!mapping.includes('Viktor Interaction Layer')) {
+    violation('AG017', 'Viktor Interaction Layer must remain explicitly mapped to existing V1 Build authorities.');
+  }
+}
+
+if (exists('docs/product/ROADMAP_V1.md')) {
+  const roadmap = read('docs/product/ROADMAP_V1.md');
+  if (!roadmap.includes('Viktor Interaction Layer')) {
+    violation('AG018', 'Canonical V1 roadmap must retain Viktor Interaction Layer ownership.');
   }
 }
 
