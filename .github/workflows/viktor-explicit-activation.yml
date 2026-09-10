@@ -1,0 +1,25 @@
+name: Vortex Ars AI — Viktor Explicit Activation Guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'amend/**'
+      - 'build/**'
+
+permissions:
+  contents: read
+
+jobs:
+  viktor-explicit-activation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Viktor explicit activation constitution
+        run: node scripts/guard-viktor-explicit-activation.mjs
+
+      - name: Run Architecture Guardian
+        run: node scripts/architecture-guardian.mjs
