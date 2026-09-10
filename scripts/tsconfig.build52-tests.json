@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build52-build-orchestrator-runtime.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/build/src/**/*.ts"
+  ]
+}
