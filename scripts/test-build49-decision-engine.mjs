@@ -19,18 +19,12 @@ assert.equal(policy.phaseGates?.decisionEngineBuild, 49);
 assert.ok(rootBuild !== null && rootBuild >= 49);
 assert.equal(planPackage.name, '@github-decrypter/plan');
 assert.ok(planBuild !== null && planBuild >= 49);
-assert.deepEqual(planPackage.exports, planBuild >= 50 ? {
+for (const [key, path] of Object.entries({
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
   './decision': './src/decision.ts',
-  './project-rules': './src/project-rules.ts',
-} : {
-  '.': './src/index.ts',
-  './task-graph': './src/task-graph.ts',
-  './authority': './src/authority.ts',
-  './decision': './src/decision.ts',
-});
+})) assert.equal(planPackage.exports?.[key], path, `Missing required Build 49 plan export ${key}.`);
 assert.deepEqual(Object.keys(planPackage.dependencies ?? {}), []);
 
 for (const marker of [
@@ -111,5 +105,6 @@ console.log(JSON.stringify({
   sourcePlanSchema: authority.sourcePlanSchema,
   planReadOnlyPreserved: true,
   buildTransitionAuthorized: false,
+  forwardCompatible: true,
   nextBuild: 50,
 }, null, 2));
