@@ -49,7 +49,7 @@ try {
   });
 
   expectFailure('AG503', () => {
-    fs.writeFileSync(sourcePath, originals.get(sourcePath).replace('canonicalOrchestrationMaterial(', 'canonicalOrchestrationMaterialBroken('));
+    fs.writeFileSync(sourcePath, originals.get(sourcePath).replaceAll('canonicalOrchestrationMaterial(', 'canonicalOrchestrationMaterialBroken('));
   });
 
   expectFailure('AG504', () => {
