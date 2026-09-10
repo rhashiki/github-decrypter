@@ -67,7 +67,7 @@ if (
     'canonicalRulesMaterial(',
     'canonicalImpactMaterial(',
     'source Plan authority digest does not match canonical Plan material',
-    'Project Rules digest does not match canonical rules material',
+    'Project Rules digest does not match canonical Project Rules material',
     'relatedRuleKeys',
     'relatedTaskIds',
     'Object.freeze({',
