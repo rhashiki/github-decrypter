@@ -24,16 +24,27 @@ if (
 } else {
   const planPackage = json('packages/plan/package.json');
   const rootPackage = json('package.json');
-  if (
-    planPackage.name !== '@github-decrypter/plan' || versionBuild(planPackage.version) !== 49
-    || JSON.stringify(planPackage.exports) !== JSON.stringify({
+  const planBuild = versionBuild(planPackage.version);
+  const rootBuild = versionBuild(rootPackage.version);
+  const expectedPlanExports = planBuild !== null && planBuild >= 50
+    ? {
       '.': './src/index.ts',
       './task-graph': './src/task-graph.ts',
       './authority': './src/authority.ts',
       './decision': './src/decision.ts',
-    })
+      './project-rules': './src/project-rules.ts',
+    }
+    : {
+      '.': './src/index.ts',
+      './task-graph': './src/task-graph.ts',
+      './authority': './src/authority.ts',
+      './decision': './src/decision.ts',
+    };
+  if (
+    planPackage.name !== '@github-decrypter/plan' || planBuild === null || planBuild < 49
+    || JSON.stringify(planPackage.exports) !== JSON.stringify(expectedPlanExports)
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
-    || versionBuild(rootPackage.version) !== 49
+    || rootBuild === null || rootBuild < 49
   ) {
     violations.push({ code: 'AG471', message: 'Build 49 package/root identity or Decision Engine export drifted.' });
   }
