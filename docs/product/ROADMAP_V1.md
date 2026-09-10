@@ -2,7 +2,7 @@
 
 Status: **FROZEN V1 SEQUENCE — Builds 1–134**
 
-This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers are integers and are not renumbered by the North Star amendment. North Star capabilities are attached to existing owning Builds through explicit acceptance extensions.
+This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers are integers and are not renumbered by the North Star amendments. North Star capabilities are attached to existing owning Builds through explicit acceptance extensions.
 
 ## Completed foundation
 
@@ -64,8 +64,8 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 ## Conversation, attachments and jobs
 
-44. **Conversation Engine** — ✅ — North Star: **Voice Interaction** shares the same conversation/project context and authority model.
-45. **Attachment Engine** — ✅ — North Star: supported voice/audio/media ingestion used by conversational interaction.
+44. **Conversation Engine** — ✅ — North Star: **Voice Interaction** shares the same conversation/project context and authority model; this existing foundation is reused by Viktor.
+45. **Attachment Engine** — ✅ — North Star: supported voice/audio/media ingestion used by conversational interaction and later Viktor realtime transport.
 46. **Context Mentions** — ✅
 47. **Jobs Center** — ✅
 
@@ -80,7 +80,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 54. **Scope Intelligence**
 55. **Scope Lock**
 56. **Checkpoint Engine**
-57. **Validation Pipeline** — North Star: behavioral validation substrate for **Interactive QA**.
+57. **Validation Pipeline** — North Star: behavioral validation substrate for **Interactive QA**; validated outcomes may be communicated by Viktor but Viktor owns no validation authority.
 
 ## Agent team
 
@@ -90,7 +90,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 61. **Database Agent**
 62. **Testing Agent** — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
 63. **Review Agent**
-64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team.
+64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; **Viktor Interaction Layer** becomes the canonical outward conversational presence of that team without becoming a tenth agent or gaining independent execution authority.
 
 ## Knowledge and context integration
 
@@ -102,7 +102,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 68. **Preview Runtime**
 69. **Live Preview**
-70. **Preview Bridge** — North Star: structured runtime/console/network/navigation telemetry substrate for the **Perception Engine**.
+70. **Preview Bridge** — North Star: structured runtime/console/network/navigation telemetry substrate for the **Perception Engine** and structured live Preview context consumable by **Viktor**.
 71. **Developer Console**
 72. **Problems & Diagnostics**
 73. **Code Explorer**
@@ -147,12 +147,12 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 ## Visual development and perception
 
-103. **Visual Inspector** — North Star: **Perception Engine core** and **Explore Mode** for contextual Preview selection/exploration.
-104. **Visual Context** — North Star: **Visual Element Mapping** from Preview/DOM/component toward source code where technically possible.
-105. **Visual Build** — consumes Visual Element Mapping to turn authorized natural-language visual requests into scoped patches and Preview verification.
+103. **Visual Inspector** — North Star: **Perception Engine core** and **Explore Mode** for contextual Preview selection/exploration; selected visual context becomes available to Viktor for safe deictic references such as “this button”.
+104. **Visual Context** — North Star: **Visual Element Mapping** from Preview/DOM/component toward source code where technically possible; provides resolved element/component/source context to Viktor.
+105. **Visual Build** — consumes Visual Element Mapping to turn authorized natural-language or Viktor-mediated visual requests into scoped patches and Preview verification; Viktor itself remains non-mutating.
 106. **Error Intelligence**
 107. **Health Score**
-108. **Learning Mode** — North Star: **Mentor Engine**, **Explain This**, **Adaptive Explanation Engine**, and adaptive evolution of the **Adaptive User Profile**. Learning remains optional.
+108. **Learning Mode** — North Star: **Mentor Engine**, **Explain This**, **Adaptive Explanation Engine**, adaptive evolution of the **Adaptive User Profile**, and Viktor communication-depth/style adaptation without creating a second profile or authority. Learning remains optional.
 
 ## GitHub collaboration
 
@@ -194,17 +194,24 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 - Adaptive User Profile → Builds 31 and 108.
 - Agent Orchestrator → Build 64.
 - Named Agent System → Builds 58 and 64.
+- **Viktor Interaction Layer → Build 64 (canonical outward presence), Build 70 (live Preview context), Builds 103–105 (visual/deictic interaction and authorized Visual Build), Build 108 (adaptive communication); reuses Voice Interaction foundation from Builds 44–45.**
 - Mentor Engine → Build 108.
 - Explain This → Build 108, exposed contextually by appropriate UI surfaces.
-- Voice Interaction → Builds 44 and 45.
+- Voice Interaction → Builds 44 and 45; consumed by Viktor without reopening those completed Builds.
 - Perception Engine → Builds 70, 103 and 104.
 - Explore Mode → Build 103.
 - Visual Element Mapping → Build 104.
 - Interactive QA → Builds 57 and 62.
 - Adaptive Explanation Engine → Build 108.
 
+## Viktor constitutional invariant
+
+Viktor is the official real-time voice/presence interface of Vortex Ars AI, **not a tenth agent**. It may receive natural spoken requests, communicate coordinated agent progress and speak validated outcomes, but voice/conversation does not grant capabilities, bypass Scope Lock, bypass approvals, execute tools outside canonical runtime authorities or authorize production mutation.
+
+The target voice is original, realistic and human-sounding with natural prosody, calm confidence, restrained warmth, provider-independent realtime transport, barge-in where supported and Brazilian Portuguese as a first-class locale. It must not clone or imitate J.A.R.V.I.S., Paul Bettany or another identifiable person/protected character performance.
+
 ## Governance
 
 No item in this roadmap authorizes production release, OTA, browser-store publication, production database mutation, production deployment or DNS mutation merely by being completed. Those actions remain subject to explicit authorization and the applicable later policies.
 
-No decimal/ad-hoc Build numbering is permitted. New ideas outside the adopted V1 authorities follow the RFC process unless explicitly adopted through a recorded constitutional amendment.
+No decimal/ad-hoc Build numbering is permitted. New ideas outside the adopted V1 authorities follow the RFC process unless explicitly adopted through a recorded constitutional amendment. Viktor is adopted through `CONSTITUTION_AMENDMENT_002_VIKTOR_INTERACTION_LAYER.md`.
