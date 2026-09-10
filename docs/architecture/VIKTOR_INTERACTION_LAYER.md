@@ -13,6 +13,10 @@ Viktor is **not an agent** and is **not an execution authority**. It is a conver
 ```text
 User
   │
+  ├─ explicit Viktor toggle
+  │      OFF -> no voice session / no microphone capture
+  │      ON  -> voice session may start after permission checks
+  │
   ├─ voice / text / interruption
   ▼
 Viktor Interaction Layer
@@ -71,6 +75,45 @@ Viktor communicates outcome to user
 - create an independent memory authority;
 - claim that an unvalidated change succeeded;
 - impersonate J.A.R.V.I.S. or clone an identifiable performer's voice.
+
+## Explicit activation contract
+
+Viktor voice/presence is opt-in per application session.
+
+The Studio must expose one clearly visible `Viktor` toggle. The canonical lifecycle is:
+
+```text
+application/session start
+→ Viktor OFF
+→ user toggles Viktor ON
+→ microphone permission handshake if required
+→ READY / LISTENING / SPEAKING
+→ user toggles Viktor OFF
+→ capture stops immediately
+→ realtime voice transport closes
+→ microphone/media resources are released
+```
+
+Canonical rules:
+
+- `OFF` is the default at the beginning of each new application session;
+- Viktor must never begin microphone capture before an explicit `ON` action;
+- previous-session state must not silently reactivate listening after restart/reload;
+- the first activation that requires microphone access uses the normal browser/OS permission flow;
+- switching `OFF` stops microphone capture and voice transport immediately and cancels assistant audio playback where technically possible;
+- disabling Viktor does not delete canonical conversation history;
+- text chat remains independent of the Viktor voice toggle;
+- no hidden wake-word listener, background listening or silent microphone reacquisition is authorized.
+
+The UI may represent transient runtime state around the same toggle, using states such as:
+
+- `OFF`;
+- `ON / READY`;
+- `LISTENING`;
+- `SPEAKING`;
+- `ERROR / UNAVAILABLE`.
+
+These are presentation/session states, not security capabilities.
 
 ## Voice transport
 
@@ -188,7 +231,7 @@ The user may still explicitly address a named specialist if later UX supports it
 ## Build ownership
 
 - Builds 44–45: existing conversation/audio foundation, reused without reopening them.
-- Build 64: Viktor becomes the canonical outward presence of the coordinated agent team.
+- Build 64: Viktor becomes the canonical outward presence of the coordinated agent team and owns the first canonical Studio activation toggle/session-lifecycle integration.
 - Build 70: Preview Bridge makes structured live application context available to Viktor.
 - Build 103: selection/exploration context.
 - Build 104: visual element/source mapping.
@@ -204,6 +247,14 @@ Validation evidence comes from Build 57/62 and may be spoken by Viktor only afte
 `Viktor != agent`
 
 `conversation != permission`
+
+`toggle ON != capability grant`
+
+`toggle OFF -> no microphone capture`
+
+`new session -> Viktor OFF`
+
+`voice deactivation != conversation deletion`
 
 `perception != mutation`
 
