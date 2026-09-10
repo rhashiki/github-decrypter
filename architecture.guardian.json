@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 51,
+  "currentBuild": 52,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -33,6 +33,7 @@
     "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/ai": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/plan": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/build": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
     "@github-decrypter/context": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
     "@github-decrypter/chat": { "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/context","@github-decrypter/workspace"], "environmentNeutral": true }
   },
@@ -447,6 +448,22 @@
     "execution": false, "scheduling": false, "persistence": false, "networkAuthority": false,
     "filesystemAuthority": false, "databaseAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "buildOrchestratorAuthority": {
+    "ownerPackage": "@github-decrypter/build", "ownerSource": "packages/build/src/index.ts", "minimumBuild": 52,
+    "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50, "impactSimulationBuild": 51,
+    "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55, "checkpointEngineBuild": 56,
+    "validationPipelineBuild": 57, "sourcePlanSchema": "gd-plan-authority/1", "sourceProjectRulesSchema": "gd-project-rules/1",
+    "sourceImpactSimulationSchema": "gd-impact-simulation/1", "schema": "gd-build-orchestrator/1",
+    "sourcePlanStatus": "approved", "mode": "BUILD", "transition": "PLAN_TO_BUILD", "digestAlgorithm": "sha256",
+    "maxSteps": 4096, "deterministic": true, "environmentNeutral": true, "workspaceScoped": true,
+    "explicitTransition": true, "sourcePlanReadOnlyPreserved": true, "projectRulesReadOnlyPreserved": true,
+    "impactSimulationReadOnlyPreserved": true, "buildTransitionAuthorized": true, "buildOrchestration": true,
+    "capabilitiesRequired": true, "scopeLockRequired": true, "mutationAuthorized": false, "toolExecution": false,
+    "scopeIntelligence": false, "scopeLock": false, "checkpoints": false, "validationPipeline": false,
+    "execution": false, "scheduling": false, "jobCreation": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -470,7 +487,7 @@
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
     "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
     "jobsCenterBuild": 47, "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50,
-    "impactSimulationBuild": 51, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
