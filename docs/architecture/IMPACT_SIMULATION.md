@@ -38,12 +38,12 @@ It does not approve a Plan, change Plan status, mutate Project Rules, grant capa
 
 Build 51 does not own or activate:
 
-- Build Orchestrator — Build 52;
-- Tool Runtime — Build 53;
-- Scope Intelligence — Build 54;
-- Scope Lock — Build 55;
-- Checkpoint Engine — Build 56;
-- Validation Pipeline — Build 57.
+- Build 52 — Build Orchestrator;
+- Build 53 — Tool Runtime;
+- Build 54 — Scope Intelligence;
+- Build 55 — Scope Lock;
+- Build 56 — Checkpoint Engine;
+- Build 57 — Validation Pipeline.
 
 It does not authorize the PLAN-to-BUILD transition. Simulation output is evidence for later authorities, never execution permission.
 
