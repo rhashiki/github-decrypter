@@ -215,7 +215,7 @@ function assertCanonicalPlan(value: unknown): asserts value is PlanAuthorityReco
       throw new TypeError(`Impact Simulation source Plan task ${task.id} dependency order is invalid.`);
     }
   }
-  const expectedDigest = sha256Hex(canonicalPlanMaterial(value));
+  const expectedDigest = sha256Hex(canonicalPlanMaterial(value as PlanAuthorityRecord));
   if ((row.authorityDigest as PlanAuthorityDigest).hex !== expectedDigest || row.id !== `plan-${expectedDigest.slice(0, 16)}`) {
     throw new TypeError('Impact Simulation source Plan authority digest does not match canonical Plan material.');
   }
