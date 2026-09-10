@@ -11,7 +11,7 @@ Assess explicit impact before any build transition
 
 # Requirements
 - Bind workspace rules to the plan
-- Simulate declared architecture impact [depends: req-0001]
+- Simulate declared architecture impact [depends: req-0002]
 
 # Constraint
 Do not execute or mutate anything during simulation
