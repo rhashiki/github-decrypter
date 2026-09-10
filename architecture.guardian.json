@@ -1,1 +1,477 @@
-{"schema":"gd-architecture-guardian/1","currentBuild":50,"product":"GitHub Decrypter","namespace":"gd-","authorities":["docs/product/PRODUCT_CONSTITUTION_V1.md","docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md","docs/product/NORTH_STAR_MANIFESTO.md","docs/product/ROADMAP_V1.md","docs/product/NORTH_STAR_ROADMAP_MAPPING.md","docs/product/V1_SCOPE.md","docs/product/NON_GOALS_V1.md","docs/product/DEFINITION_OF_DONE.md","docs/product/RFC_POLICY.md"],"northStar":{"sourceSha256":"256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718","requiredPrinciples":["P01","P02","P03","P04","P05","P06","P07","P08","P09","P10","P11","P12","P13","P14","P15","P16","P17","P18","P19","P20","P21","P22"],"requiredRoadmapBlocks":["Adaptive User Profile","Agent Orchestrator","Named Agent System","Mentor Engine","Explain This","Voice Interaction","Perception Engine","Explore Mode","Visual Element Mapping","Interactive QA","Adaptive Explanation Engine"]},"workspace":{"apps":["studio","extension","local"],"packages":["ui","protocol","shared","git","github-app","github-provider","workspace","chat","plan","build","preview","context","tools","scope","ai"]},"packageRules":{"@github-decrypter/ui":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/protocol":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/shared":{"allowedWorkspaceDependencies":["@github-decrypter/protocol"],"environmentNeutral":true},"@github-decrypter/workspace":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/git":{"allowedWorkspaceDependencies":["@github-decrypter/workspace"],"environmentNeutral":true},"@github-decrypter/github-app":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/github-provider":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/ai":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/plan":{"allowedWorkspaceDependencies":[],"environmentNeutral":true},"@github-decrypter/context":{"allowedWorkspaceDependencies":["@github-decrypter/plan"],"environmentNeutral":true},"@github-decrypter/chat":{"allowedWorkspaceDependencies":["@github-decrypter/ai","@github-decrypter/context","@github-decrypter/workspace"],"environmentNeutral":true}},"appRules":{"@github-decrypter/studio":{"allowedWorkspaceDependencies":["@github-decrypter/protocol","@github-decrypter/ui"],"allowedExternalDependencies":["react","react-dom","@types/react","@types/react-dom","@vitejs/plugin-react","vite"],"forbiddenSourcePatterns":["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."],"sourcePatternExceptions":{"\\bfetch\\s*\\(":["apps/studio/src/environment-doctor-client.ts","apps/studio/src/jobs-center-client.ts"]}},"@github-decrypter/extension":{"allowedWorkspaceDependencies":["@github-decrypter/protocol"],"allowedExternalDependencies":[],"forbiddenSourcePatterns":["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\blocalStorage\\b","\\bindexedDB\\b"]},"@github-decrypter/local":{"allowedWorkspaceDependencies":["@github-decrypter/ai","@github-decrypter/chat","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/plan","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],"allowedExternalDependencies":[],"forbiddenSourcePatterns":["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]}},"databaseAuthority":{"ownerRoot":"apps/local","engineImport":"node:sqlite","minimumBuild":11,"durableJobSchemaBuild":12},"jobAuthority":{"ownerRoot":"apps/local","minimumBuild":12,"crashRecoveryBuild":13,"offlineExecutionBuild":14,"capabilitySecurityBuild":15,"jobControlTransportBuild":47},"recoveryAuthority":{"ownerRoot":"apps/local","minimumBuild":13,"offlineExecutionBuild":14,"capabilitySecurityBuild":15},"offlineAuthority":{"ownerRoot":"apps/local","minimumBuild":14,"capabilitySecurityBuild":15,"githubAppNetworkBuild":23,"githubProviderNetworkBuild":24,"automaticNetworkProbe":false,"jobControlTransportBuild":47},"capabilityAuthority":{"ownerRoot":"apps/local","minimumBuild":15,"secretsVaultBuild":16,"approvalTransactionsBuild":17,"auditLedgerBuild":18,"jobControlTransportBuild":47,"plaintextTokenPersistence":false,"externalGrantTransport":false,"denyByDefault":true,"requiredCapabilities":["READ","WRITE","EXECUTE","NETWORK","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE","SECRETS"]},"vaultAuthority":{"ownerRoot":"apps/local","minimumBuild":16,"cipher":"AES-256-GCM","kdf":"HKDF-SHA256","keyBackend":"local-key-file-v1","keyFileMode":"0600","plaintextPersistence":false,"plaintextResourcePersistence":false,"masterKeyInDatabase":false,"externalTransport":false,"approvalTransactionsBuild":17,"auditLedgerBuild":18},"approvalAuthority":{"ownerRoot":"apps/local","minimumBuild":17,"auditLedgerBuild":18,"oneShotReceipts":true,"plaintextReceiptPersistence":false,"payloadDigestBinding":"sha256","jobBinding":true,"externalDecisionTransport":false},"auditAuthority":{"ownerRoot":"apps/local","minimumBuild":18,"transactionLedgerBuild":77,"appendOnly":true,"hashChain":"sha256","integrityVerificationOnStartup":true,"securityEventMetadataOnly":true,"externalTransport":false,"requiredCategories":["capability","vault","approval","runtime"]},"workspaceAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/workspace","minimumBuild":19,"projectDetectionBuild":20,"gitRuntimeBuild":21,"multiWorkspaceBuild":114,"canonicalRoot":"realpath","pathContainment":true,"filesystemMutation":false,"externalTransport":false},"projectDetectionAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/workspace","minimumBuild":20,"workspaceManagerBuild":19,"gitRuntimeBuild":21,"rootOnly":true,"readOnly":true,"filesystemMutation":false,"networkAccess":false,"gitAuthority":false,"externalTransport":false,"maxPackageJsonBytes":1048576},"gitRuntimeAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/git","minimumBuild":21,"workspaceManagerBuild":19,"projectDetectionBuild":20,"changeTrackingBuild":22,"githubAppBuild":23,"githubProviderBuild":24,"commitWorkflowBuild":109,"pushWorkflowBuild":110,"gitWriteCapability":"GIT_WRITE","networkCapability":"NETWORK","denyByDefault":true,"workspaceScoped":true,"shellExecution":false,"forcePush":false,"hardReset":false,"embeddedRemoteCredentials":false,"externalTransport":false},"changeTrackingAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/git","minimumBuild":22,"gitRuntimeBuild":21,"githubAppBuild":23,"githubProviderBuild":24,"agentRuntimeBuild":58,"codingAgentBuild":60,"commitWorkflowBuild":109,"workspaceScoped":true,"pathLevel":true,"hunkLevel":false,"explicitAttributionBoundaries":true,"aiWriteCapability":"WRITE","contentPersistence":false,"filesystemMutation":false,"externalTransport":false},"githubAppAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/github-app","minimumBuild":23,"gitRuntimeBuild":21,"changeTrackingBuild":22,"githubProviderBuild":24,"extensionBuild":25,"commitWorkflowBuild":109,"jwtAlgorithm":"RS256","jwtMaxTtlSeconds":600,"webhookSignatureAlgorithm":"sha256","webhookRawBodyVerification":true,"privateKeyStorage":"secrets-vault","webhookSecretStorage":"secrets-vault","installationTokenPersistence":false,"webhookPayloadPersistence":false,"deliveryReplayMetadataOnly":true,"installationTokenExchange":true,"providerOperations":false,"genericHttpTransport":false},"githubProviderAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/github-provider","minimumBuild":24,"githubAppBuild":23,"extensionBuild":25,"repositoryLauncherBuild":26,"commitWorkflowBuild":109,"pushWorkflowBuild":110,"pullRequestWorkflowBuild":111,"checksActionsBuild":112,"issuesIntegrationBuild":113,"readCapability":"READ","networkCapability":"NETWORK","installationScoped":true,"installationTokenSource":"github-app-runtime","allowedOperations":["repositories.list","repository.get","branches.list"],"readOnly":true,"installationTokenPersistence":false,"responsePersistence":false,"genericRequestApi":false,"genericHttpTransport":false,"repositoryMutation":false,"collaborationMutation":false},"extensionAuthority":{"ownerRoot":"apps/extension","minimumBuild":25,"repositoryLauncherBuild":26,"studioReactBuild":27,"manifestVersion":3,"bridgeSchema":"gd-extension-bridge/1","hostAllowlist":["https://github.com/*"],"serviceWorker":"apps/extension/browser/service-worker.js","contentScript":"apps/extension/browser/content-script.js","launcherPage":"apps/extension/browser/launcher.html","launcherScript":"apps/extension/browser/launcher.js","lightweightBridge":true,"statelessPageContext":true,"networkAuthority":false,"secretAuthority":false,"durableExecution":false,"repositoryDetection":true,"repositoryIdentitySource":"github-meta+pathname","fab":true,"openInFlow":true,"extensionOwnedLauncher":true,"connectionStatus":"extension-bridge","studioLaunch":false,"localRuntimeDirectTransport":false,"contentDomMutation":true,"contextPersistence":false,"externalHosts":false},"studioAuthority":{"ownerRoot":"apps/studio","minimumBuild":27,"pwaBuild":28,"designSystemBuild":29,"ideLayoutBuild":30,"onboardingBuild":31,"environmentDoctorBuild":32,"jobsCenterBuild":47,"pwaProductionPackagingBuild":122,"framework":"React 19","bundler":"Vite 8","clientOnly":true,"ssr":false,"reactServerComponents":false,"repositoryLaunchContext":true,"repositoryLaunchSchema":"gd-studio-launch/1","repositoryIdentityPublicOnly":true,"networkAuthority":false,"storageAuthority":false,"serviceWorker":true,"webAppManifest":true,"installable":true,"appShellCache":true,"offlineAppShell":true,"sameOriginShellFetch":true,"cacheNamePrefix":"gd-studio-shell-","manifestPath":"apps/studio/public/manifest.webmanifest","serviceWorkerOwner":"apps/studio/vite.config.ts","iconSizes":[192,512],"projectDataPersistence":false,"repositoryContextPersistence":false,"localRuntimeTransport":false,"diagnosticLocalRuntimeTransport":true,"jobsCenterLocalRuntimeTransport":true,"genericLocalRuntimeTransport":false,"githubProviderDirectAccess":false,"extensionDirectAccess":false,"contextPersistence":false,"externalTransport":false,"ideLayout":true,"workspaceLayout":true,"layoutStatePersistence":false,"onboarding":true,"adaptiveUserProfile":true,"adaptiveProfileSchema":"gd-adaptive-user-profile/1","adaptiveProfilePersistence":false,"environmentDoctor":true,"jobsCenter":true,"productionHosting":false,"productionPackaging":false},"designSystemAuthority":{"ownerPackage":"@github-decrypter/ui","ownerRoot":"packages/ui","minimumBuild":29,"studioConsumer":"@github-decrypter/studio","ideLayoutBuild":30,"onboardingBuild":31,"schema":"gd-ui-tokens/1","cssVariablePrefix":"--gd-","componentClassPrefix":"gd-","theme":"dark","semanticTokens":true,"reactPrimitives":true,"focusVisible":true,"environmentNeutral":true,"networkAuthority":false,"storageAuthority":false,"filesystemAuthority":false,"localRuntimeTransport":false,"githubProviderAccess":false,"ideLayoutAuthority":true,"workspaceLayoutAuthority":true,"externalTransport":false},"ideLayoutAuthority":{"ownerRoot":"apps/studio","componentPackage":"@github-decrypter/ui","minimumBuild":30,"designSystemBuild":29,"onboardingBuild":31,"environmentDoctorBuild":32,"developerConsoleBuild":71,"problemsDiagnosticsBuild":72,"codeExplorerBuild":73,"terminalBuild":75,"gitPanelBuild":76,"schema":"gd-ide-layout/1","requiredRegions":["topbar","activity","sidebar","editor","panel","statusbar"],"structuralOnly":true,"collapsibleSidebar":true,"collapsiblePanel":true,"responsive":true,"layoutStatePersistence":false,"featurePanelsOperational":false,"networkAuthority":false,"storageAuthority":false,"filesystemAuthority":false,"localRuntimeTransport":false,"githubProviderAccess":false,"extensionAccess":false,"externalTransport":false},"adaptiveProfileAuthority":{"ownerRoot":"apps/studio","minimumBuild":31,"environmentDoctorBuild":32,"aiProviderBuild":33,"learningModeBuild":108,"mentorEngineBuild":108,"schema":"gd-adaptive-user-profile/1","requiredPreferences":["technicalLevel","objective","learningIntent","explanationDepth"],"conversationalOnboarding":true,"beginnerSafeLanguage":true,"userCanRetake":true,"sessionOnly":true,"profilePersistence":false,"persistenceOwner":"local-runtime","securityAuthority":false,"capabilitySource":false,"permissionSource":false,"approvalSource":false,"scopeSource":false,"adaptiveLearning":false,"mentorEngine":false,"aiExecution":false,"networkAuthority":false,"storageAuthority":false,"localRuntimeTransport":false,"externalTransport":false},"environmentDoctorAuthority":{"ownerRoot":"apps/studio","runtimeOwnerRoot":"apps/local","contractPackage":"@github-decrypter/protocol","minimumBuild":32,"aiProviderBuild":33,"runtimeInstallerBuild":119,"pwaProductionPackagingBuild":122,"schema":"gd-environment-doctor/1","endpoint":"/v1/environment-doctor","loopbackHost":"127.0.0.1","defaultPort":43110,"userInitiated":true,"readOnly":true,"metadataOnly":true,"responsePersistence":false,"automaticProbe":false,"autoRepair":false,"shellExecution":false,"filesystemMutation":false,"credentials":false,"externalNetworkAuthority":false,"genericLocalRuntimeTransport":false,"aiExecution":false,"externalTransport":false},"aiProviderAuthority":{"ownerPackage":"@github-decrypter/ai","contractPackage":"@github-decrypter/ai","runtimeOwnerRoot":"apps/local","minimumBuild":33,"localAIRuntimeBuild":34,"localAIInstallerBuild":35,"modelManagerBuild":36,"modelRoutingBuild":37,"conversationEngineBuild":44,"toolRuntimeBuild":53,"agentRuntimeBuild":58,"schema":"gd-ai-provider/1","providerKinds":["local","external"],"localFirstClass":true,"externalProvidersOptional":true,"mandatoryProvider":null,"contractOnly":true,"environmentNeutral":true,"runtimeExecution":false,"directNetworkAuthority":false,"secretFields":false,"rawProviderResponse":false,"providerEndpointConfiguration":false,"promptPersistence":false,"responsePersistence":false,"providerConfigurationPersistence":false,"studioTransport":false,"filesystemAuthority":false,"databaseAuthority":false,"toolAuthority":false,"agentAuthority":false},"localAIRuntimeAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/ai","minimumBuild":34,"localAIInstallerBuild":35,"modelManagerBuild":36,"modelRoutingBuild":37,"conversationEngineBuild":44,"schema":"gd-local-ai-runtime/1","allowedOperations":["providers.list","models.list","generate"],"localOnly":true,"constructionOnlyAdapters":true,"readCapability":"READ","executeCapability":"EXECUTE","runtimeExecution":true,"externalProviderExecution":false,"networkAuthority":false,"secretsAuthority":false,"promptPersistence":false,"responsePersistence":false,"providerConfigurationPersistence":false,"filesystemAuthority":false,"databaseAuthority":false,"studioTransport":false,"automaticRouting":false,"modelInstallation":false,"modelManagement":false,"providerSpecificImplementation":false},"localAIInstallerAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/ai","minimumBuild":35,"localAIRuntimeBuild":34,"modelManagerBuild":36,"modelRoutingBuild":37,"schema":"gd-local-ai-installer/1","allowedOperations":["installers.list","models.install"],"runtimeFamilies":["ollama-compatible","vllm-compatible","custom-local"],"localOnly":true,"constructionOnlyAdapters":true,"readCapability":"READ","writeCapability":"WRITE","executeCapability":"EXECUTE","networkCapability":"NETWORK","networkConditional":true,"externalProviderInstallation":false,"arbitrarySourceUrl":false,"secretsAuthority":false,"providerConfigurationPersistence":false,"modelStatePersistence":false,"directFilesystemAuthority":false,"adapterOwnedInstallation":true,"databaseAuthority":false,"studioTransport":false,"modelInstallation":true,"modelRemoval":false,"modelUpdate":false,"defaultSelection":false,"automaticRouting":false,"providerSpecificImplementation":false},"modelManagerAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/ai","minimumBuild":36,"localAIRuntimeBuild":34,"localAIInstallerBuild":35,"modelRoutingBuild":37,"schema":"gd-local-ai-model-manager/1","allowedOperations":["managers.list","models.list","models.remove","models.update","default.get","default.set","default.clear"],"runtimeFamilies":["ollama-compatible","vllm-compatible","custom-local"],"localOnly":true,"constructionOnlyAdapters":true,"readCapability":"READ","writeCapability":"WRITE","executeCapability":"EXECUTE","destructiveCapability":"DESTRUCTIVE","networkCapability":"NETWORK","updateNetworkConditional":true,"adapterOwnedManagement":true,"modelInventory":true,"modelRemoval":true,"modelUpdate":true,"defaultSelection":true,"defaultSelectionPersistence":false,"automaticRouting":false,"arbitrarySourceUrl":false,"externalProviderManagement":false,"secretsAuthority":false,"providerConfigurationPersistence":false,"modelStatePersistence":false,"directFilesystemAuthority":false,"databaseAuthority":false,"studioTransport":false,"providerSpecificImplementation":false},"localAIModelRoutingAuthority":{"ownerRoot":"apps/local","contractPackage":"@github-decrypter/ai","minimumBuild":37,"localAIRuntimeBuild":34,"localAIInstallerBuild":35,"modelManagerBuild":36,"conversationEngineBuild":44,"schema":"gd-local-ai-model-routing/1","allowedOperations":["routes.select"],"readCapability":"READ","composedManagerReadAuthorization":true,"localOnly":true,"deterministic":true,"decisionOnly":true,"automaticRouting":true,"preferredSelection":true,"manualDefaultPrecedence":true,"deterministicFallback":true,"runtimeExecution":false,"modelInstallation":false,"modelManagement":false,"defaultMutation":false,"externalProviderRouting":false,"networkAuthority":false,"secretsAuthority":false,"routingPersistence":false,"promptInspection":false,"adaptiveRouting":false,"studioTransport":false,"filesystemAuthority":false,"databaseAuthority":false,"providerSpecificImplementation":false},"promptIntakeAuthority":{"ownerPackage":"@github-decrypter/plan","minimumBuild":38,"requirementCompilerBuild":39,"taskGraphCompilerBuild":40,"hierarchicalContextBuild":41,"contextContinuationBuild":42,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"schema":"gd-prompt-intake/1","source":"user","maxCharacters":262144,"normalization":["unicode-nfc","crlf-to-lf","outer-trim"],"digestAlgorithm":"sha256","deterministic":true,"environmentNeutral":true,"exactInputFields":["text"],"semanticInterpretation":false,"requirementCompilation":false,"taskGraphCompilation":false,"contextCompilation":false,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"aiExecution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"requirementCompilerAuthority":{"ownerPackage":"@github-decrypter/plan","minimumBuild":39,"promptIntakeBuild":38,"taskGraphCompilerBuild":40,"hierarchicalContextBuild":41,"contextContinuationBuild":42,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"inputSchema":"gd-prompt-intake/1","schema":"gd-requirement-spec/1","maxItems":4096,"kinds":["goal","requirement","constraint","acceptance","non-goal","context"],"sourceDigestBinding":"sha256","deterministic":true,"syntaxDirected":true,"environmentNeutral":true,"exactInputFields":["intake"],"requirementCompilation":true,"semanticInterpretation":false,"taskGraphCompilation":false,"contextCompilation":false,"contextContinuation":false,"tokenAbstraction":false,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"aiExecution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"taskGraphCompilerAuthority":{"ownerPackage":"@github-decrypter/plan","ownerSource":"packages/plan/src/task-graph.ts","minimumBuild":40,"requirementCompilerBuild":39,"hierarchicalContextBuild":41,"contextContinuationBuild":42,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"inputSchema":"gd-requirement-spec/1","schema":"gd-task-graph/1","maxNodes":4096,"maxEdges":16384,"taskKinds":["requirement"],"supportingKinds":["goal","constraint","acceptance","non-goal","context"],"dependencySyntax":"[depends: req-NNNN]","explicitDependenciesOnly":true,"dependencyInference":false,"dagValidation":true,"dagValidated":true,"cycleRejection":true,"invalidDependencyRejection":true,"deterministic":true,"syntaxDirected":true,"environmentNeutral":true,"exactInputFields":["spec"],"requirementCompilation":true,"taskGraphCompilation":true,"execution":false,"scheduling":false,"contextCompilation":false,"contextContinuation":false,"tokenAbstraction":false,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"aiExecution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"hierarchicalContextAuthority":{"ownerPackage":"@github-decrypter/context","ownerSource":"packages/context/src/index.ts","minimumBuild":41,"requirementCompilerBuild":39,"taskGraphCompilerBuild":40,"contextContinuationBuild":42,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"projectMemoryBuild":66,"finalContextEngineBuild":67,"inputSchemas":["gd-requirement-spec/1","gd-task-graph/1"],"schema":"gd-hierarchical-context/1","maxTasks":4096,"maxLevels":4096,"globalKinds":["goal","constraint","acceptance","non-goal","context"],"sourceDigestBinding":"sha256","deterministic":true,"dependencyAware":true,"hierarchy":"root>levels>tasks","environmentNeutral":true,"exactInputFields":["spec","graph"],"requirementCompilation":true,"taskGraphCompilation":true,"contextCompilation":true,"hierarchical":true,"semanticExpansion":false,"contextContinuation":false,"tokenAbstraction":false,"projectMemory":false,"contextPackPersistence":false,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"aiExecution":false,"execution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"contextContinuationAuthority":{"ownerPackage":"@github-decrypter/context","ownerSource":"packages/context/src/continuation.ts","minimumBuild":42,"hierarchicalContextBuild":41,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"projectMemoryBuild":66,"finalContextEngineBuild":67,"inputSchema":"gd-hierarchical-context/1","schema":"gd-context-continuation/1","rootContextId":"ctx-root","maxFrames":4096,"maxLevels":4096,"sourceDigestBinding":"sha256","deterministic":true,"sequentialHandoff":true,"dependencyContextCarry":true,"environmentNeutral":true,"exactInputFields":["context"],"requirementCompilation":true,"taskGraphCompilation":true,"contextCompilation":true,"contextContinuation":true,"semanticExpansion":false,"tokenAbstraction":false,"projectMemory":false,"contextPackPersistence":false,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"aiExecution":false,"execution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"tokenAbstractionAuthority":{"ownerPackage":"@github-decrypter/context","ownerSource":"packages/context/src/token-abstraction.ts","minimumBuild":43,"contextContinuationBuild":42,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"projectMemoryBuild":66,"finalContextEngineBuild":67,"inputSchema":"gd-context-continuation/1","schema":"gd-token-abstraction/1","rootContextId":"ctx-root","maxFrames":4096,"sourceDigestBinding":"sha256","deterministic":true,"finiteModelWindow":true,"environmentNeutral":true,"exactInputFields":["continuation","window"],"windowFields":["contextWindowTokens","reservedOutputTokens"],"metering":"unmeasured","fitStatus":"unknown","overflowDecision":"deferred","requirementCompilation":true,"taskGraphCompilation":true,"contextCompilation":true,"contextContinuation":true,"tokenAbstraction":true,"userFacingRawTokenBudget":false,"infiniteContextClaim":false,"tokenizerExecution":false,"contentTokenEstimation":false,"silentTruncation":false,"semanticCompression":false,"orchestrationRequired":true,"attachmentIngestion":false,"mentionResolution":false,"conversationHistory":false,"projectMemory":false,"contextPackPersistence":false,"aiExecution":false,"execution":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"storageAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"conversationEngineAuthority":{"ownerPackage":"@github-decrypter/chat","ownerSource":"packages/chat/src/index.ts","runtimeOwnerRoot":"apps/local","minimumBuild":44,"tokenAbstractionBuild":43,"attachmentEngineBuild":45,"contextMentionsBuild":46,"projectMemoryBuild":66,"finalContextEngineBuild":67,"inputSchema":"gd-token-abstraction/1","schema":"gd-conversation/1","messageSchema":"gd-conversation-message/1","dispatchSchema":"gd-conversation-dispatch/1","storeSchema":"gd-local-conversation-store/1","maxMessages":256,"maxTitleCharacters":160,"maxMessageCharacters":262144,"roles":["user","assistant"],"environmentNeutral":true,"workspaceScoped":true,"persistentConversation":true,"jobLifecycleIndependent":true,"localPersistence":true,"persistenceMigration":12,"persistenceTables":["gd_conversations","gd_conversation_messages"],"jobForeignKey":false,"fullHistoryOrReject":true,"silentTruncation":false,"tokenAbstraction":true,"finiteModelWindow":true,"voiceContextShared":true,"voiceTransport":false,"providerExecution":false,"attachmentIngestion":false,"mentionResolution":false,"projectMemory":false,"directDatabaseAuthority":false,"networkAuthority":false,"filesystemAuthority":false,"browserAuthority":false,"studioTransport":false,"localRuntimeTransport":false,"externalTransport":false},"attachmentEngineAuthority":{"ownerPackage":"@github-decrypter/chat","ownerSource":"packages/chat/src/attachments.ts","runtimeOwnerRoot":"apps/local","runtimeStoreSource":"apps/local/src/attachment-store.ts","minimumBuild":45,"conversationEngineBuild":44,"contextMentionsBuild":46,"jobsCenterBuild":47,"projectMemoryBuild":66,"finalContextEngineBuild":67,"schema":"gd-attachment/1","ingestionSchema":"gd-attachment-ingestion/1","storeSchema":"gd-local-attachment-store/1","kinds":["image","document","code","log","screenshot","structured-data","audio","media"],"maxBytes":33554432,"maxNameCharacters":255,"maxPersistedPerConversation":256,"digestAlgorithm":"sha256","environmentNeutralCore":true,"workspaceScoped":true,"conversationScoped":true,"messageBindingOptional":true,"localPersistence":true,"persistenceMedium":"filesystem","atomicDirectoryCommit":true,"payloadIntegrityVerification":true,"conversationContextShared":true,"voiceContextShared":true,"voiceSecondStateAuthority":false,"voiceTransport":false,"speechToText":false,"ocr":false,"contentInterpretation":false,"providerExecution":false,"mentionResolution":false,"jobCreation":false,"networkAuthority":false,"studioTransport":false,"localRuntimeTransport":false,"externalTransport":false},"contextMentionsAuthority":{"ownerPackage":"@github-decrypter/chat","ownerSource":"packages/chat/src/mentions.ts","minimumBuild":46,"conversationEngineBuild":44,"attachmentEngineBuild":45,"jobsCenterBuild":47,"projectMemoryBuild":66,"finalContextEngineBuild":67,"schema":"gd-context-mention/1","targetSchema":"gd-context-mention-target/1","resolutionSchema":"gd-context-mention-resolution/1","kinds":["file","folder","repository","commit","branch","pull-request","issue","database","preview","terminal"],"maxItems":64,"maxCatalogItems":4096,"maxReferenceCharacters":2048,"maxLabelCharacters":256,"environmentNeutral":true,"workspaceScoped":true,"conversationScoped":true,"committedUserMessageBinding":true,"explicitCatalogOnly":true,"exactReferenceMatch":true,"structuredReferencesOnly":true,"textualMentionParsing":false,"contentMaterialization":false,"sourceReads":false,"filesystemRead":false,"gitRead":false,"githubRead":false,"databaseRead":false,"previewRead":false,"terminalRead":false,"attachmentIngestion":false,"providerExecution":false,"jobCreation":false,"persistenceMutation":false,"networkAuthority":false,"studioTransport":false,"localRuntimeTransport":false,"externalTransport":false},"jobsCenterAuthority":{"ownerRoot":"apps/local","studioOwnerRoot":"apps/studio","contractPackage":"@github-decrypter/protocol","minimumBuild":47,"durableJobEngineBuild":12,"crashRecoveryBuild":13,"offlineExecutionBuild":14,"capabilitySecurityBuild":15,"protocolSource":"packages/protocol/src/jobs-center.ts","runtimeSource":"apps/local/src/jobs-center.ts","studioClient":"apps/studio/src/jobs-center-client.ts","studioSurface":"apps/studio/src/JobsCenter.tsx","jobSchema":"gd-jobs-center-job/1","listSchema":"gd-jobs-center-list/1","detailSchema":"gd-jobs-center-detail/1","controlResultSchema":"gd-jobs-center-control-result/1","allowedActions":["pause","resume","cancel","retry"],"enqueue":false,"skip":false,"priorityMutation":false,"schedulerAuthority":false,"durableJobEngineSovereign":true,"safeProjectionOnly":true,"payloadExposed":false,"checkpointContentExposed":false,"resultContentExposed":false,"errorContentExposed":false,"workerIdentityExposed":false,"leaseTokenExposed":false,"loopbackOnly":true,"defaultPort":43110,"listEndpoint":"/v1/jobs","detailEndpoint":"/v1/jobs/:id","controlEndpoint":"/v1/jobs/:id/control","clientHeader":"gd-studio-jobs-center/1","corsLoopbackOnly":true,"credentials":false,"backgroundPolling":false,"studioTransport":true,"genericLocalRuntimeTransport":false,"externalTransport":false,"externalNetworkAuthority":false},"planAuthority":{"ownerPackage":"@github-decrypter/plan","ownerSource":"packages/plan/src/authority.ts","runtimeOwnerRoot":"apps/local","runtimeGuardSource":"apps/local/src/plan-authority.ts","minimumBuild":48,"requirementCompilerBuild":39,"taskGraphCompilerBuild":40,"decisionEngineBuild":49,"projectRulesBuild":50,"impactSimulationBuild":51,"buildOrchestratorBuild":52,"toolRuntimeBuild":53,"scopeIntelligenceBuild":54,"scopeLockBuild":55,"checkpointEngineBuild":56,"validationPipelineBuild":57,"inputSchemas":["gd-requirement-spec/1","gd-task-graph/1"],"schema":"gd-plan-authority/1","runtimeGuardSchema":"gd-plan-runtime-guard/1","mode":"PLAN","maxTasks":4096,"digestAlgorithm":"sha256","deterministic":true,"environmentNeutralCore":true,"exactInputFields":["spec","graph"],"readOnly":true,"runtimeEnforcedReadOnly":true,"explicitApproval":true,"mutatingCapabilitiesBlocked":["WRITE","EXECUTE","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE"],"buildTransitionAuthorized":false,"decisionEngine":false,"projectRules":false,"impactSimulation":false,"buildOrchestration":false,"toolExecution":false,"scopeIntelligence":false,"scopeLock":false,"checkpoints":false,"validationPipeline":false,"execution":false,"scheduling":false,"persistence":false,"networkAuthority":false,"coreFilesystemAuthority":false,"coreDatabaseAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"decisionEngineAuthority":{"ownerPackage":"@github-decrypter/plan","ownerSource":"packages/plan/src/decision.ts","minimumBuild":49,"planAuthorityBuild":48,"projectRulesBuild":50,"impactSimulationBuild":51,"buildOrchestratorBuild":52,"toolRuntimeBuild":53,"scopeIntelligenceBuild":54,"scopeLockBuild":55,"checkpointEngineBuild":56,"validationPipelineBuild":57,"sourcePlanSchema":"gd-plan-authority/1","schema":"gd-decision-engine/1","mode":"PLAN","digestAlgorithm":"sha256","minAlternatives":2,"maxAlternatives":32,"maxTradeoffs":32,"maxTextCharacters":65536,"deterministic":true,"environmentNeutral":true,"sourcePlanStatus":"draft","readOnly":true,"planReadOnlyPreserved":true,"explicitAlternativesOnly":true,"selectionDeclaredByCaller":true,"semanticInference":false,"automaticScoring":false,"decisionEngine":true,"projectRules":false,"impactSimulation":false,"buildTransitionAuthorized":false,"buildOrchestration":false,"toolExecution":false,"scopeIntelligence":false,"scopeLock":false,"checkpoints":false,"validationPipeline":false,"execution":false,"scheduling":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"projectRulesAuthority":{"ownerPackage":"@github-decrypter/plan","ownerSource":"packages/plan/src/project-rules.ts","minimumBuild":50,"planAuthorityBuild":48,"decisionEngineBuild":49,"impactSimulationBuild":51,"buildOrchestratorBuild":52,"toolRuntimeBuild":53,"scopeIntelligenceBuild":54,"scopeLockBuild":55,"checkpointEngineBuild":56,"validationPipelineBuild":57,"sourcePlanSchema":"gd-plan-authority/1","schema":"gd-project-rules/1","mode":"PLAN","digestAlgorithm":"sha256","maxRules":256,"maxTextCharacters":65536,"maxWorkspaceIdCharacters":256,"ruleKinds":["require","forbid","prefer"],"deterministic":true,"environmentNeutral":true,"sourcePlanStatus":"draft","readOnly":true,"planReadOnlyPreserved":true,"workspaceScoped":true,"explicitRulesOnly":true,"semanticInference":false,"automaticEvaluation":false,"projectRules":true,"impactSimulation":false,"buildTransitionAuthorized":false,"buildOrchestration":false,"toolExecution":false,"scopeIntelligence":false,"scopeLock":false,"checkpoints":false,"validationPipeline":false,"execution":false,"scheduling":false,"persistence":false,"networkAuthority":false,"filesystemAuthority":false,"databaseAuthority":false,"studioTransport":false,"localRuntimeTransport":false},"forbiddenActiveAuthorityTokens":["lovable.dev","ld-vault","ld-release-feed","ld-store"],"activeAuthorityRoots":["apps","packages",".github/workflows","manifest.json","settings/config.js"],"workflow":{"writePermissionAllowlist":[".github/workflows/cortex.yml"],"writeScopes":{".github/workflows/cortex.yml":{"purpose":"generated project map metadata","allowedGitAddPrefixes":["graphify-out"],"allowPlainGitPush":true,"allowTags":false,"allowRelease":false,"allowDeploy":false}},"forbiddenWritePermissions":["actions","checks","contents","deployments","id-token","packages","pull-requests","security-events","statuses"]},"phaseGates":{"localDaemonBuild":10,"persistentLocalDatabaseBuild":11,"durableJobEngineBuild":12,"crashPowerRecoveryBuild":13,"offlineExecutionBuild":14,"capabilitySecurityBuild":15,"secretsVaultBuild":16,"approvalTransactionsBuild":17,"auditLedgerBuild":18,"workspaceManagerBuild":19,"projectDetectionBuild":20,"gitRuntimeBuild":21,"changeTrackingBuild":22,"githubAppBuild":23,"githubProviderBuild":24,"extensionActivationBuild":25,"repositoryLauncherBuild":26,"studioReactBuild":27,"pwaBuild":28,"designSystemBuild":29,"ideLayoutBuild":30,"onboardingBuild":31,"environmentDoctorBuild":32,"aiProviderBuild":33,"localAIRuntimeBuild":34,"localAIInstallerBuild":35,"modelManagerBuild":36,"modelRoutingBuild":37,"promptIntakeBuild":38,"requirementCompilerBuild":39,"taskGraphCompilerBuild":40,"hierarchicalContextBuild":41,"contextContinuationBuild":42,"tokenAbstractionBuild":43,"conversationEngineBuild":44,"attachmentEngineBuild":45,"contextMentionsBuild":46,"jobsCenterBuild":47,"planAuthorityBuild":48,"decisionEngineBuild":49,"projectRulesBuild":50,"pwaProductionPackagingBuild":122,"releaseAuthorityBuild":134},"legacyMigrationRoots":["core","background","content","runtime"],"prohibitedCrossBoundaryImports":{"packagesToApps":true,"packagesToLegacyRoots":true,"appsToOtherApps":true,"appsToLegacyRoots":true}}
+{
+  "schema": "gd-architecture-guardian/1",
+  "currentBuild": 51,
+  "product": "GitHub Decrypter",
+  "namespace": "gd-",
+  "authorities": [
+    "docs/product/PRODUCT_CONSTITUTION_V1.md",
+    "docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md",
+    "docs/product/NORTH_STAR_MANIFESTO.md",
+    "docs/product/ROADMAP_V1.md",
+    "docs/product/NORTH_STAR_ROADMAP_MAPPING.md",
+    "docs/product/V1_SCOPE.md",
+    "docs/product/NON_GOALS_V1.md",
+    "docs/product/DEFINITION_OF_DONE.md",
+    "docs/product/RFC_POLICY.md"
+  ],
+  "northStar": {
+    "sourceSha256": "256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718",
+    "requiredPrinciples": ["P01","P02","P03","P04","P05","P06","P07","P08","P09","P10","P11","P12","P13","P14","P15","P16","P17","P18","P19","P20","P21","P22"],
+    "requiredRoadmapBlocks": ["Adaptive User Profile","Agent Orchestrator","Named Agent System","Mentor Engine","Explain This","Voice Interaction","Perception Engine","Explore Mode","Visual Element Mapping","Interactive QA","Adaptive Explanation Engine"]
+  },
+  "workspace": {
+    "apps": ["studio", "extension", "local"],
+    "packages": ["ui", "protocol", "shared", "git", "github-app", "github-provider", "workspace", "chat", "plan", "build", "preview", "context", "tools", "scope", "ai"]
+  },
+  "packageRules": {
+    "@github-decrypter/ui": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/protocol": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/shared": { "allowedWorkspaceDependencies": ["@github-decrypter/protocol"], "environmentNeutral": true },
+    "@github-decrypter/workspace": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/git": { "allowedWorkspaceDependencies": ["@github-decrypter/workspace"], "environmentNeutral": true },
+    "@github-decrypter/github-app": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/github-provider": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/ai": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/plan": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
+    "@github-decrypter/context": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
+    "@github-decrypter/chat": { "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/context","@github-decrypter/workspace"], "environmentNeutral": true }
+  },
+  "appRules": {
+    "@github-decrypter/studio": {
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol", "@github-decrypter/ui"],
+      "allowedExternalDependencies": ["react", "react-dom", "@types/react", "@types/react-dom", "@vitejs/plugin-react", "vite"],
+      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\bchrome\\.","\\blocalStorage\\b","\\bindexedDB\\b","\\bcaches\\."],
+      "sourcePatternExceptions": { "\\bfetch\\s*\\(": ["apps/studio/src/environment-doctor-client.ts","apps/studio/src/jobs-center-client.ts"] }
+    },
+    "@github-decrypter/extension": {
+      "allowedWorkspaceDependencies": ["@github-decrypter/protocol"],
+      "allowedExternalDependencies": [],
+      "forbiddenSourcePatterns": ["\\bnode:","\\bprocess\\.","\\bfetch\\s*\\(","\\bWebSocket\\s*\\(","\\bXMLHttpRequest\\b","\\blocalStorage\\b","\\bindexedDB\\b"]
+    },
+    "@github-decrypter/local": {
+      "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/chat","@github-decrypter/git","@github-decrypter/github-app","@github-decrypter/github-provider","@github-decrypter/plan","@github-decrypter/protocol","@github-decrypter/shared","@github-decrypter/workspace"],
+      "allowedExternalDependencies": [],
+      "forbiddenSourcePatterns": ["\\bchrome\\.","\\bwindow\\.","\\bdocument\\.","\\blocalStorage\\b","\\bindexedDB\\b"]
+    }
+  },
+  "databaseAuthority": { "ownerRoot": "apps/local", "engineImport": "node:sqlite", "minimumBuild": 11, "durableJobSchemaBuild": 12 },
+  "jobAuthority": { "ownerRoot": "apps/local", "minimumBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "jobControlTransportBuild": 47 },
+  "recoveryAuthority": { "ownerRoot": "apps/local", "minimumBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15 },
+  "offlineAuthority": { "ownerRoot": "apps/local", "minimumBuild": 14, "capabilitySecurityBuild": 15, "githubAppNetworkBuild": 23, "githubProviderNetworkBuild": 24, "automaticNetworkProbe": false, "jobControlTransportBuild": 47 },
+  "capabilityAuthority": {
+    "ownerRoot": "apps/local", "minimumBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18,
+    "jobControlTransportBuild": 47, "plaintextTokenPersistence": false, "externalGrantTransport": false, "denyByDefault": true,
+    "requiredCapabilities": ["READ","WRITE","EXECUTE","NETWORK","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE","SECRETS"]
+  },
+  "vaultAuthority": {
+    "ownerRoot": "apps/local", "minimumBuild": 16, "cipher": "AES-256-GCM", "kdf": "HKDF-SHA256", "keyBackend": "local-key-file-v1",
+    "keyFileMode": "0600", "plaintextPersistence": false, "plaintextResourcePersistence": false, "masterKeyInDatabase": false,
+    "externalTransport": false, "approvalTransactionsBuild": 17, "auditLedgerBuild": 18
+  },
+  "approvalAuthority": {
+    "ownerRoot": "apps/local", "minimumBuild": 17, "auditLedgerBuild": 18, "oneShotReceipts": true,
+    "plaintextReceiptPersistence": false, "payloadDigestBinding": "sha256", "jobBinding": true, "externalDecisionTransport": false
+  },
+  "auditAuthority": {
+    "ownerRoot": "apps/local", "minimumBuild": 18, "transactionLedgerBuild": 77, "appendOnly": true, "hashChain": "sha256",
+    "integrityVerificationOnStartup": true, "securityEventMetadataOnly": true, "externalTransport": false,
+    "requiredCategories": ["capability", "vault", "approval", "runtime"]
+  },
+  "workspaceAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/workspace", "minimumBuild": 19, "projectDetectionBuild": 20,
+    "gitRuntimeBuild": 21, "multiWorkspaceBuild": 114, "canonicalRoot": "realpath", "pathContainment": true,
+    "filesystemMutation": false, "externalTransport": false
+  },
+  "projectDetectionAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/workspace", "minimumBuild": 20, "workspaceManagerBuild": 19,
+    "gitRuntimeBuild": 21, "rootOnly": true, "readOnly": true, "filesystemMutation": false, "networkAccess": false,
+    "gitAuthority": false, "externalTransport": false, "maxPackageJsonBytes": 1048576
+  },
+  "gitRuntimeAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/git", "minimumBuild": 21, "workspaceManagerBuild": 19,
+    "projectDetectionBuild": 20, "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24,
+    "commitWorkflowBuild": 109, "pushWorkflowBuild": 110, "gitWriteCapability": "GIT_WRITE", "networkCapability": "NETWORK",
+    "denyByDefault": true, "workspaceScoped": true, "shellExecution": false, "forcePush": false, "hardReset": false,
+    "embeddedRemoteCredentials": false, "externalTransport": false
+  },
+  "changeTrackingAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/git", "minimumBuild": 22, "gitRuntimeBuild": 21,
+    "githubAppBuild": 23, "githubProviderBuild": 24, "agentRuntimeBuild": 58, "codingAgentBuild": 60, "commitWorkflowBuild": 109,
+    "workspaceScoped": true, "pathLevel": true, "hunkLevel": false, "explicitAttributionBoundaries": true,
+    "aiWriteCapability": "WRITE", "contentPersistence": false, "filesystemMutation": false, "externalTransport": false
+  },
+  "githubAppAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/github-app", "minimumBuild": 23, "gitRuntimeBuild": 21,
+    "changeTrackingBuild": 22, "githubProviderBuild": 24, "extensionBuild": 25, "commitWorkflowBuild": 109,
+    "jwtAlgorithm": "RS256", "jwtMaxTtlSeconds": 600, "webhookSignatureAlgorithm": "sha256", "webhookRawBodyVerification": true,
+    "privateKeyStorage": "secrets-vault", "webhookSecretStorage": "secrets-vault", "installationTokenPersistence": false,
+    "webhookPayloadPersistence": false, "deliveryReplayMetadataOnly": true, "installationTokenExchange": true,
+    "providerOperations": false, "genericHttpTransport": false
+  },
+  "githubProviderAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/github-provider", "minimumBuild": 24, "githubAppBuild": 23,
+    "extensionBuild": 25, "repositoryLauncherBuild": 26, "commitWorkflowBuild": 109, "pushWorkflowBuild": 110,
+    "pullRequestWorkflowBuild": 111, "checksActionsBuild": 112, "issuesIntegrationBuild": 113, "readCapability": "READ",
+    "networkCapability": "NETWORK", "installationScoped": true, "installationTokenSource": "github-app-runtime",
+    "allowedOperations": ["repositories.list","repository.get","branches.list"], "readOnly": true,
+    "installationTokenPersistence": false, "responsePersistence": false, "genericRequestApi": false, "genericHttpTransport": false,
+    "repositoryMutation": false, "collaborationMutation": false
+  },
+  "extensionAuthority": {
+    "ownerRoot": "apps/extension", "minimumBuild": 25, "repositoryLauncherBuild": 26, "studioReactBuild": 27,
+    "manifestVersion": 3, "bridgeSchema": "gd-extension-bridge/1", "hostAllowlist": ["https://github.com/*"],
+    "serviceWorker": "apps/extension/browser/service-worker.js", "contentScript": "apps/extension/browser/content-script.js",
+    "launcherPage": "apps/extension/browser/launcher.html", "launcherScript": "apps/extension/browser/launcher.js",
+    "lightweightBridge": true, "statelessPageContext": true, "networkAuthority": false, "secretAuthority": false,
+    "durableExecution": false, "repositoryDetection": true, "repositoryIdentitySource": "github-meta+pathname", "fab": true,
+    "openInFlow": true, "extensionOwnedLauncher": true, "connectionStatus": "extension-bridge", "studioLaunch": false,
+    "localRuntimeDirectTransport": false, "contentDomMutation": true, "contextPersistence": false, "externalHosts": false
+  },
+  "studioAuthority": {
+    "ownerRoot": "apps/studio", "minimumBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "jobsCenterBuild": 47, "pwaProductionPackagingBuild": 122, "framework": "React 19", "bundler": "Vite 8", "clientOnly": true,
+    "ssr": false, "reactServerComponents": false, "repositoryLaunchContext": true,
+    "repositoryLaunchSchema": "gd-studio-launch/1", "repositoryIdentityPublicOnly": true,
+    "networkAuthority": false, "storageAuthority": false, "serviceWorker": true, "webAppManifest": true,
+    "installable": true, "appShellCache": true, "offlineAppShell": true, "sameOriginShellFetch": true,
+    "cacheNamePrefix": "gd-studio-shell-", "manifestPath": "apps/studio/public/manifest.webmanifest",
+    "serviceWorkerOwner": "apps/studio/vite.config.ts", "iconSizes": [192,512], "projectDataPersistence": false,
+    "repositoryContextPersistence": false, "localRuntimeTransport": false, "diagnosticLocalRuntimeTransport": true,
+    "jobsCenterLocalRuntimeTransport": true, "genericLocalRuntimeTransport": false, "githubProviderDirectAccess": false,
+    "extensionDirectAccess": false, "contextPersistence": false, "externalTransport": false,
+    "ideLayout": true, "workspaceLayout": true, "layoutStatePersistence": false,
+    "onboarding": true, "adaptiveUserProfile": true, "adaptiveProfileSchema": "gd-adaptive-user-profile/1",
+    "adaptiveProfilePersistence": false, "environmentDoctor": true, "jobsCenter": true, "productionHosting": false, "productionPackaging": false
+  },
+  "designSystemAuthority": {
+    "ownerPackage": "@github-decrypter/ui", "ownerRoot": "packages/ui", "minimumBuild": 29,
+    "studioConsumer": "@github-decrypter/studio", "ideLayoutBuild": 30, "onboardingBuild": 31,
+    "schema": "gd-ui-tokens/1", "cssVariablePrefix": "--gd-", "componentClassPrefix": "gd-", "theme": "dark",
+    "semanticTokens": true, "reactPrimitives": true, "focusVisible": true, "environmentNeutral": true,
+    "networkAuthority": false, "storageAuthority": false, "filesystemAuthority": false, "localRuntimeTransport": false,
+    "githubProviderAccess": false, "ideLayoutAuthority": true, "workspaceLayoutAuthority": true, "externalTransport": false
+  },
+  "ideLayoutAuthority": {
+    "ownerRoot": "apps/studio", "componentPackage": "@github-decrypter/ui", "minimumBuild": 30,
+    "designSystemBuild": 29, "onboardingBuild": 31, "environmentDoctorBuild": 32,
+    "developerConsoleBuild": 71, "problemsDiagnosticsBuild": 72, "codeExplorerBuild": 73, "terminalBuild": 75, "gitPanelBuild": 76,
+    "schema": "gd-ide-layout/1", "requiredRegions": ["topbar","activity","sidebar","editor","panel","statusbar"],
+    "structuralOnly": true, "collapsibleSidebar": true, "collapsiblePanel": true, "responsive": true,
+    "layoutStatePersistence": false, "featurePanelsOperational": false, "networkAuthority": false, "storageAuthority": false,
+    "filesystemAuthority": false, "localRuntimeTransport": false, "githubProviderAccess": false, "extensionAccess": false, "externalTransport": false
+  },
+  "adaptiveProfileAuthority": {
+    "ownerRoot": "apps/studio", "minimumBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33,
+    "learningModeBuild": 108, "mentorEngineBuild": 108, "schema": "gd-adaptive-user-profile/1",
+    "requiredPreferences": ["technicalLevel","objective","learningIntent","explanationDepth"],
+    "conversationalOnboarding": true, "beginnerSafeLanguage": true, "userCanRetake": true, "sessionOnly": true,
+    "profilePersistence": false, "persistenceOwner": "local-runtime", "securityAuthority": false, "capabilitySource": false,
+    "permissionSource": false, "approvalSource": false, "scopeSource": false, "adaptiveLearning": false, "mentorEngine": false,
+    "aiExecution": false, "networkAuthority": false, "storageAuthority": false, "localRuntimeTransport": false, "externalTransport": false
+  },
+  "environmentDoctorAuthority": {
+    "ownerRoot": "apps/studio", "runtimeOwnerRoot": "apps/local", "contractPackage": "@github-decrypter/protocol",
+    "minimumBuild": 32, "aiProviderBuild": 33, "runtimeInstallerBuild": 119, "pwaProductionPackagingBuild": 122,
+    "schema": "gd-environment-doctor/1", "endpoint": "/v1/environment-doctor", "loopbackHost": "127.0.0.1", "defaultPort": 43110,
+    "userInitiated": true, "readOnly": true, "metadataOnly": true, "responsePersistence": false, "automaticProbe": false,
+    "autoRepair": false, "shellExecution": false, "filesystemMutation": false, "credentials": false,
+    "externalNetworkAuthority": false, "genericLocalRuntimeTransport": false, "aiExecution": false, "externalTransport": false
+  },
+  "aiProviderAuthority": {
+    "ownerPackage": "@github-decrypter/ai", "contractPackage": "@github-decrypter/ai", "runtimeOwnerRoot": "apps/local",
+    "minimumBuild": 33, "localAIRuntimeBuild": 34, "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37,
+    "conversationEngineBuild": 44, "toolRuntimeBuild": 53, "agentRuntimeBuild": 58, "schema": "gd-ai-provider/1",
+    "providerKinds": ["local", "external"], "localFirstClass": true, "externalProvidersOptional": true, "mandatoryProvider": null,
+    "contractOnly": true, "environmentNeutral": true, "runtimeExecution": false, "directNetworkAuthority": false,
+    "secretFields": false, "rawProviderResponse": false, "providerEndpointConfiguration": false, "promptPersistence": false,
+    "responsePersistence": false, "providerConfigurationPersistence": false, "studioTransport": false, "filesystemAuthority": false,
+    "databaseAuthority": false, "toolAuthority": false, "agentAuthority": false
+  },
+  "localAIRuntimeAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/ai", "minimumBuild": 34,
+    "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "conversationEngineBuild": 44,
+    "schema": "gd-local-ai-runtime/1", "allowedOperations": ["providers.list","models.list","generate"],
+    "localOnly": true, "constructionOnlyAdapters": true, "readCapability": "READ", "executeCapability": "EXECUTE",
+    "runtimeExecution": true, "externalProviderExecution": false, "networkAuthority": false, "secretsAuthority": false,
+    "promptPersistence": false, "responsePersistence": false, "providerConfigurationPersistence": false,
+    "filesystemAuthority": false, "databaseAuthority": false, "studioTransport": false, "automaticRouting": false,
+    "modelInstallation": false, "modelManagement": false, "providerSpecificImplementation": false
+  },
+  "localAIInstallerAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/ai", "minimumBuild": 35,
+    "localAIRuntimeBuild": 34, "modelManagerBuild": 36, "modelRoutingBuild": 37, "schema": "gd-local-ai-installer/1",
+    "allowedOperations": ["installers.list","models.install"], "runtimeFamilies": ["ollama-compatible","vllm-compatible","custom-local"],
+    "localOnly": true, "constructionOnlyAdapters": true, "readCapability": "READ", "writeCapability": "WRITE",
+    "executeCapability": "EXECUTE", "networkCapability": "NETWORK", "networkConditional": true,
+    "externalProviderInstallation": false, "arbitrarySourceUrl": false, "secretsAuthority": false,
+    "providerConfigurationPersistence": false, "modelStatePersistence": false, "directFilesystemAuthority": false,
+    "adapterOwnedInstallation": true, "databaseAuthority": false, "studioTransport": false, "modelInstallation": true,
+    "modelRemoval": false, "modelUpdate": false, "defaultSelection": false, "automaticRouting": false,
+    "providerSpecificImplementation": false
+  },
+  "modelManagerAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/ai", "minimumBuild": 36,
+    "localAIRuntimeBuild": 34, "localAIInstallerBuild": 35, "modelRoutingBuild": 37,
+    "schema": "gd-local-ai-model-manager/1",
+    "allowedOperations": ["managers.list","models.list","models.remove","models.update","default.get","default.set","default.clear"],
+    "runtimeFamilies": ["ollama-compatible","vllm-compatible","custom-local"], "localOnly": true,
+    "constructionOnlyAdapters": true, "readCapability": "READ", "writeCapability": "WRITE", "executeCapability": "EXECUTE",
+    "destructiveCapability": "DESTRUCTIVE", "networkCapability": "NETWORK", "updateNetworkConditional": true,
+    "adapterOwnedManagement": true, "modelInventory": true, "modelRemoval": true, "modelUpdate": true,
+    "defaultSelection": true, "defaultSelectionPersistence": false, "automaticRouting": false, "arbitrarySourceUrl": false,
+    "externalProviderManagement": false, "secretsAuthority": false, "providerConfigurationPersistence": false,
+    "modelStatePersistence": false, "directFilesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "providerSpecificImplementation": false
+  },
+  "localAIModelRoutingAuthority": {
+    "ownerRoot": "apps/local", "contractPackage": "@github-decrypter/ai", "minimumBuild": 37,
+    "localAIRuntimeBuild": 34, "localAIInstallerBuild": 35, "modelManagerBuild": 36, "conversationEngineBuild": 44,
+    "schema": "gd-local-ai-model-routing/1", "allowedOperations": ["routes.select"], "readCapability": "READ",
+    "composedManagerReadAuthorization": true, "localOnly": true, "deterministic": true, "decisionOnly": true,
+    "automaticRouting": true, "preferredSelection": true, "manualDefaultPrecedence": true, "deterministicFallback": true,
+    "runtimeExecution": false, "modelInstallation": false, "modelManagement": false, "defaultMutation": false,
+    "externalProviderRouting": false, "networkAuthority": false, "secretsAuthority": false, "routingPersistence": false,
+    "promptInspection": false, "adaptiveRouting": false, "studioTransport": false, "filesystemAuthority": false,
+    "databaseAuthority": false, "providerSpecificImplementation": false
+  },
+  "promptIntakeAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "minimumBuild": 38, "requirementCompilerBuild": 39,
+    "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "schema": "gd-prompt-intake/1", "source": "user", "maxCharacters": 262144,
+    "normalization": ["unicode-nfc","crlf-to-lf","outer-trim"], "digestAlgorithm": "sha256",
+    "deterministic": true, "environmentNeutral": true, "exactInputFields": ["text"],
+    "semanticInterpretation": false, "requirementCompilation": false, "taskGraphCompilation": false,
+    "contextCompilation": false, "attachmentIngestion": false, "mentionResolution": false,
+    "conversationHistory": false, "aiExecution": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "requirementCompilerAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "minimumBuild": 39, "promptIntakeBuild": 38,
+    "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "inputSchema": "gd-prompt-intake/1", "schema": "gd-requirement-spec/1", "maxItems": 4096,
+    "kinds": ["goal","requirement","constraint","acceptance","non-goal","context"],
+    "sourceDigestBinding": "sha256", "deterministic": true, "syntaxDirected": true,
+    "environmentNeutral": true, "exactInputFields": ["intake"], "requirementCompilation": true,
+    "semanticInterpretation": false, "taskGraphCompilation": false, "contextCompilation": false,
+    "contextContinuation": false, "tokenAbstraction": false, "attachmentIngestion": false,
+    "mentionResolution": false, "conversationHistory": false, "aiExecution": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "taskGraphCompilerAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/task-graph.ts", "minimumBuild": 40,
+    "requirementCompilerBuild": 39, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "inputSchema": "gd-requirement-spec/1", "schema": "gd-task-graph/1", "maxNodes": 4096, "maxEdges": 16384,
+    "taskKinds": ["requirement"], "supportingKinds": ["goal","constraint","acceptance","non-goal","context"],
+    "dependencySyntax": "[depends: req-NNNN]", "explicitDependenciesOnly": true, "dependencyInference": false,
+    "dagValidation": true, "dagValidated": true, "cycleRejection": true, "invalidDependencyRejection": true,
+    "deterministic": true, "syntaxDirected": true, "environmentNeutral": true, "exactInputFields": ["spec"],
+    "requirementCompilation": true, "taskGraphCompilation": true, "execution": false, "scheduling": false,
+    "contextCompilation": false, "contextContinuation": false, "tokenAbstraction": false,
+    "attachmentIngestion": false, "mentionResolution": false, "conversationHistory": false,
+    "aiExecution": false, "persistence": false, "networkAuthority": false, "filesystemAuthority": false,
+    "databaseAuthority": false, "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "hierarchicalContextAuthority": {
+    "ownerPackage": "@github-decrypter/context", "ownerSource": "packages/context/src/index.ts", "minimumBuild": 41,
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchemas": ["gd-requirement-spec/1","gd-task-graph/1"], "schema": "gd-hierarchical-context/1",
+    "maxTasks": 4096, "maxLevels": 4096,
+    "globalKinds": ["goal","constraint","acceptance","non-goal","context"],
+    "sourceDigestBinding": "sha256", "deterministic": true, "dependencyAware": true,
+    "hierarchy": "root>levels>tasks", "environmentNeutral": true, "exactInputFields": ["spec","graph"],
+    "requirementCompilation": true, "taskGraphCompilation": true, "contextCompilation": true,
+    "hierarchical": true, "semanticExpansion": false, "contextContinuation": false, "tokenAbstraction": false,
+    "projectMemory": false, "contextPackPersistence": false, "attachmentIngestion": false,
+    "mentionResolution": false, "conversationHistory": false, "aiExecution": false, "execution": false,
+    "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "contextContinuationAuthority": {
+    "ownerPackage": "@github-decrypter/context", "ownerSource": "packages/context/src/continuation.ts", "minimumBuild": 42,
+    "hierarchicalContextBuild": 41, "tokenAbstractionBuild": 43, "conversationEngineBuild": 44,
+    "attachmentEngineBuild": 45, "contextMentionsBuild": 46, "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-hierarchical-context/1", "schema": "gd-context-continuation/1",
+    "rootContextId": "ctx-root", "maxFrames": 4096, "maxLevels": 4096,
+    "sourceDigestBinding": "sha256", "deterministic": true, "sequentialHandoff": true,
+    "dependencyContextCarry": true, "environmentNeutral": true, "exactInputFields": ["context"],
+    "requirementCompilation": true, "taskGraphCompilation": true, "contextCompilation": true,
+    "contextContinuation": true, "semanticExpansion": false, "tokenAbstraction": false,
+    "projectMemory": false, "contextPackPersistence": false, "attachmentIngestion": false,
+    "mentionResolution": false, "conversationHistory": false, "aiExecution": false, "execution": false,
+    "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "tokenAbstractionAuthority": {
+    "ownerPackage": "@github-decrypter/context", "ownerSource": "packages/context/src/token-abstraction.ts", "minimumBuild": 43,
+    "contextContinuationBuild": 42, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-context-continuation/1", "schema": "gd-token-abstraction/1",
+    "rootContextId": "ctx-root", "maxFrames": 4096, "sourceDigestBinding": "sha256",
+    "deterministic": true, "finiteModelWindow": true, "environmentNeutral": true,
+    "exactInputFields": ["continuation","window"], "windowFields": ["contextWindowTokens","reservedOutputTokens"],
+    "metering": "unmeasured", "fitStatus": "unknown", "overflowDecision": "deferred",
+    "requirementCompilation": true, "taskGraphCompilation": true, "contextCompilation": true,
+    "contextContinuation": true, "tokenAbstraction": true, "userFacingRawTokenBudget": false,
+    "infiniteContextClaim": false, "tokenizerExecution": false, "contentTokenEstimation": false,
+    "silentTruncation": false, "semanticCompression": false, "orchestrationRequired": true,
+    "attachmentIngestion": false, "mentionResolution": false, "conversationHistory": false,
+    "projectMemory": false, "contextPackPersistence": false, "aiExecution": false, "execution": false,
+    "persistence": false, "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "storageAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "conversationEngineAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/index.ts", "runtimeOwnerRoot": "apps/local",
+    "minimumBuild": 44, "tokenAbstractionBuild": 43, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "inputSchema": "gd-token-abstraction/1", "schema": "gd-conversation/1",
+    "messageSchema": "gd-conversation-message/1", "dispatchSchema": "gd-conversation-dispatch/1",
+    "storeSchema": "gd-local-conversation-store/1", "maxMessages": 256, "maxTitleCharacters": 160,
+    "maxMessageCharacters": 262144, "roles": ["user","assistant"], "environmentNeutral": true,
+    "workspaceScoped": true, "persistentConversation": true, "jobLifecycleIndependent": true,
+    "localPersistence": true, "persistenceMigration": 12,
+    "persistenceTables": ["gd_conversations","gd_conversation_messages"], "jobForeignKey": false,
+    "fullHistoryOrReject": true, "silentTruncation": false, "tokenAbstraction": true, "finiteModelWindow": true,
+    "voiceContextShared": true, "voiceTransport": false, "providerExecution": false,
+    "attachmentIngestion": false, "mentionResolution": false, "projectMemory": false,
+    "directDatabaseAuthority": false, "networkAuthority": false, "filesystemAuthority": false,
+    "browserAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
+  "attachmentEngineAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/attachments.ts", "runtimeOwnerRoot": "apps/local",
+    "runtimeStoreSource": "apps/local/src/attachment-store.ts", "minimumBuild": 45, "conversationEngineBuild": 44,
+    "contextMentionsBuild": 46, "jobsCenterBuild": 47, "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "schema": "gd-attachment/1", "ingestionSchema": "gd-attachment-ingestion/1", "storeSchema": "gd-local-attachment-store/1",
+    "kinds": ["image","document","code","log","screenshot","structured-data","audio","media"],
+    "maxBytes": 33554432, "maxNameCharacters": 255, "maxPersistedPerConversation": 256,
+    "digestAlgorithm": "sha256", "environmentNeutralCore": true, "workspaceScoped": true, "conversationScoped": true,
+    "messageBindingOptional": true, "localPersistence": true, "persistenceMedium": "filesystem",
+    "atomicDirectoryCommit": true, "payloadIntegrityVerification": true,
+    "conversationContextShared": true, "voiceContextShared": true, "voiceSecondStateAuthority": false,
+    "voiceTransport": false, "speechToText": false, "ocr": false, "contentInterpretation": false,
+    "providerExecution": false, "mentionResolution": false, "jobCreation": false,
+    "networkAuthority": false, "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
+  "contextMentionsAuthority": {
+    "ownerPackage": "@github-decrypter/chat", "ownerSource": "packages/chat/src/mentions.ts", "minimumBuild": 46,
+    "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "jobsCenterBuild": 47,
+    "projectMemoryBuild": 66, "finalContextEngineBuild": 67,
+    "schema": "gd-context-mention/1", "targetSchema": "gd-context-mention-target/1", "resolutionSchema": "gd-context-mention-resolution/1",
+    "kinds": ["file","folder","repository","commit","branch","pull-request","issue","database","preview","terminal"],
+    "maxItems": 64, "maxCatalogItems": 4096, "maxReferenceCharacters": 2048, "maxLabelCharacters": 256,
+    "environmentNeutral": true, "workspaceScoped": true, "conversationScoped": true, "committedUserMessageBinding": true,
+    "explicitCatalogOnly": true, "exactReferenceMatch": true, "structuredReferencesOnly": true, "textualMentionParsing": false,
+    "contentMaterialization": false, "sourceReads": false, "filesystemRead": false, "gitRead": false, "githubRead": false,
+    "databaseRead": false, "previewRead": false, "terminalRead": false, "attachmentIngestion": false,
+    "providerExecution": false, "jobCreation": false, "persistenceMutation": false, "networkAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false, "externalTransport": false
+  },
+  "jobsCenterAuthority": {
+    "ownerRoot": "apps/local", "studioOwnerRoot": "apps/studio", "contractPackage": "@github-decrypter/protocol", "minimumBuild": 47,
+    "durableJobEngineBuild": 12, "crashRecoveryBuild": 13, "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15,
+    "protocolSource": "packages/protocol/src/jobs-center.ts", "runtimeSource": "apps/local/src/jobs-center.ts", "studioClient": "apps/studio/src/jobs-center-client.ts", "studioSurface": "apps/studio/src/JobsCenter.tsx",
+    "jobSchema": "gd-jobs-center-job/1", "listSchema": "gd-jobs-center-list/1", "detailSchema": "gd-jobs-center-detail/1", "controlResultSchema": "gd-jobs-center-control-result/1",
+    "allowedActions": ["pause","resume","cancel","retry"], "enqueue": false, "skip": false, "priorityMutation": false, "schedulerAuthority": false,
+    "durableJobEngineSovereign": true, "safeProjectionOnly": true, "payloadExposed": false, "checkpointContentExposed": false, "resultContentExposed": false,
+    "errorContentExposed": false, "workerIdentityExposed": false, "leaseTokenExposed": false,
+    "loopbackOnly": true, "defaultPort": 43110, "listEndpoint": "/v1/jobs", "detailEndpoint": "/v1/jobs/:id", "controlEndpoint": "/v1/jobs/:id/control",
+    "clientHeader": "gd-studio-jobs-center/1", "corsLoopbackOnly": true, "credentials": false, "backgroundPolling": false,
+    "studioTransport": true, "genericLocalRuntimeTransport": false, "externalTransport": false, "externalNetworkAuthority": false
+  },
+  "planAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/authority.ts", "runtimeOwnerRoot": "apps/local",
+    "runtimeGuardSource": "apps/local/src/plan-authority.ts", "minimumBuild": 48,
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "decisionEngineBuild": 49, "projectRulesBuild": 50,
+    "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54,
+    "scopeLockBuild": 55, "checkpointEngineBuild": 56, "validationPipelineBuild": 57,
+    "inputSchemas": ["gd-requirement-spec/1","gd-task-graph/1"], "schema": "gd-plan-authority/1",
+    "runtimeGuardSchema": "gd-plan-runtime-guard/1", "mode": "PLAN", "maxTasks": 4096, "digestAlgorithm": "sha256",
+    "deterministic": true, "environmentNeutralCore": true, "exactInputFields": ["spec","graph"],
+    "readOnly": true, "runtimeEnforcedReadOnly": true, "explicitApproval": true,
+    "mutatingCapabilitiesBlocked": ["WRITE","EXECUTE","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE"],
+    "buildTransitionAuthorized": false, "decisionEngine": false, "projectRules": false, "impactSimulation": false,
+    "buildOrchestration": false, "toolExecution": false, "scopeIntelligence": false, "scopeLock": false,
+    "checkpoints": false, "validationPipeline": false, "execution": false, "scheduling": false, "persistence": false,
+    "networkAuthority": false, "coreFilesystemAuthority": false, "coreDatabaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
+  "decisionEngineAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/decision.ts", "minimumBuild": 49,
+    "planAuthorityBuild": 48, "projectRulesBuild": 50, "impactSimulationBuild": 51, "buildOrchestratorBuild": 52,
+    "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55, "checkpointEngineBuild": 56,
+    "validationPipelineBuild": 57, "sourcePlanSchema": "gd-plan-authority/1", "schema": "gd-decision-engine/1",
+    "mode": "PLAN", "digestAlgorithm": "sha256", "minAlternatives": 2, "maxAlternatives": 32,
+    "maxTradeoffs": 32, "maxTextCharacters": 65536, "deterministic": true, "environmentNeutral": true,
+    "sourcePlanStatus": "draft", "readOnly": true, "planReadOnlyPreserved": true, "explicitAlternativesOnly": true,
+    "selectionDeclaredByCaller": true, "semanticInference": false, "automaticScoring": false, "decisionEngine": true,
+    "projectRules": false, "impactSimulation": false, "buildTransitionAuthorized": false, "buildOrchestration": false,
+    "toolExecution": false, "scopeIntelligence": false, "scopeLock": false, "checkpoints": false,
+    "validationPipeline": false, "execution": false, "scheduling": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
+  "projectRulesAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/project-rules.ts", "minimumBuild": 50,
+    "planAuthorityBuild": 48, "decisionEngineBuild": 49, "impactSimulationBuild": 51, "buildOrchestratorBuild": 52,
+    "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55, "checkpointEngineBuild": 56,
+    "validationPipelineBuild": 57, "sourcePlanSchema": "gd-plan-authority/1", "schema": "gd-project-rules/1",
+    "mode": "PLAN", "digestAlgorithm": "sha256", "maxRules": 256, "maxTextCharacters": 65536,
+    "maxWorkspaceIdCharacters": 256, "ruleKinds": ["require","forbid","prefer"], "deterministic": true,
+    "environmentNeutral": true, "sourcePlanStatus": "draft", "readOnly": true, "planReadOnlyPreserved": true,
+    "workspaceScoped": true, "explicitRulesOnly": true, "semanticInference": false, "automaticEvaluation": false,
+    "projectRules": true, "impactSimulation": false, "buildTransitionAuthorized": false, "buildOrchestration": false,
+    "toolExecution": false, "scopeIntelligence": false, "scopeLock": false, "checkpoints": false,
+    "validationPipeline": false, "execution": false, "scheduling": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
+  "impactSimulationAuthority": {
+    "ownerPackage": "@github-decrypter/plan", "ownerSource": "packages/plan/src/impact-simulation.ts", "minimumBuild": 51,
+    "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50, "buildOrchestratorBuild": 52,
+    "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55, "checkpointEngineBuild": 56,
+    "validationPipelineBuild": 57, "sourcePlanSchema": "gd-plan-authority/1", "sourceProjectRulesSchema": "gd-project-rules/1",
+    "schema": "gd-impact-simulation/1", "mode": "PLAN", "digestAlgorithm": "sha256", "maxImpacts": 256,
+    "maxReferences": 256, "maxTextCharacters": 65536, "maxAreaCharacters": 256,
+    "effects": ["positive","neutral","negative"], "severities": ["low","medium","high","critical"],
+    "deterministic": true, "environmentNeutral": true, "sourcePlanStatus": "draft", "readOnly": true,
+    "planReadOnlyPreserved": true, "projectRulesReadOnlyPreserved": true, "workspaceScoped": true,
+    "explicitImpactsOnly": true, "semanticInference": false, "automaticEvaluation": false, "impactSimulation": true,
+    "buildTransitionAuthorized": false, "buildOrchestration": false, "toolExecution": false,
+    "scopeIntelligence": false, "scopeLock": false, "checkpoints": false, "validationPipeline": false,
+    "execution": false, "scheduling": false, "persistence": false, "networkAuthority": false,
+    "filesystemAuthority": false, "databaseAuthority": false, "studioTransport": false, "localRuntimeTransport": false
+  },
+  "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
+  "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
+  "workflow": {
+    "writePermissionAllowlist": [".github/workflows/cortex.yml"],
+    "writeScopes": {
+      ".github/workflows/cortex.yml": {
+        "purpose": "generated project map metadata", "allowedGitAddPrefixes": ["graphify-out"], "allowPlainGitPush": true,
+        "allowTags": false, "allowRelease": false, "allowDeploy": false
+      }
+    },
+    "forbiddenWritePermissions": ["actions","checks","contents","deployments","id-token","packages","pull-requests","security-events","statuses"]
+  },
+  "phaseGates": {
+    "localDaemonBuild": 10, "persistentLocalDatabaseBuild": 11, "durableJobEngineBuild": 12, "crashPowerRecoveryBuild": 13,
+    "offlineExecutionBuild": 14, "capabilitySecurityBuild": 15, "secretsVaultBuild": 16, "approvalTransactionsBuild": 17,
+    "auditLedgerBuild": 18, "workspaceManagerBuild": 19, "projectDetectionBuild": 20, "gitRuntimeBuild": 21,
+    "changeTrackingBuild": 22, "githubAppBuild": 23, "githubProviderBuild": 24, "extensionActivationBuild": 25,
+    "repositoryLauncherBuild": 26, "studioReactBuild": 27, "pwaBuild": 28, "designSystemBuild": 29, "ideLayoutBuild": 30,
+    "onboardingBuild": 31, "environmentDoctorBuild": 32, "aiProviderBuild": 33, "localAIRuntimeBuild": 34,
+    "localAIInstallerBuild": 35, "modelManagerBuild": 36, "modelRoutingBuild": 37, "promptIntakeBuild": 38,
+    "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
+    "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
+    "jobsCenterBuild": 47, "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50,
+    "impactSimulationBuild": 51, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+  },
+  "legacyMigrationRoots": ["core", "background", "content", "runtime"],
+  "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }
+}

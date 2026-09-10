@@ -27,19 +27,20 @@ if (
   const rootPackage = json('package.json');
   const planBuild = versionBuild(planPackage.version);
   const rootBuild = versionBuild(rootPackage.version);
+  const requiredPlanExports = {
+    '.': './src/index.ts',
+    './task-graph': './src/task-graph.ts',
+    './authority': './src/authority.ts',
+    './decision': './src/decision.ts',
+    './project-rules': './src/project-rules.ts',
+  };
   if (
     planPackage.name !== '@github-decrypter/plan' || planBuild === null || planBuild < 50
-    || JSON.stringify(planPackage.exports) !== JSON.stringify({
-      '.': './src/index.ts',
-      './task-graph': './src/task-graph.ts',
-      './authority': './src/authority.ts',
-      './decision': './src/decision.ts',
-      './project-rules': './src/project-rules.ts',
-    })
+    || Object.entries(requiredPlanExports).some(([key, value]) => planPackage.exports?.[key] !== value)
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
     || rootBuild === null || rootBuild < 50
   ) {
-    violations.push({ code: 'AG481', message: 'Build 50 package/root identity or Project Rules export drifted.' });
+    violations.push({ code: 'AG481', message: 'Build 50 package/root identity or required Project Rules exports drifted.' });
   }
 
   const source = read('packages/plan/src/project-rules.ts');

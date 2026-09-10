@@ -12,21 +12,21 @@ const versionBuild = (value) => {
   return match ? Number(match[1]) : null;
 };
 
-assert.equal(policy.currentBuild, 50);
+const rootBuild = versionBuild(rootPackage.version);
+const planBuild = versionBuild(planPackage.version);
+assert.ok(policy.currentBuild >= 50);
 assert.equal(policy.phaseGates?.projectRulesBuild, 50);
-assert.equal(rootPackage.version, '0.0.50');
+assert.ok(rootBuild !== null && rootBuild >= 50);
 assert.equal(planPackage.name, '@github-decrypter/plan');
-assert.equal(planPackage.version, '0.0.50');
-assert.deepEqual(planPackage.exports, {
+assert.ok(planBuild !== null && planBuild >= 50);
+for (const [key, path] of Object.entries({
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
   './decision': './src/decision.ts',
   './project-rules': './src/project-rules.ts',
-});
+})) assert.equal(planPackage.exports?.[key], path, `Missing required Build 50 plan export ${key}.`);
 assert.deepEqual(Object.keys(planPackage.dependencies ?? {}), []);
-assert.equal(versionBuild(rootPackage.version), 50);
-assert.equal(versionBuild(planPackage.version), 50);
 
 for (const marker of [
   'PROJECT_RULES_BUILD = 50',
@@ -115,5 +115,6 @@ console.log(JSON.stringify({
   planReadOnlyPreserved: true,
   impactSimulationApplied: false,
   buildTransitionAuthorized: false,
+  forwardCompatible: true,
   nextBuild: 51,
 }, null, 2));

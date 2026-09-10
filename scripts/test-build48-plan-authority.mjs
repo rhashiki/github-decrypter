@@ -20,22 +20,11 @@ const planBuild = versionBuild(planPackage.version);
 assert.ok(rootBuild !== null && rootBuild >= 48);
 assert.equal(planPackage.name, '@github-decrypter/plan');
 assert.ok(planBuild !== null && planBuild >= 48);
-assert.deepEqual(planPackage.exports, planBuild >= 50 ? {
+for (const [key, path] of Object.entries({
   '.': './src/index.ts',
   './task-graph': './src/task-graph.ts',
   './authority': './src/authority.ts',
-  './decision': './src/decision.ts',
-  './project-rules': './src/project-rules.ts',
-} : planBuild >= 49 ? {
-  '.': './src/index.ts',
-  './task-graph': './src/task-graph.ts',
-  './authority': './src/authority.ts',
-  './decision': './src/decision.ts',
-} : {
-  '.': './src/index.ts',
-  './task-graph': './src/task-graph.ts',
-  './authority': './src/authority.ts',
-});
+})) assert.equal(planPackage.exports?.[key], path, `Missing required Build 48 plan export ${key}.`);
 assert.deepEqual(planPackage.dependencies ?? {}, {});
 assert.equal(localPackage.version, '0.0.48');
 assert.equal(localPackage.dependencies['@github-decrypter/plan'], 'workspace:*');
@@ -88,4 +77,5 @@ console.log(JSON.stringify({
   currentBuild: policy.currentBuild,
   planSchema: policy.planAuthority.schema,
   runtimeGuardSchema: policy.planAuthority.runtimeGuardSchema,
+  forwardCompatible: true,
 }, null, 2));

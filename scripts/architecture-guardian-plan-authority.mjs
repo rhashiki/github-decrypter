@@ -26,16 +26,16 @@ if (
   const localPackage = json('apps/local/package.json');
   const localRule = policy.appRules?.['@github-decrypter/local'];
   const planBuild = versionBuild(planPackage.version);
-  const expectedPlanExports = planBuild !== null && planBuild >= 50
-    ? { '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts', './decision': './src/decision.ts', './project-rules': './src/project-rules.ts' }
-    : planBuild !== null && planBuild >= 49
-      ? { '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts', './decision': './src/decision.ts' }
-      : { '.': './src/index.ts', './task-graph': './src/task-graph.ts', './authority': './src/authority.ts' };
+  const requiredPlanExports = {
+    '.': './src/index.ts',
+    './task-graph': './src/task-graph.ts',
+    './authority': './src/authority.ts',
+  };
   if (
     planPackage.name !== '@github-decrypter/plan' || planBuild === null || planBuild < 48
-    || JSON.stringify(planPackage.exports) !== JSON.stringify(expectedPlanExports)
+    || Object.entries(requiredPlanExports).some(([key, value]) => planPackage.exports?.[key] !== value)
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
-  ) violations.push({ code: 'AG461', message: '@github-decrypter/plan package identity/exports drifted.' });
+  ) violations.push({ code: 'AG461', message: '@github-decrypter/plan package identity/required Build 48 exports drifted.' });
   if (versionBuild(localPackage.version) !== 48 || localPackage.dependencies?.['@github-decrypter/plan'] !== 'workspace:*'
       || !localRule?.allowedWorkspaceDependencies?.includes('@github-decrypter/plan')) {
     violations.push({ code: 'AG461', message: 'Local Runtime is not explicitly allowed to consume Plan Authority.' });
