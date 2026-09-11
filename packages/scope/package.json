@@ -1,1 +1,1 @@
-{"name":"@github-decrypter/scope","version":"0.0.54","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc -p tsconfig.json"},"dependencies":{"@github-decrypter/build":"workspace:*"}}
+{"name":"@github-decrypter/scope","version":"0.0.55","private":true,"type":"module","exports":{".":"./src/index.ts","./lock":"./src/lock.ts"},"scripts":{"typecheck":"tsc -p tsconfig.json"},"dependencies":{"@github-decrypter/build":"workspace:*"}}
