@@ -1,1 +1,1 @@
-{"name":"@github-decrypter/tools","version":"0.0.53","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc -p tsconfig.json"},"dependencies":{"@github-decrypter/build":"workspace:*"}}
+{"name":"@github-decrypter/tools","version":"0.0.55","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc -p tsconfig.json"},"dependencies":{"@github-decrypter/build":"workspace:*","@github-decrypter/scope":"workspace:*"}}
