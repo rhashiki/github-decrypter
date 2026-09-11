@@ -18,8 +18,15 @@ assert.ok(versionBuild(rootPackage.version) >= 53);
 assert.equal(toolsPackage.name, '@github-decrypter/tools');
 assert.ok(versionBuild(toolsPackage.version) >= 53);
 assert.equal(toolsPackage.exports, './src/index.ts');
-assert.deepEqual(toolsPackage.dependencies, { '@github-decrypter/build': 'workspace:*' });
-assert.deepEqual(policy.packageRules?.['@github-decrypter/tools']?.allowedWorkspaceDependencies, ['@github-decrypter/build']);
+assert.equal(toolsPackage.dependencies?.['@github-decrypter/build'], 'workspace:*');
+const toolDependencyKeys = Object.keys(toolsPackage.dependencies ?? {}).sort();
+assert.deepEqual(
+  toolDependencyKeys,
+  policy.currentBuild >= 55 ? ['@github-decrypter/build','@github-decrypter/scope'] : ['@github-decrypter/build'],
+);
+const toolAllowedDependencies = policy.packageRules?.['@github-decrypter/tools']?.allowedWorkspaceDependencies ?? [];
+assert.ok(toolAllowedDependencies.includes('@github-decrypter/build'));
+if (policy.currentBuild >= 55) assert.ok(toolAllowedDependencies.includes('@github-decrypter/scope'));
 assert.equal(policy.packageRules?.['@github-decrypter/tools']?.environmentNeutral, true);
 
 for (const marker of [
@@ -76,6 +83,11 @@ for (const field of [
   'scheduling','jobCreation','persistence','networkAuthority','filesystemAuthority','databaseAuthority',
   'studioTransport','localRuntimeTransport',
 ]) assert.equal(authority[field], false, `Tool Runtime authority boundary drifted: ${field}`);
+if (policy.currentBuild >= 55) {
+  assert.equal(authority.scopeLockConsumer, true);
+  assert.equal(authority.scopedMutationAuthorization, true);
+  assert.equal(authority.mutatingToolsBlockedWithoutScopeLock, true);
+}
 
 console.log(JSON.stringify({
   ok: true,
