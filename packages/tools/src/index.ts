@@ -3,9 +3,16 @@ import {
   type BuildOrchestratorRecord,
   type BuildStep,
 } from '@github-decrypter/build';
+import {
+  assertCanonicalScopeLock,
+  assertScopeLockAllowsMutation,
+  type ScopeLockRecord,
+  type ScopeMutationAccess,
+} from '@github-decrypter/scope/lock';
 
 export const packageIdentity = '@github-decrypter/tools' as const;
 export const TOOL_RUNTIME_BUILD = 53 as const;
+export const TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55 as const;
 export const TOOL_RUNTIME_SCHEMA = 'gd-tool-runtime/1' as const;
 export const TOOL_RUNTIME_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1' as const;
 export const TOOL_RUNTIME_MODE = 'BUILD' as const;
@@ -21,6 +28,7 @@ export const TOOL_RUNTIME_CAPABILITIES = Object.freeze([
   'DESTRUCTIVE',
   'SECRETS',
 ] as const);
+const MUTATING_CAPABILITIES = new Set<ToolCapability>(['WRITE','EXECUTE','DATABASE_WRITE','GIT_WRITE','DESTRUCTIVE']);
 
 export type ToolCapability = (typeof TOOL_RUNTIME_CAPABILITIES)[number];
 export type ToolValue = null | boolean | number | string | readonly ToolValue[] | { readonly [key: string]: ToolValue };
@@ -50,12 +58,16 @@ export interface ToolExecutionContext {
   readonly workspaceId: string;
   readonly sourceOrchestrationId: string;
   readonly sourceOrchestrationDigest: string;
+  readonly sourceScopeLockId: string | null;
+  readonly sourceScopeLockDigest: string | null;
+  readonly scopeCandidateId: string | null;
+  readonly mutationAccess: ScopeMutationAccess | null;
   readonly step: BuildStep;
   readonly tool: ToolDescriptor;
   readonly verifiedCapabilities: readonly ToolCapability[];
-  readonly mutationAuthorized: false;
+  readonly mutationAuthorized: boolean;
   readonly scopeLockRequired: true;
-  readonly scopeLock: false;
+  readonly scopeLock: boolean;
 }
 
 export type ToolHandler = (context: ToolExecutionContext, input: ToolValue) => ToolValue | Promise<ToolValue>;
@@ -69,12 +81,15 @@ export interface ToolRuntimeInput {
   readonly orchestration: BuildOrchestratorRecord;
   readonly tools: readonly ToolRegistration[];
   readonly verifyCapability: CapabilityVerifier;
+  readonly scopeLock?: ScopeLockRecord;
 }
 
 export interface ToolInvocationInput {
   readonly stepId: string;
   readonly toolId: string;
   readonly input: ToolValue;
+  readonly scopeCandidateId?: string;
+  readonly mutationAccess?: ScopeMutationAccess;
 }
 
 export interface ToolInvocationDigest {
@@ -87,6 +102,10 @@ export interface ToolInvocationRecord {
   readonly sourceBuildSchema: typeof TOOL_RUNTIME_SOURCE_BUILD_SCHEMA;
   readonly sourceOrchestrationId: string;
   readonly sourceOrchestrationDigest: string;
+  readonly sourceScopeLockId: string | null;
+  readonly sourceScopeLockDigest: string | null;
+  readonly scopeCandidateId: string | null;
+  readonly mutationAccess: ScopeMutationAccess | null;
   readonly id: string;
   readonly revision: 1;
   readonly mode: typeof TOOL_RUNTIME_MODE;
@@ -104,10 +123,10 @@ export interface ToolInvocationRecord {
   readonly capabilityGrantAuthority: false;
   readonly toolExecution: true;
   readonly execution: true;
-  readonly mutationAuthorized: false;
+  readonly mutationAuthorized: boolean;
   readonly scopeIntelligence: false;
   readonly scopeLockRequired: true;
-  readonly scopeLock: false;
+  readonly scopeLock: boolean;
   readonly checkpoints: false;
   readonly validationPipeline: false;
   readonly scheduling: false;
@@ -120,6 +139,8 @@ export interface ToolRuntime {
   readonly sourceBuildSchema: typeof TOOL_RUNTIME_SOURCE_BUILD_SCHEMA;
   readonly sourceOrchestrationId: string;
   readonly sourceOrchestrationDigest: string;
+  readonly sourceScopeLockId: string | null;
+  readonly sourceScopeLockDigest: string | null;
   readonly revision: 1;
   readonly mode: typeof TOOL_RUNTIME_MODE;
   readonly status: 'ready';
@@ -135,7 +156,7 @@ export interface ToolRuntime {
   readonly mutationAuthorized: false;
   readonly scopeIntelligence: false;
   readonly scopeLockRequired: true;
-  readonly scopeLock: false;
+  readonly scopeLock: boolean;
   readonly checkpoints: false;
   readonly validationPipeline: false;
   readonly scheduling: false;
@@ -160,7 +181,7 @@ export class ToolRuntimeCapabilityError extends Error {
 export class ToolRuntimeMutationBlockedError extends Error {
   readonly code = 'TOOL_RUNTIME_MUTATION_BLOCKED' as const;
   constructor(readonly toolId: string) {
-    super(`Tool ${toolId} is mutating and remains blocked until Scope Lock authority is available.`);
+    super(`Tool ${toolId} is mutating and remains blocked until a canonical Scope Lock covers the exact candidate, Build step and mutation access.`);
     this.name = 'ToolRuntimeMutationBlockedError';
   }
 }
@@ -172,7 +193,7 @@ const SHA256_K = Object.freeze([
   0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
   0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
   0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
-  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0b3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
   0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2,
 ] as const);
 
@@ -358,12 +379,11 @@ function normalizeDescriptor(value: ToolDescriptor): ToolDescriptor {
   const label = typeof value.label === 'string' ? value.label.trim() : '';
   if (label.length === 0 || label.length > 128) throw new TypeError('Tool Runtime tool label is invalid.');
   if (typeof value.mutating !== 'boolean') throw new TypeError('Tool Runtime tool mutation declaration must be explicit.');
-  return Object.freeze({
-    id: value.id,
-    label,
-    requiredCapabilities: normalizeCapabilities(value.requiredCapabilities),
-    mutating: value.mutating,
-  });
+  const requiredCapabilities = normalizeCapabilities(value.requiredCapabilities);
+  if (value.mutating && !requiredCapabilities.some((capability) => MUTATING_CAPABILITIES.has(capability))) {
+    throw new TypeError('Tool Runtime mutating tools require at least one mutating capability.');
+  }
+  return Object.freeze({ id: value.id, label, requiredCapabilities, mutating: value.mutating });
 }
 
 function canonicalInvocationMaterial(
@@ -371,8 +391,11 @@ function canonicalInvocationMaterial(
   step: BuildStep,
   descriptor: ToolDescriptor,
   input: ToolValue,
+  lock: ScopeLockRecord | undefined,
+  scopeCandidateId: string | null,
+  mutationAccess: ScopeMutationAccess | null,
 ): string {
-  return JSON.stringify({
+  const base = {
     schema: TOOL_RUNTIME_SCHEMA,
     sourceBuildSchema: TOOL_RUNTIME_SOURCE_BUILD_SCHEMA,
     sourceOrchestrationId: orchestration.id,
@@ -383,17 +406,30 @@ function canonicalInvocationMaterial(
     requiredCapabilities: [...descriptor.requiredCapabilities],
     mutating: descriptor.mutating,
     input: JSON.parse(canonicalToolValue(input)),
+  };
+  if (!descriptor.mutating) return JSON.stringify(base);
+  return JSON.stringify({
+    ...base,
+    sourceScopeLockId: lock!.id,
+    sourceScopeLockDigest: lock!.lockDigest.hex,
+    scopeCandidateId,
+    mutationAccess,
   });
 }
 
 export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('Tool Runtime input must be an object.');
   const row = input as unknown as Record<string, unknown>;
-  if (JSON.stringify(Object.keys(row).sort()) !== JSON.stringify(['orchestration','tools','verifyCapability'])) {
-    throw new TypeError('Tool Runtime input accepts only orchestration, tools and verifyCapability.');
+  const inputKeys = Object.keys(row).sort();
+  const baseKeys = ['orchestration','tools','verifyCapability'];
+  const scopedKeys = ['orchestration','scopeLock','tools','verifyCapability'];
+  if (JSON.stringify(inputKeys) !== JSON.stringify(baseKeys) && JSON.stringify(inputKeys) !== JSON.stringify(scopedKeys)) {
+    throw new TypeError('Tool Runtime input accepts only orchestration, tools, verifyCapability and optional scopeLock.');
   }
   assertCanonicalOrchestration(row.orchestration);
   const orchestration = row.orchestration;
+  const scopeLock = row.scopeLock as ScopeLockRecord | undefined;
+  if (scopeLock !== undefined) assertCanonicalScopeLock(scopeLock, orchestration);
   if (!Array.isArray(row.tools) || row.tools.length === 0 || row.tools.length > TOOL_RUNTIME_MAX_TOOLS) {
     throw new TypeError(`Tool Runtime requires between 1 and ${TOOL_RUNTIME_MAX_TOOLS} registered tools.`);
   }
@@ -417,17 +453,40 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
   async function invoke(invocation: ToolInvocationInput): Promise<ToolInvocationRecord> {
     if (!invocation || typeof invocation !== 'object' || Array.isArray(invocation)) throw new TypeError('Tool Runtime invocation must be an object.');
     const invocationRow = invocation as unknown as Record<string, unknown>;
-    if (JSON.stringify(Object.keys(invocationRow).sort()) !== JSON.stringify(['input','stepId','toolId'])) {
-      throw new TypeError('Tool Runtime invocation accepts only stepId, toolId and input.');
-    }
     const step = typeof invocation.stepId === 'string' ? stepById.get(invocation.stepId) : undefined;
     if (!step) throw new TypeError('Tool Runtime invocation references an unknown Build step.');
     const registration = typeof invocation.toolId === 'string' ? registrations.get(invocation.toolId) : undefined;
     if (!registration) throw new TypeError('Tool Runtime invocation references an unknown tool.');
-    if (registration.descriptor.mutating) throw new ToolRuntimeMutationBlockedError(registration.descriptor.id);
+
+    let scopeCandidateId: string | null = null;
+    let mutationAccess: ScopeMutationAccess | null = null;
+    let mutationAuthorized = false;
+    if (registration.descriptor.mutating) {
+      if (!scopeLock) throw new ToolRuntimeMutationBlockedError(registration.descriptor.id);
+      if (JSON.stringify(Object.keys(invocationRow).sort()) !== JSON.stringify(['input','mutationAccess','scopeCandidateId','stepId','toolId'])) {
+        throw new TypeError('Mutating Tool Runtime invocation requires exactly stepId, toolId, input, scopeCandidateId and mutationAccess.');
+      }
+      if (typeof invocation.scopeCandidateId !== 'string' || (invocation.mutationAccess !== 'write' && invocation.mutationAccess !== 'execute')) {
+        throw new TypeError('Mutating Tool Runtime invocation requires a canonical scope candidate and mutation access.');
+      }
+      assertScopeLockAllowsMutation(scopeLock, orchestration, invocation.scopeCandidateId, step.id, invocation.mutationAccess);
+      scopeCandidateId = invocation.scopeCandidateId;
+      mutationAccess = invocation.mutationAccess;
+      mutationAuthorized = true;
+    } else if (JSON.stringify(Object.keys(invocationRow).sort()) !== JSON.stringify(['input','stepId','toolId'])) {
+      throw new TypeError('Non-mutating Tool Runtime invocation accepts only stepId, toolId and input.');
+    }
 
     const immutableInput = immutableToolValue(invocation.input);
-    const invocationDigestHex = sha256Hex(canonicalInvocationMaterial(orchestration, step, registration.descriptor, immutableInput));
+    const invocationDigestHex = sha256Hex(canonicalInvocationMaterial(
+      orchestration,
+      step,
+      registration.descriptor,
+      immutableInput,
+      scopeLock,
+      scopeCandidateId,
+      mutationAccess,
+    ));
     const invocationId = `tool-invocation-${invocationDigestHex.slice(0, 16)}`;
     const verifiedCapabilities: ToolCapability[] = [];
     for (const capability of registration.descriptor.requiredCapabilities) {
@@ -449,12 +508,16 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
       workspaceId: orchestration.workspaceId,
       sourceOrchestrationId: orchestration.id,
       sourceOrchestrationDigest: orchestration.orchestrationDigest.hex,
+      sourceScopeLockId: scopeLock?.id ?? null,
+      sourceScopeLockDigest: scopeLock?.lockDigest.hex ?? null,
+      scopeCandidateId,
+      mutationAccess,
       step,
       tool: registration.descriptor,
       verifiedCapabilities: Object.freeze(verifiedCapabilities),
-      mutationAuthorized: false,
+      mutationAuthorized,
       scopeLockRequired: true,
-      scopeLock: false,
+      scopeLock: scopeLock !== undefined,
     });
     const result = immutableToolValue(await registration.handler(context, immutableInput));
     const invocationDigest = Object.freeze({ algorithm: TOOL_RUNTIME_DIGEST_ALGORITHM, hex: invocationDigestHex });
@@ -463,6 +526,10 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
       sourceBuildSchema: TOOL_RUNTIME_SOURCE_BUILD_SCHEMA,
       sourceOrchestrationId: orchestration.id,
       sourceOrchestrationDigest: orchestration.orchestrationDigest.hex,
+      sourceScopeLockId: scopeLock?.id ?? null,
+      sourceScopeLockDigest: scopeLock?.lockDigest.hex ?? null,
+      scopeCandidateId,
+      mutationAccess,
       id: invocationId,
       revision: 1,
       mode: TOOL_RUNTIME_MODE,
@@ -480,10 +547,10 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
       capabilityGrantAuthority: false,
       toolExecution: true,
       execution: true,
-      mutationAuthorized: false,
+      mutationAuthorized,
       scopeIntelligence: false,
       scopeLockRequired: true,
-      scopeLock: false,
+      scopeLock: scopeLock !== undefined,
       checkpoints: false,
       validationPipeline: false,
       scheduling: false,
@@ -497,6 +564,8 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
     sourceBuildSchema: TOOL_RUNTIME_SOURCE_BUILD_SCHEMA,
     sourceOrchestrationId: orchestration.id,
     sourceOrchestrationDigest: orchestration.orchestrationDigest.hex,
+    sourceScopeLockId: scopeLock?.id ?? null,
+    sourceScopeLockDigest: scopeLock?.lockDigest.hex ?? null,
     revision: 1,
     mode: TOOL_RUNTIME_MODE,
     status: 'ready',
@@ -512,7 +581,7 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
     mutationAuthorized: false,
     scopeIntelligence: false,
     scopeLockRequired: true,
-    scopeLock: false,
+    scopeLock: scopeLock !== undefined,
     checkpoints: false,
     validationPipeline: false,
     scheduling: false,
