@@ -29,13 +29,19 @@ if (
   const toolsVersion = versionBuild(toolsPackage.version);
   const rootBuild = versionBuild(rootPackage.version);
   const packageRule = policy.packageRules?.['@github-decrypter/tools'];
+  const expectedToolDependencies = policy.currentBuild >= 55
+    ? ['@github-decrypter/build','@github-decrypter/scope']
+    : ['@github-decrypter/build'];
   if (
     toolsPackage.name !== '@github-decrypter/tools' || toolsVersion === null || toolsVersion < 53
     || toolsPackage.exports !== './src/index.ts'
-    || JSON.stringify(toolsPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/build': 'workspace:*' })
+    || toolsPackage.dependencies?.['@github-decrypter/build'] !== 'workspace:*'
+    || JSON.stringify(Object.keys(toolsPackage.dependencies ?? {}).sort()) !== JSON.stringify(expectedToolDependencies)
     || rootBuild === null || rootBuild < 53
     || !packageRule || packageRule.environmentNeutral !== true
-    || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/build'])
+    || !Array.isArray(packageRule.allowedWorkspaceDependencies)
+    || !packageRule.allowedWorkspaceDependencies.includes('@github-decrypter/build')
+    || (policy.currentBuild >= 55 && !packageRule.allowedWorkspaceDependencies.includes('@github-decrypter/scope'))
   ) violations.push({ code: 'AG511', message: 'Build 53 package/root identity, dependency boundary or package authority drifted.' });
 
   const source = read('packages/tools/src/index.ts');
@@ -76,7 +82,7 @@ if (
       || rule.denyByDefault !== true || rule.capabilityVerifierRequired !== true || rule.capabilityGrantAuthority !== false
       || rule.handlerDispatch !== true || rule.toolExecution !== true || rule.execution !== true
       || rule.mutatingToolsBlocked !== true || rule.scopeLockRequired !== true || rule.mutationAuthorized !== false) {
-    violations.push({ code: 'AG515', message: 'Tool Runtime capability or execute-without-mutate boundary drifted.' });
+    violations.push({ code: 'AG515', message: 'Tool Runtime capability or default execute-without-mutate boundary drifted.' });
   }
   for (const marker of [
     'verifyCapability',
@@ -88,6 +94,15 @@ if (
     'denyByDefault: true',
     'scopeLockRequired: true',
   ]) if (!source.includes(marker)) violations.push({ code: 'AG515', message: 'Tool Runtime capability enforcement is incomplete.', detail: marker });
+  if (policy.currentBuild >= 55) {
+    if (rule.scopeLockConsumer !== true || rule.scopedMutationAuthorization !== true
+        || rule.mutatingToolsBlockedWithoutScopeLock !== true
+        || !source.includes('TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55')
+        || !source.includes('assertCanonicalScopeLock(')
+        || !source.includes('assertScopeLockAllowsMutation(')) {
+      violations.push({ code: 'AG515', message: 'Tool Runtime Build 55 Scope Lock integration drifted.' });
+    }
+  }
 
   const downstream = {
     scopeIntelligenceBuild: 54,
