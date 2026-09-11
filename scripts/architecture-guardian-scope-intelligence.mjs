@@ -30,9 +30,12 @@ if (
   const scopeVersion = versionBuild(scopePackage.version);
   const rootBuild = versionBuild(rootPackage.version);
   const packageRule = policy.packageRules?.['@github-decrypter/scope'];
+  const expectedExports = scopeVersion !== null && scopeVersion >= 55
+    ? { '.': './src/index.ts', './lock': './src/lock.ts' }
+    : './src/index.ts';
   if (
     scopePackage.name !== '@github-decrypter/scope' || scopeVersion === null || scopeVersion < 54
-    || scopePackage.exports !== './src/index.ts'
+    || JSON.stringify(scopePackage.exports) !== JSON.stringify(expectedExports)
     || JSON.stringify(scopePackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/build': 'workspace:*' })
     || rootBuild === null || rootBuild < 54
     || !packageRule || packageRule.environmentNeutral !== true
