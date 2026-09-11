@@ -90,7 +90,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 61. **Database Agent**
 62. **Testing Agent** — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
 63. **Review Agent**
-64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; **Viktor Interaction Layer** becomes the canonical outward conversational presence of that team without becoming a tenth agent or gaining independent execution authority.
+64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; **Viktor Interaction Layer** becomes the canonical outward conversational presence of that team without becoming a tenth agent or gaining independent execution authority. Build 64 must also expose the canonical visible **Viktor activation toggle**: Viktor voice is `OFF` by default at each new application session, can start only after explicit user activation, and must stop microphone capture/realtime voice transport immediately when switched `OFF`.
 
 ## Knowledge and context integration
 
@@ -194,7 +194,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 - Adaptive User Profile → Builds 31 and 108.
 - Agent Orchestrator → Build 64.
 - Named Agent System → Builds 58 and 64.
-- **Viktor Interaction Layer → Build 64 (canonical outward presence), Build 70 (live Preview context), Builds 103–105 (visual/deictic interaction and authorized Visual Build), Build 108 (adaptive communication); reuses Voice Interaction foundation from Builds 44–45.**
+- **Viktor Interaction Layer → Build 64 (canonical outward presence + explicit per-session activation toggle/session lifecycle), Build 70 (live Preview context), Builds 103–105 (visual/deictic interaction and authorized Visual Build), Build 108 (adaptive communication); reuses Voice Interaction foundation from Builds 44–45.**
 - Mentor Engine → Build 108.
 - Explain This → Build 108, exposed contextually by appropriate UI surfaces.
 - Voice Interaction → Builds 44 and 45; consumed by Viktor without reopening those completed Builds.
@@ -208,10 +208,12 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 Viktor is the official real-time voice/presence interface of Vortex Ars AI, **not a tenth agent**. It may receive natural spoken requests, communicate coordinated agent progress and speak validated outcomes, but voice/conversation does not grant capabilities, bypass Scope Lock, bypass approvals, execute tools outside canonical runtime authorities or authorize production mutation.
 
+Viktor voice is **explicitly user-activated**. Every new application session begins with Viktor `OFF`. The Studio must expose a visible Viktor toggle; only an explicit `ON` action may begin the voice session/microphone flow. Switching `OFF` must stop microphone capture and realtime voice transport immediately and must not delete canonical conversation history. No hidden wake-word/background listener or automatic listening after restart is authorized.
+
 The target voice is original, realistic and human-sounding with natural prosody, calm confidence, restrained warmth, provider-independent realtime transport, barge-in where supported and Brazilian Portuguese as a first-class locale. It must not clone or imitate J.A.R.V.I.S., Paul Bettany or another identifiable person/protected character performance.
 
 ## Governance
 
 No item in this roadmap authorizes production release, OTA, browser-store publication, production database mutation, production deployment or DNS mutation merely by being completed. Those actions remain subject to explicit authorization and the applicable later policies.
 
-No decimal/ad-hoc Build numbering is permitted. New ideas outside the adopted V1 authorities follow the RFC process unless explicitly adopted through a recorded constitutional amendment. Viktor is adopted through `CONSTITUTION_AMENDMENT_002_VIKTOR_INTERACTION_LAYER.md`.
+No decimal/ad-hoc Build numbering is permitted. New ideas outside the adopted V1 authorities follow the RFC process unless explicitly adopted through a recorded constitutional amendment. Viktor is adopted through `CONSTITUTION_AMENDMENT_002_VIKTOR_INTERACTION_LAYER.md`; explicit user-controlled activation is adopted through `CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md`.
