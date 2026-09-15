@@ -12,6 +12,7 @@ import {
 } from '@github-decrypter/scope/lock';
 import {
   TOOL_RUNTIME_CAPABILITIES,
+  TOOL_RUNTIME_COMPLETION_SCHEMA,
   TOOL_RUNTIME_DIGEST_ALGORITHM,
   TOOL_RUNTIME_SCHEMA,
   type ToolCapability,
@@ -49,6 +50,7 @@ export interface CheckpointRecord {
   readonly sourceOrchestrationDigest: CheckpointDigest;
   readonly sourceInvocationId: string;
   readonly sourceInvocationDigest: CheckpointDigest;
+  readonly sourceCompletionDigest: CheckpointDigest;
   readonly sourceScopeLockId: string | null;
   readonly sourceScopeLockDigest: CheckpointDigest | null;
   readonly sourceInvocation: ToolInvocationRecord;
@@ -242,11 +244,7 @@ function assertCanonicalOrchestration(value: unknown): asserts value is BuildOrc
   }
 }
 
-function canonicalInvocationMaterial(
-  orchestration: BuildOrchestratorRecord,
-  step: BuildStep,
-  invocation: ToolInvocationRecord,
-): string {
+function canonicalInvocationMaterial(orchestration: BuildOrchestratorRecord, step: BuildStep, invocation: ToolInvocationRecord): string {
   const base = {
     schema: TOOL_RUNTIME_SCHEMA,
     sourceBuildSchema: invocation.sourceBuildSchema,
@@ -260,19 +258,20 @@ function canonicalInvocationMaterial(
     input: JSON.parse(canonicalToolValue(invocation.input)),
   };
   if (!invocation.mutationAuthorized) return JSON.stringify(base);
+  return JSON.stringify({ ...base, sourceScopeLockId: invocation.sourceScopeLockId, sourceScopeLockDigest: invocation.sourceScopeLockDigest,
+    scopeCandidateId: invocation.scopeCandidateId, mutationAccess: invocation.mutationAccess });
+}
+
+function canonicalCompletionMaterial(invocation: ToolInvocationRecord): string {
   return JSON.stringify({
-    ...base,
-    sourceScopeLockId: invocation.sourceScopeLockId,
-    sourceScopeLockDigest: invocation.sourceScopeLockDigest,
-    scopeCandidateId: invocation.scopeCandidateId,
-    mutationAccess: invocation.mutationAccess,
+    schema: TOOL_RUNTIME_COMPLETION_SCHEMA,
+    invocationDigest: invocation.invocationDigest,
+    result: JSON.parse(canonicalToolValue(invocation.result)),
   });
 }
 
 function assertCapabilities(value: readonly ToolCapability[]): void {
-  if (!Array.isArray(value) || value.length === 0 || value.length > TOOL_RUNTIME_CAPABILITIES.length) {
-    throw new TypeError('Checkpoint Engine requires canonical Tool Runtime capabilities.');
-  }
+  if (!Array.isArray(value) || value.length === 0 || value.length > TOOL_RUNTIME_CAPABILITIES.length) throw new TypeError('Checkpoint Engine requires canonical Tool Runtime capabilities.');
   const allowed = new Set<string>(TOOL_RUNTIME_CAPABILITIES);
   const seen = new Set<string>();
   for (const capability of value) {
@@ -283,23 +282,18 @@ function assertCapabilities(value: readonly ToolCapability[]): void {
   if (JSON.stringify(value) !== JSON.stringify(canonical)) throw new TypeError('Checkpoint Engine Tool Runtime capabilities are not canonical.');
 }
 
-function assertCanonicalInvocation(
-  value: unknown,
-  orchestration: BuildOrchestratorRecord,
-  scopeLock: ScopeLockRecord | undefined,
-): asserts value is ToolInvocationRecord {
+function assertCanonicalInvocation(value: unknown, orchestration: BuildOrchestratorRecord, scopeLock: ScopeLockRecord | undefined): asserts value is ToolInvocationRecord {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Checkpoint Engine requires a completed Tool Runtime invocation.');
   const row = value as Record<string, unknown>;
-  if (row.schema !== TOOL_RUNTIME_SCHEMA || row.sourceBuildSchema !== CHECKPOINT_ENGINE_SOURCE_BUILD_SCHEMA
-      || row.revision !== 1 || row.mode !== CHECKPOINT_ENGINE_MODE || row.status !== 'completed'
-      || row.sourceOrchestrationId !== orchestration.id || row.sourceOrchestrationDigest !== orchestration.orchestrationDigest.hex
-      || row.workspaceId !== orchestration.workspaceId || typeof row.stepId !== 'string' || typeof row.toolId !== 'string'
-      || !/^tool:[a-z0-9]+(?:[._-][a-z0-9]+)*$/.test(row.toolId) || row.immutable !== true
-      || row.denyByDefault !== true || row.capabilityVerifierRequired !== true || row.capabilityGrantAuthority !== false
-      || row.toolExecution !== true || row.execution !== true || row.scopeIntelligence !== false
-      || row.scopeLockRequired !== true || row.checkpoints !== false || row.validationPipeline !== false
-      || row.scheduling !== false || row.jobCreation !== false || row.persistence !== false
-      || !Array.isArray(row.requiredCapabilities)) {
+  if (row.schema !== TOOL_RUNTIME_SCHEMA || row.sourceBuildSchema !== CHECKPOINT_ENGINE_SOURCE_BUILD_SCHEMA || row.revision !== 1
+      || row.mode !== CHECKPOINT_ENGINE_MODE || row.status !== 'completed' || row.sourceOrchestrationId !== orchestration.id
+      || row.sourceOrchestrationDigest !== orchestration.orchestrationDigest.hex || row.workspaceId !== orchestration.workspaceId
+      || typeof row.stepId !== 'string' || typeof row.toolId !== 'string' || !/^tool:[a-z0-9]+(?:[._-][a-z0-9]+)*$/.test(row.toolId)
+      || row.immutable !== true || row.denyByDefault !== true || row.capabilityVerifierRequired !== true
+      || row.capabilityGrantAuthority !== false || row.toolExecution !== true || row.execution !== true
+      || typeof row.mutationAuthorized !== 'boolean' || row.scopeIntelligence !== false || row.scopeLockRequired !== true
+      || row.checkpoints !== false || row.validationPipeline !== false || row.scheduling !== false || row.jobCreation !== false
+      || row.persistence !== false || !Array.isArray(row.requiredCapabilities)) {
     throw new TypeError('Checkpoint Engine requires a canonical immutable completed Tool Runtime invocation.');
   }
   const invocation = value as ToolInvocationRecord;
@@ -308,7 +302,6 @@ function assertCanonicalInvocation(
   canonicalToolValue(invocation.result);
   const step = orchestration.steps.find((item) => item.id === invocation.stepId);
   if (!step) throw new TypeError('Checkpoint Engine Tool Runtime invocation references an unknown Build step.');
-
   const hasLockIdentity = invocation.sourceScopeLockId !== null || invocation.sourceScopeLockDigest !== null || invocation.scopeLock;
   if (hasLockIdentity) {
     if (!scopeLock) throw new TypeError('Checkpoint Engine requires the canonical Scope Lock referenced by the Tool Runtime invocation.');
@@ -316,10 +309,7 @@ function assertCanonicalInvocation(
     if (invocation.sourceScopeLockId !== scopeLock.id || invocation.sourceScopeLockDigest !== scopeLock.lockDigest.hex || invocation.scopeLock !== true) {
       throw new TypeError('Checkpoint Engine Tool Runtime invocation Scope Lock binding does not match canonical Scope Lock.');
     }
-  } else if (scopeLock !== undefined) {
-    throw new TypeError('Checkpoint Engine received a Scope Lock that is not referenced by the Tool Runtime invocation.');
-  }
-
+  } else if (scopeLock !== undefined) throw new TypeError('Checkpoint Engine received a Scope Lock that is not referenced by the Tool Runtime invocation.');
   if (invocation.mutationAuthorized) {
     if (!scopeLock || invocation.scopeCandidateId === null || (invocation.mutationAccess !== 'write' && invocation.mutationAccess !== 'execute')) {
       throw new TypeError('Checkpoint Engine mutating invocation is missing its canonical Scope Lock mutation binding.');
@@ -328,22 +318,20 @@ function assertCanonicalInvocation(
   } else if (invocation.scopeCandidateId !== null || invocation.mutationAccess !== null) {
     throw new TypeError('Checkpoint Engine non-mutating invocation cannot carry mutation candidate or access authority.');
   }
-
   if (invocation.invocationDigest.algorithm !== TOOL_RUNTIME_DIGEST_ALGORITHM || !/^[0-9a-f]{64}$/.test(invocation.invocationDigest.hex)) {
     throw new TypeError('Checkpoint Engine Tool Runtime invocation digest is invalid.');
   }
-  const expectedDigest = sha256Hex(canonicalInvocationMaterial(orchestration, step, invocation));
-  if (invocation.invocationDigest.hex !== expectedDigest || invocation.id !== `tool-invocation-${expectedDigest.slice(0, 16)}`) {
+  const expectedInvocationDigest = sha256Hex(canonicalInvocationMaterial(orchestration, step, invocation));
+  if (invocation.invocationDigest.hex !== expectedInvocationDigest || invocation.id !== `tool-invocation-${expectedInvocationDigest.slice(0, 16)}`) {
     throw new TypeError('Checkpoint Engine Tool Runtime invocation digest does not match canonical invocation material.');
+  }
+  if (invocation.completionDigest.algorithm !== TOOL_RUNTIME_DIGEST_ALGORITHM || !/^[0-9a-f]{64}$/.test(invocation.completionDigest.hex)
+      || invocation.completionDigest.hex !== sha256Hex(canonicalCompletionMaterial(invocation))) {
+    throw new TypeError('Checkpoint Engine Tool Runtime completion digest does not match completed result material.');
   }
 }
 
-function canonicalCheckpointMaterial(
-  orchestration: BuildOrchestratorRecord,
-  invocation: ToolInvocationRecord,
-  inputDigest: CheckpointDigest,
-  resultDigest: CheckpointDigest,
-): string {
+function canonicalCheckpointMaterial(orchestration: BuildOrchestratorRecord, invocation: ToolInvocationRecord, inputDigest: CheckpointDigest, resultDigest: CheckpointDigest): string {
   return JSON.stringify({
     schema: CHECKPOINT_ENGINE_SCHEMA,
     sourceBuildSchema: CHECKPOINT_ENGINE_SOURCE_BUILD_SCHEMA,
@@ -353,6 +341,7 @@ function canonicalCheckpointMaterial(
     sourceOrchestrationDigest: orchestration.orchestrationDigest,
     sourceInvocationId: invocation.id,
     sourceInvocationDigest: invocation.invocationDigest,
+    sourceCompletionDigest: invocation.completionDigest,
     sourceScopeLockId: invocation.sourceScopeLockId,
     sourceScopeLockDigest: invocation.sourceScopeLockDigest === null ? null : digest(invocation.sourceScopeLockDigest),
     mode: CHECKPOINT_ENGINE_MODE,
@@ -373,9 +362,7 @@ export function createCheckpoint(input: CheckpointEngineInput): CheckpointRecord
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('Checkpoint Engine input must be an object.');
   const row = input as unknown as Record<string, unknown>;
   const keys = Object.keys(row).sort();
-  const unscoped = ['invocation','orchestration'];
-  const scoped = ['invocation','orchestration','scopeLock'];
-  if (JSON.stringify(keys) !== JSON.stringify(unscoped) && JSON.stringify(keys) !== JSON.stringify(scoped)) {
+  if (JSON.stringify(keys) !== JSON.stringify(['invocation','orchestration']) && JSON.stringify(keys) !== JSON.stringify(['invocation','orchestration','scopeLock'])) {
     throw new TypeError('Checkpoint Engine input accepts only orchestration, invocation and optional scopeLock.');
   }
   assertCanonicalOrchestration(row.orchestration);
@@ -386,8 +373,6 @@ export function createCheckpoint(input: CheckpointEngineInput): CheckpointRecord
   const inputDigest = digest(sha256Hex(canonicalToolValue(invocation.input)));
   const resultDigest = digest(sha256Hex(canonicalToolValue(invocation.result)));
   const digestHex = sha256Hex(canonicalCheckpointMaterial(orchestration, invocation, inputDigest, resultDigest));
-  const checkpointDigest = digest(digestHex);
-
   return Object.freeze({
     schema: CHECKPOINT_ENGINE_SCHEMA,
     sourceBuildSchema: CHECKPOINT_ENGINE_SOURCE_BUILD_SCHEMA,
@@ -397,6 +382,7 @@ export function createCheckpoint(input: CheckpointEngineInput): CheckpointRecord
     sourceOrchestrationDigest: digest(orchestration.orchestrationDigest.hex),
     sourceInvocationId: invocation.id,
     sourceInvocationDigest: digest(invocation.invocationDigest.hex),
+    sourceCompletionDigest: digest(invocation.completionDigest.hex),
     sourceScopeLockId: invocation.sourceScopeLockId,
     sourceScopeLockDigest: invocation.sourceScopeLockDigest === null ? null : digest(invocation.sourceScopeLockDigest),
     sourceInvocation: invocation,
@@ -414,7 +400,7 @@ export function createCheckpoint(input: CheckpointEngineInput): CheckpointRecord
     sourceMutationAuthorized: invocation.mutationAuthorized,
     inputDigest,
     resultDigest,
-    checkpointDigest,
+    checkpointDigest: digest(digestHex),
     immutable: true,
     deterministic: true,
     environmentNeutral: true,
@@ -446,51 +432,42 @@ export function createCheckpoint(input: CheckpointEngineInput): CheckpointRecord
   });
 }
 
-export function assertCanonicalCheckpoint(
-  value: unknown,
-  orchestration: BuildOrchestratorRecord,
-  scopeLock?: ScopeLockRecord,
-): asserts value is CheckpointRecord {
+export function assertCanonicalCheckpoint(value: unknown, orchestration: BuildOrchestratorRecord, scopeLock?: ScopeLockRecord): asserts value is CheckpointRecord {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Checkpoint Engine requires a canonical checkpoint record.');
   const row = value as Record<string, unknown>;
   if (row.schema !== CHECKPOINT_ENGINE_SCHEMA || row.sourceBuildSchema !== CHECKPOINT_ENGINE_SOURCE_BUILD_SCHEMA
-      || row.sourceToolRuntimeSchema !== CHECKPOINT_ENGINE_SOURCE_TOOL_RUNTIME_SCHEMA
-      || row.sourceScopeLockSchema !== CHECKPOINT_ENGINE_SOURCE_SCOPE_LOCK_SCHEMA || row.revision !== 1
-      || row.mode !== CHECKPOINT_ENGINE_MODE || row.status !== 'checkpointed' || row.checkpointKind !== CHECKPOINT_ENGINE_KIND
-      || row.recoveryBoundary !== CHECKPOINT_ENGINE_RECOVERY_BOUNDARY || row.workspaceId !== orchestration.workspaceId
-      || row.immutable !== true || row.deterministic !== true || row.environmentNeutral !== true || row.workspaceScoped !== true
-      || row.completedInvocationRequired !== true || row.sourceInvocationReadOnlyPreserved !== true
-      || row.sourceOrchestrationReadOnlyPreserved !== true || row.sourceScopeLockReadOnlyPreserved !== true
-      || row.resultDigestBinding !== true || row.scopeLockConsumer !== true || row.scopeLockRequiredForMutation !== true
-      || row.recoveryAnchor !== true || row.durableJobEngineSovereign !== true || row.capabilityGrantAuthority !== false
-      || row.mutationAuthorized !== false || row.toolExecution !== false || row.execution !== false || row.checkpoints !== true
-      || row.restoreExecution !== false || row.validationPipeline !== false || row.scheduling !== false
-      || row.jobCreation !== false || row.persistence !== false || row.networkAuthority !== false
-      || row.filesystemAuthority !== false || row.databaseAuthority !== false || row.studioTransport !== false
-      || row.localRuntimeTransport !== false) {
+      || row.sourceToolRuntimeSchema !== CHECKPOINT_ENGINE_SOURCE_TOOL_RUNTIME_SCHEMA || row.sourceScopeLockSchema !== CHECKPOINT_ENGINE_SOURCE_SCOPE_LOCK_SCHEMA
+      || row.revision !== 1 || row.mode !== CHECKPOINT_ENGINE_MODE || row.status !== 'checkpointed' || row.checkpointKind !== CHECKPOINT_ENGINE_KIND
+      || row.recoveryBoundary !== CHECKPOINT_ENGINE_RECOVERY_BOUNDARY || row.workspaceId !== orchestration.workspaceId || row.immutable !== true
+      || row.deterministic !== true || row.environmentNeutral !== true || row.workspaceScoped !== true || row.completedInvocationRequired !== true
+      || row.sourceInvocationReadOnlyPreserved !== true || row.sourceOrchestrationReadOnlyPreserved !== true
+      || row.sourceScopeLockReadOnlyPreserved !== true || row.resultDigestBinding !== true || row.scopeLockConsumer !== true
+      || row.scopeLockRequiredForMutation !== true || row.recoveryAnchor !== true || row.durableJobEngineSovereign !== true
+      || row.capabilityGrantAuthority !== false || row.mutationAuthorized !== false || row.toolExecution !== false || row.execution !== false
+      || row.checkpoints !== true || row.restoreExecution !== false || row.validationPipeline !== false || row.scheduling !== false
+      || row.jobCreation !== false || row.persistence !== false || row.networkAuthority !== false || row.filesystemAuthority !== false
+      || row.databaseAuthority !== false || row.studioTransport !== false || row.localRuntimeTransport !== false) {
     throw new TypeError('Checkpoint Engine checkpoint boundary is non-canonical.');
   }
   assertCanonicalOrchestration(orchestration);
   assertCanonicalInvocation(row.sourceInvocation, orchestration, scopeLock);
   const invocation = row.sourceInvocation;
-  if (row.sourceOrchestrationId !== orchestration.id || row.sourceInvocationId !== invocation.id
-      || row.stepId !== invocation.stepId || row.toolId !== invocation.toolId
-      || row.scopeCandidateId !== invocation.scopeCandidateId || row.mutationAccess !== invocation.mutationAccess
+  if (row.sourceOrchestrationId !== orchestration.id || row.sourceInvocationId !== invocation.id || row.stepId !== invocation.stepId
+      || row.toolId !== invocation.toolId || row.scopeCandidateId !== invocation.scopeCandidateId || row.mutationAccess !== invocation.mutationAccess
       || row.sourceMutationAuthorized !== invocation.mutationAuthorized || row.sourceScopeLockId !== invocation.sourceScopeLockId) {
     throw new TypeError('Checkpoint Engine checkpoint source identities do not match canonical sources.');
   }
   const orchestrationDigest = row.sourceOrchestrationDigest as Record<string, unknown> | undefined;
   const invocationDigest = row.sourceInvocationDigest as Record<string, unknown> | undefined;
+  const completionDigest = row.sourceCompletionDigest as Record<string, unknown> | undefined;
   const sourceLockDigest = row.sourceScopeLockDigest as Record<string, unknown> | null;
   const inputDigest = row.inputDigest as Record<string, unknown> | undefined;
   const resultDigest = row.resultDigest as Record<string, unknown> | undefined;
   const checkpointDigest = row.checkpointDigest as Record<string, unknown> | undefined;
-  if (!orchestrationDigest || orchestrationDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM
-      || orchestrationDigest.hex !== orchestration.orchestrationDigest.hex
-      || !invocationDigest || invocationDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM
-      || invocationDigest.hex !== invocation.invocationDigest.hex
-      || (invocation.sourceScopeLockDigest === null
-        ? sourceLockDigest !== null
+  if (!orchestrationDigest || orchestrationDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM || orchestrationDigest.hex !== orchestration.orchestrationDigest.hex
+      || !invocationDigest || invocationDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM || invocationDigest.hex !== invocation.invocationDigest.hex
+      || !completionDigest || completionDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM || completionDigest.hex !== invocation.completionDigest.hex
+      || (invocation.sourceScopeLockDigest === null ? sourceLockDigest !== null
         : !sourceLockDigest || sourceLockDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM || sourceLockDigest.hex !== invocation.sourceScopeLockDigest)) {
     throw new TypeError('Checkpoint Engine checkpoint source digests do not match canonical sources.');
   }
@@ -502,7 +479,5 @@ export function assertCanonicalCheckpoint(
   }
   const expectedHex = sha256Hex(canonicalCheckpointMaterial(orchestration, invocation, digest(expectedInputHex), digest(expectedResultHex)));
   if (!checkpointDigest || checkpointDigest.algorithm !== CHECKPOINT_ENGINE_DIGEST_ALGORITHM || checkpointDigest.hex !== expectedHex
-      || row.id !== `checkpoint-${expectedHex.slice(0, 16)}`) {
-    throw new TypeError('Checkpoint Engine checkpoint digest does not match canonical checkpoint material.');
-  }
+      || row.id !== `checkpoint-${expectedHex.slice(0, 16)}`) throw new TypeError('Checkpoint Engine checkpoint digest does not match canonical checkpoint material.');
 }
