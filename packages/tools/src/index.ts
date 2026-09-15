@@ -13,7 +13,9 @@ import {
 export const packageIdentity = '@github-decrypter/tools' as const;
 export const TOOL_RUNTIME_BUILD = 53 as const;
 export const TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55 as const;
+export const TOOL_RUNTIME_CHECKPOINT_INTEGRATION_BUILD = 56 as const;
 export const TOOL_RUNTIME_SCHEMA = 'gd-tool-runtime/1' as const;
+export const TOOL_RUNTIME_COMPLETION_SCHEMA = 'gd-tool-runtime-completion/1' as const;
 export const TOOL_RUNTIME_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1' as const;
 export const TOOL_RUNTIME_MODE = 'BUILD' as const;
 export const TOOL_RUNTIME_DIGEST_ALGORITHM = 'sha256' as const;
@@ -117,6 +119,7 @@ export interface ToolInvocationRecord {
   readonly input: ToolValue;
   readonly result: ToolValue;
   readonly invocationDigest: ToolInvocationDigest;
+  readonly completionDigest: ToolInvocationDigest;
   readonly immutable: true;
   readonly denyByDefault: true;
   readonly capabilityVerifierRequired: true;
@@ -417,6 +420,14 @@ function canonicalInvocationMaterial(
   });
 }
 
+function canonicalCompletionMaterial(invocationDigestHex: string, result: ToolValue): string {
+  return JSON.stringify({
+    schema: TOOL_RUNTIME_COMPLETION_SCHEMA,
+    invocationDigest: { algorithm: TOOL_RUNTIME_DIGEST_ALGORITHM, hex: invocationDigestHex },
+    result: JSON.parse(canonicalToolValue(result)),
+  });
+}
+
 export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('Tool Runtime input must be an object.');
   const row = input as unknown as Record<string, unknown>;
@@ -521,6 +532,10 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
     });
     const result = immutableToolValue(await registration.handler(context, immutableInput));
     const invocationDigest = Object.freeze({ algorithm: TOOL_RUNTIME_DIGEST_ALGORITHM, hex: invocationDigestHex });
+    const completionDigest = Object.freeze({
+      algorithm: TOOL_RUNTIME_DIGEST_ALGORITHM,
+      hex: sha256Hex(canonicalCompletionMaterial(invocationDigestHex, result)),
+    });
     return Object.freeze({
       schema: TOOL_RUNTIME_SCHEMA,
       sourceBuildSchema: TOOL_RUNTIME_SOURCE_BUILD_SCHEMA,
@@ -541,6 +556,7 @@ export function createToolRuntime(input: ToolRuntimeInput): ToolRuntime {
       input: immutableInput,
       result,
       invocationDigest,
+      completionDigest,
       immutable: true,
       denyByDefault: true,
       capabilityVerifierRequired: true,
