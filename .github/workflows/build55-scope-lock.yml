@@ -1,0 +1,32 @@
+name: GitHub Decrypter Build 55 — Scope Lock
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - build/55-scope-lock
+
+permissions:
+  contents: read
+
+jobs:
+  scope-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Run Architecture Guardian
+        run: pnpm run guardian
+      - name: Validate Build 4–55 and TypeScript workspaces
+        run: pnpm run ci
+      - name: Validate Viktor explicit activation guard
+        run: node scripts/guard-viktor-explicit-activation.mjs
+      - name: Validate modern engine preservation
+        run: node scripts/test-build4-modern-engine-preservation.mjs

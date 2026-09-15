@@ -12,12 +12,17 @@ const versionBuild = (value) => {
   return match ? Number(match[1]) : null;
 };
 
+const scopeBuild = versionBuild(scopePackage.version);
 assert.ok(policy.currentBuild >= 54);
 assert.equal(policy.phaseGates?.scopeIntelligenceBuild, 54);
 assert.ok(versionBuild(rootPackage.version) >= 54);
 assert.equal(scopePackage.name, '@github-decrypter/scope');
-assert.ok(versionBuild(scopePackage.version) >= 54);
-assert.equal(scopePackage.exports, './src/index.ts');
+assert.ok(scopeBuild >= 54);
+if (scopeBuild >= 55) {
+  assert.deepEqual(scopePackage.exports, { '.': './src/index.ts', './lock': './src/lock.ts' });
+} else {
+  assert.equal(scopePackage.exports, './src/index.ts');
+}
 assert.deepEqual(scopePackage.dependencies, { '@github-decrypter/build': 'workspace:*' });
 assert.deepEqual(policy.packageRules?.['@github-decrypter/scope']?.allowedWorkspaceDependencies, ['@github-decrypter/build']);
 assert.equal(policy.packageRules?.['@github-decrypter/scope']?.environmentNeutral, true);

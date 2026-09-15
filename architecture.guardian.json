@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 54,
+  "currentBuild": 55,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -34,7 +34,7 @@
     "@github-decrypter/ai": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/plan": { "allowedWorkspaceDependencies": [], "environmentNeutral": true },
     "@github-decrypter/build": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
-    "@github-decrypter/tools": { "allowedWorkspaceDependencies": ["@github-decrypter/build"], "environmentNeutral": true },
+    "@github-decrypter/tools": { "allowedWorkspaceDependencies": ["@github-decrypter/build","@github-decrypter/scope"], "environmentNeutral": true },
     "@github-decrypter/scope": { "allowedWorkspaceDependencies": ["@github-decrypter/build"], "environmentNeutral": true },
     "@github-decrypter/context": { "allowedWorkspaceDependencies": ["@github-decrypter/plan"], "environmentNeutral": true },
     "@github-decrypter/chat": { "allowedWorkspaceDependencies": ["@github-decrypter/ai","@github-decrypter/context","@github-decrypter/workspace"], "environmentNeutral": true }
@@ -474,7 +474,8 @@
     "requiredCapabilities": ["READ","WRITE","EXECUTE","NETWORK","DATABASE_WRITE","GIT_WRITE","DESTRUCTIVE","SECRETS"],
     "environmentNeutral": true, "workspaceScoped": true, "denyByDefault": true, "capabilityVerifierRequired": true,
     "capabilityGrantAuthority": false, "handlerDispatch": true, "toolExecution": true, "execution": true,
-    "mutatingToolsBlocked": true, "mutationAuthorized": false, "scopeLockRequired": true,
+    "mutatingToolsBlocked": true, "mutatingToolsBlockedWithoutScopeLock": true, "scopeLockConsumer": true,
+    "scopedMutationAuthorization": true, "mutationAuthorized": false, "scopeLockRequired": true,
     "scopeIntelligence": false, "scopeLock": false, "checkpoints": false, "validationPipeline": false,
     "scheduling": false, "jobCreation": false, "persistence": false, "networkAuthority": false,
     "filesystemAuthority": false, "databaseAuthority": false, "studioTransport": false, "localRuntimeTransport": false
@@ -490,6 +491,22 @@
     "scopeIntelligence": true, "scopeLockRequired": true, "scopeLock": false, "scopeLocked": false,
     "mutationAuthorized": false, "capabilityGrantAuthority": false, "toolExecution": false, "execution": false,
     "checkpoints": false, "validationPipeline": false, "scheduling": false, "jobCreation": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
+  "scopeLockAuthority": {
+    "ownerPackage": "@github-decrypter/scope", "ownerSource": "packages/scope/src/lock.ts", "minimumBuild": 55,
+    "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54,
+    "checkpointEngineBuild": 56, "validationPipelineBuild": 57,
+    "schema": "gd-scope-lock/1", "sourceScopeSchema": "gd-scope-intelligence/1", "sourceBuildSchema": "gd-build-orchestrator/1",
+    "mode": "BUILD", "digestAlgorithm": "sha256", "maxCandidates": 4096, "mutationAccess": ["write","execute"],
+    "deterministic": true, "environmentNeutral": true, "workspaceScoped": true,
+    "explicitLock": true, "exactCandidateAllowlist": true, "automaticExpansion": false, "semanticInference": false,
+    "scopeIntelligence": true, "scopeLockRequired": true, "scopeLock": true, "scopeLocked": true,
+    "mutationBoundarySatisfied": true, "capabilitiesRequired": true, "capabilityVerifierRequired": true,
+    "capabilityGrantAuthority": false, "mutationAuthorized": false, "toolRuntimeScopedMutationIntegration": true,
+    "toolExecution": false, "checkpoints": false, "validationPipeline": false, "execution": false,
+    "scheduling": false, "jobCreation": false, "persistence": false,
     "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
     "studioTransport": false, "localRuntimeTransport": false
   },
@@ -516,7 +533,7 @@
     "requirementCompilerBuild": 39, "taskGraphCompilerBuild": 40, "hierarchicalContextBuild": 41, "contextContinuationBuild": 42,
     "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
     "jobsCenterBuild": 47, "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50,
-    "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54,
+    "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55,
     "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
