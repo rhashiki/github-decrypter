@@ -17,13 +17,13 @@ assert.equal(policy.phaseGates?.toolRuntimeBuild, 53);
 assert.ok(versionBuild(rootPackage.version) >= 53);
 assert.equal(toolsPackage.name, '@github-decrypter/tools');
 assert.ok(versionBuild(toolsPackage.version) >= 53);
-assert.equal(toolsPackage.exports, './src/index.ts');
+assert.deepEqual(
+  toolsPackage.exports,
+  policy.currentBuild >= 56 ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' } : './src/index.ts',
+);
 assert.equal(toolsPackage.dependencies?.['@github-decrypter/build'], 'workspace:*');
 const toolDependencyKeys = Object.keys(toolsPackage.dependencies ?? {}).sort();
-assert.deepEqual(
-  toolDependencyKeys,
-  policy.currentBuild >= 55 ? ['@github-decrypter/build','@github-decrypter/scope'] : ['@github-decrypter/build'],
-);
+assert.deepEqual(toolDependencyKeys, policy.currentBuild >= 55 ? ['@github-decrypter/build','@github-decrypter/scope'] : ['@github-decrypter/build']);
 const toolAllowedDependencies = policy.packageRules?.['@github-decrypter/tools']?.allowedWorkspaceDependencies ?? [];
 assert.ok(toolAllowedDependencies.includes('@github-decrypter/build'));
 if (policy.currentBuild >= 55) assert.ok(toolAllowedDependencies.includes('@github-decrypter/scope'));
@@ -51,6 +51,15 @@ for (const marker of [
   'ToolRuntimeCapabilityError',
 ]) assert.ok(source.includes(marker), `Missing Tool Runtime marker: ${marker}`);
 
+if (policy.currentBuild >= 56) {
+  for (const marker of [
+    'TOOL_RUNTIME_CHECKPOINT_INTEGRATION_BUILD = 56',
+    "TOOL_RUNTIME_COMPLETION_SCHEMA = 'gd-tool-runtime-completion/1'",
+    'canonicalCompletionMaterial(',
+    'completionDigest',
+  ]) assert.ok(source.includes(marker), `Missing Build 56 Tool Runtime completion marker: ${marker}`);
+}
+
 for (const forbidden of [
   /\bnode:/, /\bprocess\./, /\bfetch\s*\(/, /\bwindow\./, /\bdocument\./,
   /\blocalStorage\b/, /\bindexedDB\b/, /\bnode:sqlite\b/, /\bchild_process\b/, /\bfs\./,
@@ -74,15 +83,12 @@ assert.equal(authority.mode, 'BUILD');
 assert.equal(authority.digestAlgorithm, 'sha256');
 assert.equal(authority.maxTools, 256);
 assert.deepEqual(authority.requiredCapabilities, ['READ','WRITE','EXECUTE','NETWORK','DATABASE_WRITE','GIT_WRITE','DESTRUCTIVE','SECRETS']);
-for (const field of [
-  'environmentNeutral','workspaceScoped','denyByDefault','capabilityVerifierRequired','handlerDispatch',
-  'toolExecution','execution','mutatingToolsBlocked','scopeLockRequired',
-]) assert.equal(authority[field], true, `Tool Runtime authority drifted: ${field}`);
-for (const field of [
-  'capabilityGrantAuthority','mutationAuthorized','scopeIntelligence','scopeLock','checkpoints','validationPipeline',
-  'scheduling','jobCreation','persistence','networkAuthority','filesystemAuthority','databaseAuthority',
-  'studioTransport','localRuntimeTransport',
-]) assert.equal(authority[field], false, `Tool Runtime authority boundary drifted: ${field}`);
+for (const field of ['environmentNeutral','workspaceScoped','denyByDefault','capabilityVerifierRequired','handlerDispatch','toolExecution','execution','mutatingToolsBlocked','scopeLockRequired']) {
+  assert.equal(authority[field], true, `Tool Runtime authority drifted: ${field}`);
+}
+for (const field of ['capabilityGrantAuthority','mutationAuthorized','scopeIntelligence','scopeLock','checkpoints','validationPipeline','scheduling','jobCreation','persistence','networkAuthority','filesystemAuthority','databaseAuthority','studioTransport','localRuntimeTransport']) {
+  assert.equal(authority[field], false, `Tool Runtime authority boundary drifted: ${field}`);
+}
 if (policy.currentBuild >= 55) {
   assert.equal(authority.scopeLockConsumer, true);
   assert.equal(authority.scopedMutationAuthorization, true);
