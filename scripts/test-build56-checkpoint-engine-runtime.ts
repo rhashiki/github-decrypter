@@ -61,24 +61,31 @@ const runtime = createToolRuntime({
   scopeLock,
   verifyCapability: () => true,
   tools: [
-    {
-      descriptor: { id: 'tool:project.read', label: 'Read project', requiredCapabilities: ['READ'], mutating: false },
-      handler: () => ({ branch: 'build/56-checkpoint-engine', clean: true }),
-    },
-    {
-      descriptor: { id: 'tool:file.write', label: 'Write file', requiredCapabilities: ['WRITE'], mutating: true },
-      handler: (_context, input) => ({ wrote: true, bytes: JSON.stringify(input).length }),
-    },
+    { descriptor: { id: 'tool:project.read', label: 'Read project', requiredCapabilities: ['READ'], mutating: false }, handler: () => ({ branch: 'build/56-checkpoint-engine', clean: true }) },
+    { descriptor: { id: 'tool:file.write', label: 'Write file', requiredCapabilities: ['WRITE'], mutating: true }, handler: (_context, input) => ({ wrote: true, bytes: JSON.stringify(input).length }) },
   ],
 });
 
 const writeInvocation = await runtime.invoke({
-  stepId: 'build-step-0002',
-  toolId: 'tool:file.write',
-  input: { path: 'src/app.tsx', content: 'bounded' },
-  scopeCandidateId: 'scope-candidate-0002',
-  mutationAccess: 'write',
+  stepId: 'build-step-0002', toolId: 'tool:file.write', input: { path: 'src/app.tsx', content: 'bounded' },
+  scopeCandidateId: 'scope-candidate-0002', mutationAccess: 'write',
 });
+const canonicalValue = (value: unknown): string => {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalValue).join(',')}]`;
+  const row = value as Record<string, unknown>;
+  return `{${Object.keys(row).sort().map((key) => `${JSON.stringify(key)}:${canonicalValue(row[key])}`).join(',')}}`;
+};
+const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+const expectedCompletionMaterial = JSON.stringify({
+  schema: 'gd-tool-runtime-completion/1',
+  invocationDigest: writeInvocation.invocationDigest,
+  result: JSON.parse(canonicalValue(writeInvocation.result)),
+});
+assert.equal(writeInvocation.completionDigest.algorithm, 'sha256');
+assert.equal(writeInvocation.completionDigest.hex, hash(expectedCompletionMaterial));
+
 const first = createCheckpoint({ orchestration, invocation: writeInvocation, scopeLock });
 const second = createCheckpoint({ orchestration, invocation: writeInvocation, scopeLock });
 assert.deepEqual(first, second);
@@ -88,6 +95,8 @@ assert.equal(first.sourceToolRuntimeSchema, 'gd-tool-runtime/1');
 assert.equal(first.sourceScopeLockSchema, 'gd-scope-lock/1');
 assert.equal(first.sourceOrchestrationId, orchestration.id);
 assert.equal(first.sourceInvocationId, writeInvocation.id);
+assert.equal(first.sourceInvocationDigest.hex, writeInvocation.invocationDigest.hex);
+assert.equal(first.sourceCompletionDigest.hex, writeInvocation.completionDigest.hex);
 assert.equal(first.sourceScopeLockId, scopeLock.id);
 assert.equal(first.workspaceId, orchestration.workspaceId);
 assert.equal(first.stepId, writeInvocation.stepId);
@@ -111,15 +120,6 @@ assert.equal(Object.isFrozen(first), true);
 assert.equal(Object.isFrozen(first.inputDigest), true);
 assert.equal(Object.isFrozen(first.resultDigest), true);
 assert.equal(Object.isFrozen(first.checkpointDigest), true);
-
-const canonicalValue = (value: unknown): string => {
-  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
-  if (typeof value === 'number') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalValue).join(',')}]`;
-  const row = value as Record<string, unknown>;
-  return `{${Object.keys(row).sort().map((key) => `${JSON.stringify(key)}:${canonicalValue(row[key])}`).join(',')}}`;
-};
-const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 assert.equal(first.inputDigest.hex, hash(canonicalValue(writeInvocation.input)));
 assert.equal(first.resultDigest.hex, hash(canonicalValue(writeInvocation.result)));
 const canonicalCheckpointMaterial = JSON.stringify({
@@ -131,6 +131,7 @@ const canonicalCheckpointMaterial = JSON.stringify({
   sourceOrchestrationDigest: first.sourceOrchestrationDigest,
   sourceInvocationId: first.sourceInvocationId,
   sourceInvocationDigest: first.sourceInvocationDigest,
+  sourceCompletionDigest: first.sourceCompletionDigest,
   sourceScopeLockId: first.sourceScopeLockId,
   sourceScopeLockDigest: first.sourceScopeLockDigest,
   mode: first.mode,
@@ -161,10 +162,7 @@ assert.doesNotThrow(() => assertCanonicalCheckpoint(readCheckpoint, orchestratio
 const unscopedRuntime = createToolRuntime({
   orchestration,
   verifyCapability: () => true,
-  tools: [{
-    descriptor: { id: 'tool:project.read', label: 'Read project', requiredCapabilities: ['READ'], mutating: false },
-    handler: () => ({ ok: true }),
-  }],
+  tools: [{ descriptor: { id: 'tool:project.read', label: 'Read project', requiredCapabilities: ['READ'], mutating: false }, handler: () => ({ ok: true }) }],
 });
 const unscopedInvocation = await unscopedRuntime.invoke({ stepId: 'build-step-0001', toolId: 'tool:project.read', input: null });
 const unscopedCheckpoint = createCheckpoint({ orchestration, invocation: unscopedInvocation });
@@ -174,33 +172,13 @@ assert.doesNotThrow(() => assertCanonicalCheckpoint(unscopedCheckpoint, orchestr
 
 assert.throws(() => createCheckpoint({ orchestration, invocation: writeInvocation }), /requires the canonical Scope Lock/i);
 assert.throws(() => createCheckpoint({ orchestration, invocation: unscopedInvocation, scopeLock }), /not referenced/i);
-assert.throws(() => createCheckpoint({
-  orchestration,
-  invocation: { ...writeInvocation, result: { wrote: false, bytes: 0 } },
-  scopeLock,
-} as never), /invocation digest|canonical/i);
-assert.throws(() => assertCanonicalCheckpoint({
-  ...first,
-  sourceInvocation: { ...writeInvocation, result: { wrote: false, bytes: 0 } },
-} as never, orchestration, scopeLock), /input\/result digest binding/i);
-assert.throws(() => assertCanonicalCheckpoint({
-  ...first,
-  resultDigest: { ...first.resultDigest, hex: '0'.repeat(64) },
-} as never, orchestration, scopeLock), /input\/result digest binding/i);
-assert.throws(() => assertCanonicalCheckpoint({
-  ...first,
-  checkpointDigest: { ...first.checkpointDigest, hex: 'f'.repeat(64) },
-} as never, orchestration, scopeLock), /checkpoint digest/i);
-assert.throws(() => createCheckpoint({
-  orchestration,
-  invocation: { ...writeInvocation, invocationDigest: { ...writeInvocation.invocationDigest, hex: '0'.repeat(64) } },
-  scopeLock,
-} as never), /invocation digest/i);
-assert.throws(() => createCheckpoint({
-  orchestration,
-  invocation: { ...writeInvocation, sourceScopeLockDigest: 'f'.repeat(64) },
-  scopeLock,
-} as never), /Scope Lock binding/i);
+assert.throws(() => createCheckpoint({ orchestration, invocation: { ...writeInvocation, result: { wrote: false, bytes: 0 } }, scopeLock } as never), /completion digest/i);
+assert.throws(() => assertCanonicalCheckpoint({ ...first, sourceInvocation: { ...writeInvocation, result: { wrote: false, bytes: 0 } } } as never, orchestration, scopeLock), /completion digest/i);
+assert.throws(() => assertCanonicalCheckpoint({ ...first, resultDigest: { ...first.resultDigest, hex: '0'.repeat(64) } } as never, orchestration, scopeLock), /input\/result digest binding/i);
+assert.throws(() => assertCanonicalCheckpoint({ ...first, checkpointDigest: { ...first.checkpointDigest, hex: 'f'.repeat(64) } } as never, orchestration, scopeLock), /checkpoint digest/i);
+assert.throws(() => createCheckpoint({ orchestration, invocation: { ...writeInvocation, invocationDigest: { ...writeInvocation.invocationDigest, hex: '0'.repeat(64) } }, scopeLock } as never), /invocation digest/i);
+assert.throws(() => createCheckpoint({ orchestration, invocation: { ...writeInvocation, completionDigest: { ...writeInvocation.completionDigest, hex: '0'.repeat(64) } }, scopeLock } as never), /completion digest/i);
+assert.throws(() => createCheckpoint({ orchestration, invocation: { ...writeInvocation, sourceScopeLockDigest: 'f'.repeat(64) }, scopeLock } as never), /Scope Lock binding/i);
 assert.throws(() => assertCanonicalCheckpoint({ ...first, restoreExecution: true } as never, orchestration, scopeLock), /boundary is non-canonical/i);
 assert.throws(() => assertCanonicalCheckpoint({ ...first, mutationAuthorized: true } as never, orchestration, scopeLock), /boundary is non-canonical/i);
 
@@ -210,6 +188,7 @@ console.log(JSON.stringify({
   build: 56,
   deterministicCheckpointIdentity: true,
   completedInvocationRequired: true,
+  completionDigestBinding: true,
   resultDigestBinding: true,
   durableJobEngineSovereign: true,
   restoreExecution: false,
