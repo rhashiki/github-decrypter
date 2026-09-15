@@ -29,44 +29,30 @@ if (
   const toolsVersion = versionBuild(toolsPackage.version);
   const rootBuild = versionBuild(rootPackage.version);
   const packageRule = policy.packageRules?.['@github-decrypter/tools'];
-  const expectedToolDependencies = policy.currentBuild >= 55
-    ? ['@github-decrypter/build','@github-decrypter/scope']
-    : ['@github-decrypter/build'];
+  const expectedToolDependencies = policy.currentBuild >= 55 ? ['@github-decrypter/build','@github-decrypter/scope'] : ['@github-decrypter/build'];
+  const expectedToolsExports = policy.currentBuild >= 56
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' }
+    : './src/index.ts';
   if (
     toolsPackage.name !== '@github-decrypter/tools' || toolsVersion === null || toolsVersion < 53
-    || toolsPackage.exports !== './src/index.ts'
+    || JSON.stringify(toolsPackage.exports) !== JSON.stringify(expectedToolsExports)
     || toolsPackage.dependencies?.['@github-decrypter/build'] !== 'workspace:*'
     || JSON.stringify(Object.keys(toolsPackage.dependencies ?? {}).sort()) !== JSON.stringify(expectedToolDependencies)
-    || rootBuild === null || rootBuild < 53
-    || !packageRule || packageRule.environmentNeutral !== true
-    || !Array.isArray(packageRule.allowedWorkspaceDependencies)
-    || !packageRule.allowedWorkspaceDependencies.includes('@github-decrypter/build')
+    || rootBuild === null || rootBuild < 53 || !packageRule || packageRule.environmentNeutral !== true
+    || !Array.isArray(packageRule.allowedWorkspaceDependencies) || !packageRule.allowedWorkspaceDependencies.includes('@github-decrypter/build')
     || (policy.currentBuild >= 55 && !packageRule.allowedWorkspaceDependencies.includes('@github-decrypter/scope'))
   ) violations.push({ code: 'AG511', message: 'Build 53 package/root identity, dependency boundary or package authority drifted.' });
 
   const source = read('packages/tools/src/index.ts');
   for (const marker of [
-    'TOOL_RUNTIME_BUILD = 53',
-    "TOOL_RUNTIME_SCHEMA = 'gd-tool-runtime/1'",
-    "TOOL_RUNTIME_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1'",
-    "TOOL_RUNTIME_MODE = 'BUILD'",
-    'TOOL_RUNTIME_MAX_TOOLS = 256',
-    'TOOL_RUNTIME_CAPABILITIES = Object.freeze([',
-    'createToolRuntime(',
-    'toolExecution: true',
-    'execution: true',
-    'mutationAuthorized: false',
+    'TOOL_RUNTIME_BUILD = 53', "TOOL_RUNTIME_SCHEMA = 'gd-tool-runtime/1'", "TOOL_RUNTIME_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1'",
+    "TOOL_RUNTIME_MODE = 'BUILD'", 'TOOL_RUNTIME_MAX_TOOLS = 256', 'TOOL_RUNTIME_CAPABILITIES = Object.freeze([',
+    'createToolRuntime(', 'toolExecution: true', 'execution: true', 'mutationAuthorized: false',
   ]) if (!source.includes(marker)) violations.push({ code: 'AG512', message: 'Tool Runtime core contract is incomplete.', detail: marker });
 
   for (const marker of [
-    'assertCanonicalOrchestration(',
-    'canonicalOrchestrationMaterial(',
-    'canonicalInvocationMaterial(',
-    'sha256Hex(',
-    'immutableToolValue(',
-    'Object.freeze({',
-    'sourceOrchestrationDigest',
-    'invocationDigest',
+    'assertCanonicalOrchestration(', 'canonicalOrchestrationMaterial(', 'canonicalInvocationMaterial(', 'sha256Hex(',
+    'immutableToolValue(', 'Object.freeze({', 'sourceOrchestrationDigest', 'invocationDigest',
   ]) if (!source.includes(marker)) violations.push({ code: 'AG513', message: 'Tool Runtime Build binding, deterministic identity or immutability is incomplete.', detail: marker });
 
   if (/\bnode:|\bprocess\.|\bfetch\s*\(|\bwindow\.|\bdocument\.|\blocalStorage\b|\bindexedDB\b|\bnode:sqlite\b|\bchild_process\b|\bfs\.|\bWebSocket\b|\bXMLHttpRequest\b/.test(source)
@@ -85,31 +71,18 @@ if (
     violations.push({ code: 'AG515', message: 'Tool Runtime capability or default execute-without-mutate boundary drifted.' });
   }
   for (const marker of [
-    'verifyCapability',
-    'ToolRuntimeCapabilityError',
-    'ToolRuntimeMutationBlockedError',
-    'if (await verifyCapability(request) !== true)',
-    'if (registration.descriptor.mutating)',
-    'capabilityGrantAuthority: false',
-    'denyByDefault: true',
-    'scopeLockRequired: true',
+    'verifyCapability', 'ToolRuntimeCapabilityError', 'ToolRuntimeMutationBlockedError', 'if (await verifyCapability(request) !== true)',
+    'if (registration.descriptor.mutating)', 'capabilityGrantAuthority: false', 'denyByDefault: true', 'scopeLockRequired: true',
   ]) if (!source.includes(marker)) violations.push({ code: 'AG515', message: 'Tool Runtime capability enforcement is incomplete.', detail: marker });
   if (policy.currentBuild >= 55) {
-    if (rule.scopeLockConsumer !== true || rule.scopedMutationAuthorization !== true
-        || rule.mutatingToolsBlockedWithoutScopeLock !== true
-        || !source.includes('TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55')
-        || !source.includes('assertCanonicalScopeLock(')
+    if (rule.scopeLockConsumer !== true || rule.scopedMutationAuthorization !== true || rule.mutatingToolsBlockedWithoutScopeLock !== true
+        || !source.includes('TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55') || !source.includes('assertCanonicalScopeLock(')
         || !source.includes('assertScopeLockAllowsMutation(')) {
       violations.push({ code: 'AG515', message: 'Tool Runtime Build 55 Scope Lock integration drifted.' });
     }
   }
 
-  const downstream = {
-    scopeIntelligenceBuild: 54,
-    scopeLockBuild: 55,
-    checkpointEngineBuild: 56,
-    validationPipelineBuild: 57,
-  };
+  const downstream = { scopeIntelligenceBuild: 54, scopeLockBuild: 55, checkpointEngineBuild: 56, validationPipelineBuild: 57 };
   for (const [field, expected] of Object.entries(downstream)) if (rule[field] !== expected) {
     violations.push({ code: 'AG516', message: 'Tool Runtime downstream Build ownership drifted.', detail: field });
   }
@@ -131,21 +104,15 @@ if (
   const studioSource = exists('apps/studio/src') ? fs.readdirSync(path.join(root, 'apps/studio/src'), { recursive: true, withFileTypes: false })
     .filter((entry) => typeof entry === 'string' && /\.[jt]sx?$/.test(entry))
     .map((entry) => read(`apps/studio/src/${entry}`)).join('\n') : '';
-  if (localIndex.includes('@github-decrypter/tools') || localIndex.includes('./tool-runtime.js')
-      || studioSource.includes('@github-decrypter/tools')) {
+  if (localIndex.includes('@github-decrypter/tools') || localIndex.includes('./tool-runtime.js') || studioSource.includes('@github-decrypter/tools')) {
     violations.push({ code: 'AG518', message: 'Build 53 prematurely introduced Local Runtime or Studio Tool Runtime transport.' });
   }
 
   for (const required of [
-    'packages/tools/src/index.ts',
-    'docs/architecture/TOOL_RUNTIME.md',
-    'docs/builds/BUILD_53_TOOL_RUNTIME.md',
-    'scripts/architecture-guardian-tool-runtime.mjs',
-    'scripts/test-build53-tool-runtime.mjs',
-    'scripts/test-build53-tool-runtime-runtime.ts',
-    'scripts/test-build53-tool-runtime-guardian-negative.mjs',
-    'scripts/tsconfig.build53-tests.json',
-    '.github/workflows/build53-tool-runtime.yml',
+    'packages/tools/src/index.ts', 'docs/architecture/TOOL_RUNTIME.md', 'docs/builds/BUILD_53_TOOL_RUNTIME.md',
+    'scripts/architecture-guardian-tool-runtime.mjs', 'scripts/test-build53-tool-runtime.mjs',
+    'scripts/test-build53-tool-runtime-runtime.ts', 'scripts/test-build53-tool-runtime-guardian-negative.mjs',
+    'scripts/tsconfig.build53-tests.json', '.github/workflows/build53-tool-runtime.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG519', message: 'Required Build 53 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');
@@ -153,10 +120,8 @@ if (
   const buildDoc = read('docs/builds/BUILD_53_TOOL_RUNTIME.md');
   const roadmap = read('docs/product/ROADMAP_V1.md');
   if (!constitution.includes('BUILD operates only through explicit capabilities and Scope Lock')
-      || !architectureDoc.includes('execute != mutate')
-      || !architectureDoc.includes('Build 54 — Scope Intelligence')
-      || !buildDoc.includes('Build 54 — Scope Intelligence')
-      || !roadmap.includes('53. **Tool Runtime**')) {
+      || !architectureDoc.includes('execute != mutate') || !architectureDoc.includes('Build 54 — Scope Intelligence')
+      || !buildDoc.includes('Build 54 — Scope Intelligence') || !roadmap.includes('53. **Tool Runtime**')) {
     violations.push({ code: 'AG519', message: 'Build 53 documentation does not preserve capability, mutation or downstream ownership.' });
   }
 }
