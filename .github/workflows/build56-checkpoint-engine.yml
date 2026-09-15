@@ -28,6 +28,6 @@ jobs:
       - name: Validate Build 4–56 and TypeScript workspaces
         run: pnpm run ci
       - name: Validate Viktor explicit activation guard
-        run: node scripts/architecture-guardian-viktor-activation.mjs
+        run: node scripts/guard-viktor-explicit-activation.mjs
       - name: Validate modern engine preservation
         run: node scripts/test-build5-rebrand.mjs
