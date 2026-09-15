@@ -34,12 +34,15 @@ if (
   const rootBuild = versionBuild(rootPackage.version);
   const scopePackageRule = policy.packageRules?.['@github-decrypter/scope'];
   const toolsPackageRule = policy.packageRules?.['@github-decrypter/tools'];
+  const expectedToolsExports = policy.currentBuild >= 56
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' }
+    : './src/index.ts';
   if (
     scopePackage.name !== '@github-decrypter/scope' || scopeVersion === null || scopeVersion < 55
     || JSON.stringify(scopePackage.exports) !== JSON.stringify({ '.': './src/index.ts', './lock': './src/lock.ts' })
     || JSON.stringify(scopePackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/build': 'workspace:*' })
     || toolsPackage.name !== '@github-decrypter/tools' || toolsVersion === null || toolsVersion < 55
-    || toolsPackage.exports !== './src/index.ts'
+    || JSON.stringify(toolsPackage.exports) !== JSON.stringify(expectedToolsExports)
     || JSON.stringify(toolsPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/build': 'workspace:*', '@github-decrypter/scope': 'workspace:*' })
     || rootBuild === null || rootBuild < 55
     || !scopePackageRule || scopePackageRule.environmentNeutral !== true
@@ -51,28 +54,14 @@ if (
   const lockSource = read('packages/scope/src/lock.ts');
   const toolsSource = read('packages/tools/src/index.ts');
   for (const marker of [
-    'SCOPE_LOCK_BUILD = 55',
-    "SCOPE_LOCK_SCHEMA = 'gd-scope-lock/1'",
-    "SCOPE_LOCK_SOURCE_SCOPE_SCHEMA = 'gd-scope-intelligence/1'",
-    "SCOPE_LOCK_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1'",
-    "SCOPE_LOCK_MODE = 'BUILD'",
-    'SCOPE_LOCK_MAX_CANDIDATES = 4096',
-    "SCOPE_LOCK_MUTATION_ACCESS = Object.freeze(['write', 'execute']",
-    'lockScope(',
-    'assertCanonicalScopeLock(',
-    'assertScopeLockAllowsMutation(',
+    'SCOPE_LOCK_BUILD = 55', "SCOPE_LOCK_SCHEMA = 'gd-scope-lock/1'", "SCOPE_LOCK_SOURCE_SCOPE_SCHEMA = 'gd-scope-intelligence/1'",
+    "SCOPE_LOCK_SOURCE_BUILD_SCHEMA = 'gd-build-orchestrator/1'", "SCOPE_LOCK_MODE = 'BUILD'", 'SCOPE_LOCK_MAX_CANDIDATES = 4096',
+    "SCOPE_LOCK_MUTATION_ACCESS = Object.freeze(['write', 'execute']", 'lockScope(', 'assertCanonicalScopeLock(', 'assertScopeLockAllowsMutation(',
   ]) if (!lockSource.includes(marker)) violations.push({ code: 'AG532', message: 'Scope Lock core contract is incomplete.', detail: marker });
 
   for (const marker of [
-    'assertCanonicalScopeIntelligence(',
-    'analyzeScope({',
-    'canonicalLockMaterial(',
-    'canonicalLockedSelection(',
-    'sha256Hex(',
-    'sourceScopeDigest',
-    'sourceOrchestrationDigest',
-    'lockDigest',
-    'Object.freeze({',
+    'assertCanonicalScopeIntelligence(', 'analyzeScope({', 'canonicalLockMaterial(', 'canonicalLockedSelection(', 'sha256Hex(',
+    'sourceScopeDigest', 'sourceOrchestrationDigest', 'lockDigest', 'Object.freeze({',
   ]) if (!lockSource.includes(marker)) violations.push({ code: 'AG533', message: 'Scope Lock source binding, deterministic identity or immutability is incomplete.', detail: marker });
 
   for (const source of [lockSource, toolsSource]) {
@@ -85,9 +74,7 @@ if (
     'automaticExpansion','semanticInference','capabilityGrantAuthority','mutationAuthorized','toolExecution','checkpoints',
     'validationPipeline','execution','scheduling','jobCreation','persistence','networkAuthority','filesystemAuthority',
     'databaseAuthority','studioTransport','localRuntimeTransport',
-  ]) if (rule[field] !== false) {
-    violations.push({ code: 'AG534', message: 'Scope Lock policy gained forbidden authority.', detail: field });
-  }
+  ]) if (rule[field] !== false) violations.push({ code: 'AG534', message: 'Scope Lock policy gained forbidden authority.', detail: field });
 
   if (rule.deterministic !== true || rule.environmentNeutral !== true || rule.workspaceScoped !== true
       || rule.explicitLock !== true || rule.exactCandidateAllowlist !== true || rule.scopeIntelligence !== true
@@ -98,24 +85,13 @@ if (
     violations.push({ code: 'AG535', message: 'Scope Lock explicit allowlist, capability separation or lock boundary drifted.' });
   }
   for (const marker of [
-    'exactCandidateAllowlist: true',
-    'automaticExpansion: false',
-    'semanticInference: false',
-    'capabilitiesRequired: true',
-    'capabilityVerifierRequired: true',
-    'capabilityGrantAuthority: false',
-    'mutationAuthorized: false',
-    'candidate.buildStepId !== buildStepId',
-    'candidate.access !== access',
+    'exactCandidateAllowlist: true', 'automaticExpansion: false', 'semanticInference: false', 'capabilitiesRequired: true',
+    'capabilityVerifierRequired: true', 'capabilityGrantAuthority: false', 'mutationAuthorized: false',
+    'candidate.buildStepId !== buildStepId', 'candidate.access !== access',
   ]) if (!lockSource.includes(marker)) violations.push({ code: 'AG535', message: 'Scope Lock exact candidate/capability boundary is incomplete.', detail: marker });
   for (const marker of [
-    'TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55',
-    "from '@github-decrypter/scope/lock'",
-    'if (registration.descriptor.mutating)',
-    'if (!scopeLock) throw new ToolRuntimeMutationBlockedError',
-    'assertScopeLockAllowsMutation(',
-    'if (await verifyCapability(request) !== true)',
-    'mutationAuthorized = true',
+    'TOOL_RUNTIME_SCOPE_LOCK_INTEGRATION_BUILD = 55', "from '@github-decrypter/scope/lock'", 'if (registration.descriptor.mutating)',
+    'if (!scopeLock) throw new ToolRuntimeMutationBlockedError', 'assertScopeLockAllowsMutation(', 'if (await verifyCapability(request) !== true)', 'mutationAuthorized = true',
   ]) if (!toolsSource.includes(marker)) violations.push({ code: 'AG535', message: 'Tool Runtime Scope Lock integration is incomplete.', detail: marker });
 
   if (rule.checkpointEngineBuild !== 56 || rule.validationPipelineBuild !== 57
@@ -150,16 +126,9 @@ if (
   }
 
   for (const required of [
-    'packages/scope/src/lock.ts',
-    'packages/tools/src/index.ts',
-    'docs/architecture/SCOPE_LOCK.md',
-    'docs/builds/BUILD_55_SCOPE_LOCK.md',
-    'scripts/architecture-guardian-scope-lock.mjs',
-    'scripts/test-build55-scope-lock.mjs',
-    'scripts/test-build55-scope-lock-runtime.ts',
-    'scripts/test-build55-scope-lock-guardian-negative.mjs',
-    'scripts/tsconfig.build55-tests.json',
-    '.github/workflows/build55-scope-lock.yml',
+    'packages/scope/src/lock.ts', 'packages/tools/src/index.ts', 'docs/architecture/SCOPE_LOCK.md', 'docs/builds/BUILD_55_SCOPE_LOCK.md',
+    'scripts/architecture-guardian-scope-lock.mjs', 'scripts/test-build55-scope-lock.mjs', 'scripts/test-build55-scope-lock-runtime.ts',
+    'scripts/test-build55-scope-lock-guardian-negative.mjs', 'scripts/tsconfig.build55-tests.json', '.github/workflows/build55-scope-lock.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG539', message: 'Required Build 55 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');
@@ -167,10 +136,8 @@ if (
   const buildDoc = read('docs/builds/BUILD_55_SCOPE_LOCK.md');
   const roadmap = read('docs/product/ROADMAP_V1.md');
   if (!constitution.includes('BUILD operates only through explicit capabilities and Scope Lock')
-      || !architectureDoc.includes('scope lock != capability grant')
-      || !architectureDoc.includes('Build 56 — Checkpoint Engine')
-      || !architectureDoc.includes('Build 57 — Validation Pipeline')
-      || !buildDoc.includes('Build 56 — Checkpoint Engine')
+      || !architectureDoc.includes('scope lock != capability grant') || !architectureDoc.includes('Build 56 — Checkpoint Engine')
+      || !architectureDoc.includes('Build 57 — Validation Pipeline') || !buildDoc.includes('Build 56 — Checkpoint Engine')
       || !roadmap.includes('55. **Scope Lock**')) {
     violations.push({ code: 'AG539', message: 'Build 55 documentation does not preserve capability and downstream ownership.' });
   }
