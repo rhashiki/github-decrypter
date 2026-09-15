@@ -62,7 +62,7 @@ try {
 
   expectFailure('AG535', () => {
     const policy = JSON.parse(originals.get(policyPath));
-    policy.scopeLockAuthority.capabilityGrantAuthority = true;
+    policy.scopeLockAuthority.exactCandidateAllowlist = false;
     fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
   });
 
