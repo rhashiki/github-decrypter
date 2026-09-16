@@ -34,9 +34,11 @@ if (
   const rootBuild = versionBuild(rootPackage.version);
   const scopePackageRule = policy.packageRules?.['@github-decrypter/scope'];
   const toolsPackageRule = policy.packageRules?.['@github-decrypter/tools'];
-  const expectedToolsExports = policy.currentBuild >= 56
-    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' }
-    : './src/index.ts';
+  const expectedToolsExports = policy.currentBuild >= 57
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts', './validation': './src/validation.ts' }
+    : policy.currentBuild >= 56
+      ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' }
+      : './src/index.ts';
   if (
     scopePackage.name !== '@github-decrypter/scope' || scopeVersion === null || scopeVersion < 55
     || JSON.stringify(scopePackage.exports) !== JSON.stringify({ '.': './src/index.ts', './lock': './src/lock.ts' })
