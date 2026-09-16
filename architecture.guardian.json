@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 56,
+  "currentBuild": 57,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -526,6 +526,26 @@
     "jobCreation": false, "persistence": false, "networkAuthority": false, "filesystemAuthority": false,
     "databaseAuthority": false, "studioTransport": false, "localRuntimeTransport": false
   },
+  "validationPipelineAuthority": {
+    "ownerPackage": "@github-decrypter/tools", "ownerSource": "packages/tools/src/validation.ts", "minimumBuild": 57,
+    "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55,
+    "checkpointEngineBuild": 56, "testingAgentBuild": 62,
+    "schema": "gd-validation-pipeline/1", "sourceCheckpointSchema": "gd-checkpoint-engine/1",
+    "mode": "BUILD", "digestAlgorithm": "sha256", "maxCriteria": 256,
+    "evidenceKinds": ["tool-result","test","diagnostic","preview"],
+    "operators": ["equals","not-equals","truthy","falsy","exists","contains"],
+    "deterministic": true, "environmentNeutral": true, "workspaceScoped": true,
+    "checkpointRequired": true, "checkpointReadOnlyPreserved": true,
+    "acceptanceCriteriaRequired": true, "observedEvidenceRequired": true,
+    "explicitEvidenceOnly": true, "semanticInference": false, "failClosed": true,
+    "behavioralValidation": true, "validationPipeline": true, "completionEligibilityRequiresPass": true,
+    "interactiveQAFoundation": true, "testingAgentAuthority": false, "viktorCommunicationAuthority": false,
+    "capabilityGrantAuthority": false, "mutationAuthorized": false, "toolExecution": false,
+    "externalFlowExecution": false, "execution": false, "checkpoints": false, "restoreExecution": false,
+    "scheduling": false, "jobCreation": false, "persistence": false,
+    "networkAuthority": false, "filesystemAuthority": false, "databaseAuthority": false,
+    "studioTransport": false, "localRuntimeTransport": false
+  },
   "forbiddenActiveAuthorityTokens": ["lovable.dev", "ld-vault", "ld-release-feed", "ld-store"],
   "activeAuthorityRoots": ["apps", "packages", ".github/workflows", "manifest.json", "settings/config.js"],
   "workflow": {
@@ -550,7 +570,7 @@
     "tokenAbstractionBuild": 43, "conversationEngineBuild": 44, "attachmentEngineBuild": 45, "contextMentionsBuild": 46,
     "jobsCenterBuild": 47, "planAuthorityBuild": 48, "decisionEngineBuild": 49, "projectRulesBuild": 50,
     "impactSimulationBuild": 51, "buildOrchestratorBuild": 52, "toolRuntimeBuild": 53, "scopeIntelligenceBuild": 54, "scopeLockBuild": 55,
-    "checkpointEngineBuild": 56, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
+    "checkpointEngineBuild": 56, "validationPipelineBuild": 57, "pwaProductionPackagingBuild": 122, "releaseAuthorityBuild": 134
   },
   "legacyMigrationRoots": ["core", "background", "content", "runtime"],
   "prohibitedCrossBoundaryImports": { "packagesToApps": true, "packagesToLegacyRoots": true, "appsToOtherApps": true, "appsToLegacyRoots": true }

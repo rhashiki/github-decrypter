@@ -34,9 +34,12 @@ if (
   const toolsVersion = versionBuild(toolsPackage.version);
   const rootBuild = versionBuild(rootPackage.version);
   const packageRule = policy.packageRules?.['@github-decrypter/tools'];
+  const expectedToolsExports = policy.currentBuild >= 57
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts', './validation': './src/validation.ts' }
+    : { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' };
   if (
     toolsPackage.name !== '@github-decrypter/tools' || toolsVersion === null || toolsVersion < 56
-    || JSON.stringify(toolsPackage.exports) !== JSON.stringify({ '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' })
+    || JSON.stringify(toolsPackage.exports) !== JSON.stringify(expectedToolsExports)
     || JSON.stringify(toolsPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/build': 'workspace:*', '@github-decrypter/scope': 'workspace:*' })
     || rootBuild === null || rootBuild < 56 || !packageRule || packageRule.environmentNeutral !== true
     || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/build','@github-decrypter/scope'])
