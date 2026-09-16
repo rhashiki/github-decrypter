@@ -18,7 +18,12 @@ assert.equal(policy.phaseGates?.checkpointEngineBuild, 56);
 assert.ok(versionBuild(rootPackage.version) >= 56);
 assert.equal(toolsPackage.name, '@github-decrypter/tools');
 assert.ok(versionBuild(toolsPackage.version) >= 56);
-assert.deepEqual(toolsPackage.exports, { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' });
+assert.deepEqual(
+  toolsPackage.exports,
+  policy.currentBuild >= 57
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts', './validation': './src/validation.ts' }
+    : { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' },
+);
 assert.deepEqual(toolsPackage.dependencies, { '@github-decrypter/build': 'workspace:*', '@github-decrypter/scope': 'workspace:*' });
 assert.deepEqual(policy.packageRules?.['@github-decrypter/tools']?.allowedWorkspaceDependencies, ['@github-decrypter/build','@github-decrypter/scope']);
 
