@@ -52,7 +52,7 @@ Build 57 is the validation substrate for Interactive QA:
 - supported behavior must be capable of being validated from observed evidence rather than accepted only because code appears correct;
 - validation relates observed result to original request/acceptance criteria;
 - future interactive testing remains bounded by capabilities, safety policy and project scope;
-- Build 62 Testing Agent remains the owner of supported behavioral flow execution;
+- Build 62 — Testing Agent remains the owner of supported behavioral flow execution;
 - Viktor may communicate canonical validation results later but owns no validation authority and may not report completion before canonical validation succeeds.
 
 ## Explicit non-authority
