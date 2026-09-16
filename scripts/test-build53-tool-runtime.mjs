@@ -19,7 +19,11 @@ assert.equal(toolsPackage.name, '@github-decrypter/tools');
 assert.ok(versionBuild(toolsPackage.version) >= 53);
 assert.deepEqual(
   toolsPackage.exports,
-  policy.currentBuild >= 56 ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' } : './src/index.ts',
+  policy.currentBuild >= 57
+    ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts', './validation': './src/validation.ts' }
+    : policy.currentBuild >= 56
+      ? { '.': './src/index.ts', './checkpoint': './src/checkpoint.ts' }
+      : './src/index.ts',
 );
 assert.equal(toolsPackage.dependencies?.['@github-decrypter/build'], 'workspace:*');
 const toolDependencyKeys = Object.keys(toolsPackage.dependencies ?? {}).sort();
