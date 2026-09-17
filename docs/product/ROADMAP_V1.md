@@ -84,7 +84,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 ## Agent team
 
-58. **Agent Runtime** — North Star: **Named Agent System** identity/role/specialty metadata and authority limits.
+58. **Agent Runtime** — ✅ — North Star: **Named Agent System** identity/role/specialty metadata and authority limits.
 59. **Planner Agent**
 60. **Coding Agent**
 61. **Database Agent**
