@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build58-agent-runtime-runtime.ts",
+    "../packages/ai/src/**/*.ts"
+  ]
+}
