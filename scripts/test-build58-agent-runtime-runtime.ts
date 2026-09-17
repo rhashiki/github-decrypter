@@ -7,7 +7,7 @@ import {
   createAgentRuntimeRegistry,
   getAgentRuntimeDescriptor,
   listAgentRuntimeDescriptors,
-} from '../packages/ai/src/agent-runtime';
+} from '../packages/ai/src/agent-runtime.js';
 
 const expected = [
   ['ramon','Ramon','orchestrator'],
