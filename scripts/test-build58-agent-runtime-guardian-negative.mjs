@@ -49,7 +49,7 @@ try {
   });
   expectFailure('AG565', () => {
     const policy = JSON.parse(originals.get(policyPath));
-    policy.agentRuntimeAuthority.agentCount = 10;
+    policy.agentRuntimeAuthority.namedAgentSystem = false;
     fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
   });
   expectFailure('AG566', () => {
