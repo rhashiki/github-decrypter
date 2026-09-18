@@ -31,13 +31,18 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
+  const expectedExports = policy.currentBuild >= 59
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' }
+    : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts' };
+  const expectedDependencies = policy.currentBuild >= 59 ? { '@github-decrypter/plan': 'workspace:*' } : {};
+  const expectedWorkspaceDependencies = policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [];
   if (
     aiPackage.name !== '@github-decrypter/ai' || versionBuild(aiPackage.version) === null || versionBuild(aiPackage.version) < 58
-    || JSON.stringify(aiPackage.exports) !== JSON.stringify({ '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts' })
-    || JSON.stringify(aiPackage.dependencies ?? {}) !== JSON.stringify({})
+    || JSON.stringify(aiPackage.exports) !== JSON.stringify(expectedExports)
+    || JSON.stringify(aiPackage.dependencies ?? {}) !== JSON.stringify(expectedDependencies)
     || versionBuild(rootPackage.version) === null || versionBuild(rootPackage.version) < 58
     || !packageRule || packageRule.environmentNeutral !== true
-    || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify([])
+    || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(expectedWorkspaceDependencies)
   ) violations.push({ code: 'AG561', message: 'Build 58 package/root identity, export or dependency boundary drifted.' });
 
   const source = read('packages/ai/src/agent-runtime.ts');
