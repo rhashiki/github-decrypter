@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 58,
+  "currentBuild": 59,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -112,7 +112,9 @@
       "environmentNeutral": true
     },
     "@github-decrypter/ai": {
-      "allowedWorkspaceDependencies": [],
+      "allowedWorkspaceDependencies": [
+        "@github-decrypter/plan"
+      ],
       "environmentNeutral": true
     },
     "@github-decrypter/plan": {
@@ -1953,7 +1955,8 @@
     "validationPipelineBuild": 57,
     "pwaProductionPackagingBuild": 122,
     "releaseAuthorityBuild": 134,
-    "agentRuntimeBuild": 58
+    "agentRuntimeBuild": 58,
+    "plannerAgentBuild": 59
   },
   "legacyMigrationRoots": [
     "core",
@@ -2040,5 +2043,58 @@
     "localRuntimeTransport": false,
     "deterministic": true,
     "environmentNeutral": true
+  },
+  "plannerAgentAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/planner-agent.ts",
+    "minimumBuild": 59,
+    "agentRuntimeBuild": 58,
+    "planAuthorityBuild": 48,
+    "codingAgentBuild": 60,
+    "databaseAgentBuild": 61,
+    "testingAgentBuild": 62,
+    "reviewAgentBuild": 63,
+    "agentOrchestratorBuild": 64,
+    "schema": "gd-planner-agent/1",
+    "sourceAgentRuntimeSchema": "gd-agent-runtime/1",
+    "sourcePlanSchema": "gd-plan-authority/1",
+    "agentId": "leonardo",
+    "agentName": "Leonardo",
+    "agentRole": "architect",
+    "mode": "PLAN",
+    "digestAlgorithm": "sha256",
+    "maxTasks": 4096,
+    "namedAgentBinding": true,
+    "plannerAgent": true,
+    "planningSpecialization": true,
+    "planAuthorityConsumer": true,
+    "draftPlanRequired": true,
+    "planningAdvisoryOnly": true,
+    "planReadOnlyPreserved": true,
+    "deterministic": true,
+    "environmentNeutral": true,
+    "semanticInference": false,
+    "planApprovalAuthority": false,
+    "decisionAuthority": false,
+    "projectRulesAuthority": false,
+    "impactSimulationAuthority": false,
+    "buildTransitionAuthority": false,
+    "automaticAgentSelection": false,
+    "orchestration": false,
+    "agentExecution": false,
+    "toolExecution": false,
+    "execution": false,
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "scopeAuthority": false,
+    "mutationAuthorized": false,
+    "scheduling": false,
+    "jobCreation": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "studioTransport": false,
+    "localRuntimeTransport": false
   }
 }

@@ -39,8 +39,17 @@ if (
   if (manifest.name !== '@github-decrypter/ai' || versionBuild(manifest.version) === null || versionBuild(manifest.version) < 33) {
     violations.push({ code: 'AG311', message: '@github-decrypter/ai package identity/version is invalid.' });
   }
-  if (!packageRule || packageRule.environmentNeutral !== true || JSON.stringify(packageRule.allowedWorkspaceDependencies ?? []) !== '[]') {
-    violations.push({ code: 'AG311', message: '@github-decrypter/ai must remain dependency-free and environment-neutral.' });
+  const expectedAIWorkspaceDependencies = policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [];
+  if (
+    !packageRule || packageRule.environmentNeutral !== true
+    || JSON.stringify(packageRule.allowedWorkspaceDependencies ?? []) !== JSON.stringify(expectedAIWorkspaceDependencies)
+  ) {
+    violations.push({
+      code: 'AG311',
+      message: policy.currentBuild >= 59
+        ? '@github-decrypter/ai may depend only on @github-decrypter/plan from Build 59 onward and must remain environment-neutral.'
+        : '@github-decrypter/ai must remain dependency-free and environment-neutral.',
+    });
   }
   if (/\bnode:|\bprocess\.|\bwindow\.|\bdocument\.|\bfetch\s*\(|\bWebSocket\b|\bXMLHttpRequest\b|https?:\/\//.test(contract)) {
     violations.push({ code: 'AG311', message: 'AI Provider contract gained environment-specific transport authority.' });
