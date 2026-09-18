@@ -15,9 +15,11 @@ assert.equal(policy.phaseGates?.plannerAgentBuild, 59);
 assert.ok(versionBuild(rootPackage.version) >= 59);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 59);
-const expectedExports = policy.currentBuild >= 60
-  ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts' }
-  : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' };
+const expectedExports = policy.currentBuild >= 61
+  ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts' }
+  : policy.currentBuild >= 60
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts' }
+    : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' };
 const expectedDependencies = policy.currentBuild >= 60
   ? { '@github-decrypter/plan': 'workspace:*', '@github-decrypter/tools': 'workspace:*' }
   : { '@github-decrypter/plan': 'workspace:*' };
