@@ -1,17 +1,19 @@
 {
   "name": "@github-decrypter/ai",
-  "version": "0.0.59",
+  "version": "0.0.60",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./agent-runtime": "./src/agent-runtime.ts",
-    "./planner-agent": "./src/planner-agent.ts"
+    "./planner-agent": "./src/planner-agent.ts",
+    "./coding-agent": "./src/coding-agent.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@github-decrypter/plan": "workspace:*"
+    "@github-decrypter/plan": "workspace:*",
+    "@github-decrypter/tools": "workspace:*"
   }
 }

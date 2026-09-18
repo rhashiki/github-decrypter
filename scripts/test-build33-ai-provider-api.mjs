@@ -27,7 +27,9 @@ assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 33);
 assert.deepEqual(
   policy.packageRules['@github-decrypter/ai'].allowedWorkspaceDependencies,
-  policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [],
+  policy.currentBuild >= 60
+    ? ['@github-decrypter/plan','@github-decrypter/tools']
+    : policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [],
 );
 assert.equal(policy.packageRules['@github-decrypter/ai'].environmentNeutral, true);
 

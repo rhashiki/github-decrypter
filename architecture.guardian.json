@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 59,
+  "currentBuild": 60,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -113,7 +113,8 @@
     },
     "@github-decrypter/ai": {
       "allowedWorkspaceDependencies": [
-        "@github-decrypter/plan"
+        "@github-decrypter/plan",
+        "@github-decrypter/tools"
       ],
       "environmentNeutral": true
     },
@@ -1956,7 +1957,8 @@
     "pwaProductionPackagingBuild": 122,
     "releaseAuthorityBuild": 134,
     "agentRuntimeBuild": 58,
-    "plannerAgentBuild": 59
+    "plannerAgentBuild": 59,
+    "codingAgentBuild": 60
   },
   "legacyMigrationRoots": [
     "core",
@@ -2096,5 +2098,73 @@
     "databaseAuthority": false,
     "studioTransport": false,
     "localRuntimeTransport": false
+  },
+  "codingAgentAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/coding-agent.ts",
+    "minimumBuild": 60,
+    "agentRuntimeBuild": 58,
+    "buildOrchestratorBuild": 52,
+    "toolRuntimeBuild": 53,
+    "scopeLockBuild": 55,
+    "databaseAgentBuild": 61,
+    "testingAgentBuild": 62,
+    "reviewAgentBuild": 63,
+    "agentOrchestratorBuild": 64,
+    "schema": "gd-coding-agent/1",
+    "sourceAgentRuntimeSchema": "gd-agent-runtime/1",
+    "sourceToolRuntimeSchema": "gd-tool-runtime/1",
+    "agentId": "strachey",
+    "agentName": "Strachey",
+    "agentRole": "builder-programmer",
+    "mode": "BUILD",
+    "digestAlgorithm": "sha256",
+    "allowedCapabilities": [
+      "READ",
+      "WRITE",
+      "EXECUTE",
+      "NETWORK"
+    ],
+    "blockedCapabilities": [
+      "DATABASE_WRITE",
+      "GIT_WRITE",
+      "DESTRUCTIVE",
+      "SECRETS"
+    ],
+    "namedAgentBinding": true,
+    "codingAgent": true,
+    "implementationSpecialization": true,
+    "toolRuntimeConsumer": true,
+    "toolRuntimeDelegation": true,
+    "toolRuntimeSovereign": true,
+    "buildOrchestratorConsumer": true,
+    "scopeLockRequiredForMutation": true,
+    "capabilityVerifierRequired": true,
+    "mutationAuthorityOwnedByToolRuntime": true,
+    "directMutationAuthority": false,
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "scopeAuthority": false,
+    "databaseAgentAuthority": false,
+    "testingAgentAuthority": false,
+    "reviewAgentAuthority": false,
+    "agentOrchestratorAuthority": false,
+    "automaticAgentSelection": false,
+    "orchestration": false,
+    "agentExecution": true,
+    "toolExecution": true,
+    "execution": true,
+    "checkpointAuthority": false,
+    "validationAuthority": false,
+    "scheduling": false,
+    "jobCreation": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "studioTransport": false,
+    "localRuntimeTransport": false,
+    "deterministicBinding": true,
+    "environmentNeutral": true
   }
 }

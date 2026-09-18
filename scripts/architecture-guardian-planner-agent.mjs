@@ -26,17 +26,22 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
+  const expectedExports = policy.currentBuild >= 60
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts' }
+    : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' };
+  const expectedDependencies = policy.currentBuild >= 60
+    ? { '@github-decrypter/plan': 'workspace:*', '@github-decrypter/tools': 'workspace:*' }
+    : { '@github-decrypter/plan': 'workspace:*' };
+  const expectedWorkspaceDependencies = policy.currentBuild >= 60
+    ? ['@github-decrypter/plan','@github-decrypter/tools']
+    : ['@github-decrypter/plan'];
   if (
     aiPackage.name !== '@github-decrypter/ai' || versionBuild(aiPackage.version) === null || versionBuild(aiPackage.version) < 59
-    || JSON.stringify(aiPackage.exports) !== JSON.stringify({
-      '.': './src/index.ts',
-      './agent-runtime': './src/agent-runtime.ts',
-      './planner-agent': './src/planner-agent.ts',
-    })
-    || JSON.stringify(aiPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/plan': 'workspace:*' })
+    || JSON.stringify(aiPackage.exports) !== JSON.stringify(expectedExports)
+    || JSON.stringify(aiPackage.dependencies ?? {}) !== JSON.stringify(expectedDependencies)
     || versionBuild(rootPackage.version) === null || versionBuild(rootPackage.version) < 59
     || !packageRule || packageRule.environmentNeutral !== true
-    || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(['@github-decrypter/plan'])
+    || JSON.stringify(packageRule.allowedWorkspaceDependencies) !== JSON.stringify(expectedWorkspaceDependencies)
   ) violations.push({ code: 'AG571', message: 'Build 59 package/root export or dependency boundary drifted.' });
 
   const source = read('packages/ai/src/planner-agent.ts');
