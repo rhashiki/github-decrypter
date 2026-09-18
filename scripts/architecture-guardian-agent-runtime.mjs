@@ -31,11 +31,17 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
-  const expectedExports = policy.currentBuild >= 59
-    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' }
-    : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts' };
-  const expectedDependencies = policy.currentBuild >= 59 ? { '@github-decrypter/plan': 'workspace:*' } : {};
-  const expectedWorkspaceDependencies = policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [];
+  const expectedExports = policy.currentBuild >= 60
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts' }
+    : policy.currentBuild >= 59
+      ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' }
+      : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts' };
+  const expectedDependencies = policy.currentBuild >= 60
+    ? { '@github-decrypter/plan': 'workspace:*', '@github-decrypter/tools': 'workspace:*' }
+    : policy.currentBuild >= 59 ? { '@github-decrypter/plan': 'workspace:*' } : {};
+  const expectedWorkspaceDependencies = policy.currentBuild >= 60
+    ? ['@github-decrypter/plan','@github-decrypter/tools']
+    : policy.currentBuild >= 59 ? ['@github-decrypter/plan'] : [];
   if (
     aiPackage.name !== '@github-decrypter/ai' || versionBuild(aiPackage.version) === null || versionBuild(aiPackage.version) < 58
     || JSON.stringify(aiPackage.exports) !== JSON.stringify(expectedExports)
