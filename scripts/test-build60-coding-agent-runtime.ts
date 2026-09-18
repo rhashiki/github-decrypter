@@ -11,7 +11,7 @@ import { ToolRuntimeMutationBlockedError } from '../packages/tools/src/index.js'
 import { AGENT_RUNTIME_REGISTRY } from '../packages/ai/src/agent-runtime.js';
 import { assertCanonicalCodingAgentExecution, executeCodingAgent } from '../packages/ai/src/coding-agent.js';
 
-const intake = createPromptIntakeRecord({ text: '# Goal\nImplement a bounded source change\n\n# Requirements\n- Update a source file\n- Run bounded verification [depends: req-0001]\n\n# Constraint\nCoding execution must delegate to Tool Runtime and Scope Lock\n\n# Acceptance\nDatabase, Git, destructive and secrets capabilities remain outside Coding Agent authority' });
+const intake = createPromptIntakeRecord({ text: '# Goal\nImplement a bounded source change\n\n# Requirements\n- Update a source file\n- Run bounded verification [depends: req-0002]\n\n# Constraint\nCoding execution must delegate to Tool Runtime and Scope Lock\n\n# Acceptance\nDatabase, Git, destructive and secrets capabilities remain outside Coding Agent authority' });
 const spec = compileRequirements({ intake });
 const graph = compileTaskGraph({ spec });
 const draftPlan = createPlanAuthority({ spec, graph });
