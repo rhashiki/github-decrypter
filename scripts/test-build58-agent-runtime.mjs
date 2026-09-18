@@ -15,10 +15,12 @@ assert.equal(policy.phaseGates?.agentRuntimeBuild, 58);
 assert.ok(versionBuild(rootPackage.version) >= 58);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 58);
-assert.deepEqual(aiPackage.exports, {
-  '.': './src/index.ts',
-  './agent-runtime': './src/agent-runtime.ts',
-});
+const expectedExports = policy.currentBuild >= 59
+  ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts' }
+  : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts' };
+const expectedDependencies = policy.currentBuild >= 59 ? { '@github-decrypter/plan': 'workspace:*' } : {};
+assert.deepEqual(aiPackage.exports, expectedExports);
+assert.deepEqual(aiPackage.dependencies ?? {}, expectedDependencies);
 
 for (const marker of [
   'AGENT_RUNTIME_BUILD = 58',
