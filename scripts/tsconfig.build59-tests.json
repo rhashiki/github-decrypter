@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "test-build59-planner-agent-runtime.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/ai/src/**/*.ts"
+  ]
+}
