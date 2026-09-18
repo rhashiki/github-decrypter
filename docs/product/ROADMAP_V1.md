@@ -87,7 +87,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 58. **Agent Runtime** — ✅ — North Star: **Named Agent System** identity/role/specialty metadata and authority limits.
 59. **Planner Agent** — ✅
 60. **Coding Agent** — ✅
-61. **Database Agent**
+61. **Database Agent** — ✅
 62. **Testing Agent** — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
 63. **Review Agent**
 64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; **Viktor Interaction Layer** becomes the canonical outward conversational presence of that team without becoming a tenth agent or gaining independent execution authority. Build 64 must also expose the canonical visible **Viktor activation toggle**: Viktor voice is `OFF` by default at each new application session, can start only after explicit user activation, and must stop microphone capture/realtime voice transport immediately when switched `OFF`.
