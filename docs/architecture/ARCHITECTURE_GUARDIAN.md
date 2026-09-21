@@ -8,13 +8,14 @@ The Guardian treats the following as product/architecture authorities:
 
 1. Product Constitution V1;
 2. Constitutional Amendment 001 — North Star Authority;
-3. North Star Manifesto;
-4. Canonical V1 Roadmap;
-5. North Star Roadmap Mapping;
-6. Frozen V1 Scope;
-7. Non-Goals V1;
-8. Global Definition of Done;
-9. RFC Policy.
+3. Constitutional Amendment 004 — Architectural Integrity & Heimdall;
+4. North Star Manifesto;
+5. Canonical V1 Roadmap;
+6. North Star Roadmap Mapping;
+7. Frozen V1 Scope;
+8. Non-Goals V1;
+9. Global Definition of Done;
+10. RFC Policy.
 
 The machine-readable policy lives at:
 
@@ -29,6 +30,28 @@ Application-specific policy enforcement lives at:
 `scripts/architecture-guardian-apps.mjs`
 
 `pnpm run guardian` executes both layers.
+
+## Heimdall and controlled architectural evolution
+
+Constitutional Amendment 004 separates three responsibilities that must never collapse into one another:
+
+- **Leonardo** proposes and deliberately evolves architecture;
+- **Heimdall — Architecture Guardian** performs architectural-integrity/conformance analysis as the tenth canonical specialist from Build 64 onward;
+- the deterministic **Architecture Guardian** remains the repository-level machine-enforced gate introduced by Build 9.
+
+Heimdall is therefore an agent-facing architectural specialist, not a replacement for this Guardian engine and not an independent security principal.
+
+The transition is intentionally staged:
+
+- before Build 64, the historical Build 58 Agent Runtime revision remains canonical with nine specialists and Heimdall must not be inserted early;
+- at Build 64 and later, repository policy requires the canonical runtime transition to include Heimdall as specialist number 10;
+- Viktor remains outside the agent registry at every stage.
+
+The governing invariant is:
+
+> **Architecture may evolve, but it must never evolve accidentally.**
+
+The future orchestration surface must preserve explicit architecture changes, Architecture Contract / Architecture Ledger consumption, Refactor Before Feature when module responsibility is exceeded, and pre-change/post-change architectural-conformance review.
 
 ## What the Guardian can enforce
 
@@ -50,7 +73,10 @@ The Guardian checks facts that can be proven from repository state:
 - guarded applications cannot silently cross into a forbidden platform authority;
 - workflows do not gain write/release authority without an explicit Guardian policy amendment;
 - Build numbering remains integer and the policy stage matches the latest documented Build;
-- the pre-V1 root package version tracks the active Build.
+- the pre-V1 root package version tracks the active Build;
+- Constitutional Amendment 004 remains present and mapped;
+- Heimdall cannot enter the canonical registry before Build 64 and cannot be absent after the Build 64 transition;
+- Viktor remains explicitly excluded from the canonical agent registry.
 
 ## Build 10 application guard
 

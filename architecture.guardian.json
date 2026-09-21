@@ -6,6 +6,7 @@
   "authorities": [
     "docs/product/PRODUCT_CONSTITUTION_V1.md",
     "docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md",
+    "docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md",
     "docs/product/NORTH_STAR_MANIFESTO.md",
     "docs/product/ROADMAP_V1.md",
     "docs/product/NORTH_STAR_ROADMAP_MAPPING.md",
@@ -2166,5 +2167,19 @@
     "localRuntimeTransport": false,
     "deterministicBinding": true,
     "environmentNeutral": true
+  },
+  "architecturalIntegrity": {
+    "amendment": "docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md",
+    "principle": "Architecture may evolve, but it must never evolve accidentally.",
+    "deterministicGuardianBuild": 9,
+    "heimdallAgentId": "heimdall",
+    "heimdallAgentName": "Heimdall",
+    "heimdallActivationBuild": 64,
+    "agentRuntimeSource": "packages/ai/src/agent-runtime.ts",
+    "preActivationAgentCount": 9,
+    "postActivationAgentCount": 10,
+    "viktorExcludedFromAgentRegistry": true,
+    "silentArchitecturalChangeAllowed": false,
+    "refactorBeforeFeature": true
   }
 }

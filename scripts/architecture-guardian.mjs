@@ -102,6 +102,58 @@ if (!exists(viktorAmendmentPath)) {
   violation('AG016', `Required constitutional amendment missing: ${viktorAmendmentPath}`);
 }
 
+// Constitutional Amendment 004 makes controlled architectural evolution and
+// Heimdall a protected future Agent Runtime transition without rewriting Build 58 history.
+const architecturalIntegrity = policy.architecturalIntegrity ?? {};
+const heimdallAmendmentPath = architecturalIntegrity.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md';
+if (!exists(heimdallAmendmentPath)) {
+  violation('AG019', `Required architectural-integrity amendment missing: ${heimdallAmendmentPath}`);
+} else {
+  const amendment = read(heimdallAmendmentPath);
+  for (const phrase of [
+    architecturalIntegrity.principle ?? 'Architecture may evolve, but it must never evolve accidentally.',
+    'Heimdall — Architecture Guardian',
+    'Refactor Before Feature',
+    'Architecture Contract',
+    'Architecture Ledger',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG019', `Architectural-integrity amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+
+const agentRuntimePath = architecturalIntegrity.agentRuntimeSource ?? 'packages/ai/src/agent-runtime.ts';
+if (exists(agentRuntimePath)) {
+  const agentRuntimeSource = read(agentRuntimePath);
+  const activationBuild = architecturalIntegrity.heimdallActivationBuild ?? 64;
+  const preCount = architecturalIntegrity.preActivationAgentCount ?? 9;
+  const postCount = architecturalIntegrity.postActivationAgentCount ?? 10;
+  const hasHeimdall = /id:\s*['"]heimdall['"]/.test(agentRuntimeSource)
+    && /name:\s*['"]Heimdall['"]/.test(agentRuntimeSource);
+
+  if (policy.currentBuild < activationBuild) {
+    if (hasHeimdall) {
+      violation('AG019', `Heimdall arrived before owning Build ${activationBuild}.`, agentRuntimePath);
+    }
+    if (!new RegExp(`AGENT_RUNTIME_COUNT\\s*=\\s*${preCount}\\b`).test(agentRuntimeSource)) {
+      violation('AG019', `Pre-Build-${activationBuild} Agent Runtime roster must remain at ${preCount} specialists.`, agentRuntimePath);
+    }
+  } else {
+    if (!hasHeimdall) {
+      violation('AG019', `Heimdall must be present from owning Build ${activationBuild} onward.`, agentRuntimePath);
+    }
+    if (!new RegExp(`AGENT_RUNTIME_COUNT\\s*=\\s*${postCount}\\b`).test(agentRuntimeSource)) {
+      violation('AG019', `Build ${activationBuild}+ Agent Runtime roster must contain ${postCount} specialists.`, agentRuntimePath);
+    }
+  }
+
+  if (architecturalIntegrity.viktorExcludedFromAgentRegistry === true && !agentRuntimeSource.includes('viktorIsAgent: false')) {
+    violation('AG019', 'Viktor must remain explicitly excluded from the canonical agent registry.', agentRuntimePath);
+  }
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;
@@ -137,12 +189,18 @@ if (exists('docs/product/NORTH_STAR_ROADMAP_MAPPING.md')) {
   if (!mapping.includes('Viktor Interaction Layer')) {
     violation('AG017', 'Viktor Interaction Layer must remain explicitly mapped to existing V1 Build authorities.');
   }
+  if (!mapping.includes('Architectural Integrity & Heimdall') || !mapping.includes('Build 64')) {
+    violation('AG019', 'Architectural Integrity & Heimdall must remain explicitly mapped to Build 64.');
+  }
 }
 
 if (exists('docs/product/ROADMAP_V1.md')) {
   const roadmap = read('docs/product/ROADMAP_V1.md');
   if (!roadmap.includes('Viktor Interaction Layer')) {
     violation('AG018', 'Canonical V1 roadmap must retain Viktor Interaction Layer ownership.');
+  }
+  if (!roadmap.includes('Heimdall — Architecture Guardian')) {
+    violation('AG019', 'Canonical V1 roadmap must retain Heimdall ownership at Build 64.');
   }
 }
 
