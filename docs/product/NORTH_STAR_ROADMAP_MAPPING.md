@@ -1,6 +1,6 @@
 # GitHub Decrypter — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR INTERACTION LAYER + EXPLICIT ACTIVATION**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR INTERACTION LAYER + EXPLICIT ACTIVATION + ARCHITECTURAL INTEGRITY / HEIMDALL**
 
 Build 9 incorporates the explicit North Star directive without inventing decimal Builds and without renumbering Builds 1–134. The new product blocks are assigned to existing roadmap authorities where the responsibility naturally belongs.
 
@@ -12,7 +12,8 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | --- | --- | --- |
 | Adaptive User Profile | **Build 31 — Onboarding**, **Build 108 — Learning Mode** | Build 31 creates the profile and preferences foundation; Build 108 evolves adaptive knowledge/explanation behavior. |
 | Agent Orchestrator | **Build 64 — Agent Orchestrator** | Existing roadmap authority remains unchanged. |
-| Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines agent identity/role metadata and authority boundaries; Build 64 coordinates them as one team. |
+| Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines revision 1 identity/role metadata and authority boundaries for the historical nine-specialist registry; Build 64 performs the explicit amended roster transition and coordinates the team. |
+| Architectural Integrity & Heimdall | **Build 9 — Architecture Guardian** (existing deterministic enforcement), **Build 64 — Agent Orchestrator** | Constitutional Amendment 004 adopts Heimdall as the tenth canonical specialist. Build 64 revises the Agent Runtime explicitly, integrates pre/post architectural-conformance review, and establishes canonical Architecture Contract / Architecture Ledger consumption without replacing Build 9 enforcement. |
 | Viktor Interaction Layer | **Build 64 — Agent Orchestrator**, **Build 70 — Preview Bridge**, **Builds 103–105 — Visual Inspector / Visual Context / Visual Build**, **Build 108 — Learning Mode** | Viktor is the canonical human-facing voice/presence layer. Build 64 owns the visible per-session Viktor activation toggle and voice-session lifecycle; Viktor starts `OFF` on each new application session and may activate voice only after explicit user action. It reuses the completed Voice Interaction foundation from Builds 44–45, represents the coordinated agent team, gains structured Preview awareness through Build 70, contextual/deictic visual interaction through 103–105 and adaptive communication depth through 108. Viktor is not a tenth agent and owns no independent execution authority. |
 | Mentor Engine | **Build 108 — Learning Mode** | Learning Mode becomes the primary runtime authority for contextual Mentor behavior; it must remain optional. |
 | Explain This | **Build 108 — Learning Mode**, consumed by Plan/Diff/Git/Preview surfaces | Build 108 owns the explanation engine; other surfaces expose contextual entry points without creating separate explanation engines. |
@@ -56,6 +57,18 @@ The owning Builds must include these North Star requirements in their Definition
 - no hidden wake-word/background listener is authorized;
 - Viktor must remain presentation/interaction infrastructure, not a tenth agent or hidden privileged principal;
 - ordinary agent selection and handoff must remain internal while Viktor communicates useful progress/status in human terms.
+
+### Build 9/64 — Architectural Integrity & Heimdall
+- Build 9 remains the deterministic machine-enforced Architecture Guardian and is not replaced by an agent;
+- Build 58 historical Agent Runtime revision 1 remains a nine-specialist artifact until the explicit Build 64 migration;
+- Build 64 must introduce Heimdall as specialist number 10 through an explicit Agent Runtime revision rather than silently rewriting Build 58 history;
+- Leonardo retains architectural design/evolution responsibility; Heimdall owns architectural-integrity/conformance analysis;
+- Heimdall may consume Architecture Contract and Architecture Ledger records but may not silently rewrite them;
+- relevant changes must support pre-change impact/conformance review and post-change architectural-conformance review;
+- architectural changes may not be hidden inside ordinary feature implementation;
+- Refactor Before Feature must be used when a requested feature would exceed declared module/domain responsibility boundaries;
+- Viktor remains outside the agent registry and gains no architecture, capability, scope, mutation or validation authority;
+- Architecture Guardian policy must prevent premature Heimdall registry insertion before Build 64 and require Heimdall after the Build 64 transition.
 
 ### Build 57/62 — Validation and Testing Agent
 - supported flows can be exercised behaviorally rather than accepted only because code appears correct;
@@ -108,17 +121,20 @@ When the future owning implementation surface is reached, Viktor should support 
 1. These mappings do not move privileged execution into the Studio.
 2. The Adaptive User Profile is experience context, not a security capability source.
 3. Agent personality or name never increases authority.
-4. Viktor is not an agent and never gains authority merely because it is the user's primary communication surface.
-5. The Viktor toggle controls interaction/session state only; `ON` never grants capabilities, approvals, scope or mutation authority.
-6. Viktor must not listen through the microphone while the canonical toggle is `OFF`.
-7. Mentor/Explain This never bypasses Plan/Build boundaries.
-8. Perception/Explore Mode are read/observe capabilities unless a later approved Build explicitly transitions to an authorized mutation flow.
-9. Interactive QA is constrained execution, not unrestricted browser automation.
-10. Voice is another interaction channel, not another execution authority.
-11. Spoken intent never upgrades capabilities, scope or approval state.
-12. Commercial requirements remain separate from local model inference costs.
-13. No Build may claim infinite tokens/context/resources.
-14. The user remains final authority for actions outside already granted scope.
+4. Architecture may evolve only through explicit controlled evolution; implementing agents may not establish new architectural precedent silently.
+5. Heimdall architectural-conformance analysis does not replace or override deterministic Architecture Guardian enforcement.
+6. Leonardo owns architectural design/evolution proposals; Heimdall owns integrity/conformance analysis.
+7. Viktor is not an agent and never gains authority merely because it is the user's primary communication surface.
+8. The Viktor toggle controls interaction/session state only; `ON` never grants capabilities, approvals, scope or mutation authority.
+9. Viktor must not listen through the microphone while the canonical toggle is `OFF`.
+10. Mentor/Explain This never bypasses Plan/Build boundaries.
+11. Perception/Explore Mode are read/observe capabilities unless a later approved Build explicitly transitions to an authorized mutation flow.
+12. Interactive QA is constrained execution, not unrestricted browser automation.
+13. Voice is another interaction channel, not another execution authority.
+14. Spoken intent never upgrades capabilities, scope or approval state.
+15. Commercial requirements remain separate from local model inference costs.
+16. No Build may claim infinite tokens/context/resources.
+17. The user remains final authority for actions outside already granted scope.
 
 ## Relationship with the frozen roadmap
 
@@ -129,3 +145,6 @@ The canonical Build sequence remains **1 → 134**. This file adds explicit acce
 `CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md` is explicit product-owner authorization for the visible per-session activation toggle and fail-closed voice lifecycle.
 
 Future ideas outside the adopted constitutional amendments continue to follow `docs/product/RFC_POLICY.md`.
+
+
+`CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md` is explicit product-owner authorization for Architectural Integrity & Controlled Evolution and Heimdall as the tenth canonical specialist, with the runtime transition mapped to Build 64.
