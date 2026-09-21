@@ -15,12 +15,21 @@ assert.equal(policy.phaseGates?.codingAgentBuild, 60);
 assert.ok(versionBuild(rootPackage.version) >= 60);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 60);
-assert.deepEqual(aiPackage.exports, {
-  '.': './src/index.ts',
-  './agent-runtime': './src/agent-runtime.ts',
-  './planner-agent': './src/planner-agent.ts',
-  './coding-agent': './src/coding-agent.ts',
-});
+const expectedExports = policy.currentBuild >= 61
+  ? {
+    '.': './src/index.ts',
+    './agent-runtime': './src/agent-runtime.ts',
+    './planner-agent': './src/planner-agent.ts',
+    './coding-agent': './src/coding-agent.ts',
+    './database-agent': './src/database-agent.ts',
+  }
+  : {
+    '.': './src/index.ts',
+    './agent-runtime': './src/agent-runtime.ts',
+    './planner-agent': './src/planner-agent.ts',
+    './coding-agent': './src/coding-agent.ts',
+  };
+assert.deepEqual(aiPackage.exports, expectedExports);
 assert.deepEqual(aiPackage.dependencies, {
   '@github-decrypter/plan': 'workspace:*',
   '@github-decrypter/tools': 'workspace:*',
