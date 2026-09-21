@@ -1,6 +1,6 @@
 {
   "name": "@github-decrypter/ai",
-  "version": "0.0.62",
+  "version": "0.0.63",
   "private": true,
   "type": "module",
   "exports": {
@@ -9,7 +9,8 @@
     "./planner-agent": "./src/planner-agent.ts",
     "./coding-agent": "./src/coding-agent.ts",
     "./database-agent": "./src/database-agent.ts",
-    "./testing-agent": "./src/testing-agent.ts"
+    "./testing-agent": "./src/testing-agent.ts",
+    "./review-agent": "./src/review-agent.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
