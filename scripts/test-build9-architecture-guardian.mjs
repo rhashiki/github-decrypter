@@ -75,6 +75,7 @@ for (const marker of [
   'AG070',
   'AG080',
   'AG082',
+  'AG019',
   'gd-architecture-guardian-report/1',
 ]) {
   assert.ok(guardian.includes(marker), `Guardian enforcement marker missing: ${marker}`);
