@@ -15,7 +15,9 @@ assert.equal(policy.phaseGates?.databaseAgentBuild, 61);
 assert.ok(versionBuild(rootPackage.version) >= 61);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 61);
-const expectedExports = policy.currentBuild >= 62
+const expectedExports = policy.currentBuild >= 63
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts' }
+    : policy.currentBuild >= 62
   ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts' }
   : { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts' };
 assert.deepEqual(aiPackage.exports, expectedExports);
