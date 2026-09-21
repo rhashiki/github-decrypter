@@ -5,7 +5,7 @@ on:
     branches: [main]
   push:
     branches:
-      - build/61-database-agent
+      - build/61-database-agent-reconciled
 
 permissions:
   contents: read
