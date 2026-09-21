@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 62,
+  "currentBuild": 63,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -1961,7 +1961,8 @@
     "plannerAgentBuild": 59,
     "codingAgentBuild": 60,
     "databaseAgentBuild": 61,
-    "testingAgentBuild": 62
+    "testingAgentBuild": 62,
+    "reviewAgentBuild": 63
   },
   "legacyMigrationRoots": [
     "core",
@@ -2344,6 +2345,79 @@
     "studioTransport": false,
     "localRuntimeTransport": false,
     "deterministicBinding": true,
+    "environmentNeutral": true
+  },
+  "reviewAgentAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/review-agent.ts",
+    "minimumBuild": 63,
+    "agentRuntimeBuild": 58,
+    "codingAgentBuild": 60,
+    "databaseAgentBuild": 61,
+    "testingAgentBuild": 62,
+    "agentOrchestratorBuild": 64,
+    "schema": "gd-review-agent/1",
+    "sourceAgentRuntimeSchema": "gd-agent-runtime/1",
+    "agentId": "weizenbaum",
+    "agentName": "Weizenbaum",
+    "agentRole": "reviewer-critic",
+    "mode": "BUILD",
+    "targetKinds": [
+      "coding",
+      "database",
+      "testing"
+    ],
+    "categories": [
+      "correctness",
+      "security",
+      "architecture",
+      "maintainability",
+      "testing"
+    ],
+    "severities": [
+      "info",
+      "warning",
+      "error",
+      "critical"
+    ],
+    "maxFindings": 256,
+    "namedAgentBinding": true,
+    "reviewAgent": true,
+    "reviewSpecialization": true,
+    "reviewAdvisoryOnly": true,
+    "sourceCanonicalRequired": true,
+    "sourceReadOnlyPreserved": true,
+    "explicitFindingsOnly": true,
+    "semanticInference": false,
+    "sourceVerdictReadOnlyPreserved": true,
+    "sourceCompletionEligibilityReadOnlyPreserved": true,
+    "vetoAuthority": false,
+    "approvalAuthority": false,
+    "completionAuthority": false,
+    "validationAuthority": false,
+    "checkpointAuthority": false,
+    "architectureEnforcementAuthority": false,
+    "capabilityGrantAuthority": false,
+    "scopeAuthority": false,
+    "directMutationAuthority": false,
+    "codingAgentAuthority": false,
+    "databaseAgentAuthority": false,
+    "testingAgentAuthority": false,
+    "agentOrchestratorAuthority": false,
+    "automaticAgentSelection": false,
+    "orchestration": false,
+    "agentExecution": false,
+    "toolExecution": false,
+    "execution": false,
+    "scheduling": false,
+    "jobCreation": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "studioTransport": false,
+    "localRuntimeTransport": false,
+    "deterministic": true,
     "environmentNeutral": true
   }
 }
