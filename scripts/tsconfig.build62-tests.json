@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "noEmit": true
+  },
+  "include": [
+    "test-build62-testing-agent-runtime.ts",
+    "../packages/plan/src/**/*.ts",
+    "../packages/build/src/**/*.ts",
+    "../packages/scope/src/**/*.ts",
+    "../packages/tools/src/**/*.ts",
+    "../packages/ai/src/**/*.ts"
+  ]
+}
