@@ -88,7 +88,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 59. **Planner Agent** — ✅
 60. **Coding Agent** — ✅
 61. **Database Agent** — ✅
-62. **Testing Agent** — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
+62. **Testing Agent** — ✅ — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
 63. **Review Agent**
 64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist through an explicit Agent Runtime revision, with pre-change/post-change architectural-conformance review and canonical Architecture Contract / Architecture Ledger integration while Build 9 remains the deterministic enforcement authority. **Viktor Interaction Layer** remains the canonical outward conversational presence of that team without becoming an agent or gaining independent execution authority. Build 64 must also expose the canonical visible **Viktor activation toggle**: Viktor voice is `OFF` by default at each new application session, can start only after explicit user activation, and must stop microphone capture/realtime voice transport immediately when switched `OFF`.
 
