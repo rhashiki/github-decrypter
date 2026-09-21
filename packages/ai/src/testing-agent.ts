@@ -4,6 +4,7 @@ import {
   type ToolInvocationInput,
   type ToolInvocationRecord,
   type ToolRuntimeInput,
+  type ToolValue,
 } from '@github-decrypter/tools';
 import {
   CHECKPOINT_ENGINE_SCHEMA,
@@ -164,12 +165,48 @@ function normalizeSourceRef(value: unknown): string {
   return normalized;
 }
 
+function assertToolValue(value: ToolValue): void {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new TypeError('Testing Agent acceptance values must contain only finite numbers.');
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const child of value) assertToolValue(child);
+    return;
+  }
+  if (typeof value === 'object') {
+    for (const child of Object.values(value)) assertToolValue(child);
+    return;
+  }
+  throw new TypeError('Testing Agent acceptance values must be JSON-compatible.');
+}
+
 function assertCriterion(value: ValidationCriterionInput): void {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new TypeError('Testing Agent requires one explicit acceptance criterion.');
   }
   if (value.id !== 'validation-criterion-0001') {
     throw new TypeError('Testing Agent single-flow criterion id must be validation-criterion-0001.');
+  }
+  const statement = typeof value.statement === 'string' ? value.statement.trim() : '';
+  if (!statement || statement.length > 65536) throw new TypeError('Testing Agent acceptance statement is invalid.');
+  const expectation = value.expectation as unknown as Record<string, unknown>;
+  if (!expectation || typeof expectation !== 'object' || Array.isArray(expectation)) {
+    throw new TypeError('Testing Agent acceptance expectation is invalid.');
+  }
+  const operator = expectation.operator;
+  const requiringExpected = operator === 'equals' || operator === 'not-equals' || operator === 'contains';
+  const unary = operator === 'truthy' || operator === 'falsy' || operator === 'exists';
+  if (!requiringExpected && !unary) throw new TypeError('Testing Agent acceptance operator is unsupported.');
+  const keys = Object.keys(expectation).sort();
+  if (requiringExpected) {
+    if (JSON.stringify(keys) !== JSON.stringify(['expected','operator'])) {
+      throw new TypeError('Testing Agent acceptance expectation shape is invalid.');
+    }
+    assertToolValue(expectation.expected as ToolValue);
+  } else if (JSON.stringify(keys) !== JSON.stringify(['operator'])) {
+    throw new TypeError('Testing Agent acceptance expectation shape is invalid.');
   }
 }
 
