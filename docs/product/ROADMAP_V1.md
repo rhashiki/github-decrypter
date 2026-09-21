@@ -84,13 +84,13 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 ## Agent team
 
-58. **Agent Runtime** — ✅ — North Star: **Named Agent System** identity/role/specialty metadata and authority limits.
+58. **Agent Runtime** — ✅ — North Star: **Named Agent System** identity/role/specialty metadata and authority limits. Historical revision 1 contains nine canonical specialists; Constitutional Amendment 004 reserves the explicit ten-agent registry transition for Build 64 rather than rewriting Build 58.
 59. **Planner Agent** — ✅
 60. **Coding Agent** — ✅
 61. **Database Agent** — ✅
 62. **Testing Agent** — North Star: **Interactive QA** may exercise supported application flows and compare observed behavior with acceptance intent.
 63. **Review Agent**
-64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; **Viktor Interaction Layer** becomes the canonical outward conversational presence of that team without becoming a tenth agent or gaining independent execution authority. Build 64 must also expose the canonical visible **Viktor activation toggle**: Viktor voice is `OFF` by default at each new application session, can start only after explicit user activation, and must stop microphone capture/realtime voice transport immediately when switched `OFF`.
+64. **Agent Orchestrator** — North Star: canonical **Agent Orchestrator**, multiple specialists presented as one coordinated team; Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist through an explicit Agent Runtime revision, with pre-change/post-change architectural-conformance review and canonical Architecture Contract / Architecture Ledger integration while Build 9 remains the deterministic enforcement authority. **Viktor Interaction Layer** remains the canonical outward conversational presence of that team without becoming an agent or gaining independent execution authority. Build 64 must also expose the canonical visible **Viktor activation toggle**: Viktor voice is `OFF` by default at each new application session, can start only after explicit user activation, and must stop microphone capture/realtime voice transport immediately when switched `OFF`.
 
 ## Knowledge and context integration
 
@@ -194,6 +194,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 - Adaptive User Profile → Builds 31 and 108.
 - Agent Orchestrator → Build 64.
 - Named Agent System → Builds 58 and 64.
+- Architectural Integrity & Heimdall → existing Build 9 deterministic Architecture Guardian + Build 64 explicit Agent Runtime revision/orchestration integration.
 - **Viktor Interaction Layer → Build 64 (canonical outward presence + explicit per-session activation toggle/session lifecycle), Build 70 (live Preview context), Builds 103–105 (visual/deictic interaction and authorized Visual Build), Build 108 (adaptive communication); reuses Voice Interaction foundation from Builds 44–45.**
 - Mentor Engine → Build 108.
 - Explain This → Build 108, exposed contextually by appropriate UI surfaces.
@@ -206,7 +207,7 @@ This is the canonical numbered roadmap for GitHub Decrypter V1. Build numbers ar
 
 ## Viktor constitutional invariant
 
-Viktor is the official real-time voice/presence interface of Vortex Ars AI, **not a tenth agent**. It may receive natural spoken requests, communicate coordinated agent progress and speak validated outcomes, but voice/conversation does not grant capabilities, bypass Scope Lock, bypass approvals, execute tools outside canonical runtime authorities or authorize production mutation.
+Viktor is the official real-time voice/presence interface of Vortex Ars AI, **not an agent and never part of the canonical specialist-agent registry**. Heimdall is the tenth canonical specialist under Constitutional Amendment 004. It may receive natural spoken requests, communicate coordinated agent progress and speak validated outcomes, but voice/conversation does not grant capabilities, bypass Scope Lock, bypass approvals, execute tools outside canonical runtime authorities or authorize production mutation.
 
 Viktor voice is **explicitly user-activated**. Every new application session begins with Viktor `OFF`. The Studio must expose a visible Viktor toggle; only an explicit `ON` action may begin the voice session/microphone flow. Switching `OFF` must stop microphone capture and realtime voice transport immediately and must not delete canonical conversation history. No hidden wake-word/background listener or automatic listening after restart is authorized.
 
