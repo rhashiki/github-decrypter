@@ -222,7 +222,7 @@ function assertCanonicalSpecialist(registry: AgentRuntimeRegistry): void {
   }
 }
 
-function normalizeText(value: unknown, label: string, max = REVIEW_AGENT_MAX_TEXT_CHARACTERS): string {
+function normalizeText(value: unknown, label: string, max: number = REVIEW_AGENT_MAX_TEXT_CHARACTERS): string {
   if (typeof value !== 'string') throw new TypeError(label + ' must be a string.');
   const normalized = value.trim();
   if (!normalized || normalized.length > max) throw new TypeError(label + ' is invalid.');
