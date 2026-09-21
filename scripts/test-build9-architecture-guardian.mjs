@@ -14,6 +14,7 @@ for (const file of [
   'docs/product/ROADMAP_V1.md',
   'docs/product/NORTH_STAR_ROADMAP_MAPPING.md',
   'docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md',
+  'docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md',
   '.github/pull_request_template.md',
 ]) {
   assert.ok(fs.existsSync(file), `Build 9 artifact missing: ${file}`);
@@ -35,6 +36,12 @@ assert.equal(policy.phaseGates.extensionActivationBuild, 25);
 assert.equal(policy.phaseGates.studioReactBuild, 27);
 assert.equal(policy.phaseGates.releaseAuthorityBuild, 134);
 assert.ok(policy.authorities.includes('docs/product/ROADMAP_V1.md'));
+assert.ok(policy.authorities.includes('docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md'));
+assert.equal(policy.architecturalIntegrity.heimdallActivationBuild, 64);
+assert.equal(policy.architecturalIntegrity.preActivationAgentCount, 9);
+assert.equal(policy.architecturalIntegrity.postActivationAgentCount, 10);
+assert.equal(policy.architecturalIntegrity.viktorExcludedFromAgentRegistry, true);
+assert.equal(policy.architecturalIntegrity.silentArchitecturalChangeAllowed, false);
 
 const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
 for (let index = 1; index <= 22; index += 1) {
@@ -47,11 +54,13 @@ for (const block of policy.northStar.requiredRoadmapBlocks) {
   assert.ok(mapping.includes(block), `roadmap block missing: ${block}`);
 }
 assert.ok(mapping.includes('1 → 134'));
+assert.ok(mapping.includes('Architectural Integrity & Heimdall'));
 
 const roadmap = read('docs/product/ROADMAP_V1.md');
 const roadmapNumbers = [...roadmap.matchAll(/^(\d+)\. \*\*/gm)].map((match) => Number(match[1]));
 assert.equal(roadmapNumbers.length, 134, 'canonical roadmap must list exactly 134 numbered Builds');
 assert.deepEqual(roadmapNumbers, Array.from({ length: 134 }, (_, index) => index + 1), 'canonical roadmap numbering must be contiguous 1–134');
+assert.ok(roadmap.includes('Heimdall — Architecture Guardian'));
 for (const block of policy.northStar.requiredRoadmapBlocks) {
   assert.ok(roadmap.includes(block), `canonical roadmap does not carry North Star ownership: ${block}`);
 }
