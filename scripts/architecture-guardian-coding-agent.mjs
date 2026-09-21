@@ -26,12 +26,20 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
-  const expectedExports = {
-    '.': './src/index.ts',
-    './agent-runtime': './src/agent-runtime.ts',
-    './planner-agent': './src/planner-agent.ts',
-    './coding-agent': './src/coding-agent.ts',
-  };
+  const expectedExports = policy.currentBuild >= 61
+    ? {
+      '.': './src/index.ts',
+      './agent-runtime': './src/agent-runtime.ts',
+      './planner-agent': './src/planner-agent.ts',
+      './coding-agent': './src/coding-agent.ts',
+      './database-agent': './src/database-agent.ts',
+    }
+    : {
+      '.': './src/index.ts',
+      './agent-runtime': './src/agent-runtime.ts',
+      './planner-agent': './src/planner-agent.ts',
+      './coding-agent': './src/coding-agent.ts',
+    };
   const expectedDependencies = {
     '@github-decrypter/plan': 'workspace:*',
     '@github-decrypter/tools': 'workspace:*',
