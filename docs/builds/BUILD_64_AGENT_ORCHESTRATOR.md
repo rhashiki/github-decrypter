@@ -45,4 +45,4 @@ Completion requires Architecture Guardian AG620–AG629, accumulated Builds 4–
 
 ## Next Build
 
-Build 65 — Chat / Project Shell.
+Build 65 — Knowledge Graph.
