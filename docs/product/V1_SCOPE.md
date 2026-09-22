@@ -2,7 +2,26 @@
 
 Status: FROZEN
 
-This document defines what belongs to GitHub Decrypter V1.0. The roadmap may split these capabilities into Builds, but may not silently expand them.
+This document defines the historically frozen V1.0 scope. The roadmap may split these capabilities into Builds, but may not silently expand them. Explicitly adopted constitutional amendments may add or clarify V1 authority without erasing this history.
+
+## Amendment 005 scope overlay
+
+Constitutional Amendment 005 explicitly expands and clarifies this frozen scope without deleting its historical record.
+
+For Vortex Ars AI V1:
+
+- the canonical intelligence presented to the user is **Vortex Ars AI**;
+- historical provider/model references below describe implementation-era technical foundations only and do not authorize a provider/model picker, BYOK requirement or third-party AI branding in the canonical product experience;
+- core Vortex intelligence must not require user AI-provider keys;
+- Tokenless UX remains mandatory: users do not manage raw token budgets as a product control;
+- **Project Genesis**, Product Contract, acceptance criteria and representative user journeys are part of the V1 planning/execution surface;
+- **Vortex Knowledge Compiler**, Shared Agent Operational State, Code Intelligence and Vortex Browser Runtime are explicit extensions of Project Knowledge / Context / Preview authorities;
+- **Visual Reference / Closed-loop Visual Build** and **Vortex Media Engine** are explicit extensions of Visual Development, including images, motion assets, synthetic presenters/avatars, speech, lip sync, scenes, slides/diagrams, captions and timeline-composed long-form media;
+- **Zero Placeholder**, **Evidence Before Completion**, **Complexity Budget**, **Run-to-Completion** and **RC by Default** are V1 completion requirements;
+- Security Audit includes explicit security-coverage evidence;
+- Build 133 owns the canonical RC Gate.
+
+The original bullets below remain as historical frozen-scope text except where Amendment 005 explicitly supersedes product presentation or adds mapped acceptance responsibility.
 
 ## Product Foundation
 - independent GitHub Decrypter repository and Build numbering
