@@ -15,6 +15,7 @@ for (const file of [
   'docs/product/NORTH_STAR_ROADMAP_MAPPING.md',
   'docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md',
   'docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md',
+  'docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md',
   '.github/pull_request_template.md',
 ]) {
   assert.ok(fs.existsSync(file), `Build 9 artifact missing: ${file}`);
@@ -42,6 +43,19 @@ assert.equal(policy.architecturalIntegrity.preActivationAgentCount, 9);
 assert.equal(policy.architecturalIntegrity.postActivationAgentCount, 10);
 assert.equal(policy.architecturalIntegrity.viktorExcludedFromAgentRegistry, true);
 assert.equal(policy.architecturalIntegrity.silentArchitecturalChangeAllowed, false);
+assert.ok(policy.authorities.includes('docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md'));
+assert.equal(policy.economicDoctrine.localComputePrimary, true);
+assert.equal(policy.economicDoctrine.coreRequiresExternalAI, false);
+assert.equal(policy.economicDoctrine.vortexManagedPaidInferenceAllowed, false);
+assert.equal(policy.economicDoctrine.vortexSubsidizedVariableInferenceAllowed, false);
+assert.equal(policy.economicDoctrine.vortexManagedPaidFallbackAllowed, false);
+assert.equal(policy.economicDoctrine.byokAllowed, true);
+assert.equal(policy.economicDoctrine.byokOptional, true);
+assert.equal(policy.economicDoctrine.byokUserFunded, true);
+assert.equal(policy.aiProviderAuthority.externalProviderCredentialOwner, 'user');
+assert.equal(policy.aiProviderAuthority.vortexManagedPaidProviderCredential, false);
+assert.equal(policy.aiProviderAuthority.coreRequiresExternalProvider, false);
+assert.equal(policy.aiProviderAuthority.byokRequired, false);
 
 const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
 for (let index = 1; index <= 22; index += 1) {
@@ -76,6 +90,7 @@ for (const marker of [
   'AG080',
   'AG082',
   'AG019',
+  'AG006',
   'gd-architecture-guardian-report/1',
 ]) {
   assert.ok(guardian.includes(marker), `Guardian enforcement marker missing: ${marker}`);
