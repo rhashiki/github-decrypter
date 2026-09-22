@@ -14,24 +14,31 @@ const versionBuild = (value) => {
   return match ? Number(match[1]) : null;
 };
 
-const expectedIds = ['ramon','leonardo','strachey','licklider','pitts','weizenbaum','samuel','seymour','fukushima'];
-const expectedNames = ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima'];
-const expectedRoles = [
-  'orchestrator','architect','builder-programmer','frontend-human-interface',
-  'backend-computational-core','reviewer-critic','qa-testing','mentor-professor','visual-perception',
-];
+const migrated = policy.currentBuild >= 64;
+const expectedIds = migrated
+  ? ['ramon','leonardo','strachey','licklider','pitts','weizenbaum','samuel','seymour','fukushima','heimdall']
+  : ['ramon','leonardo','strachey','licklider','pitts','weizenbaum','samuel','seymour','fukushima'];
+const expectedNames = migrated
+  ? ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima','Heimdall']
+  : ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima'];
+const expectedRoles = migrated
+  ? ['orchestrator','architect','builder-programmer','frontend-human-interface','backend-computational-core','reviewer-critic','qa-testing','mentor-professor','visual-perception','architecture-guardian']
+  : ['orchestrator','architect','builder-programmer','frontend-human-interface','backend-computational-core','reviewer-critic','qa-testing','mentor-professor','visual-perception'];
+const expectedCount = migrated ? 10 : 9;
 
 if (
   !rule || policy.currentBuild < 58 || rule.minimumBuild !== 58 || policy.phaseGates?.agentRuntimeBuild !== 58
   || rule.ownerPackage !== '@github-decrypter/ai' || rule.ownerSource !== 'packages/ai/src/agent-runtime.ts'
-  || rule.schema !== 'gd-agent-runtime/1' || rule.teamId !== 'vortex-ars-ai' || rule.agentCount !== 9
+  || rule.schema !== 'gd-agent-runtime/1' || rule.teamId !== 'vortex-ars-ai' || rule.agentCount !== expectedCount
 ) {
   violations.push({ code: 'AG560', message: 'Build 58 Agent Runtime policy is missing or inactive.' });
 } else {
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
-  const expectedExports = policy.currentBuild >= 63
+  const expectedExports = policy.currentBuild >= 64
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts', './architecture-contract': './src/architecture-contract.ts', './architecture-ledger': './src/architecture-ledger.ts', './heimdall': './src/heimdall.ts', './agent-orchestrator': './src/agent-orchestrator.ts' }
+    : policy.currentBuild >= 63
     ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts' }
     : policy.currentBuild >= 62
     ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts' }
@@ -58,16 +65,19 @@ if (
   ) violations.push({ code: 'AG561', message: 'Build 58 package/root identity, export or dependency boundary drifted.' });
 
   const source = read('packages/ai/src/agent-runtime.ts');
-  for (const marker of [
+  const runtimeMarkers = [
     'AGENT_RUNTIME_BUILD = 58',
     "AGENT_RUNTIME_SCHEMA = 'gd-agent-runtime/1'",
     "AGENT_RUNTIME_TEAM_ID = 'vortex-ars-ai'",
-    'AGENT_RUNTIME_COUNT = 9',
+    ...(migrated
+      ? ['AGENT_RUNTIME_REVISION = 2','AGENT_RUNTIME_COUNT = 10','AGENT_RUNTIME_MIGRATION_BUILD = 64','AGENT_RUNTIME_REVISION_ONE_COUNT = 9']
+      : ['AGENT_RUNTIME_REVISION = 1','AGENT_RUNTIME_COUNT = 9']),
     'createAgentRuntimeRegistry(',
     'assertCanonicalAgentRuntime(',
     'listAgentRuntimeDescriptors(',
     'getAgentRuntimeDescriptor(',
-  ]) if (!source.includes(marker)) violations.push({ code: 'AG562', message: 'Agent Runtime core contract is incomplete.', detail: marker });
+  ];
+  for (const marker of runtimeMarkers) if (!source.includes(marker)) violations.push({ code: 'AG562', message: 'Agent Runtime core contract is incomplete.', detail: marker });
 
   for (const id of expectedIds) if (!source.includes(`id: '${id}'`)) {
     violations.push({ code: 'AG563', message: 'Canonical Agent Runtime id is missing.', detail: id });
@@ -79,7 +89,7 @@ if (
     violations.push({ code: 'AG563', message: 'Canonical Agent Runtime role is missing.', detail: role });
   }
   if (source.includes("name: 'Viktor'") || source.includes("id: 'viktor'")) {
-    violations.push({ code: 'AG563', message: 'Viktor must not be registered as a tenth agent.' });
+    violations.push({ code: 'AG563', message: 'Viktor must never be registered as an agent.' });
   }
 
   if (/\bnode:|\bprocess\.|\bfetch\s*\(|\bwindow\.|\bdocument\.|\blocalStorage\b|\bindexedDB\b|\bnode:sqlite\b|\bchild_process\b|\bWebSocket\b|\bXMLHttpRequest\b/.test(source)
@@ -101,6 +111,7 @@ if (
     || JSON.stringify(rule.agentIds) !== JSON.stringify(expectedIds)
     || JSON.stringify(rule.agentNames) !== JSON.stringify(expectedNames)
     || JSON.stringify(rule.roles) !== JSON.stringify(expectedRoles)
+    || (migrated && (rule.runtimeRevision !== 2 || rule.migrationBuild !== 64 || rule.historicalRevisionOneCount !== 9 || rule.heimdallBuild !== 64))
   ) violations.push({ code: 'AG565', message: 'Agent Runtime canonical identity/metadata boundary drifted.' });
 
   if (

@@ -19,10 +19,14 @@ const expected = [
   ['samuel','Samuel','qa-testing'],
   ['seymour','Seymour','mentor-professor'],
   ['fukushima','Fukushima','visual-perception'],
+  ['heimdall','Heimdall','architecture-guardian'],
 ] as const;
 
-assert.equal(AGENT_RUNTIME_COUNT, 9);
-assert.equal(AGENT_RUNTIME_AGENTS.length, 9);
+assert.equal(AGENT_RUNTIME_COUNT, 10);
+assert.equal(AGENT_RUNTIME_AGENTS.length, 10);
+assert.equal(AGENT_RUNTIME_REGISTRY.revision, 2);
+assert.equal(AGENT_RUNTIME_REGISTRY.historicalRevisionOneCount, 9);
+assert.equal(AGENT_RUNTIME_REGISTRY.migrationBuild, 64);
 assert.equal(Object.isFrozen(AGENT_RUNTIME_AGENTS), true);
 assert.equal(Object.isFrozen(AGENT_RUNTIME_REGISTRY), true);
 assert.equal(AGENT_RUNTIME_REGISTRY.viktorIsAgent, false);
@@ -62,7 +66,7 @@ assert.throws(() => {
 }, /non-canonical/);
 
 assert.throws(() => {
-  const drift = { ...AGENT_RUNTIME_REGISTRY, agents: AGENT_RUNTIME_AGENTS.slice(0, 8), agentCount: 9 };
+  const drift = { ...AGENT_RUNTIME_REGISTRY, agents: AGENT_RUNTIME_AGENTS.slice(0, 9), agentCount: 9 };
   assertCanonicalAgentRuntime(drift);
 }, /non-canonical/);
 
@@ -72,5 +76,6 @@ console.log(JSON.stringify({
   agentCount: AGENT_RUNTIME_REGISTRY.agentCount,
   names: AGENT_RUNTIME_REGISTRY.agents.map((agent) => agent.name),
   viktorIsAgent: AGENT_RUNTIME_REGISTRY.viktorIsAgent,
+  historicalRevisionOneCount: AGENT_RUNTIME_REGISTRY.historicalRevisionOneCount,
   operational: false,
 }, null, 2));

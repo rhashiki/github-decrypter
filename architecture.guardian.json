@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 63,
+  "currentBuild": 64,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -1969,7 +1969,8 @@
     "codingAgentBuild": 60,
     "databaseAgentBuild": 61,
     "testingAgentBuild": 62,
-    "reviewAgentBuild": 63
+    "reviewAgentBuild": 63,
+    "agentOrchestratorBuild": 64
   },
   "legacyMigrationRoots": [
     "core",
@@ -1989,7 +1990,7 @@
     "minimumBuild": 58,
     "schema": "gd-agent-runtime/1",
     "teamId": "vortex-ars-ai",
-    "agentCount": 9,
+    "agentCount": 10,
     "agentIds": [
       "ramon",
       "leonardo",
@@ -1999,7 +2000,8 @@
       "weizenbaum",
       "samuel",
       "seymour",
-      "fukushima"
+      "fukushima",
+      "heimdall"
     ],
     "agentNames": [
       "Ramon",
@@ -2010,7 +2012,8 @@
       "Weizenbaum",
       "Samuel",
       "Seymour",
-      "Fukushima"
+      "Fukushima",
+      "Heimdall"
     ],
     "roles": [
       "orchestrator",
@@ -2021,7 +2024,8 @@
       "reviewer-critic",
       "qa-testing",
       "mentor-professor",
-      "visual-perception"
+      "visual-perception",
+      "architecture-guardian"
     ],
     "namedAgentSystem": true,
     "identityRegistry": true,
@@ -2055,7 +2059,11 @@
     "studioTransport": false,
     "localRuntimeTransport": false,
     "deterministic": true,
-    "environmentNeutral": true
+    "environmentNeutral": true,
+    "runtimeRevision": 2,
+    "migrationBuild": 64,
+    "historicalRevisionOneCount": 9,
+    "heimdallBuild": 64
   },
   "plannerAgentAuthority": {
     "ownerPackage": "@github-decrypter/ai",
@@ -2426,6 +2434,135 @@
     "localRuntimeTransport": false,
     "deterministic": true,
     "environmentNeutral": true
+  },
+  "architectureContractAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/architecture-contract.ts",
+    "minimumBuild": 64,
+    "schema": "gd-architecture-contract/1",
+    "machineReadable": true,
+    "canonicalProjectArchitecture": true,
+    "explicitOwnership": true,
+    "explicitDependencyDirection": true,
+    "explicitInfrastructureBoundaries": true,
+    "mutationAuthority": false,
+    "persistenceAuthority": false,
+    "deterministic": true
+  },
+  "architectureLedgerAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/architecture-ledger.ts",
+    "minimumBuild": 64,
+    "schema": "gd-architecture-ledger/1",
+    "architectureMemoryAuthority": true,
+    "modelMemoryRequired": false,
+    "mutationAuthority": false,
+    "persistenceAuthority": false,
+    "deterministic": true
+  },
+  "heimdallAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/heimdall.ts",
+    "minimumBuild": 64,
+    "schema": "gd-heimdall-conformance/1",
+    "agentId": "heimdall",
+    "agentName": "Heimdall",
+    "agentRole": "architecture-guardian",
+    "statuses": [
+      "conformant",
+      "violation",
+      "architectural-change-required",
+      "insufficient-evidence"
+    ],
+    "phases": [
+      "pre-change",
+      "post-change"
+    ],
+    "architectureContractConsumer": true,
+    "architectureLedgerConsumer": true,
+    "deterministicGuardianConsumer": true,
+    "refactorBeforeFeature": true,
+    "architectureDesignAuthority": false,
+    "architectureEnforcementAuthority": false,
+    "contractMutationAuthority": false,
+    "ledgerMutationAuthority": false,
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "scopeAuthority": false,
+    "directMutationAuthority": false,
+    "validationAuthority": false,
+    "toolExecution": false,
+    "execution": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "deterministic": true
+  },
+  "agentOrchestratorAuthority": {
+    "ownerPackage": "@github-decrypter/ai",
+    "ownerSource": "packages/ai/src/agent-orchestrator.ts",
+    "minimumBuild": 64,
+    "schema": "gd-agent-orchestrator/1",
+    "agentId": "ramon",
+    "agentName": "Ramon",
+    "agentRole": "orchestrator",
+    "sourceAgentRuntimeRevision": 2,
+    "coordinatedTeam": true,
+    "explicitParticipantRouting": true,
+    "semanticRouting": false,
+    "automaticSelection": false,
+    "canonicalArtifactCoordination": true,
+    "architecturePreReviewRequired": true,
+    "architecturePostReviewRequiredForCompletion": true,
+    "testingRequiredForCompletion": true,
+    "reviewAdvisoryOnlyPreserved": true,
+    "heimdallEnforcementAuthority": false,
+    "deterministicGuardianSovereign": true,
+    "validationPipelineSovereign": true,
+    "viktorIsAgent": false,
+    "viktorCommunicationSurface": true,
+    "viktorCompletionAuthority": false,
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "scopeAuthority": false,
+    "directMutationAuthority": false,
+    "toolExecution": false,
+    "execution": false,
+    "scheduling": false,
+    "jobCreation": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "deterministic": true
+  },
+  "viktorActivationAuthority": {
+    "ownerApp": "@github-decrypter/studio",
+    "sessionSource": "apps/studio/src/viktor-session.ts",
+    "componentSource": "apps/studio/src/ViktorToggle.tsx",
+    "minimumBuild": 64,
+    "schema": "gd-viktor-session/1",
+    "defaultState": "OFF",
+    "states": [
+      "OFF",
+      "READY",
+      "LISTENING",
+      "SPEAKING",
+      "ERROR"
+    ],
+    "explicitToggleRequired": true,
+    "microphonePermissionAfterExplicitActivation": true,
+    "persistentActivation": false,
+    "backgroundListening": false,
+    "wakeWordListener": false,
+    "toggleIsCapabilityGrant": false,
+    "toggleIsApproval": false,
+    "toggleIsScopeLock": false,
+    "immediateDeactivationResourceRelease": true,
+    "conversationDeletionOnDeactivate": false,
+    "networkAuthority": false,
+    "mutationAuthority": false
   },
   "economicDoctrine": {
     "amendment": "docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md",

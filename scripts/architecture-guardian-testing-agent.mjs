@@ -46,7 +46,9 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
-  const expectedExports = policy.currentBuild >= 63
+  const expectedExports = policy.currentBuild >= 64
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts', './architecture-contract': './src/architecture-contract.ts', './architecture-ledger': './src/architecture-ledger.ts', './heimdall': './src/heimdall.ts', './agent-orchestrator': './src/agent-orchestrator.ts' }
+    : policy.currentBuild >= 63
     ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts' }
     : {
     '.': './src/index.ts',
@@ -134,7 +136,7 @@ if (
     rule.agentId !== 'samuel' || rule.agentName !== 'Samuel' || rule.agentRole !== 'qa-testing'
     || rule.reviewAgentBuild !== 63 || rule.agentOrchestratorBuild !== 64
     || rule.previewRuntimeBuild !== 68 || rule.previewBridgeBuild !== 70
-    || !agentRule || agentRule.agentCount !== 9 || agentRule.viktorIsAgent !== false
+    || !agentRule || agentRule.agentCount !== (policy.currentBuild >= 64 ? 10 : 9) || agentRule.viktorIsAgent !== false
     || !Array.isArray(agentRule.agentIds) || !agentRule.agentIds.includes('samuel')
   ) violations.push({ code: 'AG606', message: 'Testing Agent identity or downstream ownership boundary drifted.' });
 

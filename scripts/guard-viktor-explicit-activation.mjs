@@ -27,6 +27,7 @@ const amendment = read(requiredFiles.amendment);
 const architecture = read(requiredFiles.architecture);
 const mapping = read(requiredFiles.mapping);
 const roadmap = read(requiredFiles.roadmap);
+const policy = JSON.parse(read('architecture.guardian.json') || '{}');
 
 for (const phrase of [
   'OFF by default at the beginning of each new application session',
@@ -62,6 +63,29 @@ for (const phrase of [
   'CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md',
 ]) {
   requirePhrase('Canonical roadmap', roadmap, phrase);
+}
+
+if ((policy.currentBuild ?? 0) >= 64) {
+  const session = read('apps/studio/src/viktor-session.ts');
+  const component = read('apps/studio/src/ViktorToggle.tsx');
+  const app = read('apps/studio/src/App.tsx');
+  for (const phrase of [
+    "VIKTOR_SESSION_SCHEMA = 'gd-viktor-session/1'",
+    "let state:ViktorState='OFF'",
+    'requestMicrophonePermission()',
+    'await adapter.stopMicrophoneCapture()',
+    'await adapter.stopVoiceTransport()',
+    'await adapter.cancelAssistantAudio()',
+    'persistentActivation:false',
+    'backgroundListening:false',
+  ]) requirePhrase('Build 64 Viktor session', session, phrase);
+  for (const phrase of ['ViktorToggle','aria-pressed={snapshot.enabled}','Turn Viktor on','Turn Viktor off']) {
+    requirePhrase('Build 64 Viktor toggle', component, phrase);
+  }
+  requirePhrase('Build 64 Studio', app, '<ViktorToggle />');
+  if (/\blocalStorage\b|\bindexedDB\b|\bWebSocket\b|\bfetch\s*\(/.test(session + '\n' + component)) {
+    violations.push('Build 64 Viktor activation must remain session-only and provider-neutral without hidden persistence/network transport.');
+  }
 }
 
 if (violations.length > 0) {

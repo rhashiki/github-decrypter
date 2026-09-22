@@ -45,15 +45,17 @@ if (
   const aiPackage = json('packages/ai/package.json');
   const rootPackage = json('package.json');
   const packageRule = policy.packageRules?.['@github-decrypter/ai'];
-  const expectedExports = {
-    '.': './src/index.ts',
-    './agent-runtime': './src/agent-runtime.ts',
-    './planner-agent': './src/planner-agent.ts',
-    './coding-agent': './src/coding-agent.ts',
-    './database-agent': './src/database-agent.ts',
-    './testing-agent': './src/testing-agent.ts',
-    './review-agent': './src/review-agent.ts',
-  };
+  const expectedExports = policy.currentBuild >= 64
+    ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts', './architecture-contract': './src/architecture-contract.ts', './architecture-ledger': './src/architecture-ledger.ts', './heimdall': './src/heimdall.ts', './agent-orchestrator': './src/agent-orchestrator.ts' }
+    : {
+      '.': './src/index.ts',
+      './agent-runtime': './src/agent-runtime.ts',
+      './planner-agent': './src/planner-agent.ts',
+      './coding-agent': './src/coding-agent.ts',
+      './database-agent': './src/database-agent.ts',
+      './testing-agent': './src/testing-agent.ts',
+      './review-agent': './src/review-agent.ts',
+    };
   const expectedDependencies = {
     '@github-decrypter/plan': 'workspace:*',
     '@github-decrypter/tools': 'workspace:*',
@@ -123,7 +125,7 @@ if (
   if (
     rule.agentId !== 'weizenbaum' || rule.agentName !== 'Weizenbaum' || rule.agentRole !== 'reviewer-critic'
     || rule.agentOrchestratorBuild !== 64
-    || !agentRule || agentRule.agentCount !== 9 || agentRule.viktorIsAgent !== false
+    || !agentRule || agentRule.agentCount !== (policy.currentBuild >= 64 ? 10 : 9) || agentRule.viktorIsAgent !== false
     || !Array.isArray(agentRule.agentIds) || !agentRule.agentIds.includes('weizenbaum')
   ) violations.push({ code: 'AG616', message: 'Review Agent identity or downstream ownership boundary drifted.' });
 
