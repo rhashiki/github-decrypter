@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react';
 import { EnvironmentDoctor, type EnvironmentDoctorOutcome } from './EnvironmentDoctor.js';
 import { JobsCenter } from './JobsCenter.js';
 import { OnboardingFlow } from './OnboardingFlow.js';
+import { ViktorToggle } from './ViktorToggle.js';
 import {
   describeAdaptiveExperience,
   type AdaptiveUserProfile,
@@ -91,6 +92,7 @@ export function StudioApp() {
           </div>
         </div>
         <div className="studio-layout-actions" aria-label="Layout controls">
+          <ViktorToggle />
           <Badge>Build {STUDIO_BUILD} · {STUDIO_VERSION}</Badge>
           <Button
             className="studio-layout-button"
