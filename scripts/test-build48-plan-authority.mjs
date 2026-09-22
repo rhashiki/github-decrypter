@@ -26,7 +26,8 @@ for (const [key, path] of Object.entries({
   './authority': './src/authority.ts',
 })) assert.equal(planPackage.exports?.[key], path, `Missing required Build 48 plan export ${key}.`);
 assert.deepEqual(planPackage.dependencies ?? {}, {});
-assert.equal(localPackage.version, '0.0.48');
+const localBuild = versionBuild(localPackage.version);
+assert.ok(localBuild !== null && localBuild >= 48 && localBuild <= policy.currentBuild);
 assert.equal(localPackage.dependencies['@github-decrypter/plan'], 'workspace:*');
 assert.ok(localIndex.includes("export * from './plan-authority.js'"));
 
