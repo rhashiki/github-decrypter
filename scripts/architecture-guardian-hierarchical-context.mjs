@@ -31,7 +31,8 @@ if (
   const build41Exports = './src/index.ts';
   const build42Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
   const build43Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts', './token-abstraction': './src/token-abstraction.ts' };
-  const expectedExports = policy.currentBuild >= 43 ? build43Exports : policy.currentBuild >= 42 ? build42Exports : build41Exports;
+  const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
+  const expectedExports = policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : policy.currentBuild >= 42 ? build42Exports : build41Exports;
   const exportsValid = JSON.stringify(contextPackage.exports) === JSON.stringify(expectedExports);
 
   if (
