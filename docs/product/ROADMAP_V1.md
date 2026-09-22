@@ -94,7 +94,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 61. **Database Agent** — ✅
 62. **Testing Agent** — ✅ — Interactive QA; representative Product Contract user journeys become executable behavioral validation where supported.
 63. **Review Agent** — ✅
-64. **Agent Orchestrator** — North Star: canonical Agent Orchestrator. Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist while Build 9 remains deterministic enforcement. **Viktor Interaction Layer** remains the outward conversational presence, not an agent. Build 64 owns the canonical visible **Viktor activation toggle**, explicit per-session activation, and must preserve `semanticRouting:false` / `automaticSelection:false` for Build 64 itself. Amendment 005 reinforces that orchestration may not hide architectural debt and that later shared operational state must remain project-scoped and authority-neutral.
+64. **Agent Orchestrator** — ✅ — North Star: canonical Agent Orchestrator. Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist while Build 9 remains deterministic enforcement. **Viktor Interaction Layer** remains the outward conversational presence, not an agent. Build 64 owns the canonical visible **Viktor activation toggle**, explicit per-session activation, and must preserve `semanticRouting:false` / `automaticSelection:false` for Build 64 itself. Amendment 005 reinforces that orchestration may not hide architectural debt and that later shared operational state must remain project-scoped and authority-neutral.
 
 ## Knowledge, Project Genesis and context integration
 
