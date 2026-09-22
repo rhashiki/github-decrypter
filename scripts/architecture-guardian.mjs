@@ -160,7 +160,7 @@ const economicDoctrine = policy.economicDoctrine ?? {};
 const economicAmendmentPath = economicDoctrine.amendment
   ?? 'docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md';
 if (!exists(economicAmendmentPath)) {
-  violation('AG020', `Required local-sovereignty amendment missing: ${economicAmendmentPath}`);
+  violation('AG006', `Required local-sovereignty amendment missing: ${economicAmendmentPath}`);
 } else {
   const amendment = read(economicAmendmentPath);
   for (const phrase of [
@@ -171,7 +171,7 @@ if (!exists(economicAmendmentPath)) {
     'Core usage must not create a mandatory Vortex-paid inference bill.',
   ]) {
     if (!amendment.includes(phrase)) {
-      violation('AG020', `Local-sovereignty amendment lost a protected invariant: ${phrase}`);
+      violation('AG006', `Local-sovereignty amendment lost a protected invariant: ${phrase}`);
     }
   }
 }
@@ -191,7 +191,7 @@ for (const [key, expected] of Object.entries({
   weakeningRequiresConstitutionalAmendment: true,
 })) {
   if (economicDoctrine[key] !== expected) {
-    violation('AG020', `Economic doctrine invariant drifted: ${key}`, {
+    violation('AG006', `Economic doctrine invariant drifted: ${key}`, {
       expected,
       actual: economicDoctrine[key],
     });
@@ -200,29 +200,29 @@ for (const [key, expected] of Object.entries({
 
 const aiProviderDoctrine = policy.aiProviderAuthority ?? {};
 if (aiProviderDoctrine.externalProvidersOptional !== true) {
-  violation('AG020', 'External AI providers must remain optional.');
+  violation('AG006', 'External AI providers must remain optional.');
 }
 if (aiProviderDoctrine.mandatoryProvider !== null) {
-  violation('AG020', 'No mandatory AI provider may be selected for core Vortex intelligence.', aiProviderDoctrine.mandatoryProvider);
+  violation('AG006', 'No mandatory AI provider may be selected for core Vortex intelligence.', aiProviderDoctrine.mandatoryProvider);
 }
 if (aiProviderDoctrine.externalProviderCredentialOwner !== 'user') {
-  violation('AG020', 'Optional external AI credentials must belong to the user.', aiProviderDoctrine.externalProviderCredentialOwner);
+  violation('AG006', 'Optional external AI credentials must belong to the user.', aiProviderDoctrine.externalProviderCredentialOwner);
 }
 if (aiProviderDoctrine.vortexManagedPaidProviderCredential !== false) {
-  violation('AG020', 'Vortex-managed paid provider credentials are forbidden for canonical AI execution.');
+  violation('AG006', 'Vortex-managed paid provider credentials are forbidden for canonical AI execution.');
 }
 if (aiProviderDoctrine.coreRequiresExternalProvider !== false || aiProviderDoctrine.byokRequired !== false) {
-  violation('AG020', 'Core Vortex intelligence must operate without an external provider or BYOK.');
+  violation('AG006', 'Core Vortex intelligence must operate without an external provider or BYOK.');
 }
 if (aiProviderDoctrine.byokAllowed !== true) {
-  violation('AG020', 'Optional BYOK must remain architecturally permitted.');
+  violation('AG006', 'Optional BYOK must remain architecturally permitted.');
 }
 
 for (const relativeRoot of ['apps/local/src', 'packages/ai/src']) {
   for (const absolute of sourceFiles(relativeRoot)) {
     const source = fs.readFileSync(absolute, 'utf8');
     if (/\bVORTEX_(?:AI_)?(?:API_)?KEY\b/.test(source)) {
-      violation('AG020', 'Canonical Vortex source must not depend on a pooled Vortex AI API key.', rel(absolute));
+      violation('AG006', 'Canonical Vortex source must not depend on a pooled Vortex AI API key.', rel(absolute));
     }
   }
 }
