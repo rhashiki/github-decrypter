@@ -21,6 +21,7 @@ import { createLocalRuntimePeer } from './identity.js';
 import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js';
 import { createOfflineExecutionCoordinator, type OfflineExecutionCoordinator } from './offline-execution.js';
 import { createProjectDetector, type ProjectDetector } from './project-detector.js';
+import { createProjectMemoryStore, type ProjectMemoryStore } from './project-memory-store.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -45,6 +46,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly audit?: AuditLedger;
   readonly workspaces?: WorkspaceManager;
   readonly projectDetection?: ProjectDetector;
+  readonly projectMemory?: ProjectMemoryStore;
   readonly git?: GitRuntime;
   readonly changeTracking?: ChangeTracker;
   readonly githubApp?: GitHubAppRuntime;
@@ -75,6 +77,7 @@ export class LocalRuntimeDaemon {
   readonly #audit: AuditLedger;
   readonly #workspaces: WorkspaceManager;
   readonly #projectDetection: ProjectDetector;
+  readonly #projectMemory: ProjectMemoryStore;
   readonly #git: GitRuntime;
   readonly #changeTracking: ChangeTracker;
   readonly #githubApp: GitHubAppRuntime;
@@ -105,6 +108,7 @@ export class LocalRuntimeDaemon {
     this.#audit = options.audit ?? createAuditLedger({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#workspaces = options.workspaces ?? createWorkspaceManager({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#projectDetection = options.projectDetection ?? createProjectDetector({ workspaces: this.#workspaces, eventBus: this.#eventBus, now: this.#now });
+    this.#projectMemory = options.projectMemory ?? createProjectMemoryStore({ database: this.#database, now: this.#now });
     this.#git = options.git ?? createGitRuntime({
       workspaces: this.#workspaces,
       capabilities: this.#capabilities,
@@ -157,6 +161,7 @@ export class LocalRuntimeDaemon {
   get audit(): AuditLedger { return this.#audit; }
   get workspaces(): WorkspaceManager { return this.#workspaces; }
   get projectDetection(): ProjectDetector { return this.#projectDetection; }
+  get projectMemory(): ProjectMemoryStore { return this.#projectMemory; }
   get git(): GitRuntime { return this.#git; }
   get changeTracking(): ChangeTracker { return this.#changeTracking; }
   get githubApp(): GitHubAppRuntime { return this.#githubApp; }
@@ -189,6 +194,8 @@ export class LocalRuntimeDaemon {
       if (!workspaceStatus.ready) throw new Error('Workspace Manager is not ready after database startup.');
       const projectDetectionStatus = await this.#projectDetection.initialize();
       if (!projectDetectionStatus.ready) throw new Error('Project Detection is not ready after Workspace Manager startup.');
+      const projectMemoryStatus = this.#projectMemory.initialize();
+      if (!projectMemoryStatus.ready) throw new Error('Project Memory is not ready after Workspace Manager startup.');
       if (!this.#jobs.status().ready) throw new Error('Durable Job Engine is not ready after database startup.');
       const recoveryStatus = await this.#recovery.startSession();
       if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
@@ -248,7 +255,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with safe Jobs Center control, persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with durable Project Memory, safe Jobs Center control, persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -266,6 +273,7 @@ export class LocalRuntimeDaemon {
       this.#closeAIRuntimeBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
+      this.#closeProjectMemoryBestEffort();
       this.#closeProjectDetectionBestEffort();
       this.#closeWorkspacesBestEffort();
       this.#closeAuditBestEffort();
@@ -296,6 +304,7 @@ export class LocalRuntimeDaemon {
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
     try { await this.#recovery.stopSession(reason); } catch (error) { recoveryError = error; }
+    this.#projectMemory.shutdown();
     this.#projectDetection.shutdown();
     this.#workspaces.shutdown();
     this.#audit.shutdown();
@@ -331,6 +340,7 @@ export class LocalRuntimeDaemon {
   #closeAIModelManagerBestEffort(): void { try { this.#aiModelManager.shutdown(); } catch {} }
   #closeAIInstallerBestEffort(): void { try { this.#aiInstaller.shutdown(); } catch {} }
   #closeAIRuntimeBestEffort(): void { try { this.#aiRuntime.shutdown(); } catch {} }
+  #closeProjectMemoryBestEffort(): void { try { this.#projectMemory.shutdown(); } catch {} }
   #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }
   #closeWorkspacesBestEffort(): void { try { this.#workspaces.shutdown(); } catch {} }
   #closeAuditBestEffort(): void { try { this.#audit.shutdown(); } catch {} }
