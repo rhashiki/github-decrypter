@@ -15,15 +15,18 @@ assert.equal(policy.phaseGates?.reviewAgentBuild, 63);
 assert.ok(versionBuild(rootPackage.version) >= 63);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 63);
-assert.deepEqual(aiPackage.exports, {
-  '.': './src/index.ts',
-  './agent-runtime': './src/agent-runtime.ts',
-  './planner-agent': './src/planner-agent.ts',
-  './coding-agent': './src/coding-agent.ts',
-  './database-agent': './src/database-agent.ts',
-  './testing-agent': './src/testing-agent.ts',
-  './review-agent': './src/review-agent.ts',
-});
+const expectedExports = policy.currentBuild >= 64
+  ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts', './architecture-contract': './src/architecture-contract.ts', './architecture-ledger': './src/architecture-ledger.ts', './heimdall': './src/heimdall.ts', './agent-orchestrator': './src/agent-orchestrator.ts' }
+  : {
+    '.': './src/index.ts',
+    './agent-runtime': './src/agent-runtime.ts',
+    './planner-agent': './src/planner-agent.ts',
+    './coding-agent': './src/coding-agent.ts',
+    './database-agent': './src/database-agent.ts',
+    './testing-agent': './src/testing-agent.ts',
+    './review-agent': './src/review-agent.ts',
+  };
+assert.deepEqual(aiPackage.exports, expectedExports);
 assert.deepEqual(aiPackage.dependencies, {
   '@github-decrypter/plan': 'workspace:*',
   '@github-decrypter/tools': 'workspace:*',
