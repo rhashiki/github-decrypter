@@ -10,14 +10,17 @@ const packageBuild = versionMatch ? Number(versionMatch[1]) : null;
 
 assert.ok(policy.currentBuild >= 43, 'Architecture Guardian must not regress below Build 43');
 assert.equal(pkg.name, '@github-decrypter/context');
-assert.equal(packageBuild, 43);
+assert.ok(packageBuild !== null && packageBuild >= 43 && packageBuild <= policy.currentBuild);
 assert.deepEqual(pkg.dependencies ?? {}, { '@github-decrypter/plan': 'workspace:*' });
 assert.equal(Object.keys(pkg.dependencies ?? {}).length, 1);
-assert.deepEqual(pkg.exports, {
+const build43Exports = {
   '.': './src/index.ts',
   './continuation': './src/continuation.ts',
   './token-abstraction': './src/token-abstraction.ts',
-});
+};
+assert.deepEqual(pkg.exports, policy.currentBuild >= 65
+  ? { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' }
+  : build43Exports);
 
 for (const marker of [
   'TOKEN_ABSTRACTION_BUILD = 43',
