@@ -8,7 +8,10 @@ Build 58 introduces the canonical Named Agent System registry for Vortex Ars AI.
 - source: `packages/ai/src/agent-runtime.ts`
 - schema: `gd-agent-runtime/1`
 - build: 58
-- canonical team size: 9
+- canonical team size: 10
+- current runtime revision: 2
+- explicit migration Build: 64
+- historical revision 1 team size: 9
 
 ## Canonical specialists
 
@@ -21,6 +24,7 @@ Build 58 introduces the canonical Named Agent System registry for Vortex Ars AI.
 7. Samuel — QA / Testing
 8. Seymour — Mentor / Professor
 9. Fukushima — Visual / Perception
+10. Heimdall — Architecture Guardian
 
 Viktor is not an agent and is not part of this registry.
 
@@ -36,7 +40,7 @@ Build 59–63 own later specialized operational agents. Build 64 owns coordinate
 
 `named identity != security principal`
 
-A memorable name or role never increases capability, approval, scope or mutation authority. The nine descriptors remain presentation/coordination metadata until later owning Builds activate operational behavior.
+A memorable name or role never increases capability, approval, scope or mutation authority. The descriptors remain identity/coordination metadata. Build 64 explicitly migrates the registry to revision 2 and adds Heimdall as specialist 10 without turning identity into a security principal.
 
 ## Preserved ownership
 
@@ -56,3 +60,8 @@ A memorable name or role never increases capability, approval, scope or mutation
 ## Non-authority
 
 Build 58 adds no filesystem, network, database, persistence, job, scheduling, Studio transport, Local Runtime transport, tool execution, agent execution, automatic selection, agent orchestration, deployment, release, DNS or production mutation authority.
+
+
+## Build 64 migration
+
+Build 58 remains the historical origin of revision 1 with nine specialists. Build 64 performs the explicit revision 2 migration to ten specialists, adds Heimdall, preserves Viktor outside the registry, and leaves operational authorities in their owning modules.
