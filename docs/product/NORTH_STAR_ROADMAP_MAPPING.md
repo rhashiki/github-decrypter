@@ -1,8 +1,8 @@
-# GitHub Decrypter — North Star Roadmap Mapping
+# Vortex Ars AI — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR INTERACTION LAYER + EXPLICIT ACTIVATION + ARCHITECTURAL INTEGRITY / HEIMDALL**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION**
 
-Build 9 incorporates the explicit North Star directive without inventing decimal Builds and without renumbering Builds 1–134. The new product blocks are assigned to existing roadmap authorities where the responsibility naturally belongs.
+Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–005 add Viktor, explicit activation, architectural integrity/Heimdall and the Complete Product Generation Doctrine. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
 
 This mapping is an explicit owner-authorized amendment to the V1 planning surface. It does not authorize implementation before the owning Build.
 
@@ -23,6 +23,22 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | Visual Element Mapping | **Build 104 — Visual Context** | Owns Preview/DOM/component/source-code correlation where technically possible. |
 | Interactive QA | **Build 57 — Validation Pipeline**, **Build 62 — Testing Agent** | Validation defines acceptance flow; Testing Agent can exercise supported application flows and compare behavior with the request. |
 | Adaptive Explanation Engine | **Build 108 — Learning Mode** | Adapts explanation depth to the user profile and learned concepts. |
+| One Intelligence / No BYOK | **Builds 33–37**, enforced by **123 / 128 / 132** | Provider/model abstractions remain internal. Canonical V1 UX exposes Vortex Ars AI only and does not require user AI-provider keys. |
+| Tokenless UX | **Build 43**, **Builds 67 / 128** | Token/context/runtime complexity is internal; finite hardware/compute limits remain honest. |
+| Project Genesis | **Build 31**, **Builds 38–40**, **Build 67** | Existing onboarding/intake/compiler foundations feed a final adaptive pre-build discovery flow and durable Product Contract. |
+| Product Contract / Acceptance / Journeys | **Build 39**, **Build 67**, **Builds 57 / 62**, **Build 133** | Requirements become testable acceptance criteria and representative user journeys; RC Gate consumes the evidence. |
+| Run-to-Completion | **Builds 12 / 47 / 52 / 56 / 57**, stabilized **129–133** | Scoped work continues through correction/retest without repetitive “continue” prompting unless a real external/user dependency blocks progress. |
+| Zero Placeholder / RC by Default | **Build 132**, **Build 133** | Requested functionality must be end-to-end real unless prototype behavior was explicitly requested. |
+| Complexity Budget | **Build 9**, **Build 64**, **Build 107**, **Build 133** | Refactor Before Feature applies when responsibility boundaries would otherwise be exceeded. |
+| Vortex Knowledge Compiler | **Build 45**, **Builds 65–67** | Repository/document ingestion, hardened extraction, structural/lexical/semantic indexing and progressive knowledge packs. |
+| Shared Agent Operational State | **Build 66** | Durable observations/findings/coverage/questions/facts without becoming an authority source. |
+| Code Intelligence | **Builds 65 / 67 / 73** | AST/symbol/reference/dependency/structural search and fast local retrieval. |
+| Vortex Browser Runtime | **Builds 68–70**, consumed by **57 / 62 / 103–105** | Bounded browser/Preview execution with structured state, stable refs where possible and filtered snapshots. |
+| Visual Reference & Closed-loop Build | **Builds 103–105** | Reference intake → decomposition → scoped implementation → render/screenshot verification → targeted correction. |
+| Vortex Media Engine | **Build 105**, supported by **45 / 115–118 / 125–128** | Images, motion, avatar/presenter, speech, lip sync, scenes, slides, captions and long-form timeline composition as app assets. |
+| Security Coverage Validation | **Builds 62 / 124 / 127 / 133** | SBOM/dependencies/secrets/config/runtime/API/browser evidence with tested/partial/untested coverage. |
+| Vortex Model Specialization | **Builds 34–37**, **Build 128** | Vortex Core and Vortex-owned specialist adaptations remain internal engineering; no BYOK/model-shopping UX. |
+| RC Gate | **Build 133** | Canonical evidence gate for Release Candidate readiness; blocked criteria return to correction/retest. |
 
 ## Required acceptance extensions
 
@@ -116,6 +132,104 @@ When the future owning implementation surface is reached, Viktor should support 
 - Brazilian Portuguese as a first-class locale while remaining multilingual;
 - no voice cloning or imitation of J.A.R.V.I.S., Paul Bettany or any other identifiable person or protected character performance.
 
+## Amendment 005 — Complete Product Generation acceptance extensions
+
+### Builds 31 / 38–40 / 67 — Project Genesis
+- substantial new-product generation begins with adaptive discovery rather than immediate implementation;
+- discovery asks business/product questions and does not require the user to choose ordinary implementation details;
+- question branches collapse when prior answers make them irrelevant;
+- known roles, workflows, rules, content, monetization, integrations, privacy, accessibility, platform and deployment expectations are captured where applicable;
+- external facts Vortex cannot safely invent are identified before implementation where reasonably foreseeable;
+- a durable Product Contract is produced;
+- requirements compile into explicit acceptance criteria and representative user journeys;
+- unresolved decisions remain explicit instead of being guessed;
+- Build 67 is the final integration owner; completed Builds 31 / 38–40 remain historical foundations and are not silently rewritten.
+
+### Builds 65–67 / 73 — Knowledge and Code Intelligence
+- source repositories can be represented through supported module/dependency/symbol/reference graphs;
+- supported documents can be converted into structured, source-traceable knowledge;
+- knowledge packs use progressive disclosure/on-demand loading;
+- lexical, semantic and structural retrieval may be combined;
+- large source collections are not blindly dumped into model context when narrower retrieval suffices;
+- source document text is data, not instruction authority;
+- ingestion hardens supported parsers against invisible/instruction-shaped content and parser abuse;
+- Code Explorer supports supported AST-aware definitions/references/symbols/structural search;
+- compiled knowledge never silently rewrites Product Contract, Architecture Ledger, Git or validation truth.
+
+### Build 66 — Shared Agent Operational State
+- specialists may share project-scoped notes, findings, coverage, open questions and reusable facts;
+- each shared record has provenance and lifecycle state where applicable;
+- duplicated work should be avoided when valid existing state already covers the same surface;
+- shared state never grants capability, approval, scope or completion authority;
+- canonical architecture, validation and Git authorities remain separate.
+
+### Builds 68–70 — Vortex Browser Runtime
+- Preview/browser execution has an explicit lifecycle and deterministic cleanup;
+- supported page state can expose accessibility/DOM structure, screenshots, console/network/navigation evidence and stable element references where possible;
+- large state is filtered/windowed rather than always emitted wholesale;
+- browser interaction remains behind Tool Runtime, capabilities and Scope Lock;
+- browser state is context/evidence, not automatic authorization to mutate;
+- session recovery/failure behavior is explicit.
+
+### Builds 103–105 — Visual Reference, Closed-loop Build and Media Engine
+- reference modes include faithful replication, inspiration, layout, component and style intent where applicable;
+- visual references are decomposed into layout/hierarchy/style/assets rather than used as a hidden whole-page background shortcut;
+- selected elements resolve to source context where technically possible;
+- generated UI is rendered and visually re-inspected across required form factors;
+- correction loops target identified mismatches rather than regenerate unrelated scope;
+- Media Engine can produce/assemble applicable images, animated splash/motion assets, presenter/avatar footage, speech, lip sync, scenes, slides/diagrams, captions/subtitles and B-roll;
+- long-form media uses a durable timeline with segment continuity metadata rather than claiming infinite one-pass generation;
+- timeline segments preserve applicable identity/voice/scene/camera/clothing/lighting/continuity state;
+- final media composition validates audio continuity, lip sync, expected duration/output and export integrity where applicable;
+- likeness, voice and reference-media workflows enforce applicable authorization/consent requirements;
+- generated media remains ordinary project asset output and is exportable.
+
+### Builds 44–45 / 64 / 125 / 128 — Viktor voice evolution
+- the target supports local-capable ASR/TTS/VAD where technically feasible;
+- interruption/barge-in stops or ducks Vortex output without feeding its own synthesized speech back as user intent;
+- voice pipeline remains one canonical conversation context;
+- provider/model identity is not exposed as a required user choice;
+- unsupported hardware degrades transparently to an available interaction mode;
+- Viktor remains OFF by default and gains no execution authority from voice state.
+
+### Build 107 — Complexity Health
+- Health Score detects/report signals such as duplicate truth, responsibility leakage, forbidden/circular dependency, dead/legacy accumulation and workaround growth where measurable;
+- health scoring is advisory evidence and cannot override Guardian/Heimdall;
+- a feature that exceeds responsibility boundaries triggers Refactor Before Feature rather than hidden debt.
+
+### Build 127 — Security Coverage Validation
+- security audit records what was actually tested;
+- applicable evidence includes software inventory/SBOM, dependency vulnerabilities, secrets, configuration/IaC, code/runtime behavior and API/browser flows;
+- coverage status can be tested, partial or untested;
+- untested surfaces are never converted into a false “clean” claim;
+- dynamic testing is constrained to authorized targets/scope;
+- findings can feed correction/retest before RC.
+
+### Build 128 — Vortex Intelligence Efficiency & Specialization
+- local inference is optimized for supported hardware through appropriate internal techniques such as quantization, caching, batching and context reuse;
+- small/specialized Vortex components may handle narrow tasks where they preserve required quality;
+- specialist adaptation remains one Vortex intelligence identity to the user;
+- no canonical UX requires model/provider shopping, token management or BYOK;
+- quality/performance degradation is observable and honest rather than silently concealed.
+
+### Builds 132–133 — Zero Placeholder + RC Gate
+- requested-scope TODOs, fake backends, stub handlers, nonfunctional controls and “coming soon” behavior block RC unless explicitly authorized as prototype behavior;
+- Product Contract acceptance matrix is complete and traceable to evidence;
+- representative user journeys pass;
+- applicable compilation/type/lint/unit/integration/E2E/behavioral/visual/security/architecture/performance evidence passes;
+- Architecture Guardian and applicable Heimdall post-change conformance pass;
+- unresolved Complexity Budget debt introduced merely to force completion blocks RC;
+- user-only/external dependencies remain explicit and block only the affected release criterion rather than being fabricated;
+- an RC-blocked result returns to Ramon for correction/retest;
+- Ramon/Viktor may communicate RC readiness only after the canonical RC Gate permits it.
+
+### Global One Intelligence / Tokenless / No BYOK acceptance
+- normal V1 product surfaces present Vortex Ars AI, not a catalog of third-party AI brands;
+- core intelligence usage does not require user AI-provider API keys;
+- users do not purchase/allocate/manage tokens as the product interaction unit;
+- internal routing/model/runtime decisions remain replaceable implementation details;
+- local-first claims remain honest about finite compute, memory, storage and time.
+
 ## Architecture constraints
 
 1. These mappings do not move privileged execution into the Studio.
@@ -134,7 +248,13 @@ When the future owning implementation surface is reached, Viktor should support 
 14. Spoken intent never upgrades capabilities, scope or approval state.
 15. Commercial requirements remain separate from local model inference costs.
 16. No Build may claim infinite tokens/context/resources.
-17. The user remains final authority for actions outside already granted scope.
+17. Vortex Ars AI is the canonical intelligence identity; core V1 intelligence must not require BYOK.
+18. Tokenless UX hides token-management burden, not physical compute limits.
+19. Project Genesis cannot be bypassed for substantive new-product generation merely to start coding faster.
+20. Zero Placeholder and Evidence Before Completion apply unless explicit prototype behavior is requested.
+21. Complexity Budget and Refactor Before Feature apply across future Builds.
+22. Media/browser/knowledge capabilities remain ordinary scoped tools and never create new security authority.
+23. The user remains final authority for actions outside already granted scope.
 
 ## Relationship with the frozen roadmap
 
@@ -143,6 +263,8 @@ The canonical Build sequence remains **1 → 134**. This file adds explicit acce
 `CONSTITUTION_AMENDMENT_002_VIKTOR_INTERACTION_LAYER.md` is explicit product-owner authorization for Viktor itself.
 
 `CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md` is explicit product-owner authorization for the visible per-session activation toggle and fail-closed voice lifecycle.
+
+`CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md` is explicit product-owner authorization for One Intelligence, No BYOK, Tokenless UX, Project Genesis, Complete Product Generation, Vortex Knowledge/Browser/Media capabilities, Complexity Budget, Security Coverage, Vortex Model Specialization and RC by Default.
 
 Future ideas outside the adopted constitutional amendments continue to follow `docs/product/RFC_POLICY.md`.
 
