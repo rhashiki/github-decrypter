@@ -72,7 +72,7 @@ export function createViktorSessionController(adapter:ViktorVoiceAdapter):Viktor
   const listeners=new Set<(snapshot:ViktorSessionSnapshot)=>void>();
 
   const snapshot=():ViktorSessionSnapshot=>Object.freeze({
-    schema:VIKTOR_SESSION_SCHEMA,build:VIKTOR_SESSION_BUILD,state,enabled:state!=='OFF',
+    schema:VIKTOR_SESSION_SCHEMA,build:VIKTOR_SESSION_BUILD,state,enabled:state==='READY'||state==='LISTENING'||state==='SPEAKING',
     microphoneCaptured,transportActive,error,activationIsCapabilityGrant:false,activationIsApproval:false,
     activationIsScopeLock:false,persistentActivation:false,backgroundListening:false,
   });
