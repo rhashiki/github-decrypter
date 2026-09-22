@@ -15,7 +15,9 @@ assert.equal(policy.phaseGates?.agentRuntimeBuild, 58);
 assert.ok(versionBuild(rootPackage.version) >= 58);
 assert.equal(aiPackage.name, '@github-decrypter/ai');
 assert.ok(versionBuild(aiPackage.version) >= 58);
-const expectedExports = policy.currentBuild >= 63
+const expectedExports = policy.currentBuild >= 64
+  ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts', './architecture-contract': './src/architecture-contract.ts', './architecture-ledger': './src/architecture-ledger.ts', './heimdall': './src/heimdall.ts', './agent-orchestrator': './src/agent-orchestrator.ts' }
+  : policy.currentBuild >= 63
     ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts', './review-agent': './src/review-agent.ts' }
     : policy.currentBuild >= 62
     ? { '.': './src/index.ts', './agent-runtime': './src/agent-runtime.ts', './planner-agent': './src/planner-agent.ts', './coding-agent': './src/coding-agent.ts', './database-agent': './src/database-agent.ts', './testing-agent': './src/testing-agent.ts' }
@@ -32,11 +34,14 @@ const expectedDependencies = policy.currentBuild >= 60
 assert.deepEqual(aiPackage.exports, expectedExports);
 assert.deepEqual(aiPackage.dependencies ?? {}, expectedDependencies);
 
-for (const marker of [
+const migrated = policy.currentBuild >= 64;
+const runtimeMarkers = [
   'AGENT_RUNTIME_BUILD = 58',
   "AGENT_RUNTIME_SCHEMA = 'gd-agent-runtime/1'",
   "AGENT_RUNTIME_TEAM_ID = 'vortex-ars-ai'",
-  'AGENT_RUNTIME_COUNT = 9',
+  ...(migrated
+    ? ['AGENT_RUNTIME_REVISION = 2','AGENT_RUNTIME_COUNT = 10','AGENT_RUNTIME_MIGRATION_BUILD = 64','AGENT_RUNTIME_REVISION_ONE_COUNT = 9']
+    : ['AGENT_RUNTIME_REVISION = 1','AGENT_RUNTIME_COUNT = 9']),
   'createAgentRuntimeRegistry(',
   'assertCanonicalAgentRuntime(',
   'listAgentRuntimeDescriptors(',
@@ -48,9 +53,10 @@ for (const marker of [
   'toolExecution: false',
   'capabilityGrantAuthority: false',
   'mutationAuthorized: false',
-]) assert.ok(source.includes(marker), `Missing Agent Runtime marker: ${marker}`);
+];
+for (const marker of runtimeMarkers) assert.ok(source.includes(marker), `Missing Agent Runtime marker: ${marker}`);
 
-for (const name of ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima']) {
+for (const name of (migrated ? ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima','Heimdall'] : ['Ramon','Leonardo','Strachey','Licklider','Pitts','Weizenbaum','Samuel','Seymour','Fukushima'])) {
   assert.ok(source.includes(`name: '${name}'`), `Missing canonical agent name: ${name}`);
 }
 assert.equal(source.includes("name: 'Viktor'"), false, 'Viktor must not be registered as an agent.');
@@ -67,7 +73,13 @@ assert.equal(authority.ownerPackage, '@github-decrypter/ai');
 assert.equal(authority.ownerSource, 'packages/ai/src/agent-runtime.ts');
 assert.equal(authority.minimumBuild, 58);
 assert.equal(authority.schema, 'gd-agent-runtime/1');
-assert.equal(authority.agentCount, 9);
+assert.equal(authority.agentCount, migrated ? 10 : 9);
+if (migrated) {
+  assert.equal(authority.runtimeRevision, 2);
+  assert.equal(authority.migrationBuild, 64);
+  assert.equal(authority.historicalRevisionOneCount, 9);
+  assert.equal(authority.heimdallBuild, 64);
+}
 assert.equal(authority.viktorIsAgent, false);
 for (const field of [
   'namedAgentSystem','identityRegistry','roleMetadata','specialtyMetadata',
@@ -85,7 +97,8 @@ console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build58-agent-runtime-static/1',
   build: 58,
-  agentCount: 9,
+  agentCount: authority.agentCount,
+  historicalRevisionOneCount: migrated ? 9 : null,
   viktorIsAgent: false,
   nextBuild: 59,
 }, null, 2));
