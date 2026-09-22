@@ -32,6 +32,7 @@ if(required.every(exists)){
   const localPackage=json('apps/local/package.json');
   const contract=read('packages/context/src/project-memory.ts');
   const store=read('apps/local/src/project-memory-store.ts');
+  const daemon=read('apps/local/src/daemon.ts');
   const migrations=read('apps/local/src/database-migrations.ts');
   const roadmap=read('docs/product/ROADMAP_V1.md');
   const rule=policy.projectMemoryAuthority||{};
@@ -92,6 +93,16 @@ if(required.every(exists)){
     'Project Memory supersession must preserve entry kind.',
     'externalTransport: false',
   ]) if(!store.includes(marker)) fail('AG666','Project Memory Store marker is missing.',marker);
+
+  for(const marker of [
+    "createProjectMemoryStore",
+    "readonly projectMemory?: ProjectMemoryStore",
+    "readonly #projectMemory: ProjectMemoryStore",
+    "get projectMemory(): ProjectMemoryStore",
+    "const projectMemoryStatus = this.#projectMemory.initialize()",
+    "this.#projectMemory.shutdown()",
+    "#closeProjectMemoryBestEffort()",
+  ]) if(!daemon.includes(marker)) fail('AG666','Project Memory is not integrated into the Local Runtime lifecycle.',marker);
 
   if(/\bfetch\s*\(|\bWebSocket\b|https?:\/\//.test(store)){
     fail('AG667','Project Memory Store gained forbidden network transport.');
