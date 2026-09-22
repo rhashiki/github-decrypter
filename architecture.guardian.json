@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 65,
+  "currentBuild": 66,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -210,6 +210,7 @@
       "allowedWorkspaceDependencies": [
         "@github-decrypter/ai",
         "@github-decrypter/chat",
+        "@github-decrypter/context",
         "@github-decrypter/git",
         "@github-decrypter/github-app",
         "@github-decrypter/github-provider",
@@ -232,7 +233,9 @@
     "ownerRoot": "apps/local",
     "engineImport": "node:sqlite",
     "minimumBuild": 11,
-    "durableJobSchemaBuild": 12
+    "durableJobSchemaBuild": 12,
+    "projectMemorySchemaBuild": 66,
+    "projectMemorySchemaVersion": 13
   },
   "jobAuthority": {
     "ownerRoot": "apps/local",
@@ -2629,5 +2632,52 @@
     "queryMaxNodes": 256,
     "queryMaxEdges": 512,
     "queryMaxDepth": 4
+  },
+  "projectMemoryAuthority": {
+    "ownerContractPackage": "@github-decrypter/context",
+    "contractSource": "packages/context/src/project-memory.ts",
+    "runtimeOwnerRoot": "apps/local",
+    "storeSource": "apps/local/src/project-memory-store.ts",
+    "minimumBuild": 66,
+    "schema": "gd-project-memory-entry/1",
+    "querySchema": "gd-project-memory-query/1",
+    "databaseSchemaVersion": 13,
+    "kinds": [
+      "observation",
+      "finding",
+      "coverage",
+      "unresolved-question",
+      "project-fact",
+      "decision",
+      "knowledge-pack"
+    ],
+    "coverageStates": [
+      "tested",
+      "untested"
+    ],
+    "workspaceScoped": true,
+    "durable": true,
+    "localFirst": true,
+    "immutableRevisions": true,
+    "supersessionModel": true,
+    "sourceReferencesRequired": true,
+    "decisionProvenanceRequired": true,
+    "compiledKnowledgePacks": true,
+    "boundedQueryLimit": 500,
+    "authoritative": false,
+    "architectureLedgerAuthority": false,
+    "productContractAuthority": false,
+    "gitAuthority": false,
+    "validationAuthority": false,
+    "capabilityAuthority": false,
+    "approvalAuthority": false,
+    "persistence": true,
+    "persistenceOwner": "apps/local",
+    "externalTransport": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "aiExecution": false,
+    "semanticEmbedding": false,
+    "knowledgeCompilerBuild": 67
   }
 }
