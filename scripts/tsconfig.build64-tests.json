@@ -1,7 +1,9 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "noEmit": true
   },
   "include": [
@@ -12,6 +14,6 @@
     "../packages/scope/src/**/*.ts",
     "../packages/tools/src/**/*.ts",
     "../packages/ai/src/**/*.ts",
-    "../apps/studio/src/**/*.ts"
+    "../apps/studio/src/viktor-session.ts"
   ]
 }
