@@ -26,6 +26,8 @@ export * from './jobs-center-client.js';
 export { OnboardingFlow } from './OnboardingFlow.js';
 export { EnvironmentDoctor } from './EnvironmentDoctor.js';
 export { JobsCenter } from './JobsCenter.js';
+export * from './viktor-session.js';
+export { ViktorToggle } from './ViktorToggle.js';
 export { StudioApp } from './App.js';
 
 export const appIdentity = Object.freeze({
@@ -58,5 +60,11 @@ export const appIdentity = Object.freeze({
   diagnosticLocalRuntimeTransport: true as const,
   genericLocalRuntimeTransport: false as const,
   layoutStatePersistence: false as const,
-  role: 'Client-only React Studio with PWA shell, design system, IDE workbench, session-only adaptive onboarding, a user-initiated read-only Environment Doctor, and a loopback-only Jobs Center that exposes safe Durable Job lifecycle controls without owning scheduling.',
+  viktorActivationBuild: 64 as const,
+  viktorSessionSchema: 'gd-viktor-session/1' as const,
+  viktorDefaultState: 'OFF' as const,
+  viktorPersistentActivation: false as const,
+  viktorBackgroundListening: false as const,
+  viktorCapabilityAuthority: false as const,
+  role: 'Client-only React Studio with PWA shell, design system, IDE workbench, session-only adaptive onboarding, a user-initiated read-only Environment Doctor, a loopback-only Jobs Center that exposes safe Durable Job lifecycle controls without owning scheduling, and an explicit per-session Viktor activation surface that owns no execution authority.',
 });
