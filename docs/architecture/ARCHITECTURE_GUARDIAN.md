@@ -9,13 +9,15 @@ The Guardian treats the following as product/architecture authorities:
 1. Product Constitution V1;
 2. Constitutional Amendment 001 — North Star Authority;
 3. Constitutional Amendment 004 — Architectural Integrity & Heimdall;
-4. North Star Manifesto;
-5. Canonical V1 Roadmap;
-6. North Star Roadmap Mapping;
-7. Frozen V1 Scope;
-8. Non-Goals V1;
-9. Global Definition of Done;
-10. RFC Policy.
+4. Constitutional Amendment 005 — Complete Product Generation;
+5. Constitutional Amendment 006 — Local Sovereignty & Zero Marginal Vortex Compute;
+6. North Star Manifesto;
+7. Canonical V1 Roadmap;
+8. North Star Roadmap Mapping;
+9. Frozen V1 Scope;
+10. Non-Goals V1;
+11. Global Definition of Done;
+12. RFC Policy.
 
 The machine-readable policy lives at:
 
@@ -53,6 +55,22 @@ The governing invariant is:
 
 The future orchestration surface must preserve explicit architecture changes, Architecture Contract / Architecture Ledger consumption, Refactor Before Feature when module responsibility is exceeded, and pre-change/post-change architectural-conformance review.
 
+## Local sovereignty and economic architecture
+
+Constitutional Amendment 006 makes economic architecture a protected technical concern rather than a pricing note.
+
+The Guardian requires the repository policy to preserve that:
+
+- local compute is the canonical Vortex intelligence path;
+- core intelligence has no mandatory external AI provider;
+- Vortex-managed paid inference and paid fallback are forbidden for canonical core execution;
+- variable commercial inference may not be subsidized by Vortex Inc. as the operating model;
+- BYOK is architecturally allowed only as an optional, user-funded path;
+- provider contracts keep external providers optional and user credentials user-owned;
+- canonical AI/runtime source cannot introduce a pooled `VORTEX_AI_API_KEY`-style dependency.
+
+This does not forbid ordinary remote services whose nature is remote, and it does not forbid an explicitly configured user-funded external provider. It prevents a future implementation shortcut from silently converting Vortex into a metered cloud-inference SaaS.
+
 ## What the Guardian can enforce
 
 The Guardian checks facts that can be proven from repository state:
@@ -75,6 +93,7 @@ The Guardian checks facts that can be proven from repository state:
 - Build numbering remains integer and the policy stage matches the latest documented Build;
 - the pre-V1 root package version tracks the active Build;
 - Constitutional Amendment 004 remains present and mapped;
+- Constitutional Amendment 006 remains present and its local-sovereignty / zero-marginal-compute invariants remain encoded;
 - Heimdall cannot enter the canonical registry before Build 64 and cannot be absent after the Build 64 transition;
 - Viktor remains explicitly excluded from the canonical agent registry.
 
