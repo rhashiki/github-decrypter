@@ -198,6 +198,7 @@ const blocked=createAgentOrchestratorRecord({
   ...readyInput,
   requestId:'request:build64-blocked',
   heimdallPre:{input:blockedPreInput,record:blockedPre},
+  heimdallPost:undefined,
 });
 assert.equal(blocked.state,'architecture-blocked');
 assert.equal(blocked.completionEvidenceReady,false);
