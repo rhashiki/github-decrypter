@@ -13,7 +13,7 @@ A Build is DONE only when every applicable item below is satisfied. Functional a
 
 ## North Star
 - product-affecting changes are reviewed against `docs/product/NORTH_STAR_MANIFESTO.md`
-- product-affecting changes comply with `CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md` where applicable
+- product-affecting changes comply with `CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md` and `CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md` where applicable
 - applicable North Star questions in the PR template are answered
 - user autonomy is not increased by silently removing user control
 - adaptive profile/personality data never grants execution authority
@@ -33,11 +33,22 @@ A Build is DONE only when every applicable item below is satisfied. Functional a
 
 ## One Intelligence / Tokenless UX
 - canonical user-facing intelligence is Vortex Ars AI
-- core Vortex intelligence does not require user AI-provider API keys
+- core Vortex intelligence works through the supported local path without requiring any external AI-provider API key
+- optional BYOK may exist only as an advanced user-funded accelerator and is never required for core operation
 - normal product UX does not require provider/model shopping
-- users do not purchase, allocate or manage tokens as the operational unit of Vortex usage
+- users do not purchase, allocate or manage Vortex tokens as the operational unit of Vortex usage
 - internal context/model/runtime routing remains replaceable implementation detail
 - finite compute, memory, storage, model/context and time limits are represented honestly
+
+## Local Sovereignty / Zero Marginal Compute
+- local compute is the canonical primary execution path for Vortex intelligence
+- no capability declared core depends on Vortex-managed paid AI inference or a Vortex-funded cloud GPU
+- no silent paid remote fallback exists behind local inference failure
+- optional external AI/media providers use user-owned credentials or directly user-funded accounts
+- BYOK credentials remain inside the Secrets Vault/runtime boundary and never grant capability, scope, approval or write authority
+- supported installed local capabilities have an honest offline/degraded path when their operation is inherently local
+- media-generation architecture follows the same local-first/user-funded-external rule
+- release evidence demonstrates that ordinary heavier usage does not create a mandatory Vortex-paid inference dependency
 
 ## Complexity Budget
 - the change does not create unresolved duplicate sources of truth
