@@ -93,7 +93,7 @@ export interface ProjectMemoryQuery {
 }
 
 const CONTROL = /[\u0000-\u001f\u007f]/;
-const ID = /^[a-z][a-z0-9._:/-]{0,255}$/;
+const ID = /^[a-z][a-z0-9._:/_-]{0,255}$/;
 const KINDS = new Set<ProjectMemoryKind>(PROJECT_MEMORY_KINDS);
 const LIFECYCLES = new Set<ProjectMemoryLifecycle>(PROJECT_MEMORY_LIFECYCLES);
 const COVERAGE = new Set<ProjectMemoryCoverageStatus>(PROJECT_MEMORY_COVERAGE_STATUSES);
