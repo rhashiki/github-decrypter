@@ -84,7 +84,7 @@ export function createViktorSessionController(adapter:ViktorVoiceAdapter):Viktor
 
   return Object.freeze({
     snapshot,
-    subscribe(listener) { listeners.add(listener);listener(snapshot());return()=>listeners.delete(listener); },
+    subscribe(listener:(snapshot:ViktorSessionSnapshot)=>void) { listeners.add(listener);listener(snapshot());return()=>listeners.delete(listener); },
     async activate() {
       if(state!=='OFF'&&state!=='ERROR') return snapshot();
       error=null;
