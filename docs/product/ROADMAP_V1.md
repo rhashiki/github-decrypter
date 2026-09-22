@@ -257,7 +257,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 120. **Runtime Auto Update**
 121. **Extension Packaging**
 122. **PWA Production Packaging**
-123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection.
+123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback.
 124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate.
 125. **Compatibility Matrix** — includes supported hardware/runtime tiers for local intelligence, voice, browser and media capabilities; unsupported hardware must degrade honestly.
 126. **Failure Injection** — includes crash/retry/checkpoint/partial-media/browser/job failure scenarios and proves recovery without corrupting canonical state.
@@ -326,7 +326,8 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 - **Visual Reference / closed-loop UI replication** → Builds 103–105.
 - **Vortex Media Engine** → Build 105 primary owner; Builds 45/114–118/125–128 provide ingestion, concurrency, privacy, portability, compatibility and hardening.
 - **Security Coverage Validation** → Builds 62, 124, 127 and 133.
-- **Vortex Model Specialization** → Builds 34–37 runtime foundations + Build 128 evaluation/optimization; remains internal Vortex engineering, never BYOK/model-shopping UX.
+- **Vortex Model Specialization** → Builds 34–37 runtime foundations + Build 128 evaluation/optimization; remains internal Vortex engineering. Amendment 006 permits optional advanced BYOK only as a user-funded accelerator; it is never required for core Vortex operation and never becomes a Vortex-paid fallback or normal model-shopping UX.
+- **Local Sovereignty / Zero Marginal Vortex Compute** → Build 16 credential safety + Builds 33–37 local/provider boundaries + Builds 116/119/123/125/128 operationalization + Build 133 release enforcement. Core Vortex has no mandatory Vortex-paid inference path; optional external compute is user-funded.
 - **RC by Default / RC Gate** → Build 133, consuming all canonical evidence authorities.
 
 ## Existing North Star ownership summary
