@@ -23,7 +23,8 @@ const roadmap=read('docs/product/ROADMAP_V1.md');
 
 assert.equal(policy.currentBuild,65);
 assert.equal(root.version,'0.0.65');
-assert.equal(contextPackage.version,'0.0.65');
+const contextBuild=versionBuild(contextPackage.version);
+assert.ok(contextBuild>=65&&contextBuild<=policy.currentBuild,'context package version must preserve Build 65 while allowing later context builds');
 assert.equal(contextPackage.exports['./knowledge-graph'],'./src/knowledge-graph.ts');
 assert.equal(policy.knowledgeGraphAuthority.schema,'gd-project-knowledge-graph/1');
 assert.equal(policy.knowledgeGraphAuthority.querySchema,'gd-project-knowledge-query/1');
