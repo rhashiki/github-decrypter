@@ -118,7 +118,10 @@ export function createAgentOrchestratorRecord(input:AgentOrchestratorInput):Agen
   assertCoordinator(registry);
   if(registry.revision!==2||registry.agentCount!==10) throw new TypeError('Agent Orchestrator requires Agent Runtime revision 2 with ten specialists.');
   const participantIds=participants(input.participantIds,registry);
+  const workspaceId=token(input.workspaceId,'Agent Orchestrator workspaceId');
+  const requestId=token(input.requestId,'Agent Orchestrator requestId');
   assertCanonicalHeimdallConformance(input.heimdallPre.record,input.heimdallPre.input);
+  if(input.heimdallPre.input.contract.projectId!==workspaceId) throw new TypeError('Heimdall pre-change contract belongs to a different workspace.');
   if(input.heimdallPre.record.phase!=='pre-change') throw new TypeError('Agent Orchestrator requires Heimdall pre-change review in heimdallPre.');
   if(!participantIds.includes('heimdall')) throw new TypeError('Agent Orchestrator Build 64 requires Heimdall participation.');
 
@@ -126,18 +129,23 @@ export function createAgentOrchestratorRecord(input:AgentOrchestratorInput):Agen
   if(input.heimdallPost){
     assertCanonicalHeimdallConformance(input.heimdallPost.record,input.heimdallPost.input);
     if(input.heimdallPost.record.phase!=='post-change') throw new TypeError('Agent Orchestrator heimdallPost must be post-change.');
+    if(input.heimdallPost.input.contract.projectId!==workspaceId||input.heimdallPost.record.changeId!==input.heimdallPre.record.changeId) {
+      throw new TypeError('Heimdall post-change review must belong to the same workspace and change.');
+    }
     post=input.heimdallPost.record;
   }
   let testing:TestingAgentExecutionRecord|null=null;
   if(input.testing){
     assertCanonicalTestingAgentExecution(input.testing.record,input.testing.input);
     if(!participantIds.includes('samuel')) throw new TypeError('Testing artifact requires Samuel participation.');
+    if(input.testing.record.workspaceId!==workspaceId) throw new TypeError('Testing artifact belongs to a different workspace.');
     testing=input.testing.record;
   }
   let review:ReviewAgentReport|null=null;
   if(input.review){
     assertCanonicalReviewAgentReport(input.review.record,input.review.input);
     if(!participantIds.includes('weizenbaum')) throw new TypeError('Review artifact requires Weizenbaum participation.');
+    if(input.review.record.sourceWorkspaceId!==workspaceId) throw new TypeError('Review artifact belongs to a different workspace.');
     review=input.review.record;
   }
 
@@ -150,8 +158,6 @@ export function createAgentOrchestratorRecord(input:AgentOrchestratorInput):Agen
         : !postOk?'architecture-post-blocked'
           :'ready-to-communicate';
   const completionEvidenceReady=state==='ready-to-communicate';
-  const workspaceId=token(input.workspaceId,'Agent Orchestrator workspaceId');
-  const requestId=token(input.requestId,'Agent Orchestrator requestId');
   const material=JSON.stringify({
     schema:AGENT_ORCHESTRATOR_SCHEMA,workspaceId,requestId,participantIds,
     pre:{id:input.heimdallPre.record.id,status:input.heimdallPre.record.status},
