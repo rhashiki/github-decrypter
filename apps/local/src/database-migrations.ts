@@ -406,6 +406,36 @@ CREATE INDEX gd_conversation_messages_conversation_idx
   ON gd_conversation_messages (conversation_id, ordinal ASC);
 `;
 
+const MIGRATION_013_SQL = `
+CREATE TABLE gd_project_memory_entries (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('observation', 'finding', 'coverage', 'unresolved-question', 'project-fact', 'decision', 'knowledge-pack')),
+  statement TEXT NOT NULL CHECK (length(statement) > 0 AND length(statement) <= 16384),
+  source_refs_json TEXT NOT NULL,
+  decision_provenance_refs_json TEXT NOT NULL,
+  created_by TEXT NOT NULL CHECK (length(created_by) > 0 AND length(created_by) <= 160),
+  created_at TEXT NOT NULL,
+  supersedes_id TEXT,
+  lifecycle TEXT NOT NULL CHECK (lifecycle IN ('active', 'closed')),
+  coverage_status TEXT CHECK (coverage_status IS NULL OR coverage_status IN ('tested', 'untested')),
+  authoritative INTEGER NOT NULL DEFAULT 0 CHECK (authoritative = 0),
+  truth_role TEXT NOT NULL DEFAULT 'operational-memory' CHECK (truth_role = 'operational-memory'),
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (supersedes_id) REFERENCES gd_project_memory_entries(id) ON DELETE SET NULL,
+  CHECK (id <> supersedes_id),
+  CHECK ((kind = 'coverage' AND coverage_status IS NOT NULL) OR (kind <> 'coverage' AND coverage_status IS NULL))
+) STRICT;
+
+CREATE INDEX gd_project_memory_workspace_time_idx
+  ON gd_project_memory_entries (workspace_id, created_at DESC, id ASC);
+CREATE INDEX gd_project_memory_workspace_kind_idx
+  ON gd_project_memory_entries (workspace_id, kind, lifecycle, created_at DESC);
+CREATE UNIQUE INDEX gd_project_memory_supersedes_once_idx
+  ON gd_project_memory_entries (supersedes_id)
+  WHERE supersedes_id IS NOT NULL;
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -517,6 +547,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_012_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_012_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 13,
+    name: 'project-memory',
+    sql: MIGRATION_013_SQL,
+    checksum: checksum(MIGRATION_013_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_013_SQL);
     },
   }),
 ]);
