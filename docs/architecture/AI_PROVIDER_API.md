@@ -6,7 +6,7 @@ Status: **Build 33 contract authority**
 
 Build 33 defines the environment-neutral AI provider contract used by later GitHub Decrypter AI runtimes. It creates a stable boundary for local and optional external providers without activating any provider, model runtime, network request or Studio transport.
 
-The constitutional rule remains: **Local AI is first-class; paid external AI APIs are optional providers, never requirements.**
+The constitutional rule remains: **Local AI is the canonical primary path; external AI APIs are optional user-funded providers, never requirements, and never a Vortex-paid fallback.**
 
 ## Owner
 
@@ -32,7 +32,7 @@ All schemas are exact. Unknown fields are rejected instead of being silently for
 The contract recognizes two replaceable kinds:
 
 - `local` — first-class local provider path, no transported credentials;
-- `external` — optional provider path, which may later use credentials held by the Local Runtime Secrets Vault.
+- `external` — optional provider path, which may later use **user-owned** credentials held by the Local Runtime Secrets Vault. External-provider billing is the user's responsibility wherever provider billing permits; Vortex-managed pooled commercial AI credentials are not a canonical provider mode.
 
 Build 33 registers **no mandatory provider** and contains no provider-specific endpoint, SDK or model implementation.
 
@@ -77,7 +77,7 @@ Raw provider responses are not part of the public contract. Provider headers, re
 
 ## Secret boundary
 
-Public request/response schemas contain no secret or credential fields. An external provider descriptor may declare `runtime-vault` as its credential mode, but actual secret resolution remains a Local Runtime responsibility when a later provider implementation is activated.
+Public request/response schemas contain no secret or credential fields. An external provider descriptor may declare `runtime-vault` as its credential mode, but actual secret resolution remains a Local Runtime responsibility when a later provider implementation is activated. Under Constitutional Amendment 006, those external AI credentials are user-owned/BYOK credentials; core Vortex intelligence must continue to work without them.
 
 Local providers must declare credential mode `none`.
 

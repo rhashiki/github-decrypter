@@ -49,6 +49,16 @@ try {
   fs.writeFileSync(policyPath, policyOriginal);
 }
 
+// 4. Local-sovereignty economics must fail closed if Vortex-paid inference is re-enabled.
+try {
+  const policy = JSON.parse(policyOriginal);
+  policy.economicDoctrine.vortexManagedPaidInferenceAllowed = true;
+  fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
+  runGuardianExpecting('AG006');
+} finally {
+  fs.writeFileSync(policyPath, policyOriginal);
+}
+
 // The real tree must still pass after all probes are restored.
 const final = spawnSync(process.execPath, [guardian], {
   cwd: root,
@@ -59,6 +69,6 @@ assert.equal(final.status, 0, `Guardian did not recover after negative probes.\n
 console.log(JSON.stringify({
   ok: true,
   schema: 'gd-build9-guardian-negative/1',
-  rejected: ['AG032', 'AG070', 'AG061'],
+  rejected: ['AG032', 'AG070', 'AG061', 'AG006'],
   restoredTreePasses: true,
 }, null, 2));

@@ -1,8 +1,8 @@
 # Vortex Ars AI — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY**
 
-Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–005 add Viktor, explicit activation, architectural integrity/Heimdall and the Complete Product Generation Doctrine. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
+Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–006 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine and Local Sovereignty / Zero Marginal Vortex Compute. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
 
 This mapping is an explicit owner-authorized amendment to the V1 planning surface. It does not authorize implementation before the owning Build.
 
@@ -10,6 +10,7 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 
 | North Star block | Primary owning Build(s) | Integration notes |
 | --- | --- | --- |
+| Local Sovereignty / Zero Marginal Vortex Compute | **Build 16**, **Builds 33–37**, **Builds 116, 119, 123, 125, 128, 133** | Local compute is canonical; no core capability may require Vortex-paid inference. BYOK is optional, advanced and user-funded. Build 133 blocks release if a core path depends on Vortex-managed paid AI/GPU compute. |
 | Adaptive User Profile | **Build 31 — Onboarding**, **Build 108 — Learning Mode** | Build 31 creates the profile and preferences foundation; Build 108 evolves adaptive knowledge/explanation behavior. |
 | Agent Orchestrator | **Build 64 — Agent Orchestrator** | Existing roadmap authority remains unchanged. |
 | Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines revision 1 identity/role metadata and authority boundaries for the historical nine-specialist registry; Build 64 performs the explicit amended roster transition and coordinates the team. |

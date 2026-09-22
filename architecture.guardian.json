@@ -7,6 +7,8 @@
     "docs/product/PRODUCT_CONSTITUTION_V1.md",
     "docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md",
     "docs/product/CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md",
+    "docs/product/CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md",
+    "docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md",
     "docs/product/NORTH_STAR_MANIFESTO.md",
     "docs/product/ROADMAP_V1.md",
     "docs/product/NORTH_STAR_ROADMAP_MAPPING.md",
@@ -671,7 +673,12 @@
     "filesystemAuthority": false,
     "databaseAuthority": false,
     "toolAuthority": false,
-    "agentAuthority": false
+    "agentAuthority": false,
+    "externalProviderCredentialOwner": "user",
+    "vortexManagedPaidProviderCredential": false,
+    "coreRequiresExternalProvider": false,
+    "byokAllowed": true,
+    "byokRequired": false
   },
   "localAIRuntimeAuthority": {
     "ownerRoot": "apps/local",
@@ -2419,5 +2426,21 @@
     "localRuntimeTransport": false,
     "deterministic": true,
     "environmentNeutral": true
+  },
+  "economicDoctrine": {
+    "amendment": "docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md",
+    "doctrine": "local-sovereignty-zero-marginal-vortex-compute",
+    "localComputePrimary": true,
+    "coreRequiresExternalAI": false,
+    "vortexManagedPaidInferenceAllowed": false,
+    "vortexSubsidizedVariableInferenceAllowed": false,
+    "vortexManagedPaidFallbackAllowed": false,
+    "byokAllowed": true,
+    "byokOptional": true,
+    "byokUserFunded": true,
+    "tokenSellingUX": false,
+    "localMediaComputePrimary": true,
+    "installedLocalCapabilitiesOfflineCapable": true,
+    "weakeningRequiresConstitutionalAmendment": true
   }
 }

@@ -154,6 +154,79 @@ if (exists(agentRuntimePath)) {
   }
 }
 
+// Constitutional Amendment 006 makes local compute sovereignty and zero marginal
+// Vortex-paid inference a protected economic architecture invariant.
+const economicDoctrine = policy.economicDoctrine ?? {};
+const economicAmendmentPath = economicDoctrine.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md';
+if (!exists(economicAmendmentPath)) {
+  violation('AG006', `Required local-sovereignty amendment missing: ${economicAmendmentPath}`);
+} else {
+  const amendment = read(economicAmendmentPath);
+  for (const phrase of [
+    'Local Compute Sovereignty',
+    'Zero Marginal Vortex Compute',
+    'Optional BYOK',
+    'No Vortex-paid AI fallback',
+    'Core usage must not create a mandatory Vortex-paid inference bill.',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG006', `Local-sovereignty amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+
+for (const [key, expected] of Object.entries({
+  localComputePrimary: true,
+  coreRequiresExternalAI: false,
+  vortexManagedPaidInferenceAllowed: false,
+  vortexSubsidizedVariableInferenceAllowed: false,
+  vortexManagedPaidFallbackAllowed: false,
+  byokAllowed: true,
+  byokOptional: true,
+  byokUserFunded: true,
+  tokenSellingUX: false,
+  localMediaComputePrimary: true,
+  installedLocalCapabilitiesOfflineCapable: true,
+  weakeningRequiresConstitutionalAmendment: true,
+})) {
+  if (economicDoctrine[key] !== expected) {
+    violation('AG006', `Economic doctrine invariant drifted: ${key}`, {
+      expected,
+      actual: economicDoctrine[key],
+    });
+  }
+}
+
+const aiProviderDoctrine = policy.aiProviderAuthority ?? {};
+if (aiProviderDoctrine.externalProvidersOptional !== true) {
+  violation('AG006', 'External AI providers must remain optional.');
+}
+if (aiProviderDoctrine.mandatoryProvider !== null) {
+  violation('AG006', 'No mandatory AI provider may be selected for core Vortex intelligence.', aiProviderDoctrine.mandatoryProvider);
+}
+if (aiProviderDoctrine.externalProviderCredentialOwner !== 'user') {
+  violation('AG006', 'Optional external AI credentials must belong to the user.', aiProviderDoctrine.externalProviderCredentialOwner);
+}
+if (aiProviderDoctrine.vortexManagedPaidProviderCredential !== false) {
+  violation('AG006', 'Vortex-managed paid provider credentials are forbidden for canonical AI execution.');
+}
+if (aiProviderDoctrine.coreRequiresExternalProvider !== false || aiProviderDoctrine.byokRequired !== false) {
+  violation('AG006', 'Core Vortex intelligence must operate without an external provider or BYOK.');
+}
+if (aiProviderDoctrine.byokAllowed !== true) {
+  violation('AG006', 'Optional BYOK must remain architecturally permitted.');
+}
+
+for (const relativeRoot of ['apps/local/src', 'packages/ai/src']) {
+  for (const absolute of sourceFiles(relativeRoot)) {
+    const source = fs.readFileSync(absolute, 'utf8');
+    if (/\bVORTEX_(?:AI_)?(?:API_)?KEY\b/.test(source)) {
+      violation('AG006', 'Canonical Vortex source must not depend on a pooled Vortex AI API key.', rel(absolute));
+    }
+  }
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;
