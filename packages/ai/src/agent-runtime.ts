@@ -1,8 +1,10 @@
 export const AGENT_RUNTIME_BUILD = 58 as const;
 export const AGENT_RUNTIME_SCHEMA = 'gd-agent-runtime/1' as const;
 export const AGENT_RUNTIME_TEAM_ID = 'vortex-ars-ai' as const;
-export const AGENT_RUNTIME_REVISION = 1 as const;
-export const AGENT_RUNTIME_COUNT = 9 as const;
+export const AGENT_RUNTIME_REVISION = 2 as const;
+export const AGENT_RUNTIME_COUNT = 10 as const;
+export const AGENT_RUNTIME_MIGRATION_BUILD = 64 as const;
+export const AGENT_RUNTIME_REVISION_ONE_COUNT = 9 as const;
 
 export const AGENT_RUNTIME_ROLES = [
   'orchestrator',
@@ -14,6 +16,7 @@ export const AGENT_RUNTIME_ROLES = [
   'qa-testing',
   'mentor-professor',
   'visual-perception',
+  'architecture-guardian',
 ] as const;
 
 export type AgentRuntimeRole = (typeof AGENT_RUNTIME_ROLES)[number];
@@ -45,6 +48,9 @@ export interface AgentRuntimeRegistry {
   readonly responsibilityMetadata: true;
   readonly authorityLimitsExplicit: true;
   readonly coordinatedTeamFoundation: true;
+  readonly migrationBuild: typeof AGENT_RUNTIME_MIGRATION_BUILD;
+  readonly historicalRevisionOneCount: typeof AGENT_RUNTIME_REVISION_ONE_COUNT;
+  readonly heimdallBuild: 64;
   readonly viktorIsAgent: false;
   readonly plannerAgentBuild: 59;
   readonly codingAgentBuild: 60;
@@ -170,6 +176,23 @@ export const AGENT_RUNTIME_AGENTS = Object.freeze([
     responsibilities: ['Represent visual/perception expertise.', 'Support future Preview perception and visual-context flows.'],
     authorityLimits: SHARED_LIMITS,
   }),
+  freezeDescriptor({
+    id: 'heimdall',
+    name: 'Heimdall',
+    role: 'architecture-guardian',
+    specialty: 'Architectural integrity and controlled evolution',
+    responsibilities: [
+      'Review proposed changes against the canonical Architecture Contract before implementation.',
+      'Review completed changes against the Architecture Contract and Architecture Ledger after implementation.',
+      'Surface architectural violations and Refactor Before Feature requirements without replacing deterministic enforcement.',
+    ],
+    authorityLimits: Object.freeze([
+      ...SHARED_LIMITS,
+      'No architectural redesign authority; Leonardo remains the architecture/design specialist.',
+      'No override of deterministic Architecture Guardian, Validation Pipeline, Scope Lock, capabilities or approvals.',
+      'No silent Architecture Contract or Architecture Ledger mutation.',
+    ]),
+  }),
 ] as const satisfies readonly AgentRuntimeDescriptor[]);
 
 function assertDescriptor(candidate: AgentRuntimeDescriptor, expected: AgentRuntimeDescriptor): void {
@@ -204,6 +227,9 @@ export function createAgentRuntimeRegistry(): AgentRuntimeRegistry {
     responsibilityMetadata: true,
     authorityLimitsExplicit: true,
     coordinatedTeamFoundation: true,
+    migrationBuild: AGENT_RUNTIME_MIGRATION_BUILD,
+    historicalRevisionOneCount: AGENT_RUNTIME_REVISION_ONE_COUNT,
+    heimdallBuild: 64,
     viktorIsAgent: false,
     plannerAgentBuild: 59,
     codingAgentBuild: 60,
@@ -258,6 +284,9 @@ export function assertCanonicalAgentRuntime(value: unknown): asserts value is Ag
     || row.responsibilityMetadata !== true
     || row.authorityLimitsExplicit !== true
     || row.coordinatedTeamFoundation !== true
+    || row.migrationBuild !== AGENT_RUNTIME_MIGRATION_BUILD
+    || row.historicalRevisionOneCount !== AGENT_RUNTIME_REVISION_ONE_COUNT
+    || row.heimdallBuild !== 64
     || row.viktorIsAgent !== false
     || row.plannerAgentBuild !== 59
     || row.codingAgentBuild !== 60
