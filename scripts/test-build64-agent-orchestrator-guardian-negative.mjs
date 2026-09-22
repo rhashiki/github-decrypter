@@ -38,7 +38,9 @@ try{
     fs.writeFileSync('packages/ai/src/agent-runtime.ts',originals.get('packages/ai/src/agent-runtime.ts').replace("name: 'Heimdall'","name: 'HeimdallBroken'"));
   });
   expectFailure('AG623',()=>{
-    fs.writeFileSync('packages/ai/src/architecture-contract.ts',originals.get('packages/ai/src/architecture-contract.ts').replace('canonicalProjectArchitecture:true','canonicalProjectArchitecture:false'));
+    const p=JSON.parse(originals.get('architecture.guardian.json'));
+    p.architectureContractAuthority.machineReadable=false;
+    fs.writeFileSync('architecture.guardian.json',JSON.stringify(p,null,2)+'\n');
   });
   expectFailure('AG624',()=>{
     const p=JSON.parse(originals.get('architecture.guardian.json'));
