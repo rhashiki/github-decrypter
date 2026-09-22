@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { normalizeProjectMemoryEntry } from '../packages/context/src/project-memory.js';
-import { LocalDatabase, ProjectMemoryStore, WorkspaceManager } from '../apps/local/src/index.js';
+import { LocalDatabase, LocalRuntimeDaemon, ProjectMemoryStore, WorkspaceManager } from '../apps/local/src/index.js';
 
 const root=mkdtempSync(join(tmpdir(),'gd-build66-'));
 const workspaceRoot=join(root,'workspace');
@@ -139,11 +139,28 @@ try{
   reopenedMemory.shutdown();
   reopened.close();
 
+  const daemonDatabasePath=join(root,'daemon-runtime.sqlite3');
+  const daemon=new LocalRuntimeDaemon({
+    config:{
+      host:'127.0.0.1',
+      port:0,
+      lockPath:join(root,'daemon-runtime.lock'),
+      databasePath:daemonDatabasePath,
+      vaultKeyPath:join(root,'daemon-vault.key'),
+    },
+    now,
+  });
+  await daemon.start();
+  assert.equal(daemon.projectMemory.status().ready,true);
+  assert.ok((daemon.database.status?.schemaVersion??0)>=13);
+  await daemon.stop('Build 66 daemon lifecycle test');
+  assert.equal(daemon.projectMemory.status().ready,false);
+
   console.log(JSON.stringify({
     ok:true,schema:'gd-build66-project-memory-runtime/1',build:66,
     persistedAcrossReopen:true,entries:8,activeEntries:7,
     crossWorkspaceIsolation:true,decisionProvenanceRequired:true,
-    coverageStateRequired:true,authoritative:false,
+    coverageStateRequired:true,daemonLifecycleIntegrated:true,authoritative:false,
   },null,2));
 }finally{
   rmSync(root,{recursive:true,force:true});
