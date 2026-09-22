@@ -28,14 +28,17 @@ if (
   const extensionPackage = json('apps/extension/package.json');
   const localPackage = json('apps/local/package.json');
   const packageBuild = versionBuild(contextPackage.version);
-  const expectedExports = {
+  const build43Exports = {
     '.': './src/index.ts',
     './continuation': './src/continuation.ts',
     './token-abstraction': './src/token-abstraction.ts',
   };
+  const expectedExports = policy.currentBuild >= 65
+    ? { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' }
+    : build43Exports;
 
   if (
-    contextPackage.name !== '@github-decrypter/context' || packageBuild !== 43
+    contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 43 || packageBuild > policy.currentBuild
     || JSON.stringify(contextPackage.exports) !== JSON.stringify(expectedExports)
     || JSON.stringify(contextPackage.dependencies ?? {}) !== JSON.stringify({ '@github-decrypter/plan': 'workspace:*' })
     || !packageRule || packageRule.environmentNeutral !== true

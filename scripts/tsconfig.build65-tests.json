@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/context/src/**/*.ts",
+    "./test-build65-project-knowledge-graph-runtime.ts"
+  ]
+}

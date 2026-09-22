@@ -30,7 +30,8 @@ if (
   const packageBuild = versionBuild(contextPackage.version);
   const build42Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
   const build43Exports = { ...build42Exports, './token-abstraction': './src/token-abstraction.ts' };
-  const expectedExports = policy.currentBuild >= 43 ? build43Exports : build42Exports;
+  const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
+  const expectedExports = policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : build42Exports;
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 42 || packageBuild > policy.currentBuild
