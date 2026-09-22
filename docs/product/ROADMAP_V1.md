@@ -98,7 +98,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Knowledge, Project Genesis and context integration
 
-65. **Knowledge Graph** — expands into the canonical **Project/Repository Knowledge Graph**:
+65. **Knowledge Graph** — ✅ — expands into the canonical **Project/Repository Knowledge Graph**:
    - repository/module/dependency graph;
    - AST/symbol/reference relationships where supported;
    - document/topic/entity relationships;

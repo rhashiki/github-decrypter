@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 64,
+  "currentBuild": 65,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -2579,5 +2579,55 @@
     "localMediaComputePrimary": true,
     "installedLocalCapabilitiesOfflineCapable": true,
     "weakeningRequiresConstitutionalAmendment": true
+  },
+  "knowledgeGraphAuthority": {
+    "ownerPackage": "@github-decrypter/context",
+    "ownerSource": "packages/context/src/knowledge-graph.ts",
+    "minimumBuild": 65,
+    "schema": "gd-project-knowledge-graph/1",
+    "querySchema": "gd-project-knowledge-query/1",
+    "nodeKinds": [
+      "repository",
+      "module",
+      "file",
+      "symbol",
+      "document",
+      "topic",
+      "entity"
+    ],
+    "edgeKinds": [
+      "contains",
+      "imports",
+      "depends-on",
+      "defines",
+      "references",
+      "mentions",
+      "relates-to"
+    ],
+    "sourceReferencesRequired": true,
+    "repositoryGraph": true,
+    "moduleDependencyGraph": true,
+    "symbolReferenceRelationships": true,
+    "documentTopicEntityRelationships": true,
+    "deterministic": true,
+    "immutable": true,
+    "localFirst": true,
+    "boundedRetrieval": true,
+    "wholesaleContextDump": false,
+    "semanticEmbedding": false,
+    "aiExecution": false,
+    "projectMemory": false,
+    "knowledgeCompiler": false,
+    "persistence": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "projectMemoryBuild": 66,
+    "knowledgeCompilerBuild": 67,
+    "maxNodes": 50000,
+    "maxEdges": 200000,
+    "queryMaxNodes": 256,
+    "queryMaxEdges": 512,
+    "queryMaxDepth": 4
   }
 }
