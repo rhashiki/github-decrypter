@@ -81,6 +81,20 @@ if(required.every(exists)){
     if(!source.includes(marker)) fail('AG656','Knowledge Graph source lost a protected marker.',marker);
   }
 
+  for(const forbiddenMarker of [
+    'wholesaleContextDump:true',
+    'semanticEmbedding:true',
+    'aiExecution:true',
+    'projectMemory:true',
+    'knowledgeCompiler:true',
+    'persistence:true',
+    'networkAuthority:true',
+    'filesystemAuthority:true',
+    'databaseAuthority:true',
+  ]){
+    if(source.includes(forbiddenMarker)) fail('AG656','Knowledge Graph source contains a forbidden authority marker.',forbiddenMarker);
+  }
+
   if(/^\s*import\s/m.test(source)
       || /\b(?:fetch|WebSocket|XMLHttpRequest|EventSource|localStorage|indexedDB|caches)\b/.test(source)
       || /(?:['"]node:|\bprocess\.|\brequire\s*\(|\bchild_process\b|\bspawn\s*\(|\breadFile\s*\(|\bwriteFile\s*\()/i.test(source)
