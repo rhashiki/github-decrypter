@@ -1,6 +1,6 @@
 # Viktor Interaction Layer
 
-Status: **CANONICAL ARCHITECTURE — IMPLEMENTATION DEFERRED TO MAPPED BUILDS**
+Status: **CANONICAL ARCHITECTURE — BUILD 64 ACTIVATION FOUNDATION IMPLEMENTED; LATER PREVIEW/PERCEPTION FEATURES DEFERRED**
 
 ## Role
 
@@ -114,6 +114,20 @@ The UI may represent transient runtime state around the same toggle, using state
 - `ERROR / UNAVAILABLE`.
 
 These are presentation/session states, not security capabilities.
+
+## Build 64 activation implementation
+
+Build 64 establishes the first canonical Studio-facing activation surface:
+
+- visible Viktor toggle in the Studio top bar;
+- every new application session begins OFF;
+- explicit ON requests microphone permission;
+- permission handshake alone does not start continuous microphone capture;
+- session state remains in memory only;
+- OFF immediately stops capture, voice transport and pending assistant audio through the provider-neutral adapter contract;
+- no localStorage/IndexedDB activation persistence;
+- no hidden wake-word/background listener;
+- toggle state grants no capabilities, approvals, Scope Lock or mutation authority.
 
 ## Voice transport
 
