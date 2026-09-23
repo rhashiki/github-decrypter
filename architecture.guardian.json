@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 66,
+  "currentBuild": 67,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -235,7 +235,9 @@
     "minimumBuild": 11,
     "durableJobSchemaBuild": 12,
     "projectMemorySchemaBuild": 66,
-    "projectMemorySchemaVersion": 13
+    "projectMemorySchemaVersion": 13,
+    "productContractSchemaBuild": 67,
+    "productContractSchemaVersion": 14
   },
   "jobAuthority": {
     "ownerRoot": "apps/local",
@@ -1973,7 +1975,8 @@
     "databaseAgentBuild": 61,
     "testingAgentBuild": 62,
     "reviewAgentBuild": 63,
-    "agentOrchestratorBuild": 64
+    "agentOrchestratorBuild": 64,
+    "contextEngineFinalBuild": 67
   },
   "legacyMigrationRoots": [
     "core",
@@ -2679,5 +2682,68 @@
     "aiExecution": false,
     "semanticEmbedding": false,
     "knowledgeCompilerBuild": 67
+  },
+  "contextEngineFinalAuthority": {
+    "ownerPackage": "@github-decrypter/context",
+    "runtimeOwnerRoot": "apps/local",
+    "minimumBuild": 67,
+    "projectGenesisSchema": "gd-project-genesis/1",
+    "productContractSchema": "gd-product-contract/1",
+    "productContractQuerySchema": "gd-product-contract-query/1",
+    "knowledgeSourceSchema": "gd-knowledge-source/1",
+    "knowledgeCorpusSchema": "gd-knowledge-corpus/1",
+    "knowledgeRetrievalSchema": "gd-knowledge-retrieval/1",
+    "knowledgePackSchema": "gd-knowledge-pack/1",
+    "finalContextSchema": "gd-final-context/1",
+    "runtimeSchema": "gd-context-engine-runtime/1",
+    "databaseSchemaVersion": 14,
+    "projectGenesis": true,
+    "adaptivePreBuildDiscovery": true,
+    "productQuestionsOnly": true,
+    "engineeringDecisionsOwnedByVortex": true,
+    "durableProductContract": true,
+    "productContractAuthoritative": true,
+    "externalDependencyLedger": true,
+    "acceptanceCriteriaDerived": true,
+    "representativeUserJourneysDerived": true,
+    "supportedSourceKinds": [
+      "repository-code",
+      "repository-document",
+      "technical-document",
+      "structured-json",
+      "structured-csv",
+      "plain-text"
+    ],
+    "sourceMaterializationRequired": true,
+    "sourceMaterializationAuthority": "existing-source-adapters",
+    "hardenedParsing": true,
+    "sourceContentIsData": true,
+    "promptInjectionContentIsData": true,
+    "lexicalRetrieval": true,
+    "structuralRetrieval": true,
+    "semanticRetrieval": true,
+    "semanticImplementation": "local-model-rerank-after-bounded-shortlist",
+    "semanticGracefulDegradation": true,
+    "semanticCandidateMax": 24,
+    "progressiveDisclosure": true,
+    "onDemandKnowledgePacks": true,
+    "finalContextAssembly": true,
+    "finalContextMaxCharacters": 64000,
+    "boundedRetrieval": true,
+    "wholesaleContextDump": false,
+    "projectMemoryIntegration": true,
+    "knowledgeGraphIntegration": true,
+    "localFirst": true,
+    "vortexPaidInference": false,
+    "externalProviderRequired": false,
+    "directNetworkAuthority": false,
+    "directFilesystemAuthority": false,
+    "databaseAuthority": "product-contract-store-only",
+    "agentAuthority": false,
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "gitAuthority": false,
+    "validationAuthority": false,
+    "architectureAuthority": false
   }
 }
