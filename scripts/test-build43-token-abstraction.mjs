@@ -18,9 +18,9 @@ const build43Exports = {
   './continuation': './src/continuation.ts',
   './token-abstraction': './src/token-abstraction.ts',
 };
-assert.deepEqual(pkg.exports, policy.currentBuild >= 65
-  ? { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' }
-  : build43Exports);
+const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
+const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
+assert.deepEqual(pkg.exports, policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports);
 
 for (const marker of [
   'TOKEN_ABSTRACTION_BUILD = 43',

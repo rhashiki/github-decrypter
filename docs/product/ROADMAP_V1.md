@@ -105,7 +105,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - traceable source references;
    - no wholesale context dumping when deterministic graph/index retrieval is sufficient.
 
-66. **Project Memory** — expands into durable **Shared Agent Operational State**:
+66. **Project Memory** — ✅ — expands into durable **Shared Agent Operational State**:
    - observations;
    - findings;
    - tested/untested coverage;

@@ -36,7 +36,9 @@ if (
     || Object.entries(requiredPlanExports).some(([key, value]) => planPackage.exports?.[key] !== value)
     || Object.keys(planPackage.dependencies ?? {}).length !== 0
   ) violations.push({ code: 'AG461', message: '@github-decrypter/plan package identity/required Build 48 exports drifted.' });
-  if (versionBuild(localPackage.version) !== 48 || localPackage.dependencies?.['@github-decrypter/plan'] !== 'workspace:*'
+  const localPackageBuild = versionBuild(localPackage.version);
+  if (localPackageBuild === null || localPackageBuild < 48 || localPackageBuild > policy.currentBuild
+      || localPackage.dependencies?.['@github-decrypter/plan'] !== 'workspace:*'
       || !localRule?.allowedWorkspaceDependencies?.includes('@github-decrypter/plan')) {
     violations.push({ code: 'AG461', message: 'Local Runtime is not explicitly allowed to consume Plan Authority.' });
   }
@@ -128,8 +130,13 @@ if (
   const rootPackage = json('package.json');
   const localIdentity = read('apps/local/src/identity.ts');
   const rootBuild = versionBuild(rootPackage.version);
-  if (rootBuild === null || rootBuild < 48 || !localIdentity.includes('LOCAL_RUNTIME_BUILD = 48')
-      || !localIdentity.includes("LOCAL_RUNTIME_VERSION = '0.0.48'") || !localIdentity.includes("'plan-authority'")
+  const localIdentityBuild = Number(/LOCAL_RUNTIME_BUILD = (\d+)/.exec(localIdentity)?.[1] ?? NaN);
+  const localIdentityVersion = versionBuild(/LOCAL_RUNTIME_VERSION = '([^']+)'/.exec(localIdentity)?.[1] ?? '');
+  if (rootBuild === null || rootBuild < 48
+      || !Number.isInteger(localIdentityBuild) || localIdentityBuild < 48 || localIdentityBuild > policy.currentBuild
+      || localIdentityVersion === null || localIdentityVersion !== localIdentityBuild
+      || localIdentityBuild !== localPackageBuild
+      || !localIdentity.includes("'plan-authority'")
       || !localIdentity.includes("'plan-runtime-read-only'")) {
     violations.push({ code: 'AG467', message: 'Build 48 root/Local Runtime identity is inconsistent.' });
   }

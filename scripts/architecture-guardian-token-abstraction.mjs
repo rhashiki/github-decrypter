@@ -33,9 +33,9 @@ if (
     './continuation': './src/continuation.ts',
     './token-abstraction': './src/token-abstraction.ts',
   };
-  const expectedExports = policy.currentBuild >= 65
-    ? { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' }
-    : build43Exports;
+  const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
+  const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
+  const expectedExports = policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports;
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 43 || packageBuild > policy.currentBuild
@@ -119,7 +119,9 @@ if (
     || rule.storageAuthority !== false || rule.studioTransport !== false || rule.localRuntimeTransport !== false
   ) violations.push({ code: 'AG416', message: 'Token Abstraction policy granted transport or persistence authority.' });
   for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage], ['local', localPackage]]) {
-    if (pkg.dependencies?.['@github-decrypter/context']) {
+    const hasContextDependency = Boolean(pkg.dependencies?.['@github-decrypter/context']);
+    const projectMemoryException = name === 'local' && policy.currentBuild >= 66 && hasContextDependency;
+    if (hasContextDependency && !projectMemoryException) {
       violations.push({ code: 'AG416', message: `Build 43 activated Token Abstraction inside ${name} prematurely.` });
     }
   }

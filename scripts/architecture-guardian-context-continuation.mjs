@@ -31,7 +31,8 @@ if (
   const build42Exports = { '.': './src/index.ts', './continuation': './src/continuation.ts' };
   const build43Exports = { ...build42Exports, './token-abstraction': './src/token-abstraction.ts' };
   const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
-  const expectedExports = policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : build42Exports;
+  const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
+  const expectedExports = policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : build42Exports;
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 42 || packageBuild > policy.currentBuild
@@ -116,7 +117,9 @@ if (
     || rule.storageAuthority !== false || rule.studioTransport !== false || rule.localRuntimeTransport !== false
   ) violations.push({ code: 'AG406', message: 'Context Continuation policy granted transport or persistence authority.' });
   for (const [name, pkg] of [['studio', studioPackage], ['extension', extensionPackage], ['local', localPackage]]) {
-    if (pkg.dependencies?.['@github-decrypter/context']) {
+    const hasContextDependency = Boolean(pkg.dependencies?.['@github-decrypter/context']);
+    const projectMemoryException = name === 'local' && policy.currentBuild >= 66 && hasContextDependency;
+    if (hasContextDependency && !projectMemoryException) {
       violations.push({ code: 'AG406', message: `Build 42 activated Context Continuation inside ${name} prematurely.` });
     }
   }

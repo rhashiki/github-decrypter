@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/context/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build66-project-memory-runtime.ts"
+  ]
+}

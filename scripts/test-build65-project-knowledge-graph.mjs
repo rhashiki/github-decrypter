@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const read=(file)=>fs.readFileSync(file,'utf8');
 const json=(file)=>JSON.parse(read(file));
+const versionBuild=(value)=>Number(/^0\.0\.(\d+)$/.exec(String(value??''))?.[1]??-1);
 const required=[
   'packages/context/src/knowledge-graph.ts',
   'docs/architecture/PROJECT_KNOWLEDGE_GRAPH.md',
@@ -21,9 +22,10 @@ const contextPackage=json('packages/context/package.json');
 const source=read('packages/context/src/knowledge-graph.ts');
 const roadmap=read('docs/product/ROADMAP_V1.md');
 
-assert.equal(policy.currentBuild,65);
-assert.equal(root.version,'0.0.65');
-assert.equal(contextPackage.version,'0.0.65');
+assert.ok(policy.currentBuild>=65,'Architecture Guardian must not regress below Build 65');
+assert.ok(versionBuild(root.version)>=65&&versionBuild(root.version)<=policy.currentBuild,'root version must preserve Build 65 while allowing later builds');
+const contextBuild=versionBuild(contextPackage.version);
+assert.ok(contextBuild>=65&&contextBuild<=policy.currentBuild,'context package version must preserve Build 65 while allowing later context builds');
 assert.equal(contextPackage.exports['./knowledge-graph'],'./src/knowledge-graph.ts');
 assert.equal(policy.knowledgeGraphAuthority.schema,'gd-project-knowledge-graph/1');
 assert.equal(policy.knowledgeGraphAuthority.querySchema,'gd-project-knowledge-query/1');

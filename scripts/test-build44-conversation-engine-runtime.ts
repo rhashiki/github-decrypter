@@ -154,7 +154,7 @@ const databasePath = join(tempRoot, 'runtime.sqlite3');
 try {
   const database = new LocalDatabase({ path: databasePath });
   const opened = database.open();
-  assert.equal(opened.schemaVersion, 12);
+  assert.ok(opened.schemaVersion >= 12, 'Conversation Engine requires schema 12 or newer.');
   database.transaction((sqlite) => {
     sqlite.prepare(`
       INSERT INTO gd_workspaces (id, root_path, display_name, registered_at, last_opened_at)
