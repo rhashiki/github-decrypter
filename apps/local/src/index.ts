@@ -34,3 +34,6 @@ export * from './secrets-vault.js';
 export * from './server.js';
 export * from './vault-key-store.js';
 export * from './workspace-manager.js';
+
+export * from './product-contract-store.js';
+export * from './context-engine-runtime.js';
