@@ -36,7 +36,7 @@ try{
     fs.writeFileSync('apps/local/src/project-memory-store.ts',originals.get('apps/local/src/project-memory-store.ts')+"\nconst forbidden='UPDATE gd_project_memory_entries SET statement = ?';\n");
   });
   expectFailure('AG669',()=>{
-    fs.writeFileSync('apps/local/src/database-migrations.ts',originals.get('apps/local/src/database-migrations.ts').replace('CREATE TABLE gd_project_memory_entries','CREATE TABLE gd_project_memory_entries_broken'));
+    fs.writeFileSync('apps/local/src/database-migrations.ts',originals.get('apps/local/src/database-migrations.ts').replace('CREATE TABLE gd_project_memory_entries','CREATE TABLE gd_project_memory_store_broken'));
   });
   expectFailure('AG671',()=>{
     fs.writeFileSync('docs/product/ROADMAP_V1.md',originals.get('docs/product/ROADMAP_V1.md').replace('66. **Project Memory** — ✅ —','66. **Project Memory** —'));
