@@ -35,7 +35,9 @@ if (
   };
   const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
   const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
-  const expectedExports = policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports;
+const build67Exports = { ...build66Exports, './project-genesis': './src/project-genesis.ts', './knowledge-compiler': './src/knowledge-compiler.ts', './final-context': './src/final-context.ts' };
+  const build67Exports = { ...build66Exports, './project-genesis': './src/project-genesis.ts', './knowledge-compiler': './src/knowledge-compiler.ts', './final-context': './src/final-context.ts' };
+  const expectedExports = policy.currentBuild >= 67 ? build67Exports : policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports;
 
   if (
     contextPackage.name !== '@github-decrypter/context' || packageBuild === null || packageBuild < 43 || packageBuild > policy.currentBuild
