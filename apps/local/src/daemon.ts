@@ -22,6 +22,8 @@ import type { LocalRuntimeEventCatalog, LocalRuntimeState } from './lifecycle.js
 import { createOfflineExecutionCoordinator, type OfflineExecutionCoordinator } from './offline-execution.js';
 import { createProjectDetector, type ProjectDetector } from './project-detector.js';
 import { createProjectMemoryStore, type ProjectMemoryStore } from './project-memory-store.js';
+import { createProductContractStore, type ProductContractStore } from './product-contract-store.js';
+import { createLocalContextEngineRuntime, type LocalContextEngineRuntime } from './context-engine-runtime.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -47,6 +49,8 @@ export interface LocalRuntimeDaemonOptions {
   readonly workspaces?: WorkspaceManager;
   readonly projectDetection?: ProjectDetector;
   readonly projectMemory?: ProjectMemoryStore;
+  readonly productContracts?: ProductContractStore;
+  readonly contextEngine?: LocalContextEngineRuntime;
   readonly git?: GitRuntime;
   readonly changeTracking?: ChangeTracker;
   readonly githubApp?: GitHubAppRuntime;
@@ -78,6 +82,8 @@ export class LocalRuntimeDaemon {
   readonly #workspaces: WorkspaceManager;
   readonly #projectDetection: ProjectDetector;
   readonly #projectMemory: ProjectMemoryStore;
+  readonly #productContracts: ProductContractStore;
+  readonly #contextEngine: LocalContextEngineRuntime;
   readonly #git: GitRuntime;
   readonly #changeTracking: ChangeTracker;
   readonly #githubApp: GitHubAppRuntime;
@@ -109,6 +115,8 @@ export class LocalRuntimeDaemon {
     this.#workspaces = options.workspaces ?? createWorkspaceManager({ database: this.#database, eventBus: this.#eventBus, now: this.#now });
     this.#projectDetection = options.projectDetection ?? createProjectDetector({ workspaces: this.#workspaces, eventBus: this.#eventBus, now: this.#now });
     this.#projectMemory = options.projectMemory ?? createProjectMemoryStore({ database: this.#database, now: this.#now });
+    this.#productContracts = options.productContracts ?? createProductContractStore(this.#database);
+    this.#contextEngine = options.contextEngine ?? createLocalContextEngineRuntime({ contracts: this.#productContracts, memory: this.#projectMemory, aiRuntime: this.#aiRuntime, aiRouting: this.#aiModelRouting });
     this.#git = options.git ?? createGitRuntime({
       workspaces: this.#workspaces,
       capabilities: this.#capabilities,
@@ -162,6 +170,8 @@ export class LocalRuntimeDaemon {
   get workspaces(): WorkspaceManager { return this.#workspaces; }
   get projectDetection(): ProjectDetector { return this.#projectDetection; }
   get projectMemory(): ProjectMemoryStore { return this.#projectMemory; }
+  get productContracts(): ProductContractStore { return this.#productContracts; }
+  get contextEngine(): LocalContextEngineRuntime { return this.#contextEngine; }
   get git(): GitRuntime { return this.#git; }
   get changeTracking(): ChangeTracker { return this.#changeTracking; }
   get githubApp(): GitHubAppRuntime { return this.#githubApp; }
@@ -196,6 +206,8 @@ export class LocalRuntimeDaemon {
       if (!projectDetectionStatus.ready) throw new Error('Project Detection is not ready after Workspace Manager startup.');
       const projectMemoryStatus = this.#projectMemory.initialize();
       if (!projectMemoryStatus.ready) throw new Error('Project Memory is not ready after Workspace Manager startup.');
+      const productContractStatus = this.#productContracts.initialize();
+      if (!productContractStatus.ready) throw new Error('Product Contract Store is not ready after Project Memory startup.');
       if (!this.#jobs.status().ready) throw new Error('Durable Job Engine is not ready after database startup.');
       const recoveryStatus = await this.#recovery.startSession();
       if (!recoveryStatus.ready) throw new Error('Crash & Power Recovery is not ready after database startup.');
@@ -212,6 +224,8 @@ export class LocalRuntimeDaemon {
       if (!aiModelManagerStatus.ready) throw new Error('Local AI Model Manager is not ready after Local AI Installer startup.');
       const aiModelRoutingStatus = await this.#aiModelRouting.initialize();
       if (!aiModelRoutingStatus.ready) throw new Error('Local AI Model Routing is not ready after Model Manager startup.');
+      const contextEngineStatus = this.#contextEngine.initialize();
+      if (!contextEngineStatus.ready) throw new Error('Context Engine is not ready after Product Contract, Project Memory and Local AI startup.');
       const gitStatus = await this.#git.initialize();
       if (!gitStatus.ready || !gitStatus.available) throw new Error('Git Runtime requires an available Git executable.');
       const changeTrackingStatus = await this.#changeTracking.initialize();
@@ -255,7 +269,7 @@ export class LocalRuntimeDaemon {
         server.listen({ host: this.#config.host, port: this.#config.port, exclusive: true });
       });
       this.#startedAt = this.#now();
-      await this.#transition('running', 'loopback server listening with durable Project Memory, safe Jobs Center control, persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
+      await this.#transition('running', 'loopback server listening with final Context Engine, durable Product Contract, durable Project Memory, safe Jobs Center control, persistent Conversation Store, Local AI Model Routing, Local AI Model Manager, Local AI Installer, Local AI Runtime, read-only GitHub Provider, GitHub App Runtime, Human vs AI Change Tracking, Git Runtime, Project Detection, Workspace Manager, Audit Ledger, recovery, offline execution, capability security, Secrets Vault and Approval Transactions ready');
       const address = this.address;
       if (!address) throw new Error('Local Runtime failed to resolve its bound address.');
       return address;
@@ -267,12 +281,14 @@ export class LocalRuntimeDaemon {
       this.#closeVaultBestEffort();
       await this.#closeChangeTrackingBestEffort('startup failed');
       this.#closeGitBestEffort();
+      this.#closeContextEngineBestEffort();
       this.#closeAIModelRoutingBestEffort();
       this.#closeAIModelManagerBestEffort();
       this.#closeAIInstallerBestEffort();
       this.#closeAIRuntimeBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
+      this.#closeProductContractsBestEffort();
       this.#closeProjectMemoryBestEffort();
       this.#closeProjectDetectionBestEffort();
       this.#closeWorkspacesBestEffort();
@@ -296,6 +312,7 @@ export class LocalRuntimeDaemon {
     let changeTrackingError: unknown = null;
     try { await this.#changeTracking.shutdown(`runtime stopped: ${reason}`); } catch (error) { changeTrackingError = error; }
     this.#git.shutdown();
+    this.#contextEngine.shutdown();
     this.#aiModelRouting.shutdown();
     this.#aiModelManager.shutdown();
     this.#aiInstaller.shutdown();
@@ -304,6 +321,7 @@ export class LocalRuntimeDaemon {
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
     try { await this.#recovery.stopSession(reason); } catch (error) { recoveryError = error; }
+    this.#productContracts.shutdown();
     this.#projectMemory.shutdown();
     this.#projectDetection.shutdown();
     this.#workspaces.shutdown();
@@ -336,10 +354,12 @@ export class LocalRuntimeDaemon {
     try { await this.#changeTracking.shutdown(reason); } catch {}
   }
   #closeGitBestEffort(): void { try { this.#git.shutdown(); } catch {} }
+  #closeContextEngineBestEffort(): void { try { this.#contextEngine.shutdown(); } catch {} }
   #closeAIModelRoutingBestEffort(): void { try { this.#aiModelRouting.shutdown(); } catch {} }
   #closeAIModelManagerBestEffort(): void { try { this.#aiModelManager.shutdown(); } catch {} }
   #closeAIInstallerBestEffort(): void { try { this.#aiInstaller.shutdown(); } catch {} }
   #closeAIRuntimeBestEffort(): void { try { this.#aiRuntime.shutdown(); } catch {} }
+  #closeProductContractsBestEffort(): void { try { this.#productContracts.shutdown(); } catch {} }
   #closeProjectMemoryBestEffort(): void { try { this.#projectMemory.shutdown(); } catch {} }
   #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }
   #closeWorkspacesBestEffort(): void { try { this.#workspaces.shutdown(); } catch {} }
