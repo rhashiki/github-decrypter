@@ -244,7 +244,7 @@ function bool(answers:Map<string,ProjectGenesisAnswer>,id:string):boolean|null {
 }
 function list(answers:Map<string,ProjectGenesisAnswer>,id:string):readonly string[] {
   const value=answers.get(id)?.value;
-  return Array.isArray(value)?value:Object.freeze([]);
+  return typeof value!=='string'&&typeof value!=='boolean'&&value!==undefined?value:Object.freeze([]);
 }
 function active(question:ProjectGenesisQuestion,answers:Map<string,ProjectGenesisAnswer>):boolean {
   if(question.id==='billing-rules') return scalar(answers,'monetization-model')!==null&&scalar(answers,'monetization-model')!=='none';
@@ -270,7 +270,8 @@ export function deriveProjectGenesis(input:{readonly workspaceId:string;readonly
 
 function flatten(value:ProjectGenesisAnswerValue):readonly string[] {
   if(typeof value==='boolean') return Object.freeze([value?'yes':'no']);
-  return Array.isArray(value)?value:Object.freeze([value]);
+  if(typeof value==='string') return Object.freeze([value]);
+  return value;
 }
 function criterionDomains(domain:ProjectGenesisDomain):boolean {
   return ['workflows','business-rules','content','monetization','integrations','platforms','authentication','privacy','accessibility','deployment','operations'].includes(domain);
