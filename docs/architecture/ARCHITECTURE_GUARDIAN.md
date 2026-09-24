@@ -11,13 +11,14 @@ The Guardian treats the following as product/architecture authorities:
 3. Constitutional Amendment 004 — Architectural Integrity & Heimdall;
 4. Constitutional Amendment 005 — Complete Product Generation;
 5. Constitutional Amendment 006 — Local Sovereignty & Zero Marginal Vortex Compute;
-6. North Star Manifesto;
-7. Canonical V1 Roadmap;
-8. North Star Roadmap Mapping;
-9. Frozen V1 Scope;
-10. Non-Goals V1;
-11. Global Definition of Done;
-12. RFC Policy.
+6. Constitutional Amendment 007 — Specialist Intelligence Layer;
+7. North Star Manifesto;
+8. Canonical V1 Roadmap;
+9. North Star Roadmap Mapping;
+10. Frozen V1 Scope;
+11. Non-Goals V1;
+12. Global Definition of Done;
+13. RFC Policy.
 
 The machine-readable policy lives at:
 
@@ -71,6 +72,24 @@ The Guardian requires the repository policy to preserve that:
 
 This does not forbid ordinary remote services whose nature is remote, and it does not forbid an explicitly configured user-funded external provider. It prevents a future implementation shortcut from silently converting Vortex into a metered cloud-inference SaaS.
 
+## Specialist Intelligence architecture
+
+Constitutional Amendment 007 separates scalable specialist expertise from canonical agent authority.
+
+The deterministic Guardian protects that:
+
+- the canonical agent roster remains ten named agents unless explicitly amended;
+- Viktor remains outside the agent registry;
+- Specialist Profiles are not agents or principals;
+- specialist profiles own no capability, approval, scope, tool, filesystem, database, Git, network, validation, architecture or release authority;
+- Ramon remains the specialist-activation/orchestration owner;
+- specialist selection/context must remain bounded rather than injecting the whole catalog;
+- imported specialist profiles require provenance, license, version and validation metadata;
+- external specialist catalogs may be imported by future owning Builds but may not become mandatory runtime dependencies;
+- Specialist Intelligence remains local-first and may not require Vortex-paid inference.
+
+This lets Vortex scale from a small canonical team to hundreds or thousands of domain methods without multiplying security principals or context cost.
+
 ## What the Guardian can enforce
 
 The Guardian checks facts that can be proven from repository state:
@@ -94,6 +113,7 @@ The Guardian checks facts that can be proven from repository state:
 - the pre-V1 root package version tracks the active Build;
 - Constitutional Amendment 004 remains present and mapped;
 - Constitutional Amendment 006 remains present and its local-sovereignty / zero-marginal-compute invariants remain encoded;
+- Constitutional Amendment 007 remains present and the ten-agent / non-authoritative Specialist Profile boundary remains encoded;
 - Heimdall cannot enter the canonical registry before Build 64 and cannot be absent after the Build 64 transition;
 - Viktor remains explicitly excluded from the canonical agent registry.
 

@@ -1,8 +1,8 @@
 # Vortex Ars AI — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY + SPECIALIST INTELLIGENCE**
 
-Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–006 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine and Local Sovereignty / Zero Marginal Vortex Compute. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
+Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–007 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine, Local Sovereignty / Zero Marginal Vortex Compute and the Specialist Intelligence Layer. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
 
 This mapping is an explicit owner-authorized amendment to the V1 planning surface. It does not authorize implementation before the owning Build.
 
@@ -12,6 +12,11 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | --- | --- | --- |
 | Local Sovereignty / Zero Marginal Vortex Compute | **Build 16**, **Builds 33–37**, **Builds 116, 119, 123, 125, 128, 133** | Local compute is canonical; no core capability may require Vortex-paid inference. BYOK is optional, advanced and user-funded. Build 133 blocks release if a core path depends on Vortex-managed paid AI/GPU compute. |
 | Adaptive User Profile | **Build 31 — Onboarding**, **Build 108 — Learning Mode** | Build 31 creates the profile and preferences foundation; Build 108 evolves adaptive knowledge/explanation behavior. |
+| Specialist Intelligence Layer | **Builds 64, 65, 67, 90, 107, 108, 115, 118, 120, 124, 127, 128, 133** | Ten canonical agents remain the authority principals; Specialist Profiles add bounded expertise/method only. Build 90 owns normalized import/provenance/license/version/drift handling. |
+| Workflow Architecture / Handoff Contracts | **Builds 52, 59, 64, 67, 124** | Workflow registry, branches/failure/recovery, explicit handoff contracts, observable states and workflow → components → journeys → tests coverage. |
+| Evidence Collector / Reality Checker | **Builds 57, 62, 124, 133** | Testing/validation remain sovereign. Specialist methods require evidence, retest/rescan after fixes and final integration verification before RC claims. |
+| Codebase Onboarding / LSP-Index Expertise | **Builds 65, 73, 108** | Fact-grounded repo maps, entry points, definitions/references, dependencies, code paths and source-linked learning explanations. |
+| Security Specialist Suite | **Build 127**, consuming Builds 15–18, 53–57, 62–64 | Security architecture/AppSec/AI-code audit/secrets/IAM/prompt-injection/supply-chain methods run inside existing capability, tool, scope and evidence boundaries. |
 | Agent Orchestrator | **Build 64 — Agent Orchestrator** | Existing roadmap authority remains unchanged. |
 | Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines revision 1 identity/role metadata and authority boundaries for the historical nine-specialist registry; Build 64 performs the explicit amended roster transition and coordinates the team. |
 | Architectural Integrity & Heimdall | **Build 9 — Architecture Guardian** (existing deterministic enforcement), **Build 64 — Agent Orchestrator** | Constitutional Amendment 004 adopts Heimdall as the tenth canonical specialist. Build 64 revises the Agent Runtime explicitly, integrates pre/post architectural-conformance review, and establishes canonical Architecture Contract / Architecture Ledger consumption without replacing Build 9 enforcement. |
@@ -271,3 +276,35 @@ Future ideas outside the adopted constitutional amendments continue to follow `d
 
 
 `CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md` is explicit product-owner authorization for Architectural Integrity & Controlled Evolution and Heimdall as the tenth canonical specialist, with the runtime transition mapped to Build 64.
+
+## Amendment 007 — Specialist Intelligence Layer acceptance extensions
+
+### Canonical agents vs Specialist Profiles
+- the canonical Vortex agent roster remains ten named agents unless a future owner-authorized constitutional amendment changes it;
+- Viktor remains outside the agent registry;
+- Specialist Profiles are expertise/method/context, never independent authority principals;
+- a specialist may be activated only through a canonical agent and inherits no capability, approval, Scope Lock, tool, Git, validation, architecture or release authority;
+- UI may show temporary specializations as the active team but must not imply separate autonomous principals or paid model calls where none exist.
+
+### Bounded specialist context
+- catalog size may grow independently of active context size;
+- full-catalog prompt injection is prohibited;
+- deterministic metadata/graph filtering should narrow candidates before semantic/model routing where possible;
+- Context Engine loads only task-relevant profiles and releases unused specialist context;
+- Build 128 measures specialist selection/context cost and tunes local routing/cache/compression.
+
+### Build 90 Specialist Profile SDK / importer
+- compatible catalog/profile inputs normalize to the Vortex profile contract rather than remaining arbitrary tool-specific prose;
+- imported profiles preserve source, revision/version and license provenance;
+- unsupported tool/capability/authority assumptions are removed or rejected during normalization;
+- bundled third-party profiles with incompatible or unknown licensing are rejected;
+- external source repositories are not mandatory runtime dependencies;
+- catalog updates support version comparison, source/normalized hashes, current/outdated/modified/removed/foreign reconciliation, backup and rollback without silently overwriting canonical Vortex authority;
+- Vortex-distributed catalog updates use signed/verified manifests; remote catalog refresh is explicit/optional;
+- specialist import/update does not gain arbitrary shell execution or secret exposure outside the Secrets Vault boundary.
+
+### Evidence and workflow methodology
+- Workflow Architect methodology expands workflow discovery, branch/failure/recovery mapping and handoff contracts;
+- Multi-Agent Systems methodology reinforces hierarchy-first orchestration, least privilege, bounded fan-out/fan-in, circuit breakers, context budgets and traceability;
+- Minimal Change methodology prevents hidden scope expansion while preserving explicit Refactor Before Feature when architectural integrity requires it;
+- Evidence Collector / Reality Checker methodology reinforces that completion is proven by evidence, not by an agent reporting success.

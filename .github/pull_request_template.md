@@ -12,6 +12,9 @@
 - [ ] New dependencies stay inside the owning module boundary.
 - [ ] This change does not make core Vortex depend on Vortex-paid AI inference, a Vortex-funded cloud GPU, or mandatory BYOK.
 - [ ] Any optional external AI/media provider is user-funded and credentialed through the approved local Secrets Vault/runtime boundary.
+- [ ] This change does not create a new canonical agent when a non-authoritative Specialist Profile would satisfy the need.
+- [ ] Specialist Profiles introduced/changed here grant no independent capability, scope, approval, tool, mutation, validation, architecture or release authority.
+- [ ] Imported/bundled Specialist Profiles retain source/version/license provenance and are loaded on demand rather than as full-catalog context.
 - [ ] No Release, OTA, store publication, production deploy, production database mutation or DNS mutation is implied by completing this change.
 
 ## North Star review
@@ -29,7 +32,8 @@ For product-affecting changes, answer the applicable questions. `N/A` is accepta
 9. Does it avoid creating a Vortex-paid variable inference dependency?
 10. If it adds external AI/media compute, is it optional, user-funded and non-authoritative?
 11. Does it avoid unnecessary third-party dependency?
-12. Does it have a clear justification within the commercial product?
+12. If specialist expertise is involved, does it preserve canonical-agent authority and bounded context loading?
+13. Does it have a clear justification within the commercial product?
 
 ## Human authority
 

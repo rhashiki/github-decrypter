@@ -94,11 +94,11 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 61. **Database Agent** — ✅
 62. **Testing Agent** — ✅ — Interactive QA; representative Product Contract user journeys become executable behavioral validation where supported.
 63. **Review Agent** — ✅
-64. **Agent Orchestrator** — ✅ — North Star: canonical Agent Orchestrator. Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist while Build 9 remains deterministic enforcement. **Viktor Interaction Layer** remains the outward conversational presence, not an agent. Build 64 owns the canonical visible **Viktor activation toggle**, explicit per-session activation, and must preserve `semanticRouting:false` / `automaticSelection:false` for Build 64 itself. Amendment 005 reinforces that orchestration may not hide architectural debt and that later shared operational state must remain project-scoped and authority-neutral.
+64. **Agent Orchestrator** — ✅ — North Star: canonical Agent Orchestrator. Amendment 007 establishes the Specialist Intelligence Layer: Ramon may select/load bounded Specialist Profiles for canonical agents, but profiles are not agents/principals and gain no capability, tool, scope, approval or validation authority. Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist while Build 9 remains deterministic enforcement. **Viktor Interaction Layer** remains the outward conversational presence, not an agent. Build 64 owns the canonical visible **Viktor activation toggle**, explicit per-session activation, and must preserve `semanticRouting:false` / `automaticSelection:false` for Build 64 itself. Amendment 005 reinforces that orchestration may not hide architectural debt and that later shared operational state must remain project-scoped and authority-neutral.
 
 ## Knowledge, Project Genesis and context integration
 
-65. **Knowledge Graph** — ✅ — expands into the canonical **Project/Repository Knowledge Graph**:
+65. **Knowledge Graph** — ✅ — expands into the canonical **Project/Repository Knowledge Graph**; future Specialist Intelligence metadata may represent domain/capability/compatibility relationships without turning profiles into agents:
    - repository/module/dependency graph;
    - AST/symbol/reference relationships where supported;
    - document/topic/entity relationships;
@@ -115,7 +115,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - compiled knowledge packs;
    - strict separation from Architecture Ledger, Product Contract, Git and validation truth.
 
-67. **Context Engine vFinal** — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**:
+67. **Context Engine vFinal** — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**; also owns bounded on-demand Specialist Profile context loading so the full catalog is never dumped into ordinary model context:
    - adaptive pre-build discovery;
    - durable Product Contract;
    - unresolved/external dependency ledger;
@@ -148,7 +148,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 71. **Developer Console**
 72. **Problems & Diagnostics** — aggregates runtime, browser, test and Preview diagnostics with source correlation where possible.
-73. **Code Explorer** — expands into **Code Intelligence**:
+73. **Code Explorer** — expands into **Code Intelligence**, including Codebase Onboarding and LSP/Index specialist methods for factual entry-point, definition/reference, dependency and execution-path explanation:
    - AST-aware navigation;
    - definitions/references/symbols;
    - dependency/import relationships;
@@ -179,7 +179,7 @@ Backend choices remain project infrastructure decisions. They do not weaken the 
 87. **MCP Core**
 88. **MCP Trust Gateway**
 89. **MCP Marketplace**
-90. **Plugin SDK**
+90. **Plugin SDK** — expands to the **Specialist Profile SDK / Catalog Importer**: normalize compatible external/local catalogs to `vortex-specialist-profile/1`; validate compatible agents/forbidden authorities; preserve source/version/license provenance; support versioning, drift detection, local modifications, rollback and deterministic updates without runtime dependency on the source catalog.
 91. **Public Studio API**
 92. **Plugin Sandbox**
 
@@ -232,8 +232,8 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - likeness/voice/reference media require applicable authorization/consent safeguards.
 
 106. **Error Intelligence**
-107. **Health Score** — adds **Complexity Health** indicators for responsibility leakage, duplicate truth, dependency violations, dead/legacy accumulation and growing workaround debt. Health signals inform Refactor Before Feature; they do not replace Heimdall/Guardian authority.
-108. **Learning Mode** — Mentor Engine, Explain This, Adaptive Explanation Engine, adaptive user profile evolution and Viktor communication adaptation. Learning remains optional.
+107. **Health Score** — adds **Complexity Health** indicators for responsibility leakage, duplicate truth, dependency violations, dead/legacy accumulation and growing workaround debt; also detects specialist-profile proliferation, overlapping responsibility, stale/drifting profiles and misuse of specialists as hidden agents. Health signals inform Refactor Before Feature; they do not replace Heimdall/Guardian authority.
+108. **Learning Mode** — Mentor Engine, Explain This, Adaptive Explanation Engine, adaptive user profile evolution and Viktor communication adaptation; may load teaching/onboarding specialist methods through the Specialist Intelligence Layer without creating additional authority. Learning remains optional.
 
 ## GitHub collaboration
 
@@ -246,22 +246,22 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 ## Multi-workspace, privacy and recovery
 
 114. **Multi-Workspace**
-115. **Background Concurrency** — supports parallel durable specialist/media/indexing/test work without losing project-scoped authority boundaries.
+115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals.
 116. **Privacy Controls** — includes local-first intelligence/media/knowledge controls and consent-aware handling of likeness/voice/reference media.
 117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable.
-118. **Backup & Recovery**
+118. **Backup & Recovery** — includes Specialist Profile/catalog snapshot, local-modification backup and rollback protection before destructive profile update/removal.
 
 ## Distribution and hardening
 
 119. **Runtime Installer** — packages Vortex-owned/local-capable intelligence and required runtimes behind one installation experience.
-120. **Runtime Auto Update**
+120. **Runtime Auto Update** — any Vortex-distributed Specialist Profile catalog update uses signed/verified manifests, deterministic reconciliation and explicit update policy; upstream catalog refresh remains optional rather than a core runtime dependency.
 121. **Extension Packaging**
 122. **PWA Production Packaging**
 123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback.
-124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate.
+124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate; adds agent/specialist evaluation baselines, specialist-profile regression cases, workflow/handoff coverage and evidence-collector outputs.
 125. **Compatibility Matrix** — includes supported hardware/runtime tiers for local intelligence, voice, browser and media capabilities; unsupported hardware must degrade honestly.
 126. **Failure Injection** — includes crash/retry/checkpoint/partial-media/browser/job failure scenarios and proves recovery without corrupting canonical state.
-127. **Security Audit** — expands into **Security Coverage Validation**:
+127. **Security Audit** — expands into **Security Coverage Validation** and the specialist security suite (Security Architecture, AppSec, AI-generated-code audit, secrets/credentials, identity/access, prompt-injection sinks, dependency/supply-chain review and authorized penetration verification):
    - software inventory/SBOM;
    - dependency/CVE checks;
    - secret exposure;
@@ -272,7 +272,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - only authorized targets are dynamically tested;
    - no claim of "secure/clean" may be inferred from untested surfaces.
 
-128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**:
+128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits:
    - local-first inference optimization;
    - quantization/caching/batching/context reuse;
    - compact task classifiers/specialized Vortex components where beneficial;
@@ -290,7 +290,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - unresolved external dependencies explicitly surfaced;
    - project-generation correction loops stabilize before RC.
 
-133. **Release Candidate** — canonical **RC Gate / RC by Default**:
+133. **Release Candidate** — canonical **RC Gate / RC by Default**; consumes Evidence Collector / Reality Checker methodology so completion claims require Product Contract, CI, behavioral and integration evidence rather than agent self-report:
    - Product Contract frozen for the candidate;
    - acceptance matrix complete;
    - representative user journeys pass;

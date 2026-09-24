@@ -227,6 +227,103 @@ for (const relativeRoot of ['apps/local/src', 'packages/ai/src']) {
   }
 }
 
+// Constitutional Amendment 007 separates canonical agent authority from scalable specialist expertise.
+const specialistDoctrine = policy.specialistIntelligenceDoctrine ?? {};
+const specialistAmendmentPath = specialistDoctrine.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_007_SPECIALIST_INTELLIGENCE_LAYER.md';
+if (!exists(specialistAmendmentPath)) {
+  violation('AG007', `Required Specialist Intelligence amendment missing: ${specialistAmendmentPath}`);
+} else {
+  const amendment = read(specialistAmendmentPath);
+  for (const phrase of [
+    'Specialist Intelligence Layer',
+    'Agent = responsibility and authority boundary. Specialist Profile = expertise and method. Tool = execution mechanism. Capability = authorization.',
+    'Adding a Specialist Profile does not increment the canonical agent count.',
+    'the full catalog must not be injected into ordinary model context',
+    'Expertise scales; authority does not.',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG007', `Specialist Intelligence amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+
+for (const [key, expected] of Object.entries({
+  doctrine: 'canonical-agents-scalable-specialist-expertise',
+  specialistProfileSchema: 'vortex-specialist-profile/1',
+  canonicalAgentCount: 10,
+  viktorIsAgent: false,
+  specialistProfilesAreCanonicalAgents: false,
+  specialistProfilesArePrincipals: false,
+  specialistProfilesOwnAuthority: false,
+  capabilityGrantAuthority: false,
+  approvalAuthority: false,
+  scopeAuthority: false,
+  toolRuntimeAuthority: false,
+  filesystemAuthority: false,
+  databaseAuthority: false,
+  gitAuthority: false,
+  networkAuthority: false,
+  validationAuthority: false,
+  architectureAuthority: false,
+  releaseAuthority: false,
+  activationThroughCanonicalAgent: true,
+  orchestratorOwner: 'ramon',
+  boundedSelectionRequired: true,
+  wholeCatalogContextAllowed: false,
+  progressiveOnDemandLoading: true,
+  contextBudgetRequired: true,
+  localFirst: true,
+  vortexPaidInferenceRequired: false,
+  externalCatalogImportAllowed: true,
+  externalCatalogRuntimeDependencyAllowed: false,
+  importedProfileProvenanceRequired: true,
+  importedProfileLicenseRequired: true,
+  importedProfileVersionRequired: true,
+  importedProfileValidationRequired: true,
+  deterministicNormalizationRequired: true,
+  catalogLedgerRequired: true,
+  sourceHashRequired: true,
+  normalizedHashRequired: true,
+  backupBeforeDestructiveCatalogUpdate: true,
+  signedManifestRequiredForVortexDistributedCatalogUpdates: true,
+  arbitraryShellExecutionAllowed: false,
+  networkRefreshExplicitOptIn: true,
+  secretsRemainInSecretsVault: true,
+  domainSpecificProfilesCoreRequired: false,
+  weakeningRequiresConstitutionalAmendment: true,
+})) {
+  if (specialistDoctrine[key] !== expected) {
+    violation('AG007', `Specialist Intelligence doctrine invariant drifted: ${key}`, {
+      expected,
+      actual: specialistDoctrine[key],
+    });
+  }
+}
+
+const specialistReconciliationStates = ['current','outdated','modified','removed','foreign'];
+if (JSON.stringify(specialistDoctrine.reconciliationStates ?? []) !== JSON.stringify(specialistReconciliationStates)) {
+  violation('AG007', 'Specialist catalog reconciliation states drifted.', specialistDoctrine.reconciliationStates);
+}
+
+const canonicalSpecialistAgents = ['ramon','leonardo','strachey','licklider','pitts','weizenbaum','samuel','seymour','fukushima','heimdall'];
+if (policy.agentRuntimeAuthority?.agentCount !== 10
+    || JSON.stringify(policy.agentRuntimeAuthority?.agentIds ?? []) !== JSON.stringify(canonicalSpecialistAgents)) {
+  violation('AG007', 'Specialist Profiles may not silently change the canonical ten-agent roster.', {
+    agentCount: policy.agentRuntimeAuthority?.agentCount,
+    agentIds: policy.agentRuntimeAuthority?.agentIds,
+  });
+}
+if (policy.agentRuntimeAuthority?.viktorIsAgent !== false || specialistDoctrine.viktorIsAgent !== false) {
+  violation('AG007', 'Viktor must remain outside the canonical agent registry.');
+}
+if (policy.agentRuntimeAuthority?.specialistProfilesAreCanonicalAgents !== false
+    || policy.agentRuntimeAuthority?.specialistProfileAuthority !== false
+    || policy.agentRuntimeAuthority?.specialistProfileActivationOwner !== 'ramon'
+    || policy.agentRuntimeAuthority?.canonicalRosterChangeRequiresConstitutionalAmendment !== true) {
+  violation('AG007', 'Agent Runtime lost the Specialist Profile non-authority boundary.');
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;
