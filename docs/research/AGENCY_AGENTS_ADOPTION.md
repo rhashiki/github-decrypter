@@ -16,6 +16,8 @@ Vortex does not vendor the full catalog into canonical agent prompts.
 
 The useful pattern is adopted as a **Specialist Intelligence Layer** beneath the existing canonical agents.
 
+The companion MIT-licensed `msitarzewski/agency-agents-app` was also inspected for catalog-management patterns. Useful patterns adopted conceptually include deterministic rendering/normalization, a local install ledger, source/rendered hashes, drift reconciliation, backups before destructive operations, offline-first baseline catalogs, explicit network refresh, restricted write destinations, and signed update manifests. Vortex does not depend on that app at runtime.
+
 ## High-priority methodology sources inspected
 
 The following upstream profiles directly informed Amendment 007 and future acceptance:
@@ -82,7 +84,12 @@ The future Specialist Profile SDK/importer should be able to:
 7. estimate context cost;
 8. normalize to `vortex-specialist-profile/1`;
 9. validate and sign/hash the normalized representation;
-10. compare/update later upstream revisions without silently overwriting local modifications.
+10. compare/update later upstream revisions without silently overwriting local modifications;
+11. record source + normalized/rendered hashes in a local catalog ledger;
+12. classify reconciliation state as current/outdated/modified/removed/foreign;
+13. back up user-modified profiles before destructive update/removal;
+14. verify signed manifests for Vortex-distributed catalog updates;
+15. keep remote refresh explicit and avoid arbitrary shell execution.
 
 ## Distribution note
 

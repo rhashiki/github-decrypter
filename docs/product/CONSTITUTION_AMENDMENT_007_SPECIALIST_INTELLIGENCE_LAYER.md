@@ -265,12 +265,20 @@ Future catalog management should support:
 
 - profile versioning;
 - upstream comparison;
+- deterministic normalization/rendering;
+- a local catalog/install ledger;
+- source hash + normalized/rendered hash;
+- reconciliation states: `current`, `outdated`, `modified`, `removed`, `foreign`;
 - local modification detection;
 - drift reporting;
-- deterministic normalization;
+- backup before destructive replacement/removal;
 - rollback to previous profile revision;
 - conflict-aware update;
-- user-visible provenance where relevant.
+- user-visible provenance where relevant;
+- signed update manifests for Vortex-distributed specialist catalogs;
+- explicit opt-in network refresh rather than hidden background catalog traffic;
+- Secrets Vault/keychain-class handling for any future catalog credentials;
+- no arbitrary shell execution as part of specialist installation/import.
 
 Catalog update must never silently rewrite canonical agent authority.
 
@@ -307,6 +315,8 @@ Primary ownership is distributed through existing Builds:
 - **Build 107 — Health Score**: detects specialist/ownership overlap, profile proliferation, responsibility leakage and drift;
 - **Build 108 — Learning Mode**: mentor/explanation specialist behaviors without creating new profile authority;
 - **Build 115 — Background Concurrency**: bounded parallel specialist work with durable shared state and no shared mutable authority;
+- **Build 118 — Backup & Recovery**: catalog/profile backup and rollback protection before destructive profile updates/removals;
+- **Build 120 — Runtime Auto Update**: signed/verified Vortex-distributed specialist catalog update manifests where such distribution exists;
 - **Build 124 — CI Matrix**: specialist/agent evaluation matrix and baseline/regression evidence;
 - **Build 127 — Security Audit**: specialist security coverage suite;
 - **Build 128 — Performance Hardening**: specialist routing/context-cost efficiency, local-model specialization and bounded parallelism;

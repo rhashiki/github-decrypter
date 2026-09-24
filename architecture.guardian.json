@@ -2739,6 +2739,24 @@
     "securityAuditBuild": 127,
     "performanceBuild": 128,
     "rcGateBuild": 133,
-    "weakeningRequiresConstitutionalAmendment": true
+    "weakeningRequiresConstitutionalAmendment": true,
+    "deterministicNormalizationRequired": true,
+    "catalogLedgerRequired": true,
+    "sourceHashRequired": true,
+    "normalizedHashRequired": true,
+    "reconciliationStates": [
+      "current",
+      "outdated",
+      "modified",
+      "removed",
+      "foreign"
+    ],
+    "backupBeforeDestructiveCatalogUpdate": true,
+    "signedManifestRequiredForVortexDistributedCatalogUpdates": true,
+    "arbitraryShellExecutionAllowed": false,
+    "networkRefreshExplicitOptIn": true,
+    "secretsRemainInSecretsVault": true,
+    "backupRecoveryBuild": 118,
+    "autoUpdateBuild": 120
   }
 }

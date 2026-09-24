@@ -249,12 +249,12 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals.
 116. **Privacy Controls** — includes local-first intelligence/media/knowledge controls and consent-aware handling of likeness/voice/reference media.
 117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable.
-118. **Backup & Recovery**
+118. **Backup & Recovery** — includes Specialist Profile/catalog snapshot, local-modification backup and rollback protection before destructive profile update/removal.
 
 ## Distribution and hardening
 
 119. **Runtime Installer** — packages Vortex-owned/local-capable intelligence and required runtimes behind one installation experience.
-120. **Runtime Auto Update**
+120. **Runtime Auto Update** — any Vortex-distributed Specialist Profile catalog update uses signed/verified manifests, deterministic reconciliation and explicit update policy; upstream catalog refresh remains optional rather than a core runtime dependency.
 121. **Extension Packaging**
 122. **PWA Production Packaging**
 123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback.

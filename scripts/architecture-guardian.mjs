@@ -281,6 +281,15 @@ for (const [key, expected] of Object.entries({
   importedProfileLicenseRequired: true,
   importedProfileVersionRequired: true,
   importedProfileValidationRequired: true,
+  deterministicNormalizationRequired: true,
+  catalogLedgerRequired: true,
+  sourceHashRequired: true,
+  normalizedHashRequired: true,
+  backupBeforeDestructiveCatalogUpdate: true,
+  signedManifestRequiredForVortexDistributedCatalogUpdates: true,
+  arbitraryShellExecutionAllowed: false,
+  networkRefreshExplicitOptIn: true,
+  secretsRemainInSecretsVault: true,
   domainSpecificProfilesCoreRequired: false,
   weakeningRequiresConstitutionalAmendment: true,
 })) {
@@ -290,6 +299,11 @@ for (const [key, expected] of Object.entries({
       actual: specialistDoctrine[key],
     });
   }
+}
+
+const specialistReconciliationStates = ['current','outdated','modified','removed','foreign'];
+if (JSON.stringify(specialistDoctrine.reconciliationStates ?? []) !== JSON.stringify(specialistReconciliationStates)) {
+  violation('AG007', 'Specialist catalog reconciliation states drifted.', specialistDoctrine.reconciliationStates);
 }
 
 const canonicalSpecialistAgents = ['ramon','leonardo','strachey','licklider','pitts','weizenbaum','samuel','seymour','fukushima','heimdall'];

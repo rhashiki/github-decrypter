@@ -170,6 +170,12 @@ Vortex should:
 - validate fields and strip unsupported authority/tool assumptions;
 - preserve only useful methodology, deliverables, triggers and evaluation criteria;
 - support future update/diff/drift workflows;
+- maintain a local ledger with source and normalized/rendered hashes;
+- reconcile installed profiles as current/outdated/modified/removed/foreign;
+- back up local modifications before destructive catalog operations;
+- verify signed manifests for Vortex-distributed catalog updates;
+- keep catalog network refresh explicit/opt-in;
+- avoid arbitrary shell execution during profile installation/import;
 - keep domain-specific catalogs optional.
 
 ## Methodology mapping adopted from useful upstream patterns

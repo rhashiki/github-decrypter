@@ -12,7 +12,7 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | --- | --- | --- |
 | Local Sovereignty / Zero Marginal Vortex Compute | **Build 16**, **Builds 33–37**, **Builds 116, 119, 123, 125, 128, 133** | Local compute is canonical; no core capability may require Vortex-paid inference. BYOK is optional, advanced and user-funded. Build 133 blocks release if a core path depends on Vortex-managed paid AI/GPU compute. |
 | Adaptive User Profile | **Build 31 — Onboarding**, **Build 108 — Learning Mode** | Build 31 creates the profile and preferences foundation; Build 108 evolves adaptive knowledge/explanation behavior. |
-| Specialist Intelligence Layer | **Builds 64, 65, 67, 90, 107, 108, 115, 124, 127, 128, 133** | Ten canonical agents remain the authority principals; Specialist Profiles add bounded expertise/method only. Build 90 owns normalized import/provenance/license/version/drift handling. |
+| Specialist Intelligence Layer | **Builds 64, 65, 67, 90, 107, 108, 115, 118, 120, 124, 127, 128, 133** | Ten canonical agents remain the authority principals; Specialist Profiles add bounded expertise/method only. Build 90 owns normalized import/provenance/license/version/drift handling. |
 | Workflow Architecture / Handoff Contracts | **Builds 52, 59, 64, 67, 124** | Workflow registry, branches/failure/recovery, explicit handoff contracts, observable states and workflow → components → journeys → tests coverage. |
 | Evidence Collector / Reality Checker | **Builds 57, 62, 124, 133** | Testing/validation remain sovereign. Specialist methods require evidence, retest/rescan after fixes and final integration verification before RC claims. |
 | Codebase Onboarding / LSP-Index Expertise | **Builds 65, 73, 108** | Fact-grounded repo maps, entry points, definitions/references, dependencies, code paths and source-linked learning explanations. |
@@ -299,7 +299,9 @@ Future ideas outside the adopted constitutional amendments continue to follow `d
 - unsupported tool/capability/authority assumptions are removed or rejected during normalization;
 - bundled third-party profiles with incompatible or unknown licensing are rejected;
 - external source repositories are not mandatory runtime dependencies;
-- catalog updates support version comparison, drift reporting and rollback without silently overwriting canonical Vortex authority.
+- catalog updates support version comparison, source/normalized hashes, current/outdated/modified/removed/foreign reconciliation, backup and rollback without silently overwriting canonical Vortex authority;
+- Vortex-distributed catalog updates use signed/verified manifests; remote catalog refresh is explicit/optional;
+- specialist import/update does not gain arbitrary shell execution or secret exposure outside the Secrets Vault boundary.
 
 ### Evidence and workflow methodology
 - Workflow Architect methodology expands workflow discovery, branch/failure/recovery mapping and handoff contracts;
