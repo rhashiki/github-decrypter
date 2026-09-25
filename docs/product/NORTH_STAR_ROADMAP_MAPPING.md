@@ -1,8 +1,8 @@
 # Vortex Ars AI — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY + SPECIALIST INTELLIGENCE + LOCAL RUNTIME PORTABILITY**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY + SPECIALIST INTELLIGENCE + LOCAL RUNTIME PORTABILITY + EVIDENCE-DRIVEN ENGINEERING**
 
-Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–008 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine, Local Sovereignty / Zero Marginal Vortex Compute, the Specialist Intelligence Layer and Local Agent Runtime Portability / Compute Governance. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
+Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–009 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine, Local Sovereignty / Zero Marginal Vortex Compute, the Specialist Intelligence Layer, Local Agent Runtime Portability / Compute Governance and Evidence-Driven Engineering / Portable Generation. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
 
 This mapping is an explicit owner-authorized amendment to the V1 planning surface. It does not authorize implementation before the owning Build.
 
@@ -21,6 +21,14 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | Durable Worker Sessions | **Builds 64, 115, 118, 124, 128** | Bounded fan-out/fan-in, structured handoffs, independent context budgets, checkpoints/recovery and inherited-or-narrowed authority only. |
 | Tool / Compute Admission | **Builds 53, 115, 128** | Capacity budgets are applied after authorization; bounded queues, mutation serialization/safety, cancellation and resource-class limits never create permission. |
 | Plugin Sandbox & Host Consent | **Builds 90, 127, 133** | Manifest permission + scope + consent + audit; default-deny egress; host-owned dangerous-operation labels; permission-diff consent on upgrade. |
+| Evidence-Driven Local Model Advisor | **Builds 32, 35–37, 119, 123, 125, 128** | Hardware/runtime facts + benchmark/capability confidence rank safe local candidates; ordinary users still see One Intelligence rather than model-shopping. |
+| Memory Lifecycle & Typed Handoffs | **Builds 41–43, 66–67, 115, 117–118, 128** | Zero-LLM capture/search/handoff remains viable; memory maintenance is versioned/non-authoritative; bounded briefs/source expansion replace transcript dumping. |
+| Engineering Execution Discipline | **Builds 39–40, 52–53, 60, 62–63, 107, 124, 133** | Spec/inspect/plan, minimal safe solution, write-time checks, systematic debugging, appropriate TDD/regression and evidence-backed review. |
+| Browser/App Adapter Layer | **Builds 68–70, 75, 88–92, 106** | Verified deterministic adapters are preferred over fragile repeated UI operations; drift creates repair work. |
+| Generated-App Embedded Agent Blueprint | **Builds 39, 60, 68–70, 90–92, 117** | Generated products may include their own scoped AI copilot; generated agents inherit no Vortex host authority and client secrets are forbidden. |
+| Portable Component / Artifact Intent | **Builds 60, 73, 103–105, 117, 125** | Framework-neutral intent may compile to native framework code; media/document recipes remain versionable project assets. |
+| Database Visual Intelligence | **Builds 61, 65, 73, 103, 117** | Normalized schema graph/ER representation and credential-minimized introspection support understanding/migration without always requiring DB credentials. |
+| Optional Binary Intelligence | **Builds 73, 90, 92, 127** | User-authorized sandboxed local binary analysis can feed Code Intelligence as evidence; it is not mandatory Core. |
 | Agent Orchestrator | **Build 64 — Agent Orchestrator** | Existing roadmap authority remains unchanged. |
 | Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines revision 1 identity/role metadata and authority boundaries for the historical nine-specialist registry; Build 64 performs the explicit amended roster transition and coordinates the team. |
 | Architectural Integrity & Heimdall | **Build 9 — Architecture Guardian** (existing deterministic enforcement), **Build 64 — Agent Orchestrator** | Constitutional Amendment 004 adopts Heimdall as the tenth canonical specialist. Build 64 revises the Agent Runtime explicitly, integrates pre/post architectural-conformance review, and establishes canonical Architecture Contract / Architecture Ledger consumption without replacing Build 9 enforcement. |
@@ -354,3 +362,50 @@ Future ideas outside the adopted constitutional amendments continue to follow `d
 - PI-Desktop is an LGPL-3.0 architectural reference, not an approved Vortex Core dependency;
 - direct reuse/linking/modification of LGPL-covered implementation requires explicit legal/architecture review;
 - the lower-level Pi ecosystem requires separate evaluation before dependency adoption.
+
+## Amendment 009 — Evidence-Driven Engineering acceptance extensions
+
+### Local Model Advisor
+- detected hardware/runtime facts are primary fit evidence;
+- model quality/benchmark evidence records source/recency/confidence where available;
+- fit estimates include context/KV/overhead rather than weights alone where measurable;
+- offline/cached fallback exists for core recommendations;
+- public catalogs never receive provider credentials;
+- normal UX remains Vortex Ars AI rather than required model selection.
+
+### Memory lifecycle and handoff
+- zero-LLM Project Memory capture/search/handoff remains functional;
+- provenance remains traceable;
+- dedup/contradiction/access signals do not rewrite Product Contract/Architecture/Git/Validation truth;
+- optional LLM consolidation is version-preserving and non-authoritative;
+- handoffs carry explicit task/state/failure/open-question/evidence fields and grant no authority;
+- large tool output may be loss-bounded compressed only with source pointers and expansion.
+
+### Engineering discipline
+- substantial coding begins only after sufficient product intent and affected-system inspection;
+- plans identify implementation and verification work;
+- regression/TDD is used where appropriate to prove behavior;
+- deterministic cheap checks precede expensive model repair where practical;
+- check/security configuration is protected from self-serving weakening;
+- Minimal Solution Ladder applies without sacrificing correctness/security/accessibility/maintainability.
+
+### Browser adapters / generated agents
+- verified deterministic adapters are used when available;
+- browser credentials/cookies are not copied into model context;
+- adapter generation/repair is verified against authorized live state;
+- generated application agents have their own least-privilege security model;
+- generated client code never contains secret model/provider keys;
+- generated agents do not inherit Vortex host capabilities.
+
+### Portable generation
+- component intent may be represented independently from target framework;
+- export produces ordinary native code for the selected supported framework;
+- database schema intelligence may use user-run read-only introspection + structured import;
+- Media Prompt-as-Code retains provenance/model assumptions/parameters/references;
+- portable document/presentation sources remain versionable/exportable assets.
+
+### External adoption and licensing
+- direct third-party dependency requires recorded license/security/maintenance review;
+- LobeChat, ChartDB, OpenHuman and Quarkdown are reference-only by default under current observed licenses;
+- Ghidra is optional/isolated, with module-level/mixed license obligations reviewed at packaging time;
+- permissive candidates may still be rejected if dependency/security/maintenance cost is poor.

@@ -21,6 +21,13 @@
 - [ ] Dangerous-operation confirmation labels/descriptions are host-owned canonical metadata, not caller/model/plugin text.
 - [ ] Plugin/extension access is permission + scope + consent + runtime-enforcement bounded, with default-deny egress where applicable.
 - [ ] PI-Desktop LGPL source has not been copied/vendorized into Vortex Core without explicit legal/architecture approval.
+- [ ] Local model recommendation (if changed) uses hardware/capability/evidence rather than model size alone.
+- [ ] Memory/consolidation changes preserve canonical truth separation and a zero-LLM core recall path.
+- [ ] Minimal Solution Ladder was considered before introducing new abstraction/dependency.
+- [ ] Write-time lint/security/test configuration is not weakened merely to make generated code pass.
+- [ ] Generated-app agents/browser adapters have explicit project/session scope and do not inherit Vortex host authority.
+- [ ] Generated client code contains no provider/model secret.
+- [ ] New external code dependencies include recorded license/security/maintenance review.
 - [ ] No Release, OTA, store publication, production deploy, production database mutation or DNS mutation is implied by completing this change.
 
 ## North Star review
