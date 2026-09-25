@@ -425,6 +425,89 @@ if (policy.toolRuntimeAuthority?.denyByDefault !== true
   violation('AG008', 'Compute/tool budgeting may not weaken Tool Runtime capability enforcement.');
 }
 
+// Constitutional Amendment 009 protects evidence-driven engineering,
+// portable memory/generation and license-aware external adoption.
+const engineeringIntelligenceDoctrine = policy.engineeringIntelligenceDoctrine ?? {};
+const engineeringIntelligenceAmendmentPath = engineeringIntelligenceDoctrine.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_009_EVIDENCE_DRIVEN_ENGINEERING_AND_PORTABLE_GENERATION.md';
+if (!exists(engineeringIntelligenceAmendmentPath)) {
+  violation('AG009', `Required Engineering Intelligence amendment missing: ${engineeringIntelligenceAmendmentPath}`);
+} else {
+  const amendment = read(engineeringIntelligenceAmendmentPath);
+  for (const phrase of [
+    'Evidence-Driven Engineering & Portable Generation',
+    'Core project memory, handoff and recall must remain useful with **zero LLM calls**.',
+    'This is **not code golf**.',
+    'A user may ask Vortex to build a product that itself contains an AI agent/copilot.',
+    'Intent is framework-neutral; exported application code is native to the selected framework.',
+    'Use evidence before guessing, memory before re-explaining, native capability before dependency',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG009', `Engineering Intelligence amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+for (const [key, expected] of Object.entries({
+  doctrine:'evidence-memory-minimal-native-portable',
+  modelRecommendationEvidenceDriven:true,
+  modelRecommendationSizeOnlyAllowed:false,
+  hardwareAutoDetection:true,
+  benchmarkEvidenceConfidence:true,
+  publicModelCatalogOptional:true,
+  publicCatalogCredentialsForbidden:true,
+  unknownLocalModelConservativeFallback:true,
+  zeroLLMMemoryCorePath:true,
+  memoryCanonicalTruthUnchanged:true,
+  portableMemoryExport:true,
+  memoryContradictionDetection:true,
+  memoryDedupSignals:true,
+  optionalLLMConsolidationRequired:false,
+  optionalLLMConsolidationAuthoritative:false,
+  destructiveMemoryCompactionDefault:false,
+  structuredHandoffs:true,
+  specBeforeSubstantialImplementation:true,
+  planBeforeExecution:true,
+  systematicDebugging:true,
+  regressionOrBehaviorEvidence:true,
+  writeTimeQualityGates:true,
+  protectedQualityConfig:true,
+  minimalSolutionLadder:true,
+  codeGolfAllowed:false,
+  deterministicBrowserAdapters:true,
+  browserAdapterVerificationRequired:true,
+  loggedInBrowserRequiresUserAuthorization:true,
+  browserCredentialsToModelContextAllowed:false,
+  generatedAppEmbeddedAgentBlueprint:true,
+  generatedAppAgentIsVortexAuthority:false,
+  generatedClientSecretEmbeddingAllowed:false,
+  frameworkNeutralComponentIntent:true,
+  nativeTargetFrameworkOutput:true,
+  databaseSchemaGraph:true,
+  credentialMinimizedSchemaImport:true,
+  mediaPromptAsCode:true,
+  mediaRecipeProvenance:true,
+  portableArtifactSource:true,
+  optionalBinaryIntelligenceSandboxed:true,
+  languageAdapterExtensible:true,
+  copyleftReferenceOnlyByDefault:true,
+  directDependencyRequiresLicenseReview:true,
+  weakeningRequiresConstitutionalAmendment:true,
+})) {
+  if (engineeringIntelligenceDoctrine[key] !== expected) {
+    violation('AG009', `Engineering Intelligence doctrine invariant drifted: ${key}`, { expected, actual: engineeringIntelligenceDoctrine[key] });
+  }
+}
+const referenceOnlyRepos = ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown'];
+if (JSON.stringify(engineeringIntelligenceDoctrine.referenceOnlyRepos ?? []) !== JSON.stringify(referenceOnlyRepos)) {
+  violation('AG009', 'Reference-only external repository classification drifted.', engineeringIntelligenceDoctrine.referenceOnlyRepos);
+}
+if (policy.economicDoctrine?.localComputePrimary !== true || policy.economicDoctrine?.vortexManagedPaidInferenceAllowed !== false) {
+  violation('AG009', 'Engineering Intelligence must preserve Amendment 006 local economics.');
+}
+if (policy.specialistIntelligenceDoctrine?.specialistProfilesOwnAuthority !== false || policy.agentRuntimeAuthority?.agentCount !== 10) {
+  violation('AG009', 'External methods/profiles may not create hidden agent authority.');
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;

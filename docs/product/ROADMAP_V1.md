@@ -50,21 +50,21 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 29. **Unified Design System** — ✅
 30. **IDE Layout** — ✅
 31. **Onboarding** — ✅ — North Star: Adaptive User Profile foundation. Amendment 005: existing onboarding UI is reused by **Project Genesis**; Genesis asks product questions, not ordinary engineering trivia, and feeds a durable Product Contract.
-32. **Environment Doctor** — ✅
+32. **Environment Doctor** — ✅ Amendment 009: Environment Doctor supplies hardware facts for evidence-driven local model recommendations without forcing model-shopping UX.
 
 ## Vortex intelligence and model foundation
 
 33. **AI Provider API** — ✅ — historical internal abstraction. Amendment 005: this is **not** authority for a user-facing provider catalog. The canonical V1 intelligence surface is Vortex Ars AI only.
 34. **Local AI Runtime** — ✅ — first-class foundation for Vortex local inference. Amendment 008 preserves this as the canonical execution boundary for future replaceable local adapters; runtime/model identity never becomes Vortex authority.
-35. **Local AI Installer** — ✅ — installs/manages supported Vortex runtime capabilities without requiring BYOK. Amendment 008: installer evolution may manage multiple supported local runtime families without making any runtime brand mandatory.
-36. **Model Manager** — ✅ — internal Vortex model/runtime lifecycle; no canonical user workflow requires choosing third-party model brands. Amendment 008: future capability metadata/discovery remains provider-independent and may use conservative defaults for unknown local models.
-37. **Model Routing** — ✅ — internal routing foundation. V1 user experience remains **One Intelligence**; routing, hardware placement and specialist selection are internal concerns. Amendment 008: future routing becomes model-window/capability/hardware aware while One Intelligence remains the default UX; fallback must fit context before use.
+35. **Local AI Installer** — ✅ — installs/manages supported Vortex runtime capabilities without requiring BYOK. Amendment 008: installer evolution may manage multiple supported local runtime families without making any runtime brand mandatory. Amendment 009: installation/model advice uses safe hardware fit and evidence rather than model size alone.
+36. **Model Manager** — ✅ — internal Vortex model/runtime lifecycle; no canonical user workflow requires choosing third-party model brands. Amendment 008: future capability metadata/discovery remains provider-independent and may use conservative defaults for unknown local models. Amendment 009: model metadata may include context/output limits, modalities, tools/structured output, quantization and evidence provenance/confidence.
+37. **Model Routing** — ✅ — internal routing foundation. V1 user experience remains **One Intelligence**; routing, hardware placement and specialist selection are internal concerns. Amendment 008: future routing becomes model-window/capability/hardware aware while One Intelligence remains the default UX; fallback must fit context before use. Amendment 009: routing may use fit/speed/quality/task capability while remaining auditable and internal to One Intelligence.
 38. **Prompt Intake Engine** — ✅ — Project Genesis intake foundation; ordinary substantive product creation begins with discovery rather than immediate code generation.
-39. **Requirement Compiler** — ✅ — Amendment 005: Genesis answers compile into Product Contract requirements, explicit acceptance criteria, representative user journeys and unresolved/external dependency records.
-40. **Task Graph Compiler** — ✅ — generation work decomposes into durable implementation, verification and correction tasks rather than one-shot generation.
-41. **Hierarchical Context Engine** — ✅ — foundation for progressive context, repository/document knowledge packs and narrow retrieval.
+39. **Requirement Compiler** — ✅ — Amendment 005: Genesis answers compile into Product Contract requirements, explicit acceptance criteria, representative user journeys and unresolved/external dependency records. Amendment 009: Product Contract may capture a generated application's own embedded AI agent/copilot requirements, permissions, memory and model source.
+40. **Task Graph Compiler** — ✅ — generation work decomposes into durable implementation, verification and correction tasks rather than one-shot generation. Amendment 009: task graphs preserve concrete implementation/review/test steps rather than repeatedly rediscovering the plan.
+41. **Hierarchical Context Engine** — ✅ — foundation for progressive context, repository/document knowledge packs and narrow retrieval. Amendment 009: hierarchical context incorporates memory tiers and on-demand source expansion.
 42. **Context Continuation Engine** — ✅
-43. **Token Abstraction Layer** — ✅ — constitutional **Tokenless UX**: users do not buy, allocate, calculate or manage tokens. Context/compute limits remain real but operationally internal.
+43. **Token Abstraction Layer** — ✅ — constitutional **Tokenless UX**: users do not buy, allocate, calculate or manage tokens. Context/compute limits remain real but operationally internal. Amendment 009: token abstraction may use loss-bounded structured tool-output compression with source pointers.
 
 ## Conversation, attachments and durable work
 
@@ -79,8 +79,8 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 49. **Decision Engine** — ✅ — **Product Questions, Engineering Decisions**: user intent owns business/product choices; Vortex owns ordinary technical decisions subject to architecture/security/project rules.
 50. **Project Rules Engine** — ✅
 51. **Impact Simulation** — ✅ — foundation for Complexity Budget and Refactor Before Feature impact analysis.
-52. **Build Orchestrator** — ✅ — foundation for run-to-completion implementation/correction loops.
-53. **Tool Runtime** — ✅ Amendment 008: downstream execution may add bounded tool/compute admission after capability/scope authorization; capacity limits never grant authority.
+52. **Build Orchestrator** — ✅ — foundation for run-to-completion implementation/correction loops. Amendment 009: substantial Builds follow inspect/design/plan → minimal safe implementation → checks/tests → review/correction.
+53. **Tool Runtime** — ✅ Amendment 008: downstream execution may add bounded tool/compute admission after capability/scope authorization; capacity limits never grant authority. Amendment 009: write-time deterministic quality gates may return structured violations without allowing protected check configuration to be weakened.
 54. **Scope Intelligence** — ✅
 55. **Scope Lock** — ✅
 56. **Checkpoint Engine** — ✅
@@ -90,10 +90,10 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 58. **Agent Runtime** — ✅ — Named Agent System identity/role/specialty metadata and authority limits. Historical revision 1 contains nine canonical specialists; Build 64 owns the explicit ten-agent transition.
 59. **Planner Agent** — ✅
-60. **Coding Agent** — ✅
-61. **Database Agent** — ✅
-62. **Testing Agent** — ✅ — Interactive QA; representative Product Contract user journeys become executable behavioral validation where supported.
-63. **Review Agent** — ✅
+60. **Coding Agent** — ✅ Amendment 009: Coding Agent follows the minimal-solution ladder, supports future framework-neutral component intent/native emitters, and may scaffold generated-project embedded agents when required.
+61. **Database Agent** — ✅ Amendment 009: Database Agent gains normalized schema-graph/ER evidence and credential-minimized introspection where supported.
+62. **Testing Agent** — ✅ — Interactive QA; representative Product Contract user journeys become executable behavioral validation where supported. Amendment 009: Testing Agent supports regression-first proof/TDD where appropriate and embedded-agent/browser-adapter behavioral/security tests.
+63. **Review Agent** — ✅ Amendment 009: Review Agent checks over-engineering/minimal-solution discipline alongside correctness/security/architecture.
 64. **Agent Orchestrator** — ✅ — North Star: canonical Agent Orchestrator. Amendment 007 establishes the Specialist Intelligence Layer: Ramon may select/load bounded Specialist Profiles for canonical agents, but profiles are not agents/principals and gain no capability, tool, scope, approval or validation authority. Constitutional Amendment 004 introduces **Heimdall — Architecture Guardian** as the tenth canonical specialist while Build 9 remains deterministic enforcement. **Viktor Interaction Layer** remains the outward conversational presence, not an agent. Build 64 owns the canonical visible **Viktor activation toggle**, explicit per-session activation, and must preserve `semanticRouting:false` / `automaticSelection:false` for Build 64 itself. Amendment 005 reinforces that orchestration may not hide architectural debt and that later shared operational state must remain project-scoped and authority-neutral. Amendment 008: Ramon may fan out bounded Worker Sessions, but workers inherit/narrow authority and never become new canonical agents.
 
 ## Knowledge, Project Genesis and context integration
@@ -105,7 +105,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - traceable source references;
    - no wholesale context dumping when deterministic graph/index retrieval is sufficient.
 
-66. **Project Memory** — ✅ — expands into durable **Shared Agent Operational State**:
+66. **Project Memory** — ✅ — expands into durable **Shared Agent Operational State**: Amendment 009: Project Memory may add deterministic dedup/contradiction/access signals and portable projections while preserving provenance and zero-LLM core recall.
    - observations;
    - findings;
    - tested/untested coverage;
@@ -115,7 +115,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - compiled knowledge packs;
    - strict separation from Architecture Ledger, Product Contract, Git and validation truth.
 
-67. **Context Engine vFinal** — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**; also owns bounded on-demand Specialist Profile context loading so the full catalog is never dumped into ordinary model context:
+67. **Context Engine vFinal** — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**; also owns bounded on-demand Specialist Profile context loading so the full catalog is never dumped into ordinary model context: Amendment 009: final context consumes bounded briefs/handoffs and loss-bounded tool summaries; optional LLM consolidation never becomes memory truth.
    - adaptive pre-build discovery;
    - durable Product Contract;
    - unresolved/external dependency ledger;
@@ -129,7 +129,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Preview, browser runtime and developer experience
 
-68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview:
+68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available.
    - isolated browser execution;
    - session/tab lifecycle;
    - deterministic resource cleanup;
@@ -139,7 +139,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 69. **Live Preview** — live application state across supported desktop/tablet/mobile form factors; stable refresh/recovery behavior and long-running Preview sessions.
 
-70. **Preview Bridge** — structured runtime/browser telemetry substrate:
+70. **Preview Bridge** — structured runtime/browser telemetry substrate: Amendment 009: Preview Bridge exposes structured DOM/runtime evidence needed for adapter verification and generated-app agent QA.
    - console/network/navigation/runtime evidence;
    - supported DOM/accessibility/component information;
    - stable element references where technically possible;
@@ -148,7 +148,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 71. **Developer Console**
 72. **Problems & Diagnostics** — aggregates runtime, browser, test and Preview diagnostics with source correlation where possible.
-73. **Code Explorer** — expands into **Code Intelligence**, including Codebase Onboarding and LSP/Index specialist methods for factual entry-point, definition/reference, dependency and execution-path explanation:
+73. **Code Explorer** — expands into **Code Intelligence**, including Codebase Onboarding and LSP/Index specialist methods for factual entry-point, definition/reference, dependency and execution-path explanation: Amendment 009: Code Intelligence may consume framework-neutral component identity, database schema graphs, optional binary-analysis evidence and extensible language/LSP adapters.
    - AST-aware navigation;
    - definitions/references/symbols;
    - dependency/import relationships;
@@ -156,8 +156,8 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - source locations backing visual/runtime context;
    - fast local lexical search and project-aware retrieval.
 74. **Diff Viewer**
-75. **Terminal**
-76. **Git Panel**
+75. **Terminal** Amendment 009: Terminal can expose deterministic browser/app adapter commands without bypassing Tool Runtime.
+76. **Git Panel** Amendment 009: Git Panel may adopt keyboard-first/filter/preview/context-action ergonomics from mature GitHub TUIs.
 77. **Transaction Ledger**
 78. **Intelligent Undo**
 79. **Intelligent Redo**
@@ -179,9 +179,9 @@ Backend choices remain project infrastructure decisions. They do not weaken the 
 87. **MCP Core**
 88. **MCP Trust Gateway**
 89. **MCP Marketplace**
-90. **Plugin SDK** — expands to the **Specialist Profile SDK / Catalog Importer**: normalize compatible external/local catalogs to `vortex-specialist-profile/1`; validate compatible agents/forbidden authorities; preserve source/version/license provenance; support versioning, drift detection, local modifications, rollback and deterministic updates without runtime dependency on the source catalog. Amendment 008 additionally owns plugin manifest permissions/scopes, default-deny egress, permission-diff consent on upgrade, audited tools/services and contribution surfaces (tools, skills, panels/views/widgets, MCP, services, themes/commands and bounded adapters).
+90. **Plugin SDK** — expands to the **Specialist Profile SDK / Catalog Importer**: normalize compatible external/local catalogs to `vortex-specialist-profile/1`; validate compatible agents/forbidden authorities; preserve source/version/license provenance; support versioning, drift detection, local modifications, rollback and deterministic updates without runtime dependency on the source catalog. Amendment 008 additionally owns plugin manifest permissions/scopes, default-deny egress, permission-diff consent on upgrade, audited tools/services and contribution surfaces (tools, skills, panels/views/widgets, MCP, services, themes/commands and bounded adapters). Amendment 009: Plugin SDK may host browser adapters, generated-app agent blueprints, language adapters and optional Binary Intelligence integrations after license/security review.
 91. **Public Studio API**
-92. **Plugin Sandbox**
+92. **Plugin Sandbox** Amendment 009: Plugin Sandbox owns isolation for browser adapters/page agents/binary tools and prevents project plugins from inheriting Vortex host authority.
 
 MCP/plugins never become alternate hidden intelligence authorities and remain subject to permission, trust, capability and scope boundaries.
 
@@ -200,14 +200,14 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 
 ## Visual development, perception and media generation
 
-103. **Visual Inspector** — Perception Engine core + Explore Mode + **Visual Reference intake**:
+103. **Visual Inspector** — Perception Engine core + Explore Mode + **Visual Reference intake**: Amendment 009: Visual Inspector may consume framework-neutral component identities and database schema graph views.
    - Preview element selection;
    - screenshot/mockup/reference-image intake;
    - Figma-derived references where available;
    - modes for faithful replication, inspiration, layout replication, component replication and style replication;
    - selected visual context available to Viktor for safe deictic references.
 
-104. **Visual Context** — Visual Element Mapping + reference decomposition:
+104. **Visual Context** — Visual Element Mapping + reference decomposition: Amendment 009: Visual Context may compile model-agnostic Media Prompt-as-Code recipes with reference provenance.
    - Preview/DOM/component/source correlation where possible;
    - visual hierarchy/layout/style/spacing/typography analysis;
    - asset extraction and identity;
@@ -215,7 +215,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - visual comparison evidence across target form factors;
    - ambiguous targets require disambiguation rather than guessed mutation.
 
-105. **Visual Build** — expands into **Closed-loop Visual Build + Vortex Media Engine**:
+105. **Visual Build** — expands into **Closed-loop Visual Build + Vortex Media Engine**: Amendment 009: Media Engine treats generation prompts/templates as versionable recipes with model assumptions, parameters, references and expected properties; document/presentation output may use portable source.
    - authorized visual request → scoped patch → Preview render → screenshot/visual inspection → targeted correction;
    - whole-reference-image-as-background is not an acceptable shortcut when structured UI is requested;
    - image/design asset generation;
@@ -231,8 +231,8 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - practical duration is timeline/resource-bound rather than limited to one monolithic generation call;
    - likeness/voice/reference media require applicable authorization/consent safeguards.
 
-106. **Error Intelligence**
-107. **Health Score** — adds **Complexity Health** indicators for responsibility leakage, duplicate truth, dependency violations, dead/legacy accumulation and growing workaround debt; also detects specialist-profile proliferation, overlapping responsibility, stale/drifting profiles and misuse of specialists as hidden agents. Health signals inform Refactor Before Feature; they do not replace Heimdall/Guardian authority.
+106. **Error Intelligence** Amendment 009: Error Intelligence detects browser-adapter drift/verification failure and routes bounded repair work.
+107. **Health Score** — adds **Complexity Health** indicators for responsibility leakage, duplicate truth, dependency violations, dead/legacy accumulation and growing workaround debt; also detects specialist-profile proliferation, overlapping responsibility, stale/drifting profiles and misuse of specialists as hidden agents. Health signals inform Refactor Before Feature; they do not replace Heimdall/Guardian authority. Amendment 009: Complexity Health flags dependency/abstraction inflation when a simpler existing/stdlib/native solution satisfies the Product Contract.
 108. **Learning Mode** — Mentor Engine, Explain This, Adaptive Explanation Engine, adaptive user profile evolution and Viktor communication adaptation; may load teaching/onboarding specialist methods through the Specialist Intelligence Layer without creating additional authority. Learning remains optional.
 
 ## GitHub collaboration
@@ -246,22 +246,22 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 ## Multi-workspace, privacy and recovery
 
 114. **Multi-Workspace**
-115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals. Amendment 008: Worker Sessions are durable, inspectable, independently context-budgeted, recoverable where possible and use structured handoffs with bounded fan-out/fan-in.
+115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals. Amendment 008: Worker Sessions are durable, inspectable, independently context-budgeted, recoverable where possible and use structured handoffs with bounded fan-out/fan-in. Amendment 009: Worker Sessions use typed claimable handoffs with attempted approaches/open questions/evidence rather than transcript dumping.
 116. **Privacy Controls** — includes local-first intelligence/media/knowledge controls and consent-aware handling of likeness/voice/reference media.
-117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable.
-118. **Backup & Recovery** — includes Specialist Profile/catalog snapshot, local-modification backup and rollback protection before destructive profile update/removal. Amendment 008 adds inflight execution checkpoints, stale-worker cleanup and recovery that revalidates authority and never blindly replays committed destructive mutation.
+117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable. Amendment 009: export includes portable memory/knowledge projections, native generated code, media recipes and portable artifact source where applicable.
+118. **Backup & Recovery** — includes Specialist Profile/catalog snapshot, local-modification backup and rollback protection before destructive profile update/removal. Amendment 008 adds inflight execution checkpoints, stale-worker cleanup and recovery that revalidates authority and never blindly replays committed destructive mutation. Amendment 009: memory maintenance and handoff recovery preserve prior revisions/source evidence; destructive compaction is not default.
 
 ## Distribution and hardening
 
-119. **Runtime Installer** — packages Vortex-owned/local-capable intelligence and required runtimes behind one installation experience. Amendment 008 expands packaging toward replaceable supported local runtimes/adapters (including Ollama/OpenAI-compatible/vLLM families) without making one brand mandatory.
+119. **Runtime Installer** — packages Vortex-owned/local-capable intelligence and required runtimes behind one installation experience. Amendment 008 expands packaging toward replaceable supported local runtimes/adapters (including Ollama/OpenAI-compatible/vLLM families) without making one brand mandatory. Amendment 009: runtime installation may use evidence-ranked hardware recommendations; public model catalogs stay optional and never receive credentials.
 120. **Runtime Auto Update** — any Vortex-distributed Specialist Profile catalog update uses signed/verified manifests, deterministic reconciliation and explicit update policy; upstream catalog refresh remains optional rather than a core runtime dependency.
 121. **Extension Packaging**
 122. **PWA Production Packaging**
-123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback. Amendment 008 keeps advanced runtime/provider configuration optional; canonical installation selects a compatible local path automatically where possible.
-124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate; adds agent/specialist evaluation baselines, specialist-profile regression cases, workflow/handoff coverage and evidence-collector outputs. Amendment 008 adds provider/runtime, context-overflow/compaction, worker recovery/isolation, plugin-permission and host-consent regression coverage.
-125. **Compatibility Matrix** — includes supported hardware/runtime tiers for local intelligence, voice, browser and media capabilities; unsupported hardware must degrade honestly. Amendment 008 expands compatibility facts to model context/output limits, modalities, local runtime protocol, hardware requirements and degraded-mode behavior.
+123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback. Amendment 008 keeps advanced runtime/provider configuration optional; canonical installation selects a compatible local path automatically where possible. Amendment 009: unified setup recommends a safe local profile from detected hardware while advanced model/runtime choices remain optional.
+124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate; adds agent/specialist evaluation baselines, specialist-profile regression cases, workflow/handoff coverage and evidence-collector outputs. Amendment 008 adds provider/runtime, context-overflow/compaction, worker recovery/isolation, plugin-permission and host-consent regression coverage. Amendment 009: CI adds quality-gate parity, model-advisor evidence, media-recipe regression, browser-adapter verification, language-adapter and memory/handoff tests.
+125. **Compatibility Matrix** — includes supported hardware/runtime tiers for local intelligence, voice, browser and media capabilities; unsupported hardware must degrade honestly. Amendment 008 expands compatibility facts to model context/output limits, modalities, local runtime protocol, hardware requirements and degraded-mode behavior. Amendment 009: compatibility matrix becomes evidence-graded across hardware, models, runtimes, language/toolchain adapters and target UI frameworks.
 126. **Failure Injection** — includes crash/retry/checkpoint/partial-media/browser/job failure scenarios and proves recovery without corrupting canonical state.
-127. **Security Audit** — expands into **Security Coverage Validation** and the specialist security suite (Security Architecture, AppSec, AI-generated-code audit, secrets/credentials, identity/access, prompt-injection sinks, dependency/supply-chain review and authorized penetration verification): Amendment 008 adds plugin sandbox/egress/scope/host-consent/secrets boundaries and recovery-replay security checks.
+127. **Security Audit** — expands into **Security Coverage Validation** and the specialist security suite (Security Architecture, AppSec, AI-generated-code audit, secrets/credentials, identity/access, prompt-injection sinks, dependency/supply-chain review and authorized penetration verification): Amendment 008 adds plugin sandbox/egress/scope/host-consent/secrets boundaries and recovery-replay security checks. Amendment 009: security audit covers generated-app agents, browser adapters, binary-analysis isolation, protected quality config and external dependency/license boundaries.
    - software inventory/SBOM;
    - dependency/CVE checks;
    - secret exposure;
@@ -272,7 +272,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - only authorized targets are dynamically tested;
    - no claim of "secure/clean" may be inferred from untested surfaces.
 
-128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency.
+128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency. Amendment 009: performance hardening owns model recommendation scoring, memory/tool-output compression cost, retrieval efficiency and optional local consolidation economics.
    - local-first inference optimization;
    - quantization/caching/batching/context reuse;
    - compact task classifiers/specialized Vortex components where beneficial;
@@ -290,7 +290,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - unresolved external dependencies explicitly surfaced;
    - project-generation correction loops stabilize before RC.
 
-133. **Release Candidate** — canonical **RC Gate / RC by Default**; consumes Evidence Collector / Reality Checker methodology so completion claims require Product Contract, CI, behavioral and integration evidence rather than agent self-report: Amendment 008 blocks RC if dangerous confirmations are caller-labeled, workers/tools are unbounded, plugin reach exceeds scope, mutation recovery can replay unsafely or provider fallback violates local sovereignty.
+133. **Release Candidate** — canonical **RC Gate / RC by Default**; consumes Evidence Collector / Reality Checker methodology so completion claims require Product Contract, CI, behavioral and integration evidence rather than agent self-report: Amendment 008 blocks RC if dangerous confirmations are caller-labeled, workers/tools are unbounded, plugin reach exceeds scope, mutation recovery can replay unsafely or provider fallback violates local sovereignty. Amendment 009: RC blocks unverified adapters, leaked generated-agent secrets, weakened quality gates, unsafe memory rewrite, unjustified over-engineering and prohibited external code reuse.
    - Product Contract frozen for the candidate;
    - acceptance matrix complete;
    - representative user journeys pass;

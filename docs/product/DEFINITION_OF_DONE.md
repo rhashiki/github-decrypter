@@ -13,7 +13,7 @@ A Build is DONE only when every applicable item below is satisfied. Functional a
 
 ## North Star
 - product-affecting changes are reviewed against `docs/product/NORTH_STAR_MANIFESTO.md`
-- product-affecting changes comply with `CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md` and `CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md` where applicable
+- product-affecting changes comply with adopted Amendments 005–009 where applicable
 - applicable North Star questions in the PR template are answered
 - user autonomy is not increased by silently removing user control
 - adaptive profile/personality data never grants execution authority
@@ -66,6 +66,21 @@ A Build is DONE only when every applicable item below is satisfied. Functional a
 - generated likeness/voice/reference-media use respects applicable authorization/consent requirements
 - long-form media generation records durable timeline/segment state and validates final composition where applicable
 - generated media and compiled portable project knowledge remain ordinary project assets subject to privacy/export rules
+
+## Engineering Intelligence / Portable Generation
+- local model recommendation uses hardware/capability/evidence rather than parameter size alone where applicable
+- core memory capture/search/handoff remains useful without mandatory LLM inference
+- memory consolidation does not silently rewrite canonical Product Contract/Architecture/Git/Validation truth
+- substantial implementation follows sufficient inspect/design/plan before mutation
+- deterministic write-time checks run where appropriate and protected configuration is not weakened merely to pass
+- the smallest safe existing/stdlib/native/installed solution is preferred before adding abstraction/dependency
+- browser/app adapters are verified before their output is trusted
+- generated-project AI agents have explicit app-level scope and never inherit Vortex host capabilities
+- generated client code contains no secret AI/provider credential
+- framework-neutral intent, when used, exports ordinary native target-framework code
+- media recipes retain applicable provenance/model/parameter/reference facts
+- external dependencies have recorded license/security/maintenance review before direct adoption
+- reference-only/copyleft code is not copied/vendorized into proprietary Core without explicit approval
 
 ## Code Quality
 - typecheck passes where applicable
