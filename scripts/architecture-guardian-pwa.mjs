@@ -21,8 +21,8 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
     const icon192 = iconMap.get('192x192');
     const icon512 = iconMap.get('512x512');
     if (
-      manifest.name !== 'GitHub Decrypter Studio'
-      || manifest.short_name !== 'GitHub Decrypter'
+      manifest.name !== 'Vortex Ars Studio'
+      || manifest.short_name !== 'Vortex Ars'
       || manifest.id !== './'
       || manifest.start_url !== './'
       || manifest.scope !== './'
