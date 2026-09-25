@@ -31,6 +31,8 @@
 - [ ] Comments add non-obvious why/invariant/provenance value rather than narrating code or recording patch history.
 - [ ] TODO/FIXME/HACK markers introduced here are traceable, temporary and have a clear removal condition.
 - [ ] Generated-app agents/browser adapters have explicit project/session scope and do not inherit Vortex host authority.
+- [ ] Visual capture changes remain read-only evidence producers; interaction/mutation/validation authority is not added to the camera layer.
+- [ ] Visual capture URLs/output paths respect Browser Runtime network scope and filesystem capability/scope.
 - [ ] Generated client code contains no provider/model secret.
 - [ ] New external code dependencies include recorded license/security/maintenance review.
 - [ ] No Release, OTA, store publication, production deploy, production database mutation or DNS mutation is implied by completing this change.

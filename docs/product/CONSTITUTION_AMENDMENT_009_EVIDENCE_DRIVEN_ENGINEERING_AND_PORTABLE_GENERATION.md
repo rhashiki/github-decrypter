@@ -181,6 +181,55 @@ Vortex may use an intermediate UI/component representation when it improves port
 
 The IR must not force lowest-common-denominator UI and must remain compatible with source/component identity mapping.
 
+## 9A. Visual Evidence Capture
+
+Vortex Preview/Testing may use a dedicated **read-only visual capture layer** to give agents trustworthy pixels without coupling screenshot capture to browser interaction authority.
+
+The capture layer should support, where applicable:
+
+- viewport screenshots;
+- full-page screenshots;
+- first-match element capture by selector;
+- configurable padding around captured elements;
+- desktop/tablet/mobile viewport presets;
+- dark-mode emulation;
+- PNG/JPEG/WebP output;
+- bounded wait-for-selector behavior;
+- structured capture metadata;
+- inline image return to agent/runtime;
+- optional file output only through approved filesystem scope;
+- persistent browser-session reuse for repeated captures;
+- bounded concurrent capture;
+- deterministic local benchmark fixtures.
+
+Capture correctness should wait for relevant visual settling before evidence is recorded, including fonts, visible image loads, finite entrance animations/transitions and lazy-loaded content required by the requested capture mode.
+
+The capture layer is **not** an interaction engine.
+
+It owns no click, type, navigation-workflow, form-submission, DOM mutation, arbitrary script automation, authentication, capability, approval, validation or release authority beyond the minimum navigation/rendering needed to obtain the requested visual evidence.
+
+The preferred security separation is:
+
+```text
+Browser/Preview interaction authority
+        |
+rendered state
+        v
+Visual Evidence Capture
+        |
+pixels + structured metadata
+        v
+Perception / Testing / Validation
+```
+
+Visual evidence must remain traceable to URL/preview identity, viewport, scale, mode/selector, capture timestamp/run identity and source task where available.
+
+The capture component should default to returning evidence in memory/inline. Persistent writes require the ordinary Vortex filesystem/capability/scope boundary.
+
+Localhost/loopback preview capture is expected. Arbitrary external/private-network capture must remain subject to Browser Runtime/network scope rather than gaining unrestricted reach merely because the camera can accept a URL.
+
+A capture failure is evidence of failure/inconclusiveness; it must not be silently converted into a passing visual result.
+
 ## 10. Database schema intelligence
 
 Database Agent / Code Intelligence may provide schema graphs, tables/views, columns/types/defaults, PK/FK relationships, indexes, constraints, supported routines/triggers, migration sources, ER visualization and target-dialect planning.
@@ -243,6 +292,8 @@ A Release Candidate is blocked when applicable work:
 - embeds Vortex/user secrets in generated client-side agents;
 - lets a generated app agent inherit Vortex capabilities;
 - trusts unverified browser adapters;
+- lets the visual capture layer acquire interaction/mutation authority;
+- treats an incomplete/failed screenshot capture as successful visual evidence;
 - promises native target code but requires a hidden Vortex runtime;
 - loses media-recipe provenance required for reproducibility;
 - directly vendors reference-only/copyleft code into proprietary Core without approval.
@@ -254,7 +305,7 @@ No Build is added or renumbered.
 - **31–32, 35–37, 119, 123, 125, 128** — hardware/model recommendation.
 - **41–43, 66–67, 115, 117–118, 128** — memory lifecycle, handoffs, recall and compression.
 - **39–40, 52–55, 60, 62–63, 107, 124, 133** — engineering discipline, legacy isolation, comment hygiene and quality.
-- **68–70, 75, 88–92, 106** — browser/app adapters.
+- **62, 68–70, 75, 88–92, 106, 124, 128, 133** — browser/app adapters and read-only visual evidence capture.
 - **39, 60, 68–70, 90–92, 117** — generated-app Embedded Agent Blueprint.
 - **60, 73, 103–105, 117, 125** — framework-neutral component intent/native output.
 - **61, 65, 73, 103, 117** — database visual intelligence.
