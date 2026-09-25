@@ -9,6 +9,7 @@ for(const file of [
   'packages/context/src/project-genesis.ts',
   'packages/context/src/knowledge-compiler.ts',
   'packages/context/src/final-context.ts',
+  'packages/context/src/specialist-context.ts',
   'apps/local/src/product-contract-store.ts',
   'apps/local/src/context-engine-runtime.ts',
   'docs/architecture/CONTEXT_ENGINE_FINAL.md',
@@ -31,6 +32,7 @@ assert.ok(versionBuild(localPkg.version)>=67&&versionBuild(localPkg.version)<=po
 assert.equal(contextPkg.exports['./project-genesis'],'./src/project-genesis.ts');
 assert.equal(contextPkg.exports['./knowledge-compiler'],'./src/knowledge-compiler.ts');
 assert.equal(contextPkg.exports['./final-context'],'./src/final-context.ts');
+assert.equal(contextPkg.exports['./specialist-context'],'./src/specialist-context.ts');
 
 const rule=policy.contextEngineFinalAuthority;
 for(const [key,value] of Object.entries({
@@ -41,6 +43,7 @@ for(const [key,value] of Object.entries({
   onDemandKnowledgePacks:true,finalContextAssembly:true,boundedRetrieval:true,
   wholesaleContextDump:false,localFirst:true,vortexPaidInference:false,
   externalProviderRequired:false,directNetworkAuthority:false,directFilesystemAuthority:false,
+  specialistProfileLoading:true,specialistProfileAuthority:false,wholeSpecialistCatalogContextAllowed:false,
 })) assert.equal(rule[key],value,'Build 67 policy drift: '+key);
 
 const genesis=read('packages/context/src/project-genesis.ts');
@@ -54,6 +57,14 @@ assert.ok(compiler.includes("authority:'data'"));
 assert.ok(compiler.includes('promptInjectionShaped'));
 assert.ok(compiler.includes('KNOWLEDGE_SEMANTIC_CANDIDATE_MAX=24'));
 assert.equal(/\bfetch\s*\(|\bWebSocket\b|['"]node:(?:fs|net|http|https|child_process)/.test(compiler),false);
+
+const specialist=read('packages/context/src/specialist-context.ts');
+assert.ok(specialist.includes("SPECIALIST_PROFILE_SCHEMA='vortex-specialist-profile/1'"));
+assert.ok(specialist.includes('SPECIALIST_MAX_ACTIVE_PROFILES=5'));
+assert.ok(specialist.includes('wholeCatalogContextAllowed:false'));
+assert.ok(specialist.includes('authorityGranted:false'));
+assert.ok(specialist.includes('[SPECIALIST PROFILE — NON-AUTHORITATIVE METHOD]'));
+assert.equal(/\bfetch\s*\(|\bWebSocket\b|['"]node:(?:fs|net|http|https|child_process)/.test(specialist),false);
 
 const runtime=read('apps/local/src/context-engine-runtime.ts');
 assert.ok(runtime.includes("semanticReranking:'local-model'"));
