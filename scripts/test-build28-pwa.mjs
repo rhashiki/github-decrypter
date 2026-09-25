@@ -24,7 +24,7 @@ assert.ok(rootVersion && Number(rootVersion[1]) >= 28);
 assert.ok(studioVersion && Number(studioVersion[1]) >= 28);
 const studioBuild = Number(studioVersion[1]);
 assert.equal(manifest.name, 'Vortex Ars Studio');
-assert.equal(manifest.short_name, 'GitHub Decrypter');
+assert.equal(manifest.short_name, 'Vortex Ars');
 assert.equal(manifest.id, './');
 assert.equal(manifest.start_url, './');
 assert.equal(manifest.scope, './');
