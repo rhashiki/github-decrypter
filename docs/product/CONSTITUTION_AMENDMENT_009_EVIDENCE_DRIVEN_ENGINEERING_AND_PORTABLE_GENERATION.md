@@ -91,6 +91,8 @@ This is **not code golf**. Required validation, error handling, security, access
 
 ## 6A. Legacy isolation and single-source implementation
 
+> **Git stores history. Active source stores the current implementation.**
+
 Modern Vortex code must not remain behaviorally coupled to obsolete implementations after ownership has moved.
 
 Rules:
