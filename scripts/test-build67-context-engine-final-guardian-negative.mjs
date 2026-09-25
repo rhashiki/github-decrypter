@@ -45,7 +45,7 @@ try{
     fs.writeFileSync('apps/local/src/context-engine-runtime.ts',originals.get('apps/local/src/context-engine-runtime.ts').replaceAll("externalProviderRequired:false","externalProviderRequired:true"));
   });
   expectFailure('AG689',()=>{
-    fs.writeFileSync('packages/context/src/specialist-context.ts',originals.get('packages/context/src/specialist-context.ts').replace('authorityGranted:false','authorityGranted:true'));
+    fs.writeFileSync('packages/context/src/specialist-context.ts',originals.get('packages/context/src/specialist-context.ts').replaceAll('authorityGranted:false','authorityGranted:true'));
   });
   expectFailure('AG687',()=>{
     fs.writeFileSync('docs/product/ROADMAP_V1.md',originals.get('docs/product/ROADMAP_V1.md').replace('67. **Context Engine vFinal** — ✅ —','67. **Context Engine vFinal** —'));
