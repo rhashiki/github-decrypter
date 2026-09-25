@@ -543,6 +543,77 @@ if (policy.specialistIntelligenceDoctrine?.specialistProfilesOwnAuthority !== fa
   violation('AG009', 'External methods/profiles may not create hidden agent authority.');
 }
 
+
+// Constitutional Amendment 010 keeps external runtimes as bounded executors,
+// preserving One Intelligence, local-first economics and deterministic replay.
+const sovereignExecutionDoctrine = policy.sovereignExecutionDoctrine ?? {};
+const sovereignExecutionAmendmentPath = sovereignExecutionDoctrine.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_010_SOVEREIGN_WEB_DATA_BACKEND_AND_DEPLOYMENT_EXECUTION.md';
+if (!exists(sovereignExecutionAmendmentPath)) {
+  violation('AG083', `Required Sovereign Execution amendment missing: ${sovereignExecutionAmendmentPath}`);
+} else {
+  const amendment = read(sovereignExecutionAmendmentPath);
+  for (const phrase of [
+    'One Intelligence, many executors',
+    'Reason Once, Replay Many',
+    'Maxun is **reference-only by default**',
+    'Coolify is an Apache-2.0 direct integration/reference candidate',
+    'Build 81 remains the canonical Supabase Provider',
+    'One intelligence decides. Executors act.',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG083', `Sovereign Execution amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+for (const [key, expected] of Object.entries({
+  doctrine:'one-intelligence-many-executors-reason-once-replay-many',
+  oneIntelligenceOwnsDecisions:true,
+  externalExecutorsOwnReasoningAuthority:false,
+  browserExecutorLocalFirst:true,
+  systemBrowserReuseRequiresAuthorization:true,
+  browserCredentialsToModelContextAllowed:false,
+  hostedBrowserRequiredForCore:false,
+  browserUseClassification:'direct-candidate-mit',
+  browserUsePythonMandatory:false,
+  deterministicRecipeCompilation:true,
+  reasonOnceReplayMany:true,
+  aiFallbackOnlyForAmbiguityOrDrift:true,
+  webDataRecipeTypedSchema:true,
+  webDataMonitoringDurableJobs:true,
+  captchaCircumventionCoreGoal:false,
+  maxunClassification:'reference-only-agpl-3.0',
+  maxunCoreCodeReuseAllowed:false,
+  coolifyClassification:'adapter-or-direct-candidate-apache-2.0',
+  coolifyCoreDependency:false,
+  userOwnedDeploymentFirstClass:true,
+  sshDeploymentRequiresExplicitAuthorization:true,
+  deploymentCredentialsRemainSecretScoped:true,
+  deploymentHealthEvidenceRequired:true,
+  supabaseClassification:'provider-reference-apache-2.0',
+  supabaseCoreDependency:false,
+  supabaseLocalSelfHostedPath:true,
+  genericPostgresPreferredWhenSufficient:true,
+  backendProviderPortabilityRequired:true,
+  externalRepoNeverBecomesAuthority:true,
+  directReuseRequiresLicenseSecurityMaintenanceReview:true,
+  copyleftCoreVendoringAllowedByDefault:false,
+  weakeningRequiresConstitutionalAmendment:true,
+})) {
+  if (sovereignExecutionDoctrine[key] !== expected) {
+    violation('AG083', `Sovereign Execution doctrine invariant drifted: ${key}`, { expected, actual: sovereignExecutionDoctrine[key] });
+  }
+}
+if (policy.agentRuntimeAuthority?.agentCount !== 10) {
+  violation('AG083', 'External executors may not change the canonical ten-agent roster.');
+}
+if (policy.economicDoctrine?.localComputePrimary !== true || policy.economicDoctrine?.vortexManagedPaidInferenceAllowed !== false) {
+  violation('AG083', 'Sovereign Execution must preserve Amendment 006 local economics.');
+}
+if (policy.engineeringIntelligenceDoctrine?.copyleftReferenceOnlyByDefault !== true) {
+  violation('AG083', 'Sovereign Execution must preserve Amendment 009 copyleft reference-only default.');
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;

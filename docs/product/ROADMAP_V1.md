@@ -80,7 +80,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 50. **Project Rules Engine** — ✅
 51. **Impact Simulation** — ✅ — foundation for Complexity Budget and Refactor Before Feature impact analysis.
 52. **Build Orchestrator** — ✅ — foundation for run-to-completion implementation/correction loops. Amendment 009: substantial Builds follow inspect/design/plan → minimal safe implementation → checks/tests → review/correction.
-53. **Tool Runtime** — ✅ Amendment 008: downstream execution may add bounded tool/compute admission after capability/scope authorization; capacity limits never grant authority. Amendment 009: write-time deterministic quality gates may return structured violations without allowing protected check configuration to be weakened.
+53. **Tool Runtime** — ✅ Amendment 008: downstream execution may add bounded tool/compute admission after capability/scope authorization; capacity limits never grant authority. Amendment 009: write-time deterministic quality gates may return structured violations without allowing protected check configuration to be weakened. Amendment 010: browser/web-data/backend/deployment executors remain bounded tools, never alternate reasoning authority.
 54. **Scope Intelligence** — ✅
 55. **Scope Lock** — ✅ Amendment 009: Scope Lock also prevents opportunistic legacy cleanup from expanding a task silently; required legacy isolation/refactor must be made explicit in scope before implementation.
 56. **Checkpoint Engine** — ✅
@@ -129,7 +129,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Preview, browser runtime and developer experience
 
-68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed.
+68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed. Amendment 010: adds a local-first Browser Executor boundary, explicit authorized system-profile reuse and **Reason Once, Replay Many** deterministic recipe compilation; Browser Use is a MIT direct-integration candidate but its model/provider layer is not Vortex authority and Python is not made mandatory solely for this integration.
    - isolated browser execution;
    - session/tab lifecycle;
    - deterministic resource cleanup;
@@ -164,9 +164,9 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Backend providers
 
-80. **Backend Provider Contract**
-81. **Supabase Provider**
-82. **Generic PostgreSQL Provider**
+80. **Backend Provider Contract** — Amendment 010: provider-specific convenience stays below a portable contract; local/self-hosted paths and lock-in trade-offs are explicit.
+81. **Supabase Provider** — Amendment 010: first-class local/self-hosted path for PostgreSQL/Auth/API/Realtime/Storage/Functions with migration/schema parity evidence where supported; Supabase is not mandatory Core.
+82. **Generic PostgreSQL Provider** — Amendment 010: preferred when ordinary PostgreSQL satisfies the Product Contract and a broader backend platform would add unnecessary surface.
 83. **Firebase Provider**
 84. **Appwrite Provider**
 85. **Convex Provider**
@@ -179,20 +179,20 @@ Backend choices remain project infrastructure decisions. They do not weaken the 
 87. **MCP Core**
 88. **MCP Trust Gateway**
 89. **MCP Marketplace**
-90. **Plugin SDK** — expands to the **Specialist Profile SDK / Catalog Importer**: normalize compatible external/local catalogs to `vortex-specialist-profile/1`; validate compatible agents/forbidden authorities; preserve source/version/license provenance; support versioning, drift detection, local modifications, rollback and deterministic updates without runtime dependency on the source catalog. Amendment 008 additionally owns plugin manifest permissions/scopes, default-deny egress, permission-diff consent on upgrade, audited tools/services and contribution surfaces (tools, skills, panels/views/widgets, MCP, services, themes/commands and bounded adapters). Amendment 009: Plugin SDK may host browser adapters, generated-app agent blueprints, language adapters and optional Binary Intelligence integrations after license/security review.
+90. **Plugin SDK** — expands to the **Specialist Profile SDK / Catalog Importer**: normalize compatible external/local catalogs to `vortex-specialist-profile/1`; validate compatible agents/forbidden authorities; preserve source/version/license provenance; support versioning, drift detection, local modifications, rollback and deterministic updates without runtime dependency on the source catalog. Amendment 008 additionally owns plugin manifest permissions/scopes, default-deny egress, permission-diff consent on upgrade, audited tools/services and contribution surfaces (tools, skills, panels/views/widgets, MCP, services, themes/commands and bounded adapters). Amendment 009: Plugin SDK may host browser adapters, generated-app agent blueprints, language adapters and optional Binary Intelligence integrations after license/security review. Amendment 010: may host Browser Executor, Web Data Recipe, self-host backend and sovereign deployment adapters without granting them agent authority.
 91. **Public Studio API**
-92. **Plugin Sandbox** Amendment 009: Plugin Sandbox owns isolation for browser adapters/page agents/binary tools and prevents project plugins from inheriting Vortex host authority.
+92. **Plugin Sandbox** Amendment 009: Plugin Sandbox owns isolation for browser adapters/page agents/binary tools and prevents project plugins from inheriting Vortex host authority. Amendment 010: external browser/data/backend/deployment adapters remain least-privilege, secret-scoped and default-deny for undeclared egress.
 
 MCP/plugins never become alternate hidden intelligence authorities and remain subject to permission, trust, capability and scope boundaries.
 
 ## Deployment and domains
 
-93. **Deployment Provider Contract**
+93. **Deployment Provider Contract** — Amendment 010: includes a first-class user-owned/self-hosted path; Coolify is an Apache-2.0 adapter/direct-integration candidate rather than mandatory infrastructure.
 94. **Vercel Provider**
 95. **Netlify Provider**
 96. **Cloudflare Provider**
 97. **GitHub Pages Provider**
-98. **Deployment Hub** — consumes Project Contract deployment expectations and external-dependency state.
+98. **Deployment Hub** — consumes Project Contract deployment expectations and external-dependency state. Amendment 010: may deploy to authorized SSH/container infrastructure with build detection, preview deployments, health checks, logs and explicit rollback while keeping infrastructure credentials local/secret-scoped.
 99. **Domain Provider Contract**
 100. **Existing Domain Connection**
 101. **Domain Purchase Integration**
@@ -246,9 +246,9 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 ## Multi-workspace, privacy and recovery
 
 114. **Multi-Workspace**
-115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals. Amendment 008: Worker Sessions are durable, inspectable, independently context-budgeted, recoverable where possible and use structured handoffs with bounded fan-out/fan-in. Amendment 009: Worker Sessions use typed claimable handoffs with attempted approaches/open questions/evidence rather than transcript dumping.
+115. **Background Concurrency** — supports bounded parallel durable specialist/media/indexing/test work with structured fan-out/fan-in, failure handling and shared operational state without losing project-scoped authority boundaries; specialist profiles remain context/method, not independent principals. Amendment 008: Worker Sessions are durable, inspectable, independently context-budgeted, recoverable where possible and use structured handoffs with bounded fan-out/fan-in. Amendment 009: Worker Sessions use typed claimable handoffs with attempted approaches/open questions/evidence rather than transcript dumping. Amendment 010: scheduled Web Data monitoring/extraction runs as bounded durable jobs; stable recipes replay deterministically and only escalate to AI on ambiguity or verified drift.
 116. **Privacy Controls** — includes local-first intelligence/media/knowledge controls and consent-aware handling of likeness/voice/reference media.
-117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable. Amendment 009: export includes portable memory/knowledge projections, native generated code, media recipes and portable artifact source where applicable.
+117. **Export & Exit** — exports ordinary project assets including generated media and portable compiled knowledge artifacts where applicable. Amendment 009: export includes portable memory/knowledge projections, native generated code, media recipes and portable artifact source where applicable. Amendment 010: export includes inspectable Web Data recipes, backend migration/schema assets and deployment configuration where applicable, without requiring a hidden Vortex runtime.
 118. **Backup & Recovery** — includes Specialist Profile/catalog snapshot, local-modification backup and rollback protection before destructive profile update/removal. Amendment 008 adds inflight execution checkpoints, stale-worker cleanup and recovery that revalidates authority and never blindly replays committed destructive mutation. Amendment 009: memory maintenance and handoff recovery preserve prior revisions/source evidence; destructive compaction is not default.
 
 ## Distribution and hardening
@@ -258,10 +258,10 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 121. **Extension Packaging**
 122. **PWA Production Packaging**
 123. **Unified Installation Experience** — no canonical setup flow requires BYOK or third-party AI-provider selection. Optional advanced BYOK may be configured as a user-funded accelerator without becoming a core dependency or Vortex-paid fallback. Amendment 008 keeps advanced runtime/provider configuration optional; canonical installation selects a compatible local path automatically where possible. Amendment 009: unified setup recommends a safe local profile from detected hardware while advanced model/runtime choices remain optional.
-124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate; adds agent/specialist evaluation baselines, specialist-profile regression cases, workflow/handoff coverage and evidence-collector outputs. Amendment 008 adds provider/runtime, context-overflow/compaction, worker recovery/isolation, plugin-permission and host-consent regression coverage. Amendment 009: CI adds quality-gate parity, model-advisor evidence, media-recipe regression, browser-adapter verification, language-adapter and memory/handoff tests. Amendment 009: CI may add language-aware checks for commented-out code, unowned TODO/FIXME/HACK markers, dead code, duplicate implementations and new imports from legacy migration roots where reliable. Amendment 009: CI adds deterministic screenshot/evidence fixtures and visual-capture success/failure regression cases.
+124. **CI Matrix** — collects deterministic build/test/security/architecture evidence required downstream by RC Gate; adds agent/specialist evaluation baselines, specialist-profile regression cases, workflow/handoff coverage and evidence-collector outputs. Amendment 008 adds provider/runtime, context-overflow/compaction, worker recovery/isolation, plugin-permission and host-consent regression coverage. Amendment 009: CI adds quality-gate parity, model-advisor evidence, media-recipe regression, browser-adapter verification, language-adapter and memory/handoff tests. Amendment 009: CI may add language-aware checks for commented-out code, unowned TODO/FIXME/HACK markers, dead code, duplicate implementations and new imports from legacy migration roots where reliable. Amendment 009: CI adds deterministic screenshot/evidence fixtures and visual-capture success/failure regression cases. Amendment 010: CI covers deterministic browser-recipe replay/drift, local/self-host backend parity and deployment adapter smoke/health/rollback evidence where applicable.
 125. **Compatibility Matrix** — includes supported hardware/runtime tiers for local intelligence, voice, browser and media capabilities; unsupported hardware must degrade honestly. Amendment 008 expands compatibility facts to model context/output limits, modalities, local runtime protocol, hardware requirements and degraded-mode behavior. Amendment 009: compatibility matrix becomes evidence-graded across hardware, models, runtimes, language/toolchain adapters and target UI frameworks.
 126. **Failure Injection** — includes crash/retry/checkpoint/partial-media/browser/job failure scenarios and proves recovery without corrupting canonical state.
-127. **Security Audit** — expands into **Security Coverage Validation** and the specialist security suite (Security Architecture, AppSec, AI-generated-code audit, secrets/credentials, identity/access, prompt-injection sinks, dependency/supply-chain review and authorized penetration verification): Amendment 008 adds plugin sandbox/egress/scope/host-consent/secrets boundaries and recovery-replay security checks. Amendment 009: security audit covers generated-app agents, browser adapters, binary-analysis isolation, protected quality config and external dependency/license boundaries.
+127. **Security Audit** — expands into **Security Coverage Validation** and the specialist security suite (Security Architecture, AppSec, AI-generated-code audit, secrets/credentials, identity/access, prompt-injection sinks, dependency/supply-chain review and authorized penetration verification): Amendment 008 adds plugin sandbox/egress/scope/host-consent/secrets boundaries and recovery-replay security checks. Amendment 009: security audit covers generated-app agents, browser adapters, binary-analysis isolation, protected quality config and external dependency/license boundaries. Amendment 010: security audit covers logged-in browser consent, cookie/token isolation, hostile web-content instruction boundaries, SSH/backend/deployment secrets and AGPL/reference-only enforcement.
    - software inventory/SBOM;
    - dependency/CVE checks;
    - secret exposure;
@@ -272,7 +272,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - only authorized targets are dynamically tested;
    - no claim of "secure/clean" may be inferred from untested surfaces.
 
-128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency. Amendment 009: performance hardening owns model recommendation scoring, memory/tool-output compression cost, retrieval efficiency and optional local consolidation economics. Amendment 009: performance hardening measures cold/warm visual capture, persistent-browser reuse, p95 latency, memory and bounded capture concurrency.
+128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency. Amendment 009: performance hardening owns model recommendation scoring, memory/tool-output compression cost, retrieval efficiency and optional local consolidation economics. Amendment 009: performance hardening measures cold/warm visual capture, persistent-browser reuse, p95 latency, memory and bounded capture concurrency. Amendment 010: stable web workflows are compiled/replayed deterministically to reduce repeated model inference; local browser reuse and self-hosted backend/deployment paths are profiled without hiding resource cost.
    - local-first inference optimization;
    - quantization/caching/batching/context reuse;
    - compact task classifiers/specialized Vortex components where beneficial;
@@ -290,7 +290,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - unresolved external dependencies explicitly surfaced;
    - project-generation correction loops stabilize before RC.
 
-133. **Release Candidate** — canonical **RC Gate / RC by Default**; consumes Evidence Collector / Reality Checker methodology so completion claims require Product Contract, CI, behavioral and integration evidence rather than agent self-report: Amendment 008 blocks RC if dangerous confirmations are caller-labeled, workers/tools are unbounded, plugin reach exceeds scope, mutation recovery can replay unsafely or provider fallback violates local sovereignty. Amendment 009: RC blocks unverified adapters, leaked generated-agent secrets, weakened quality gates, unsafe memory rewrite, unjustified over-engineering and prohibited external code reuse. Amendment 009: RC blocks known legacy interference, dual behavioral authority, rollback-by-commented-code and product/security truth that exists only in comments. Amendment 009: RC visual evidence distinguishes successful, failed and inconclusive capture; the camera itself never owns validation truth.
+133. **Release Candidate** — canonical **RC Gate / RC by Default**; consumes Evidence Collector / Reality Checker methodology so completion claims require Product Contract, CI, behavioral and integration evidence rather than agent self-report: Amendment 008 blocks RC if dangerous confirmations are caller-labeled, workers/tools are unbounded, plugin reach exceeds scope, mutation recovery can replay unsafely or provider fallback violates local sovereignty. Amendment 009: RC blocks unverified adapters, leaked generated-agent secrets, weakened quality gates, unsafe memory rewrite, unjustified over-engineering and prohibited external code reuse. Amendment 009: RC blocks known legacy interference, dual behavioral authority, rollback-by-commented-code and product/security truth that exists only in comments. Amendment 009: RC visual evidence distinguishes successful, failed and inconclusive capture; the camera itself never owns validation truth. Amendment 010: RC blocks hidden browser-agent authority, core dependence on paid hosted browser/deployment paths, unauthorized logged-in browser reuse, invalid/drifted extraction presented as truth, prohibited AGPL Core reuse, secret leakage, backend readiness without migration/integration evidence and deployment success without health evidence.
    - Product Contract frozen for the candidate;
    - acceptance matrix complete;
    - representative user journeys pass;
@@ -328,6 +328,9 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
 - **Security Coverage Validation** → Builds 62, 124, 127 and 133.
 - **Vortex Model Specialization** → Builds 34–37 runtime foundations + Build 128 evaluation/optimization; remains internal Vortex engineering. Amendment 006 permits optional advanced BYOK only as a user-funded accelerator; it is never required for core Vortex operation and never becomes a Vortex-paid fallback or normal model-shopping UX.
 - **Local Sovereignty / Zero Marginal Vortex Compute** → Build 16 credential safety + Builds 33–37 local/provider boundaries + Builds 116/119/123/125/128 operationalization + Build 133 release enforcement. Core Vortex has no mandatory Vortex-paid inference path; optional external compute is user-funded.
+- **Reason Once, Replay Many / Web Data Recipes** → Builds 47, 52–55, 68–70, 90–92, 115, 124–128 and 133.
+- **Backend Sovereignty** → Builds 80–86, 117, 124–128 and 133; Supabase remains optional and Generic PostgreSQL is preferred when sufficient.
+- **Sovereign Deployment** → Builds 93–102, 117–118, 124–128 and 133; user-owned/self-hosted infrastructure is first-class.
 - **RC by Default / RC Gate** → Build 133, consuming all canonical evidence authorities.
 
 ## Existing North Star ownership summary
