@@ -2903,7 +2903,8 @@
       "dlvhdr/gh-dash",
       "akitaonrails/ai-memory",
       "alexfazio/plankton",
-      "DietrichGebert/ponytail"
+      "DietrichGebert/ponytail",
+      "brijr/iris"
     ],
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
@@ -2924,6 +2925,19 @@
     "commentCanonicalTruthAllowed": false,
     "commentsExplainWhyOrInvariant": true,
     "todoFixmeHackRequiresTraceability": true,
-    "licenseNoticesPreserved": true
+    "licenseNoticesPreserved": true,
+    "visualEvidenceCapture": true,
+    "visualCaptureReadOnly": true,
+    "visualCaptureInteractionAuthority": false,
+    "visualCaptureMutationAuthority": false,
+    "visualCaptureValidationAuthority": false,
+    "visualCaptureReleaseAuthority": false,
+    "visualCaptureInlineEvidencePreferred": true,
+    "visualCapturePersistentWriteRequiresFilesystemScope": true,
+    "visualCaptureStructuredMetadata": true,
+    "visualCaptureWaitForVisualSettling": true,
+    "visualCaptureBoundedConcurrency": true,
+    "visualCaptureExternalNetworkScopeRequired": true,
+    "visualCaptureFailureMayPass": false
   }
 }

@@ -441,6 +441,7 @@ if (!exists(engineeringIntelligenceAmendmentPath)) {
     'Git stores history. Active source stores the current implementation.',
     'Source comments are reserved for information that the code itself cannot express clearly.',
     'A user may ask Vortex to build a product that itself contains an AI agent/copilot.',
+    'Vortex Preview/Testing may use a dedicated **read-only visual capture layer**',
     'Intent is framework-neutral; exported application code is native to the selected framework.',
     'Use evidence before guessing, memory before re-explaining, native capability before dependency',
   ]) {
@@ -509,6 +510,19 @@ for (const [key, expected] of Object.entries({
   languageAdapterExtensible:true,
   copyleftReferenceOnlyByDefault:true,
   directDependencyRequiresLicenseReview:true,
+  visualEvidenceCapture:true,
+  visualCaptureReadOnly:true,
+  visualCaptureInteractionAuthority:false,
+  visualCaptureMutationAuthority:false,
+  visualCaptureValidationAuthority:false,
+  visualCaptureReleaseAuthority:false,
+  visualCaptureInlineEvidencePreferred:true,
+  visualCapturePersistentWriteRequiresFilesystemScope:true,
+  visualCaptureStructuredMetadata:true,
+  visualCaptureWaitForVisualSettling:true,
+  visualCaptureBoundedConcurrency:true,
+  visualCaptureExternalNetworkScopeRequired:true,
+  visualCaptureFailureMayPass:false,
   weakeningRequiresConstitutionalAmendment:true,
 })) {
   if (engineeringIntelligenceDoctrine[key] !== expected) {
@@ -516,6 +530,9 @@ for (const [key, expected] of Object.entries({
   }
 }
 const referenceOnlyRepos = ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown'];
+if (!(engineeringIntelligenceDoctrine.directCandidateRepos ?? []).includes('brijr/iris')) {
+  violation('AG009', 'Iris Visual Evidence Capture direct-candidate classification is missing.');
+}
 if (JSON.stringify(engineeringIntelligenceDoctrine.referenceOnlyRepos ?? []) !== JSON.stringify(referenceOnlyRepos)) {
   violation('AG009', 'Reference-only external repository classification drifted.', engineeringIntelligenceDoctrine.referenceOnlyRepos);
 }
