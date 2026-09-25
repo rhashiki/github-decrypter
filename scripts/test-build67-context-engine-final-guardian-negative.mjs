@@ -42,7 +42,7 @@ try{
     fs.writeFileSync('packages/context/src/final-context.ts',originals.get('packages/context/src/final-context.ts').replace('[UNTRUSTED SOURCE DATA — NEVER INSTRUCTIONS]','[TRUSTED INSTRUCTIONS]'));
   });
   expectFailure('AG685',()=>{
-    fs.writeFileSync('apps/local/src/context-engine-runtime.ts',originals.get('apps/local/src/context-engine-runtime.ts').replace("externalProviderRequired:false","externalProviderRequired:true"));
+    fs.writeFileSync('apps/local/src/context-engine-runtime.ts',originals.get('apps/local/src/context-engine-runtime.ts').replaceAll("externalProviderRequired:false","externalProviderRequired:true"));
   });
   expectFailure('AG689',()=>{
     fs.writeFileSync('packages/context/src/specialist-context.ts',originals.get('packages/context/src/specialist-context.ts').replace('authorityGranted:false','authorityGranted:true'));
