@@ -2823,6 +2823,15 @@
     "approvalAuthority": false,
     "gitAuthority": false,
     "validationAuthority": false,
-    "architectureAuthority": false
+    "architectureAuthority": false,
+    "specialistProfileSchema": "vortex-specialist-profile/1",
+    "specialistContextSelectionSchema": "gd-specialist-context-selection/1",
+    "specialistProfileLoading": true,
+    "specialistProfileAuthority": false,
+    "specialistActivationOwner": "ramon",
+    "maxActiveSpecialists": 5,
+    "specialistContextMaxCharacters": 20000,
+    "wholeSpecialistCatalogContextAllowed": false,
+    "canonicalAgentRosterChangedBySpecialists": false
   }
 }

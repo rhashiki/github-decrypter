@@ -11,7 +11,8 @@
     "./project-memory": "./src/project-memory.ts",
     "./project-genesis": "./src/project-genesis.ts",
     "./knowledge-compiler": "./src/knowledge-compiler.ts",
-    "./final-context": "./src/final-context.ts"
+    "./final-context": "./src/final-context.ts",
+    "./specialist-context": "./src/specialist-context.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
