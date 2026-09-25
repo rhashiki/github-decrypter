@@ -409,3 +409,45 @@ Future ideas outside the adopted constitutional amendments continue to follow `d
 - LobeChat, ChartDB, OpenHuman and Quarkdown are reference-only by default under current observed licenses;
 - Ghidra is optional/isolated, with module-level/mixed license obligations reviewed at packaging time;
 - permissive candidates may still be rejected if dependency/security/maintenance cost is poor.
+
+
+## Amendment 010 — Sovereign Web, Data, Backend & Deployment Execution acceptance extensions
+
+### One Intelligence / executor boundary
+- browser, scraping, backend and deployment runtimes are executors/adapters, not alternate agents or reasoning authorities;
+- external model/provider loops may not silently become product authority;
+- hosted browser/deployment services remain optional and user-funded when used.
+
+### Browser Executor / deterministic replay
+- local browser execution is first-class;
+- authorized system-profile reuse is explicit and credentials never enter model context;
+- stable workflows follow Reason Once, Replay Many and compile into inspectable deterministic recipes;
+- repeated AI reasoning is reserved for ambiguity or verified drift;
+- Browser Use is an MIT direct-integration candidate behind the executor boundary and does not make Python mandatory by itself.
+
+### Web Data Recipes
+- authorized extraction/crawl/search/monitoring can produce typed structured data/project APIs;
+- monitoring is durable/bounded background work;
+- drift is evidence, not success;
+- Maxun is AGPL-3.0 reference-only by default and its source is not vendorized into proprietary Core without explicit approval.
+
+### Backend sovereignty
+- Backend Provider Contract remains above provider-specific SDK/runtime choices;
+- Supabase Provider supports local/self-hosted operation and migration/schema parity evidence where supported;
+- Generic PostgreSQL is preferred when it satisfies the Product Contract with less platform surface;
+- provider lock-in/trade-offs are explicit and export remains ordinary project code/assets.
+
+### Sovereign deployment
+- user-owned/self-hosted infrastructure is a first-class Deployment Provider path;
+- Coolify is an Apache-2.0 adapter/direct-integration candidate, not mandatory infrastructure;
+- SSH/container deploy, preview, health evidence, logs, rollback, domains/TLS and secrets remain capability/scope governed;
+- Vortex-operated paid deployment infrastructure is not required for the core path.
+
+### Release enforcement
+- no hidden second browser intelligence;
+- no mandatory paid hosted browser/deployment path;
+- no raw browser/deployment/backend secrets in model/client context;
+- no failed/drifted extraction presented as valid;
+- no backend readiness claim without migration/integration evidence;
+- no deployment success claim without health evidence;
+- no prohibited copyleft Core vendoring.
