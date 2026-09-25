@@ -324,6 +324,107 @@ if (policy.agentRuntimeAuthority?.specialistProfilesAreCanonicalAgents !== false
   violation('AG007', 'Agent Runtime lost the Specialist Profile non-authority boundary.');
 }
 
+// Constitutional Amendment 008 protects local runtime portability, bounded compute
+// and host-owned dangerous-operation consent.
+const localAgentRuntimeDoctrine = policy.localAgentRuntimeDoctrine ?? {};
+const localAgentRuntimeAmendmentPath = localAgentRuntimeDoctrine.amendment
+  ?? 'docs/product/CONSTITUTION_AMENDMENT_008_LOCAL_AGENT_RUNTIME_PORTABILITY_AND_COMPUTE_GOVERNANCE.md';
+if (!exists(localAgentRuntimeAmendmentPath)) {
+  violation('AG008', `Required Local Agent Runtime amendment missing: ${localAgentRuntimeAmendmentPath}`);
+} else {
+  const amendment = read(localAgentRuntimeAmendmentPath);
+  for (const phrase of [
+    'Local Agent Runtime Portability & Compute Governance',
+    'The user continues to interact with **Vortex Ars AI**.',
+    'Every agent/worker/delegate execution must derive its context safety budget from the model/runtime actually selected for that execution.',
+    'Dangerous-operation confirmation text is a security boundary.',
+    'Models are replaceable. Authority is not.',
+  ]) {
+    if (!amendment.includes(phrase)) {
+      violation('AG008', `Local Agent Runtime amendment lost a protected invariant: ${phrase}`);
+    }
+  }
+}
+
+for (const [key, expected] of Object.entries({
+  doctrine: 'portable-local-runtime-bounded-compute-host-owned-consent',
+  architecturalReference: 'vastsa/PI-Desktop',
+  referenceLicense: 'LGPL-3.0',
+  referenceOnly: true,
+  directPIDesktopCoreVendoringApproved: false,
+  directLGPLCodeReuseRequiresLegalReview: true,
+  piEcosystemRequiresSeparateEvaluation: true,
+  oneIntelligence: true,
+  providerIdentityIsProductAuthority: false,
+  localComputePrimary: true,
+  noMandatoryLocalRuntimeBrand: true,
+  providerIndependentCapabilityMetadata: true,
+  metadataCredentialsForbidden: true,
+  unknownLocalModelConservativeFallback: true,
+  modelWindowAwareContextBudget: true,
+  sharedContextBudgetPolicy: true,
+  workerUsesResolvedModelBudget: true,
+  automaticCompactionBeforeHardLimit: true,
+  degradationBeforeTerminalContextFailure: true,
+  degradationMustBeObservable: true,
+  fallbackFitCheckBeforeAttempt: true,
+  resumeSeedMustFitBudget: true,
+  durableWorkerSessions: true,
+  workerSessionsAreCanonicalAgents: false,
+  workerAuthorityMayWiden: false,
+  workerInspectable: true,
+  workerRecoverable: true,
+  boundedFanOut: true,
+  structuredHandoffs: true,
+  toolComputeAdmissionRequired: true,
+  boundedQueues: true,
+  mutationConcurrencyBounded: true,
+  destructiveLoopsRateBraked: true,
+  cancellationPropagation: true,
+  hostOwnedDangerousConfirmation: true,
+  callerSuppliedDangerousOperationLabelAllowed: false,
+  consentDismissalFailsClosed: true,
+  pluginManifestPermissions: true,
+  pluginScopedFilesystem: true,
+  pluginNetworkEgressDefaultDeny: true,
+  pluginPermissionUpgradeRequiresConsent: true,
+  pluginAuditRequired: true,
+  pluginSecretsPlaintextAccess: false,
+  pluginResidentServiceSupervision: true,
+  recoverableInflightCheckpoints: true,
+  mutationReplayOnRecoveryAllowed: false,
+  recoveryRevalidatesAuthority: true,
+  providerRetriesBounded: true,
+  silentProviderSwitchingAllowed: false,
+  vortexPaidFallbackAllowed: false,
+  secretsVaultRequired: true,
+  weakeningRequiresConstitutionalAmendment: true,
+})) {
+  if (localAgentRuntimeDoctrine[key] !== expected) {
+    violation('AG008', `Local Agent Runtime doctrine invariant drifted: ${key}`, {
+      expected,
+      actual: localAgentRuntimeDoctrine[key],
+    });
+  }
+}
+
+const expectedRuntimeTargets = ['ollama-compatible','openai-compatible-local','vllm-compatible','custom-local'];
+if (JSON.stringify(localAgentRuntimeDoctrine.supportedLocalRuntimeTargets ?? []) !== JSON.stringify(expectedRuntimeTargets)) {
+  violation('AG008', 'Local runtime compatibility targets drifted.', localAgentRuntimeDoctrine.supportedLocalRuntimeTargets);
+}
+if (policy.economicDoctrine?.localComputePrimary !== true
+    || policy.economicDoctrine?.vortexManagedPaidInferenceAllowed !== false) {
+  violation('AG008', 'Local runtime portability must preserve Amendment 006 economics.');
+}
+if (policy.agentRuntimeAuthority?.agentCount !== 10
+    || localAgentRuntimeDoctrine.workerSessionsAreCanonicalAgents !== false) {
+  violation('AG008', 'Worker Sessions may not change the canonical ten-agent roster.');
+}
+if (policy.toolRuntimeAuthority?.denyByDefault !== true
+    || policy.toolRuntimeAuthority?.capabilityVerifierRequired !== true) {
+  violation('AG008', 'Compute/tool budgeting may not weaken Tool Runtime capability enforcement.');
+}
+
 if (exists('docs/product/NORTH_STAR_MANIFESTO.md')) {
   const northStar = read('docs/product/NORTH_STAR_MANIFESTO.md');
   const expectedHash = policy.northStar?.sourceSha256;

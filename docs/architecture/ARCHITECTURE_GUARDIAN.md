@@ -12,6 +12,7 @@ The Guardian treats the following as product/architecture authorities:
 4. Constitutional Amendment 005 — Complete Product Generation;
 5. Constitutional Amendment 006 — Local Sovereignty & Zero Marginal Vortex Compute;
 6. Constitutional Amendment 007 — Specialist Intelligence Layer;
+Constitutional Amendment 008 — Local Agent Runtime Portability & Compute Governance;
 7. North Star Manifesto;
 8. Canonical V1 Roadmap;
 9. North Star Roadmap Mapping;
@@ -196,3 +197,20 @@ Core warnings use `AGWxx` and do not fail CI unless a future policy promotes the
 ## Principle
 
 The Architecture Guardian exists to ensure that a convenient shortcut in one Build cannot silently become the architecture of every Build that follows.
+
+## Local Agent Runtime portability governance
+
+Constitutional Amendment 008 adds deterministic AG008 doctrine checks for:
+
+- local/model portability without provider authority;
+- LGPL PI-Desktop reference-only boundary;
+- One Intelligence;
+- model-window-aware context budgets;
+- durable bounded Worker Sessions;
+- tool/compute admission without capability widening;
+- host-owned dangerous-operation confirmations;
+- plugin permission/scope/egress/upgrade consent;
+- recovery without blind destructive replay;
+- preservation of Amendment 006 zero-marginal-compute economics.
+
+AG008 protects doctrine now; implementation-specific runtime tests remain owned by their mapped future Builds.
