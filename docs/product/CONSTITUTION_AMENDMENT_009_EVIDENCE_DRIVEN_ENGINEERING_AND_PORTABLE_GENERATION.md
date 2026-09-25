@@ -89,6 +89,56 @@ Before adding implementation surface, prefer the first safe rung:
 
 This is **not code golf**. Required validation, error handling, security, accessibility, observability, maintainability and Product Contract behavior are never removed for terseness.
 
+## 6A. Legacy isolation and single-source implementation
+
+Modern Vortex code must not remain behaviorally coupled to obsolete implementations after ownership has moved.
+
+Rules:
+
+- inherited legacy roots are migration inputs, not permanent runtime dependencies;
+- when a modern owner replaces a legacy implementation, the migration must cut behavioral dependency on the old owner;
+- two competing implementations of the same responsibility may not remain active as co-equal sources of truth;
+- compatibility shims are temporary migration mechanisms and require an explicit owner, reason and removal condition;
+- once equivalence/migration evidence is complete, obsolete code is removed or quarantined outside active runtime paths;
+- dead exports, unreachable branches, obsolete adapters and superseded fallback paths are removed rather than preserved "just in case";
+- rollback history belongs to Git, not to commented-out or duplicated source;
+- a newer implementation may consume migrated data/protocol contracts, but it may not silently delegate canonical behavior back to the legacy implementation;
+- Refactor Before Feature is mandatory when a new feature would otherwise deepen legacy coupling or duplicate responsibility.
+
+Legacy isolation is a correctness rule, not cosmetic cleanup: stale implementations may contain old business rules, security assumptions, schema expectations or side effects that silently interfere with current behavior.
+
+## 6B. Comment hygiene
+
+Source comments are reserved for information that the code itself cannot express clearly.
+
+Good comments explain, when genuinely necessary:
+
+- **why** a non-obvious choice exists;
+- architectural/security invariants;
+- external protocol/platform quirks;
+- concurrency, ordering or recovery constraints;
+- intentionally surprising behavior;
+- provenance/licensing notices;
+- generated-code boundaries;
+- a traceable temporary limitation with an owner/removal condition.
+
+The following are prohibited in maintained active source:
+
+- commented-out code used as backup/history;
+- comments that merely narrate the next line or restate identifiers;
+- patch diaries/changelogs such as "changed this because Build X broke";
+- stale implementation notes that describe behavior the code no longer has;
+- decorative comment walls that add no semantic value;
+- indefinite `TODO` / `FIXME` / `HACK` markers without a traceable owner/reference and removal condition;
+- product/business rules existing only in comments instead of canonical contracts/tests/types;
+- comments used to justify bypassing architecture, validation or security rules.
+
+Prefer expressive names, types, contracts, tests and small functions over explanatory prose.
+
+Comments are not canonical product truth and never override Product Contract, Architecture Ledger, schema/protocol definitions, tests or Guardian policy.
+
+Required copyright/license notices are preserved.
+
 ## 7. Deterministic browser/app adapters
 
 Vortex Browser Runtime may evolve from repeated raw browser operations toward reusable verified adapters for websites, logged-in user browser sessions, supported desktop/Electron surfaces, generated apps and local tools.
@@ -184,6 +234,10 @@ A Release Candidate is blocked when applicable work:
 - skips necessary design/inspection to start coding immediately;
 - weakens lint/security/test configuration merely to pass;
 - over-engineers when a simpler safe existing/native solution satisfies the Product Contract;
+- leaves a replaced legacy implementation active as a competing behavioral authority;
+- adds new code that delegates canonical behavior back into inherited legacy roots after ownership migration;
+- retains dead/commented-out source as rollback history instead of using Git;
+- ships active source polluted by stale/narrative comments or unowned indefinite TODO/FIXME/HACK markers;
 - embeds Vortex/user secrets in generated client-side agents;
 - lets a generated app agent inherit Vortex capabilities;
 - trusts unverified browser adapters;
@@ -197,7 +251,7 @@ No Build is added or renumbered.
 
 - **31–32, 35–37, 119, 123, 125, 128** — hardware/model recommendation.
 - **41–43, 66–67, 115, 117–118, 128** — memory lifecycle, handoffs, recall and compression.
-- **39–40, 52–53, 60, 62–63, 107, 124, 133** — engineering discipline and quality.
+- **39–40, 52–55, 60, 62–63, 107, 124, 133** — engineering discipline, legacy isolation, comment hygiene and quality.
 - **68–70, 75, 88–92, 106** — browser/app adapters.
 - **39, 60, 68–70, 90–92, 117** — generated-app Embedded Agent Blueprint.
 - **60, 73, 103–105, 117, 125** — framework-neutral component intent/native output.
@@ -210,4 +264,4 @@ No Build is added or renumbered.
 
 ## Final doctrine
 
-**Use evidence before guessing, memory before re-explaining, native capability before dependency, deterministic tools before fragile repeated browsing, and portable intent before framework lock-in.**
+**Use evidence before guessing, memory before re-explaining, native capability before dependency, one active owner before legacy overlap, expressive code before comment noise, deterministic tools before fragile repeated browsing, and portable intent before framework lock-in.**

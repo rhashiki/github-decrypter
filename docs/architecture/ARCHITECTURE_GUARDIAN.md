@@ -214,3 +214,23 @@ Constitutional Amendment 008 adds deterministic AG008 doctrine checks for:
 - preservation of Amendment 006 zero-marginal-compute economics.
 
 AG008 protects doctrine now; implementation-specific runtime tests remain owned by their mapped future Builds.
+
+## Code hygiene and legacy isolation
+
+Amendment 009 makes legacy isolation and comment hygiene architectural quality concerns.
+
+The repository already treats `core/`, `background/`, `content/` and `runtime/` as migration inputs rather than permanent dependencies for modern `apps/*` / `packages/*` code.
+
+The strengthened doctrine additionally requires:
+
+- one active behavioral owner per responsibility;
+- modern owners cut behavioral dependency on replaced legacy implementations;
+- compatibility shims remain temporary and have an explicit exit condition;
+- Git, not commented-out source, is rollback/history;
+- dead and superseded code is removed after migration evidence;
+- comments explain non-obvious why/invariants rather than narrating code;
+- TODO/FIXME/HACK markers are traceable and temporary;
+- comments never become canonical product/security/architecture truth;
+- required copyright/license notices remain intact.
+
+The deterministic Guardian protects the doctrine and existing structural legacy-root boundary now. Build 107/124/133 own deeper language-aware hygiene detection and release enforcement.
