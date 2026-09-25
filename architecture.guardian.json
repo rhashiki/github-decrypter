@@ -2908,6 +2908,22 @@
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
     ],
-    "weakeningRequiresConstitutionalAmendment": true
+    "weakeningRequiresConstitutionalAmendment": true,
+    "legacyIsolationRequired": true,
+    "legacyRootsAreMigrationInputsOnly": true,
+    "modernCodePermanentLegacyDependencyAllowed": false,
+    "dualImplementationAuthorityAllowed": false,
+    "compatibilityShimRequiresOwnerReasonAndRemovalCondition": true,
+    "removeObsoleteImplementationAfterMigrationEvidence": true,
+    "deadCodeRetentionForRollbackAllowed": false,
+    "gitIsCodeHistoryAuthority": true,
+    "commentedOutCodeAsHistoryAllowed": false,
+    "narrativeCommentsAllowed": false,
+    "patchDiaryCommentsAllowed": false,
+    "staleImplementationCommentsAllowed": false,
+    "commentCanonicalTruthAllowed": false,
+    "commentsExplainWhyOrInvariant": true,
+    "todoFixmeHackRequiresTraceability": true,
+    "licenseNoticesPreserved": true
   }
 }

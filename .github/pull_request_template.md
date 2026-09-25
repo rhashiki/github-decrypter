@@ -25,6 +25,11 @@
 - [ ] Memory/consolidation changes preserve canonical truth separation and a zero-LLM core recall path.
 - [ ] Minimal Solution Ladder was considered before introducing new abstraction/dependency.
 - [ ] Write-time lint/security/test configuration is not weakened merely to make generated code pass.
+- [ ] This change does not leave a superseded legacy implementation active as a competing source of behavior.
+- [ ] New modern code does not create a permanent dependency on inherited legacy roots; temporary shims have an owner/reason/removal condition.
+- [ ] No commented-out code is retained as rollback/history; Git is used for history.
+- [ ] Comments add non-obvious why/invariant/provenance value rather than narrating code or recording patch history.
+- [ ] TODO/FIXME/HACK markers introduced here are traceable, temporary and have a clear removal condition.
 - [ ] Generated-app agents/browser adapters have explicit project/session scope and do not inherit Vortex host authority.
 - [ ] Generated client code contains no provider/model secret.
 - [ ] New external code dependencies include recorded license/security/maintenance review.
