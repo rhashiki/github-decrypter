@@ -17,6 +17,7 @@ import {
 } from '@github-decrypter/context/final-context';
 import type { ProjectKnowledgeGraph } from '@github-decrypter/context/knowledge-graph';
 import type { ProductContract } from '@github-decrypter/context/project-genesis';
+import type { SpecialistContextSelection } from '@github-decrypter/context/specialist-context';
 import type { CapabilityToken } from './capability-security.js';
 import type { DurableJobId } from './job-types.js';
 import type { LocalAIRuntime } from './ai-runtime.js';
@@ -42,6 +43,7 @@ export interface ContextEngineAssembleInput {
   readonly projectId:string;
   readonly task:string;
   readonly knowledgePack:KnowledgePack|null;
+  readonly specialistSelection?:SpecialistContextSelection|null;
   readonly maxCharacters?:number;
 }
 export interface ContextEngineRuntimeStatus {
@@ -165,7 +167,7 @@ export class LocalContextEngineRuntime {
     if(!contract)throw new Error('No Product Contract exists for the requested workspace/project.');
     const memory=this.#memory.list({workspaceId:input.workspaceId,includeSuperseded:false,limit:200});
     return assembleFinalContext({
-      task:input.task,productContract:contract,knowledgePack:input.knowledgePack,projectMemory:memory,maxCharacters:input.maxCharacters,
+      task:input.task,productContract:contract,knowledgePack:input.knowledgePack,projectMemory:memory,specialistSelection:input.specialistSelection,maxCharacters:input.maxCharacters,
     });
   }
 
