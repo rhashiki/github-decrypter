@@ -15,6 +15,12 @@
 - [ ] This change does not create a new canonical agent when a non-authoritative Specialist Profile would satisfy the need.
 - [ ] Specialist Profiles introduced/changed here grant no independent capability, scope, approval, tool, mutation, validation, architecture or release authority.
 - [ ] Imported/bundled Specialist Profiles retain source/version/license provenance and are loaded on demand rather than as full-catalog context.
+- [ ] Model/provider/runtime changes preserve One Intelligence and do not grant provider identity product/agent authority.
+- [ ] Parent/worker context limits derive from the model actually executing the work; fallback does not blindly retry an unfittable context.
+- [ ] New background/parallel work has bounded fan-out, queues, cancellation and compute/tool admission.
+- [ ] Dangerous-operation confirmation labels/descriptions are host-owned canonical metadata, not caller/model/plugin text.
+- [ ] Plugin/extension access is permission + scope + consent + runtime-enforcement bounded, with default-deny egress where applicable.
+- [ ] PI-Desktop LGPL source has not been copied/vendorized into Vortex Core without explicit legal/architecture approval.
 - [ ] No Release, OTA, store publication, production deploy, production database mutation or DNS mutation is implied by completing this change.
 
 ## North Star review

@@ -1,8 +1,8 @@
 # Vortex Ars AI — North Star Roadmap Mapping
 
-Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY + SPECIALIST INTELLIGENCE**
+Status: **FROZEN V1 MAPPING — AMENDED BY VIKTOR + HEIMDALL + COMPLETE PRODUCT GENERATION + LOCAL SOVEREIGNTY + SPECIALIST INTELLIGENCE + LOCAL RUNTIME PORTABILITY**
 
-Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–007 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine, Local Sovereignty / Zero Marginal Vortex Compute and the Specialist Intelligence Layer. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
+Build 9 incorporates the original North Star directive without inventing decimal Builds and without renumbering Builds 1–134. Amendments 002–008 add Viktor, explicit activation, architectural integrity/Heimdall, the Complete Product Generation Doctrine, Local Sovereignty / Zero Marginal Vortex Compute, the Specialist Intelligence Layer and Local Agent Runtime Portability / Compute Governance. New product blocks are assigned to existing roadmap authorities where responsibility naturally belongs.
 
 This mapping is an explicit owner-authorized amendment to the V1 planning surface. It does not authorize implementation before the owning Build.
 
@@ -17,6 +17,10 @@ This mapping is an explicit owner-authorized amendment to the V1 planning surfac
 | Evidence Collector / Reality Checker | **Builds 57, 62, 124, 133** | Testing/validation remain sovereign. Specialist methods require evidence, retest/rescan after fixes and final integration verification before RC claims. |
 | Codebase Onboarding / LSP-Index Expertise | **Builds 65, 73, 108** | Fact-grounded repo maps, entry points, definitions/references, dependencies, code paths and source-linked learning explanations. |
 | Security Specialist Suite | **Build 127**, consuming Builds 15–18, 53–57, 62–64 | Security architecture/AppSec/AI-code audit/secrets/IAM/prompt-injection/supply-chain methods run inside existing capability, tool, scope and evidence boundaries. |
+| Local Agent Runtime Portability | **Builds 33–37, 119, 123, 125, 128** | Replaceable local inference adapters, provider-independent capability metadata, One Intelligence UX and model-window-aware routing without provider authority. |
+| Durable Worker Sessions | **Builds 64, 115, 118, 124, 128** | Bounded fan-out/fan-in, structured handoffs, independent context budgets, checkpoints/recovery and inherited-or-narrowed authority only. |
+| Tool / Compute Admission | **Builds 53, 115, 128** | Capacity budgets are applied after authorization; bounded queues, mutation serialization/safety, cancellation and resource-class limits never create permission. |
+| Plugin Sandbox & Host Consent | **Builds 90, 127, 133** | Manifest permission + scope + consent + audit; default-deny egress; host-owned dangerous-operation labels; permission-diff consent on upgrade. |
 | Agent Orchestrator | **Build 64 — Agent Orchestrator** | Existing roadmap authority remains unchanged. |
 | Named Agent System | **Build 58 — Agent Runtime**, **Build 64 — Agent Orchestrator** | Build 58 defines revision 1 identity/role metadata and authority boundaries for the historical nine-specialist registry; Build 64 performs the explicit amended roster transition and coordinates the team. |
 | Architectural Integrity & Heimdall | **Build 9 — Architecture Guardian** (existing deterministic enforcement), **Build 64 — Agent Orchestrator** | Constitutional Amendment 004 adopts Heimdall as the tenth canonical specialist. Build 64 revises the Agent Runtime explicitly, integrates pre/post architectural-conformance review, and establishes canonical Architecture Contract / Architecture Ledger consumption without replacing Build 9 enforcement. |
@@ -308,3 +312,45 @@ Future ideas outside the adopted constitutional amendments continue to follow `d
 - Multi-Agent Systems methodology reinforces hierarchy-first orchestration, least privilege, bounded fan-out/fan-in, circuit breakers, context budgets and traceability;
 - Minimal Change methodology prevents hidden scope expansion while preserving explicit Refactor Before Feature when architectural integrity requires it;
 - Evidence Collector / Reality Checker methodology reinforces that completion is proven by evidence, not by an agent reporting success.
+
+## Amendment 008 — Local Agent Runtime Portability acceptance extensions
+
+### Provider/runtime portability
+- the canonical product identity remains Vortex Ars AI regardless of the local model/runtime selected underneath;
+- local adapters may target Ollama-compatible, OpenAI-compatible local, vLLM-compatible and future trusted local protocols;
+- no local runtime brand is mandatory;
+- provider/model capability metadata is independent from Vortex agent/product authority;
+- public metadata/catalog refresh may not receive provider credentials.
+
+### Context/worker safety
+- context safety budgets derive from the model that actually executes the parent/worker task;
+- automatic compaction occurs before the hard model limit;
+- degraded context is observable;
+- fallback models are checked for context fit before use;
+- Worker Sessions are bounded, inspectable and recoverable where feasible and cannot widen authority;
+- structured handoffs are preferred over raw transcript propagation.
+
+### Tool/compute governance
+- capability/scope/approval are evaluated before capacity admission;
+- queues/fan-out/process/tool concurrency are bounded;
+- mutation pressure is serialized or proven safe;
+- cancellation/timeouts propagate to child work;
+- destructive loops are rate-braked.
+
+### Plugin security and consent
+- permissions, scope, consent and runtime enforcement all participate in access;
+- plugin network egress defaults to deny unless declared/granted;
+- filesystem scope uses canonical path checks and cannot escape through symlinks;
+- permission additions on upgrade require renewed consent;
+- dangerous operation copy is resolved by trusted host operation metadata, never by the caller/model/plugin;
+- plugin access never exposes Secrets Vault plaintext.
+
+### Recovery
+- inflight work may be checkpointed and resumed;
+- recovery revalidates current capability/scope/authority;
+- committed destructive mutation is not blindly replayed.
+
+### Upstream licensing boundary
+- PI-Desktop is an LGPL-3.0 architectural reference, not an approved Vortex Core dependency;
+- direct reuse/linking/modification of LGPL-covered implementation requires explicit legal/architecture review;
+- the lower-level Pi ecosystem requires separate evaluation before dependency adoption.
