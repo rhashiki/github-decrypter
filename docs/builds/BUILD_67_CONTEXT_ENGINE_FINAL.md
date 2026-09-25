@@ -21,6 +21,11 @@ Finish the canonical Context Engine by integrating Project Genesis, durable Prod
 - progressive on-demand Knowledge Packs;
 - Build 66 Project Memory integration;
 - bounded Final Context assembly;
+- normalized Specialist Profile consumption (`vortex-specialist-profile/1`);
+- canonical-agent compatibility filtering;
+- deterministic task-relevance selection;
+- maximum 5 active specialists / 20,000 specialist-context characters;
+- explicit specialist non-authority rendering;
 - Local Runtime lifecycle integration;
 - SQLite schema 14;
 - Architecture Guardian enforcement;
@@ -46,5 +51,6 @@ Build 67 is complete only when:
 6. semantic reranking uses only local-model authority and degrades honestly;
 7. final context rejects blocked Product Contracts and wholesale source dumps;
 8. Project Memory does not become Product Contract/validation/Git truth;
-9. no Vortex-paid inference or mandatory external provider is introduced;
-10. cumulative Builds 4–67, TypeScript, Viktor Guard and modern-engine preservation are green.
+9. Specialist Profiles are loaded only on demand, remain bounded, compatible with the owning canonical agent and grant zero independent authority;
+10. no Vortex-paid inference or mandatory external provider is introduced;
+11. cumulative Builds 4–67, TypeScript, Viktor Guard and modern-engine preservation are green.

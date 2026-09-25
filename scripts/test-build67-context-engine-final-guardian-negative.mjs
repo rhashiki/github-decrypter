@@ -7,6 +7,7 @@ const files=[
   'packages/context/src/project-genesis.ts',
   'packages/context/src/knowledge-compiler.ts',
   'packages/context/src/final-context.ts',
+  'packages/context/src/specialist-context.ts',
   'apps/local/src/product-contract-store.ts',
   'apps/local/src/context-engine-runtime.ts',
   'apps/local/src/database-migrations.ts',
@@ -43,10 +44,13 @@ try{
   expectFailure('AG685',()=>{
     fs.writeFileSync('apps/local/src/context-engine-runtime.ts',originals.get('apps/local/src/context-engine-runtime.ts').replace("externalProviderRequired:false","externalProviderRequired:true"));
   });
+  expectFailure('AG689',()=>{
+    fs.writeFileSync('packages/context/src/specialist-context.ts',originals.get('packages/context/src/specialist-context.ts').replace('authorityGranted:false','authorityGranted:true'));
+  });
   expectFailure('AG687',()=>{
     fs.writeFileSync('docs/product/ROADMAP_V1.md',originals.get('docs/product/ROADMAP_V1.md').replace('67. **Context Engine vFinal** — ✅ —','67. **Context Engine vFinal** —'));
   });
 }finally{restore();}
 const final=run();
 assert.equal(final.status,0,'Build 67 Guardian did not recover:\n'+final.stdout+'\n'+final.stderr);
-console.log(JSON.stringify({ok:true,schema:'gd-build67-context-engine-final-guardian-negative/1',probes:['AG676','AG679','AG680','AG681','AG684','AG685','AG687']},null,2));
+console.log(JSON.stringify({ok:true,schema:'gd-build67-context-engine-final-guardian-negative/1',probes:['AG676','AG679','AG680','AG681','AG684','AG685','AG689','AG687']},null,2));

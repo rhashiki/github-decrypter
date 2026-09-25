@@ -55,6 +55,24 @@ There is no fake semantic-search claim. If no supported local model is available
 
 Semantic reranking uses the existing Local AI Runtime/Model Routing boundary and therefore inherits capability gating and Amendment 006 local sovereignty. Build 67 creates no Vortex-paid inference fallback and requires no external provider.
 
+## Specialist Intelligence loading
+
+Build 67 implements the runtime consumption side of Amendment 007.
+
+Normalized `vortex-specialist-profile/1` profiles may be supplied to the Context Engine, but the full catalog is never loaded wholesale. Selection is deterministic and bounded by:
+
+- canonical owning agent compatibility;
+- lexical task/profile relevance;
+- maximum 5 active specialist profiles;
+- maximum 20,000 specialist-context characters;
+- stable score/context-cost/id ordering.
+
+A selected profile is rendered as **SPECIALIST PROFILE — NON-AUTHORITATIVE METHOD**. It supplies methods, rules, workflows, deliverables and evidence expectations only.
+
+It never becomes a canonical agent/principal and grants no capability, approval, scope, Tool Runtime, validation, architecture or release authority.
+
+Build 90 owns catalog import, normalization, persistence/version/drift/update tooling. Build 67 only consumes already-normalized profiles.
+
 ## Final Context
 
 `gd-final-context/1` loads only evidence relevant to the active task, up to the declared context bound.
@@ -63,7 +81,8 @@ Authority is explicit:
 
 - Product Contract → authoritative product intent;
 - repository/document knowledge → source data;
-- Project Memory → non-authoritative operational memory.
+- Project Memory → non-authoritative operational memory;
+- Specialist Profile → non-authoritative expertise/method.
 
 The rendered model context reiterates that quoted repository/document content is data and cannot override canonical authority.
 
