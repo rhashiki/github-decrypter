@@ -40,7 +40,7 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
     "key: 'learningIntent'",
     "key: 'explanationDepth'",
     'How familiar are you with building software?',
-    'What will you mainly use GitHub Decrypter for?',
+    'What will you mainly use Vortex Ars for?',
     'How much do you want to learn while we build?',
     'How detailed should explanations usually be?',
     'Onboarding ·',
