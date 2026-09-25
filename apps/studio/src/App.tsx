@@ -33,6 +33,12 @@ const RESERVED_SURFACES = Object.freeze([
   { label: 'Git Panel', build: 76 },
 ]);
 
+const FUTURE_MODES = Object.freeze([
+  { label: 'Code', detail: 'Build 73' },
+  { label: 'Preview', detail: 'Build 68' },
+  { label: 'Workflow', detail: 'Planned' },
+]);
+
 type WorkspaceSurface = 'overview' | 'jobs';
 
 function runtimeStatusLabel(outcome: EnvironmentDoctorOutcome): string {
@@ -85,15 +91,30 @@ export function StudioApp() {
     >
       <WorkbenchTopBar className="studio-topbar">
         <div className="studio-brand">
-          <span className="studio-brand-mark" aria-hidden="true">GD</span>
+          <span className="studio-brand-mark" aria-hidden="true">V</span>
           <div>
-            <strong>GitHub Decrypter</strong>
+            <strong>Vortex Ars</strong>
             <span>{workspaceLabel}</span>
           </div>
         </div>
+
+        <nav className="studio-mode-switcher" aria-label="Studio modes">
+          <button className="studio-mode is-active" type="button" aria-current="page">Agent</button>
+          {FUTURE_MODES.map((mode) => (
+            <button
+              className="studio-mode"
+              type="button"
+              disabled
+              title={mode.detail}
+              key={mode.label}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </nav>
+
         <div className="studio-layout-actions" aria-label="Layout controls">
-          <ViktorToggle />
-          <Badge>Build {STUDIO_BUILD} · {STUDIO_VERSION}</Badge>
+          <Badge className="studio-build-badge">Build {STUDIO_BUILD} · {STUDIO_VERSION}</Badge>
           <Button
             className="studio-layout-button"
             variant="ghost"
@@ -101,7 +122,7 @@ export function StudioApp() {
             aria-controls="studio-sidebar"
             onClick={() => setSidebarCollapsed((value) => !value)}
           >
-            Sidebar
+            Viktor
           </Button>
           <Button
             className="studio-layout-button"
@@ -110,8 +131,10 @@ export function StudioApp() {
             aria-controls="studio-panel"
             onClick={() => setPanelCollapsed((value) => !value)}
           >
-            Panel
+            Preview
           </Button>
+          <Button variant="secondary" disabled title="Sharing is not active in the current Build">Share</Button>
+          <Button variant="primary" disabled title="Deployment Hub arrives later in the V1 roadmap">Publish</Button>
         </div>
       </WorkbenchTopBar>
 
@@ -123,7 +146,7 @@ export function StudioApp() {
           title="Workspace"
           onClick={() => workspaceReady && setWorkspaceSurface('overview')}
         >
-          <span aria-hidden="true">W</span>
+          <span aria-hidden="true">⌂</span>
           <span className="studio-visually-hidden">Workspace</span>
         </button>
         <button
@@ -137,54 +160,111 @@ export function StudioApp() {
           <span aria-hidden="true">J</span>
           <span className="studio-visually-hidden">Jobs Center</span>
         </button>
+        <span className="studio-activity-divider" />
+        <button className="studio-activity-item" type="button" disabled title="Code Explorer · Build 73">
+          <span aria-hidden="true">&lt;/&gt;</span>
+          <span className="studio-visually-hidden">Code Explorer</span>
+        </button>
+        <button className="studio-activity-item" type="button" disabled title="Live Preview · Build 68">
+          <span aria-hidden="true">◫</span>
+          <span className="studio-visually-hidden">Live Preview</span>
+        </button>
+        <button className="studio-activity-item" type="button" disabled title="Backend providers · Builds 80–86">
+          <span aria-hidden="true">▦</span>
+          <span className="studio-visually-hidden">Data</span>
+        </button>
+        <button className="studio-activity-item studio-activity-bottom" type="button" disabled title="Deployment Hub · Build 98">
+          <span aria-hidden="true">↗</span>
+          <span className="studio-visually-hidden">Deploy</span>
+        </button>
       </WorkbenchActivityBar>
 
-      <WorkbenchSidebar id="studio-sidebar" className="studio-sidebar" aria-label="Workspace sidebar">
-        <div className="studio-sidebar-heading">
-          <SectionHeading eyebrow="Workspace">
-            <h2>{workspaceLabel}</h2>
-          </SectionHeading>
-          <Badge tone={launch.kind === 'repository' ? 'accent' : 'neutral'}>
-            {launch.kind === 'repository' ? 'Public launch context' : 'Local shell'}
-          </Badge>
-        </div>
-
-        <div className="studio-sidebar-section">
-          <span className="studio-section-label">Current surface</span>
-          <div className="studio-sidebar-row is-selected">
-            <span>{activeSurface}</span>
-            <span>{STUDIO_BUILD}</span>
-          </div>
-        </div>
-
-        <div className="studio-sidebar-section">
-          <span className="studio-section-label">Adaptive profile</span>
-          <div className="studio-sidebar-row">
-            <span>{profile ? 'Session profile active' : 'Not initialized'}</span>
-            <span>{profile ? '✓' : '—'}</span>
-          </div>
-        </div>
-
-        <div className="studio-sidebar-section">
-          <span className="studio-section-label">Environment</span>
-          <div className="studio-sidebar-row">
-            <span>Local Runtime</span>
-            <span>{runtimeStatusLabel(environmentDoctorOutcome)}</span>
-          </div>
-          <div className="studio-sidebar-row">
-            <span>Jobs Center</span>
-            <span>{workspaceReady ? 'Available' : 'Setup required'}</span>
-          </div>
-        </div>
-
-        <div className="studio-sidebar-section">
-          <span className="studio-section-label">Reserved by roadmap</span>
-          {RESERVED_SURFACES.filter((surface) => surface.build >= 73).map((surface) => (
-            <div className="studio-sidebar-row is-reserved" key={surface.build}>
-              <span>{surface.label}</span>
-              <span>Build {surface.build}</span>
+      <WorkbenchSidebar id="studio-sidebar" className="studio-sidebar" aria-label="Viktor interaction panel">
+        <div className="studio-viktor-heading">
+          <div className="studio-viktor-identity">
+            <span className="studio-viktor-orb" aria-hidden="true" />
+            <div>
+              <strong>Viktor</strong>
+              <span>Vortex Ars Interaction Layer</span>
             </div>
-          ))}
+          </div>
+          <ViktorToggle />
+        </div>
+
+        <div className="studio-viktor-thread">
+          <div className="studio-message studio-message-assistant">
+            <span className="studio-message-label">Viktor</span>
+            <p>
+              This Studio shell now follows the Vortex Ars visual direction. Existing Build capabilities stay
+              authoritative; future surfaces remain visibly locked until their owning Builds arrive.
+            </p>
+          </div>
+
+          <div className="studio-activity-card">
+            <div className="studio-activity-card-heading">
+              <strong>Current activity</strong>
+              <Badge tone={workspaceReady ? 'success' : 'neutral'}>{activeSurface}</Badge>
+            </div>
+            <div className="studio-activity-progress">
+              <span className={profile ? 'is-complete' : 'is-current'} />
+              <div>
+                <strong>Adaptive profile</strong>
+                <small>{profile ? 'Ready for this session' : 'Waiting for onboarding'}</small>
+              </div>
+            </div>
+            <div className="studio-activity-progress">
+              <span className={environmentDoctorComplete ? 'is-complete' : profile ? 'is-current' : ''} />
+              <div>
+                <strong>Environment Doctor</strong>
+                <small>{runtimeStatusLabel(environmentDoctorOutcome)}</small>
+              </div>
+            </div>
+            <div className="studio-activity-progress">
+              <span className={workspaceReady ? 'is-complete' : ''} />
+              <div>
+                <strong>Workspace</strong>
+                <small>{workspaceReady ? 'Available' : 'Setup required'}</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="studio-sidebar-section">
+            <span className="studio-section-label">Context</span>
+            <div className="studio-sidebar-row">
+              <span>Project</span>
+              <span>{workspaceLabel}</span>
+            </div>
+            <div className="studio-sidebar-row">
+              <span>Local Runtime</span>
+              <span>{runtimeStatusLabel(environmentDoctorOutcome)}</span>
+            </div>
+            <div className="studio-sidebar-row">
+              <span>Profile</span>
+              <span>{profile ? 'Session active' : 'Not initialized'}</span>
+            </div>
+          </div>
+
+          <div className="studio-sidebar-section studio-upcoming">
+            <span className="studio-section-label">Upcoming surfaces</span>
+            {RESERVED_SURFACES.map((surface) => (
+              <div className="studio-sidebar-row is-reserved" key={surface.build}>
+                <span>{surface.label}</span>
+                <span>Build {surface.build}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="studio-viktor-composer">
+          <textarea
+            disabled
+            aria-label="Viktor conversation input"
+            placeholder="Conversation UI will bind here without bypassing current authority boundaries."
+          />
+          <div>
+            <span>Conversation Engine exists; this visual composer is not connected yet.</span>
+            <button type="button" disabled aria-label="Send message">↑</button>
+          </div>
         </div>
       </WorkbenchSidebar>
 
@@ -193,6 +273,7 @@ export function StudioApp() {
           <button className="studio-tab is-active" type="button" role="tab" aria-selected="true">
             {activeSurface}
           </button>
+          <span className="studio-tab-context">{workspaceLabel}</span>
         </WorkbenchTabBar>
 
         <div className="studio-editor-content">
@@ -210,12 +291,12 @@ export function StudioApp() {
               <section className="studio-overview" aria-labelledby="studio-overview-title">
                 <Stack gap="lg">
                   <Status tone="success" label="Adaptive User Profile active for this session" />
-                  <SectionHeading eyebrow="Build 31 · experience context">
+                  <SectionHeading eyebrow="Vortex Ars · adaptive experience">
                     <h1 id="studio-overview-title">{experience?.headline}</h1>
                   </SectionHeading>
                   <p>
-                    Onboarding shapes how the Studio presents information. Environment Doctor remains a read-only
-                    readiness signal; neither surface grants capabilities, permissions or execution authority.
+                    Viktor presents the project at your preferred level while Vortex keeps engineering authority,
+                    validation and security boundaries independent from presentation.
                   </p>
                   <div className="studio-profile-summary" aria-label="Adaptive profile summary">
                     <div><span>Explanation style</span><strong>{experience?.explanationStyle}</strong></div>
@@ -252,7 +333,7 @@ export function StudioApp() {
                   <SectionHeading eyebrow="Studio entry">
                     <h2 id="empty-title">No repository selected</h2>
                   </SectionHeading>
-                  <p>The workbench can start independently without claiming a GitHub or Local Runtime connection.</p>
+                  <p>The Studio can start independently without claiming a GitHub or Local Runtime connection.</p>
                 </Card>
               ) : null}
             </>
@@ -260,10 +341,46 @@ export function StudioApp() {
         </div>
       </WorkbenchEditor>
 
-      <WorkbenchPanel id="studio-panel" className="studio-panel" aria-label="Bottom panel">
+      <WorkbenchPanel id="studio-panel" className="studio-panel" aria-label="Preview panel">
+        <div className="studio-preview-toolbar">
+          <div>
+            <strong>Preview</strong>
+            <span>Vortex Browser Runtime</span>
+          </div>
+          <Badge>Build 68</Badge>
+        </div>
+
+        <div className="studio-preview-devicebar" aria-label="Future preview viewport controls">
+          <button type="button" className="is-active" disabled>Desktop</button>
+          <button type="button" disabled>Tablet</button>
+          <button type="button" disabled>Mobile</button>
+        </div>
+
+        <div className="studio-preview-stage">
+          <div className="studio-browser-frame">
+            <div className="studio-browser-chrome">
+              <span aria-hidden="true">● ● ●</span>
+              <div>{launch.kind === 'repository' ? launch.repository.fullName : 'vortex.local'}</div>
+            </div>
+            <div className="studio-preview-empty">
+              <span className="studio-preview-mark" aria-hidden="true">V</span>
+              <span className="studio-preview-kicker">Preview shell ready</span>
+              <h2>Live application preview joins here.</h2>
+              <p>
+                The visual surface is in place now. Browser execution, runtime evidence and real application
+                rendering remain owned by Build 68 and later validation Builds.
+              </p>
+              <div className="studio-preview-proof">
+                <span>Current UI</span><strong>Real</strong>
+                <span>Live app rendering</span><strong>Not active yet</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="studio-panel-heading">
-          <strong>Panel</strong>
-          <span>Structural surface only</span>
+          <strong>Reserved engineering surfaces</strong>
+          <span>Structural only</span>
         </div>
         <div className="studio-reserved-grid">
           {RESERVED_SURFACES.filter((surface) => surface.build < 73 || surface.build === 75).map((surface) => (
@@ -276,6 +393,7 @@ export function StudioApp() {
       </WorkbenchPanel>
 
       <WorkbenchStatusBar className="studio-statusbar">
+        <span className="studio-status-brand">Vortex Ars</span>
         <span>Build {STUDIO_BUILD}</span>
         <span>Offline-capable shell</span>
         <span>Profile: {profile ? 'session only' : 'not initialized'}</span>

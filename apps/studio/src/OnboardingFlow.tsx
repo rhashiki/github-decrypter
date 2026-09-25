@@ -37,7 +37,7 @@ const ONBOARDING_STEPS: readonly OnboardingStep[] = Object.freeze([
   {
     key: 'objective',
     eyebrow: 'What you are here to build',
-    question: 'What will you mainly use GitHub Decrypter for?',
+    question: 'What will you mainly use Vortex Ars for?',
     helper: 'This gives the product context about the kind of outcomes you care about.',
     options: OBJECTIVE_OPTIONS,
   },

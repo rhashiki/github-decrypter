@@ -44,7 +44,7 @@ export function EnvironmentDoctor({ onContinue, onOutcome }: EnvironmentDoctorPr
           <h1 id="environment-doctor-title">Check the environment before privileged work begins.</h1>
         </SectionHeading>
         <p className="studio-doctor-intro">
-          This check is read-only. It contacts only the GitHub Decrypter Local Runtime on this device after you
+          This check is read-only. It contacts only the Vortex Ars Local Runtime on this device after you
           press the button. It does not install, repair, change files, grant permissions or contact external services.
         </p>
 

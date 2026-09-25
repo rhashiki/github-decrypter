@@ -34,7 +34,7 @@ const serviceWorker = fs.readFileSync(path.join(dist, 'service-worker.js'), 'utf
 for (const marker of [
   'gd-adaptive-user-profile/1',
   'How familiar are you with building software?',
-  'What will you mainly use GitHub Decrypter for?',
+  'What will you mainly use Vortex Ars for?',
   'How much do you want to learn while we build?',
   'How detailed should explanations usually be?',
   'Retake onboarding',

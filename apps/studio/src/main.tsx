@@ -8,7 +8,7 @@ import './jobs-center.css';
 import './viktor-toggle.css';
 
 const root = document.getElementById('root');
-if (!root) throw new Error('GitHub Decrypter Studio root element is missing.');
+if (!root) throw new Error('Vortex Ars Studio root element is missing.');
 
 createRoot(root).render(
   <StrictMode>
