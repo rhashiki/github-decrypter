@@ -436,6 +436,31 @@ CREATE UNIQUE INDEX gd_project_memory_supersedes_once_idx
   WHERE supersedes_id IS NOT NULL;
 `;
 
+const MIGRATION_014_SQL = `
+CREATE TABLE gd_product_contracts (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  revision INTEGER NOT NULL CHECK (revision >= 1),
+  created_at TEXT NOT NULL,
+  supersedes_id TEXT,
+  status TEXT NOT NULL CHECK (status IN ('ready', 'blocked')),
+  contract_json TEXT NOT NULL,
+  authoritative INTEGER NOT NULL DEFAULT 1 CHECK (authoritative = 1),
+  truth_role TEXT NOT NULL DEFAULT 'product-contract' CHECK (truth_role = 'product-contract'),
+  UNIQUE (workspace_id, project_id, revision),
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (supersedes_id) REFERENCES gd_product_contracts(id) ON DELETE SET NULL,
+  CHECK (id <> supersedes_id)
+) STRICT;
+
+CREATE INDEX gd_product_contract_workspace_project_idx
+  ON gd_product_contracts (workspace_id, project_id, revision DESC);
+CREATE UNIQUE INDEX gd_product_contract_supersedes_once_idx
+  ON gd_product_contracts (supersedes_id)
+  WHERE supersedes_id IS NOT NULL;
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -556,6 +581,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_013_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_013_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 14,
+    name: 'product-contract',
+    sql: MIGRATION_014_SQL,
+    checksum: checksum(MIGRATION_014_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_014_SQL);
     },
   }),
 ]);
