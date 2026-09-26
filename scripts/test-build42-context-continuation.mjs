@@ -17,7 +17,8 @@ const build43Exports = {
 };
 const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
 const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
-const expectedExports = policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : build42Exports;
+const build67Exports = { ...build66Exports, './final-context': './src/final-context.ts' };
+const expectedExports = policy.currentBuild >= 67 ? build67Exports : policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : policy.currentBuild >= 43 ? build43Exports : build42Exports;
 
 assert.equal(pkg.name, '@github-decrypter/context');
 assert.ok(packageBuild !== null && packageBuild >= 42 && packageBuild <= policy.currentBuild);
