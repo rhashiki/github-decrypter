@@ -212,6 +212,11 @@ async function fetchJson(origin: string, path: string, init?: RequestInit): Prom
   return response.json();
 }
 
+async function fetchOk(origin: string, path: string, init?: RequestInit): Promise<void> {
+  const response = await fetch(origin + path, init);
+  if (!response.ok) throw new Error('Chromium DevTools HTTP request failed with status ' + response.status + '.');
+}
+
 async function targetClient(origin: string, tabId: string): Promise<{ client: CdpClient; target: TargetInfo }> {
   const targets = await fetchJson(origin, '/json/list') as TargetInfo[];
   const target = targets.find((item) => item.id === tabId && item.type === 'page');
@@ -347,7 +352,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
 
       async function closeTab(tabId: string): Promise<void> {
         if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
-        await fetchJson(origin, '/json/close/' + encodeURIComponent(tabId));
+        await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId));
         tabs.delete(tabId);
       }
 
@@ -575,7 +580,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
           if (closed) return;
           closed = true;
           for (const tabId of [...tabs.keys()]) {
-            try { await fetchJson(origin, '/json/close/' + encodeURIComponent(tabId)); } catch {}
+            try { await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId)); } catch {}
           }
           tabs.clear();
           await terminateProcess(child);
