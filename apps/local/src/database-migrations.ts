@@ -436,6 +436,44 @@ CREATE UNIQUE INDEX gd_project_memory_supersedes_once_idx
   WHERE supersedes_id IS NOT NULL;
 `;
 
+
+const MIGRATION_014_SQL = `
+CREATE TABLE gd_product_contract_revisions (
+  row_id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  contract_id TEXT NOT NULL,
+  revision INTEGER NOT NULL CHECK (revision >= 1),
+  contract_json TEXT NOT NULL CHECK (length(contract_json) > 2),
+  stored_at TEXT NOT NULL,
+  supersedes_row_id TEXT,
+  truth_role TEXT NOT NULL DEFAULT 'product-intent-authority' CHECK (truth_role = 'product-intent-authority'),
+  authoritative INTEGER NOT NULL DEFAULT 1 CHECK (authoritative = 1),
+  FOREIGN KEY (workspace_id) REFERENCES gd_workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (supersedes_row_id) REFERENCES gd_product_contract_revisions(row_id) ON DELETE RESTRICT,
+  UNIQUE (workspace_id, contract_id, revision),
+  CHECK (row_id <> supersedes_row_id)
+) STRICT;
+
+CREATE INDEX gd_product_contract_workspace_project_idx
+  ON gd_product_contract_revisions (workspace_id, project_id, contract_id, revision DESC);
+CREATE UNIQUE INDEX gd_product_contract_supersedes_once_idx
+  ON gd_product_contract_revisions (supersedes_row_id)
+  WHERE supersedes_row_id IS NOT NULL;
+
+CREATE TRIGGER gd_product_contract_revisions_no_update
+BEFORE UPDATE ON gd_product_contract_revisions
+BEGIN
+  SELECT RAISE(ABORT, 'gd_product_contract_revisions is append-only');
+END;
+
+CREATE TRIGGER gd_product_contract_revisions_no_delete
+BEFORE DELETE ON gd_product_contract_revisions
+BEGIN
+  SELECT RAISE(ABORT, 'gd_product_contract_revisions is append-only');
+END;
+`;
+
 function checksum(sql: string): string {
   return createHash('sha256').update(sql, 'utf8').digest('hex');
 }
@@ -556,6 +594,15 @@ export const LOCAL_DATABASE_MIGRATIONS: readonly LocalDatabaseMigration[] = Obje
     checksum: checksum(MIGRATION_013_SQL),
     apply(database: DatabaseSync) {
       database.exec(MIGRATION_013_SQL);
+    },
+  }),
+  Object.freeze({
+    version: 14,
+    name: 'product-contract',
+    sql: MIGRATION_014_SQL,
+    checksum: checksum(MIGRATION_014_SQL),
+    apply(database: DatabaseSync) {
+      database.exec(MIGRATION_014_SQL);
     },
   }),
 ]);

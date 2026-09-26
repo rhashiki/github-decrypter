@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/plan/src/**/*.ts",
+    "../packages/context/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build67-context-engine-final-runtime.ts"
+  ]
+}

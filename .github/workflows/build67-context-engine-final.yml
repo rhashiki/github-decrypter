@@ -1,0 +1,33 @@
+name: Vortex Ars Build 67 — Context Engine vFinal
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - build/67-context-engine-vfinal
+
+permissions:
+  contents: read
+
+jobs:
+  context-engine-final:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Enable pnpm through Corepack
+        run: corepack enable
+      - name: Install workspace toolchain
+        run: pnpm install --no-frozen-lockfile
+      - name: Run Architecture Guardian
+        run: pnpm run guardian
+      - name: Validate Build 4–67 and TypeScript workspaces
+        run: pnpm run ci
+      - name: Validate Viktor explicit activation guard
+        run: node scripts/guard-viktor-explicit-activation.mjs
+      - name: Validate modern engine preservation
+        run: node scripts/test-build5-rebrand.mjs
