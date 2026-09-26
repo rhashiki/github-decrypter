@@ -386,9 +386,10 @@ function uniqueStrings(value: unknown, label: string, maxItems: number, maxChars
 
 function terms(text: string): readonly string[] {
   const matches = text.normalize('NFC').toLowerCase().match(TOKEN) ?? [];
-  return Object.freeze([
-    ...new Set(matches.filter((term) => term.length >= 2 && !STOP_TERMS.has(term))),
-  ].sort());
+  const normalized = matches
+    .map((term) => term.replace(/^[._:/#-]+|[._:/#-]+$/g, ''))
+    .filter((term) => term.length >= 2 && !STOP_TERMS.has(term));
+  return Object.freeze([...new Set(normalized)].sort());
 }
 
 function sourceRefs(value: unknown, label: string, allowEmpty = false): readonly string[] {
