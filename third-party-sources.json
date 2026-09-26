@@ -7,63 +7,298 @@
       "license": "Apache-2.0",
       "strategy": "DEPENDENCY_OR_ADAPT",
       "status": "candidate",
-      "planned_areas": ["local model metadata", "tokenizer/config compatibility"]
+      "planned_areas": [
+        "local model metadata",
+        "tokenizer/config compatibility"
+      ]
     },
     {
       "repository": "n8n-io/n8n",
       "license": "Sustainable Use License; separate Enterprise licensing also exists",
       "strategy": "REFERENCE",
       "status": "reference-only",
-      "planned_areas": ["workflow state semantics", "retry design", "credential boundaries", "observability"]
+      "planned_areas": [
+        "workflow state semantics",
+        "retry design",
+        "credential boundaries",
+        "observability"
+      ]
     },
     {
       "repository": "continuedev/continue",
       "license": "Apache-2.0",
       "strategy": "ADAPT",
       "status": "candidate",
-      "planned_areas": ["context providers", "tools", "MCP", "protocol", "model providers", "context mentions"]
+      "planned_areas": [
+        "context providers",
+        "tools",
+        "MCP",
+        "protocol",
+        "model providers",
+        "context mentions"
+      ]
     },
     {
       "repository": "crewAIInc/crewAI",
       "license": "MIT",
       "strategy": "ADAPT_OR_REIMPLEMENT",
       "status": "candidate",
-      "planned_areas": ["agent roles", "flows", "event hooks", "checkpoint/persistence patterns", "guardrails"]
+      "planned_areas": [
+        "agent roles",
+        "flows",
+        "event hooks",
+        "checkpoint/persistence patterns",
+        "guardrails"
+      ]
     },
     {
       "repository": "microsoft/monaco-editor",
       "license": "MIT",
       "strategy": "DEPENDENCY",
       "status": "candidate",
-      "planned_areas": ["code editor", "diff editor", "models", "providers", "diagnostics"]
+      "planned_areas": [
+        "code editor",
+        "diff editor",
+        "models",
+        "providers",
+        "diagnostics"
+      ]
     },
     {
       "repository": "assistant-ui/assistant-ui",
       "license": "MIT",
       "strategy": "DEPENDENCY_OR_ADAPT",
       "status": "candidate",
-      "planned_areas": ["chat primitives", "streaming", "attachments", "tool calls", "human approvals"]
+      "planned_areas": [
+        "chat primitives",
+        "streaming",
+        "attachments",
+        "tool calls",
+        "human approvals"
+      ]
     },
     {
       "repository": "freestyle-sh/Adorable",
       "license": "MIT",
       "strategy": "ADAPT",
       "status": "candidate",
-      "planned_areas": ["workspace shell", "chat-preview layout", "terminal UX", "publish/rollback UX"]
+      "planned_areas": [
+        "workspace shell",
+        "chat-preview layout",
+        "terminal UX",
+        "publish/rollback UX"
+      ]
     },
     {
       "repository": "ntegrals/december",
       "license": "MIT",
       "strategy": "ADAPT_OR_REIMPLEMENT",
       "status": "candidate",
-      "planned_areas": ["local runtime", "preview", "container isolation", "file/editor integration"]
+      "planned_areas": [
+        "local runtime",
+        "preview",
+        "container isolation",
+        "file/editor integration"
+      ]
     },
     {
       "repository": "SujalXplores/v0.diy",
       "license": "MIT at repository level; nested skill licenses require separate review",
       "strategy": "ADAPT",
       "status": "candidate",
-      "planned_areas": ["project/chat UX", "preview UX", "portable agent skills"]
+      "planned_areas": [
+        "project/chat UX",
+        "preview UX",
+        "portable agent skills"
+      ]
+    },
+    {
+      "repository": "OpenHands/OpenHands",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "agent backend abstraction",
+        "local/remote execution patterns",
+        "automation dispatch",
+        "ACP interoperability"
+      ]
+    },
+    {
+      "repository": "langflow-ai/langflow",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "visual workflow graphs",
+        "workflow serialization",
+        "MCP/API tool surfaces",
+        "multi-agent flow UX"
+      ]
+    },
+    {
+      "repository": "ollama/ollama",
+      "license": "MIT",
+      "strategy": "DEPENDENCY_OR_ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "optional local runtime adapter",
+        "local model lifecycle",
+        "REST API compatibility"
+      ]
+    },
+    {
+      "repository": "ripienaar/free-for-dev",
+      "license": "not relied on; reference-only catalog",
+      "strategy": "REFERENCE",
+      "status": "reference-only",
+      "planned_areas": [
+        "optional free-tier infrastructure discovery",
+        "cost-aware integration research"
+      ]
+    },
+    {
+      "repository": "D4Vinci/Scrapling",
+      "license": "BSD-3-Clause",
+      "strategy": "REFERENCE",
+      "status": "reference-only",
+      "planned_areas": [
+        "adaptive parser relocation",
+        "crawl pause/resume",
+        "bounded concurrency",
+        "extraction ergonomics"
+      ],
+      "exclusions": [
+        "anti-bot bypass",
+        "Cloudflare bypass behavior"
+      ]
+    },
+    {
+      "repository": "sindresorhus/awesome",
+      "license": "CC0-1.0",
+      "strategy": "REFERENCE",
+      "status": "reference-only",
+      "planned_areas": [
+        "curated source discovery only"
+      ]
+    },
+    {
+      "repository": "Shubhamsaboo/awesome-llm-apps",
+      "license": "Apache-2.0 at repository level; per-example dependencies require review",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "agent/RAG examples",
+        "portable skill patterns",
+        "narrow reusable app workflows"
+      ]
+    },
+    {
+      "repository": "nexu-io/open-design",
+      "license": "Apache-2.0 at repository level; bundled assets/skills may carry separate licenses",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "local-first design systems",
+        "portable skills/plugins",
+        "sandboxed preview",
+        "artifact export",
+        "design provenance"
+      ]
+    },
+    {
+      "repository": "punkpeye/awesome-mcp-servers",
+      "license": "MIT",
+      "strategy": "REFERENCE",
+      "status": "reference-only",
+      "planned_areas": [
+        "MCP server discovery catalog"
+      ],
+      "constraints": [
+        "no automatic trust or install"
+      ]
+    },
+    {
+      "repository": "lyogavin/airllm",
+      "license": "Apache-2.0",
+      "strategy": "DEPENDENCY_OR_ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "low-VRAM layer streaming",
+        "model-loading optimization",
+        "Build 128 runtime experiments"
+      ],
+      "constraints": [
+        "benchmark latency",
+        "benchmark host RAM",
+        "benchmark disk footprint",
+        "no default-runtime commitment"
+      ]
+    },
+    {
+      "repository": "ayghri/i-have-adhd",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "optional action-first communication profile",
+        "low-friction task presentation"
+      ],
+      "constraints": [
+        "no diagnosis inference",
+        "explicit user preference only"
+      ]
+    },
+    {
+      "repository": "different-ai/openwork",
+      "license": "MIT outside ee/; ee/ uses OpenWork EE License",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "local skills/MCP sharing",
+        "workspace control-plane patterns",
+        "plugin distribution"
+      ],
+      "constraints": [
+        "exclude ee/ from code reuse unless separately licensed"
+      ]
+    },
+    {
+      "repository": "zhaoxuya520/reverse-skill",
+      "license": "MIT at repository root; nested components include GPL/AGPL and other licenses",
+      "strategy": "ADAPT",
+      "status": "candidate",
+      "planned_areas": [
+        "client-neutral skill routing",
+        "scope/evidence workflow",
+        "routing regression design"
+      ],
+      "constraints": [
+        "no wholesale security/offensive module import",
+        "per-path license review required"
+      ]
+    },
+    {
+      "repository": "1jehuang/jcode",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "high-value-candidate",
+      "planned_areas": [
+        "Rust harness/resource-efficiency patterns",
+        "bounded swarm and task-DAG coordination",
+        "durable agent lifecycle and crash/reload recovery",
+        "shared MCP server process pooling across sessions",
+        "local memory storage/lifecycle and bounded asynchronous recall patterns",
+        "provider/runtime readiness diagnostics",
+        "performance and memory regression benchmarks"
+      ],
+      "constraints": [
+        "do not adopt remote Jev/provider-backed memory recall as a core Vortex requirement",
+        "do not expose provider/model shopping as canonical UX",
+        "do not permit unbounded recursive swarms",
+        "Vortex Tool Runtime, Scope Lock, capabilities and canonical agents remain authoritative",
+        "per-file provenance review required before code copying"
+      ]
     }
   ]
 }
