@@ -36,6 +36,32 @@ GitHub Decrypter may aggressively reuse public-source ideas and permissively lic
 | `huggingface/transformers` | DEPENDENCY/ADAPT | model metadata, tokenizer/config compatibility for local AI runtime |
 | `n8n-io/n8n` | REFERENCE | durable workflow semantics, retries, node registries, credentials, observability |
 
+| `OpenHands/OpenHands` | ADAPT/REFERENCE | agent-server/backend abstraction, local/remote execution, automations, ACP-compatible agent interoperability |
+| `langflow-ai/langflow` | ADAPT | visual workflow graphs, workflow serialization, MCP/API tool surfaces, multi-agent flow UX |
+| `ollama/ollama` | DEPENDENCY/ADAPT | optional local runtime adapter, local model lifecycle/API compatibility; already aligned with Build 119 portability |
+| `ripienaar/free-for-dev` | REFERENCE | free-tier discovery for optional infrastructure choices; never a runtime authority |
+| `D4Vinci/Scrapling` | REFERENCE | adaptive parser relocation, crawl pause/resume, bounded concurrency, extraction ergonomics; anti-bot bypass behavior is explicitly excluded |
+| `sindresorhus/awesome` | REFERENCE | discovery/curation source only; candidates still require independent license/security review |
+| `Shubhamsaboo/awesome-llm-apps` | ADAPT/REFERENCE | agent/RAG examples, skill packaging patterns, narrow reusable app workflows; per-example dependencies require review |
+| `nexu-io/open-design` | ADAPT | local-first design systems, portable skills/plugins, sandboxed preview, artifact export, provenance-bearing design packages |
+| `punkpeye/awesome-mcp-servers` | REFERENCE | MCP discovery catalog only; no automatic trust/install and every candidate passes Plugin SDK/security review |
+| `lyogavin/airllm` | DEPENDENCY/ADAPT | experimental low-VRAM layer-streaming/model-loading techniques for Build 128; evaluate latency/RAM/disk tradeoffs before adoption |
+| `ayghri/i-have-adhd` | ADAPT | optional action-first communication profile for Build 108; do not infer/diagnose ADHD and do not enable by hidden profiling |
+| `different-ai/openwork` | ADAPT/REFERENCE | local skills/MCP sharing, workspace/control-plane patterns and plugin distribution; exclude `ee/` from code reuse unless separately licensed |
+| `zhaoxuya520/reverse-skill` | ADAPT/REFERENCE | client-neutral skill routing, structured scope/evidence workflow, regression-tested routing; offensive/security modules and nested copyleft components are not copied wholesale |
+| `1jehuang/1jcode` | HOLD / VERIFY | user-supplied candidate was not reachable through current GitHub/web checks on 2026-09-26; no code or license assumptions until verified |
+
+### Batch 2026-09-26 guardrails
+
+- Catalog repositories are discovery inputs only; entries are never auto-installed, auto-trusted or promoted to product authority.
+- `Scrapling` anti-bot/Cloudflare-bypass behavior is outside this mining scope; only resilient parsing/crawl-control patterns are relevant.
+- `OpenWork` has split licensing; only MIT-eligible paths may ever be copied/adapted, while `ee/` remains reference-only unless separately licensed.
+- `reverse-skill` contains nested third-party/copy-left components; routing/evidence patterns may be studied, but nested source requires per-path license review.
+- `open-design` and `awesome-llm-apps` contain bundled/nested material; repository-level licensing never substitutes for per-file provenance review.
+- `AirLLM` is an optimization candidate, not a promise that huge models are practical on weak hardware; latency, host RAM, disk footprint and failure behavior must be benchmarked.
+- `i-have-adhd` contributes an optional communication pattern only. Vortex must not infer a medical condition from behavior or silently activate a diagnosis-labeled mode.
+- `1jehuang/1jcode` stays on hold until the repository can be verified and licensed content inspected.
+
 ## V1 guardrail
 
 Source mining is an implementation accelerator for already-frozen V1 capabilities. It is not permission to add unrelated upstream features to the roadmap.
