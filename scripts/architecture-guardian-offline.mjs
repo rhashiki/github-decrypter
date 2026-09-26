@@ -70,6 +70,17 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
     ? `${githubProviderRule.ownerRoot}/src/github-provider.ts`
     : null;
 
+  const previewRule = policy.previewRuntimeAuthority;
+  const previewNetworkAuthorized = Boolean(
+    previewRule
+    && policy.currentBuild >= previewRule.minimumBuild
+    && Number.isSafeInteger(rule.previewRuntimeNetworkBuild)
+    && rule.previewRuntimeNetworkBuild === previewRule.minimumBuild,
+  );
+  const previewRuntimePath = previewNetworkAuthorized
+    ? previewRule.browserAdapterSource
+    : null;
+
   for (const absolute of walk(`${rule.ownerRoot}/src`)) {
     const relative = path.relative(root, absolute).split(path.sep).join('/');
     const source = fs.readFileSync(absolute, 'utf8');
@@ -108,6 +119,18 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
       }
     }
 
+
+    if (relative === previewRuntimePath) {
+      const loopbackBound = source.includes('--remote-debugging-address=127.0.0.1')
+        && source.includes("const origin = 'http://127.0.0.1:' + endpoint.port")
+        && !/https?:\/\/(?!127\.0\.0\.1)/.test(source);
+      const onlyCdpFetch = source.includes('fetch(origin + path')
+        && !/fetch\s*\((?!origin \+ path)/.test(source);
+      if (loopbackBound && onlyCdpFetch) {
+        probeSource = probeSource.replaceAll('fetch(origin + path', '__authorized_preview_loopback_cdp__(origin + path');
+      }
+    }
+
     if (/\bfetch\s*\(|\bhttps?\.(?:request|get)\s*\(|\bnet\.connect\s*\(|\btls\.connect\s*\(|\bdns\.(?:lookup|resolve|promises)\b/.test(probeSource)) {
       violations.push({
         code: 'AG122',
@@ -131,6 +154,15 @@ if (!rule || typeof rule.ownerRoot !== 'string' || !Number.isSafeInteger(rule.mi
     violations.push({
       code: 'AG122',
       message: 'GitHub Provider network authority must remain pinned to its owning build.',
+      detail: 'architecture.guardian.json',
+    });
+  }
+
+  if (policy.currentBuild >= (policy.previewRuntimeAuthority?.minimumBuild ?? Number.POSITIVE_INFINITY)
+    && rule.previewRuntimeNetworkBuild !== policy.previewRuntimeAuthority.minimumBuild) {
+    violations.push({
+      code: 'AG122',
+      message: 'Preview Runtime loopback network authority must remain pinned to its owning build.',
       detail: 'architecture.guardian.json',
     });
   }
