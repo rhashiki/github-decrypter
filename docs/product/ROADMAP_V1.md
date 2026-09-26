@@ -6,7 +6,7 @@ Status: **FROZEN V1 SEQUENCE — Builds 1–134**
 
 This is the canonical numbered roadmap for Vortex Ars AI V1. Historical Build names are retained where they document repository history. Build numbers are integers and are not renumbered by North Star amendments. New product authorities are attached to existing owning Builds through explicit acceptance extensions.
 
-Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**: One Intelligence, No BYOK, Tokenless UX, Project Genesis, Zero Placeholder, Evidence Before Completion, RC by Default, Complexity Budget, Vortex Knowledge Compiler, Vortex Browser Runtime, Visual Reference, Vortex Media Engine, Security Coverage and Vortex Model Specialization.
+Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**: One Intelligence, No BYOK, Tokenless UX, Project Genesis, Zero Placeholder, Evidence Before Completion, RC by Default, Complexity Budget, Vortex Knowledge Compiler, Vortex Browser Runtime, Visual Reference, Vortex Media Engine, Security Coverage and Vortex Model Specialization. Constitutional Amendment 010 adds a **Local Decision Fast Path**: narrow local classifiers/tool routers may handle bounded decisions behind Vortex-owned adapters, while low-confidence work escalates safely and browser control prefers structured action spaces over screenshot-heavy guessing.
 
 ## Completed foundation
 
@@ -58,7 +58,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 34. **Local AI Runtime** — ✅ — first-class foundation for Vortex local inference. Amendment 008 preserves this as the canonical execution boundary for future replaceable local adapters; runtime/model identity never becomes Vortex authority.
 35. **Local AI Installer** — ✅ — installs/manages supported Vortex runtime capabilities without requiring BYOK. Amendment 008: installer evolution may manage multiple supported local runtime families without making any runtime brand mandatory. Amendment 009: installation/model advice uses safe hardware fit and evidence rather than model size alone.
 36. **Model Manager** — ✅ — internal Vortex model/runtime lifecycle; no canonical user workflow requires choosing third-party model brands. Amendment 008: future capability metadata/discovery remains provider-independent and may use conservative defaults for unknown local models. Amendment 009: model metadata may include context/output limits, modalities, tools/structured output, quantization and evidence provenance/confidence.
-37. **Model Routing** — ✅ — internal routing foundation. V1 user experience remains **One Intelligence**; routing, hardware placement and specialist selection are internal concerns. Amendment 008: future routing becomes model-window/capability/hardware aware while One Intelligence remains the default UX; fallback must fit context before use. Amendment 009: routing may use fit/speed/quality/task capability while remaining auditable and internal to One Intelligence.
+37. **Model Routing** — ✅ — internal routing foundation. V1 user experience remains **One Intelligence**; routing, hardware placement and specialist selection are internal concerns. Amendment 008: future routing becomes model-window/capability/hardware aware while One Intelligence remains the default UX; fallback must fit context before use. Amendment 009: routing may use fit/speed/quality/task capability while remaining auditable and internal to One Intelligence. Amendment 010: narrow local classifiers/tool routers may be used behind replaceable Vortex-owned adapters with explicit confidence/no-action behavior and escalation to an already-authorized stronger path; router failure never grants authority.
 38. **Prompt Intake Engine** — ✅ — Project Genesis intake foundation; ordinary substantive product creation begins with discovery rather than immediate code generation.
 39. **Requirement Compiler** — ✅ — Amendment 005: Genesis answers compile into Product Contract requirements, explicit acceptance criteria, representative user journeys and unresolved/external dependency records. Amendment 009: Product Contract may capture a generated application's own embedded AI agent/copilot requirements, permissions, memory and model source.
 40. **Task Graph Compiler** — ✅ — generation work decomposes into durable implementation, verification and correction tasks rather than one-shot generation. Amendment 009: task graphs preserve concrete implementation/review/test steps rather than repeatedly rediscovering the plan.
@@ -115,7 +115,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - compiled knowledge packs;
    - strict separation from Architecture Ledger, Product Contract, Git and validation truth.
 
-67. **Context Engine vFinal** — ✅ — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**; also owns bounded on-demand Specialist Profile context loading so the full catalog is never dumped into ordinary model context: Amendment 009: final context consumes bounded briefs/handoffs and loss-bounded tool summaries; optional LLM consolidation never becomes memory truth.
+67. **Context Engine vFinal** — ✅ — primary owner for **Project Genesis final integration + Vortex Knowledge Compiler**; also owns bounded on-demand Specialist Profile context loading so the full catalog is never dumped into ordinary model context: Amendment 009: final context consumes bounded briefs/handoffs and loss-bounded tool summaries; optional LLM consolidation never becomes memory truth. Amendment 010: cheap local/deterministic classification may identify document/page type and parser route before expensive generative analysis; important browser/research evidence may be preserved as portable provenance-bearing snapshots rather than transient context only.
    - adaptive pre-build discovery;
    - durable Product Contract;
    - unresolved/external dependency ledger;
@@ -129,7 +129,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Preview, browser runtime and developer experience
 
-68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed.
+68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed. Amendment 010: browser decisions should prefer a compact structured action space built from observed visible controls, stable target identity and operation-specific compatible targets; stale/occluded/non-interactable targets are rejected before execution, persistent sessions are reused, and screenshots are evidence rather than a mandatory control loop.
    - isolated browser execution;
    - session/tab lifecycle;
    - deterministic resource cleanup;
@@ -139,7 +139,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 69. **Live Preview** — live application state across supported desktop/tablet/mobile form factors; stable refresh/recovery behavior and long-running Preview sessions. Amendment 009: Live Preview supports deterministic desktop/tablet/mobile, dark-mode and selector/full-page visual captures after bounded visual settling.
 
-70. **Preview Bridge** — structured runtime/browser telemetry substrate: Amendment 009: Preview Bridge exposes structured DOM/runtime evidence needed for adapter verification and generated-app agent QA. Amendment 009: Preview Bridge carries structured capture status, viewport/scale/mode/selector/dimensions/format/bytes/failure metadata and task/run provenance.
+70. **Preview Bridge** — structured runtime/browser telemetry substrate: Amendment 009: Preview Bridge exposes structured DOM/runtime evidence needed for adapter verification and generated-app agent QA. Amendment 009: Preview Bridge carries structured capture status, viewport/scale/mode/selector/dimensions/format/bytes/failure metadata and task/run provenance. Amendment 010: Preview Bridge also exposes stable target references, operation compatibility, observed-state freshness/version markers, execution result/no-action reason and provenance for any captured/archived evidence.
    - console/network/navigation/runtime evidence;
    - supported DOM/accessibility/component information;
    - stable element references where technically possible;
@@ -272,7 +272,7 @@ MCP/plugins never become alternate hidden intelligence authorities and remain su
    - only authorized targets are dynamically tested;
    - no claim of "secure/clean" may be inferred from untested surfaces.
 
-128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency. Amendment 009: performance hardening owns model recommendation scoring, memory/tool-output compression cost, retrieval efficiency and optional local consolidation economics. Amendment 009: performance hardening measures cold/warm visual capture, persistent-browser reuse, p95 latency, memory and bounded capture concurrency.
+128. **Performance Hardening** — expands into **Vortex Intelligence Efficiency & Model Specialization**, including bounded specialist routing, context-cost governance, compressed/cached profile context, local model specialization and concurrency limits: Amendment 008 owns model-window-aware context budgets, automatic compaction/degradation, context-fit fallback, compute/tool admission budgets, bounded queues and runtime routing efficiency. Amendment 009: performance hardening owns model recommendation scoring, memory/tool-output compression cost, retrieval efficiency and optional local consolidation economics. Amendment 009: performance hardening measures cold/warm visual capture, persistent-browser reuse, p95 latency, memory and bounded capture concurrency. Amendment 010: compact local routers/classifiers are evaluated separately from generative models for tool/route accuracy, argument correctness, off-topic rejection, confidence calibration, latency, memory, catalog scaling and fallback rate; smaller/faster is adopted only when end-to-end quality remains acceptable.
    - local-first inference optimization;
    - quantization/caching/batching/context reuse;
    - compact task classifiers/specialized Vortex components where beneficial;
@@ -387,3 +387,8 @@ Adopted amendments include:
 - `CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md`
 - `CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md`
 - `CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md`
+- `CONSTITUTION_AMENDMENT_006_LOCAL_SOVEREIGNTY_ZERO_MARGINAL_COMPUTE.md`
+- `CONSTITUTION_AMENDMENT_007_SPECIALIST_INTELLIGENCE_LAYER.md`
+- `CONSTITUTION_AMENDMENT_008_LOCAL_AGENT_RUNTIME_PORTABILITY_AND_COMPUTE_GOVERNANCE.md`
+- `CONSTITUTION_AMENDMENT_009_EVIDENCE_DRIVEN_ENGINEERING_AND_PORTABLE_GENERATION.md`
+- `CONSTITUTION_AMENDMENT_010_LOCAL_DECISION_FAST_PATH.md`
