@@ -9,7 +9,7 @@ export const PREVIEW_TRANSFER_SCHEMA = 'gd-preview-transfer/1' as const;
 
 export const PREVIEW_MAX_SESSIONS = 8 as const;
 export const PREVIEW_MAX_TABS_PER_SESSION = 16 as const;
-export const PREVIEW_MAX_INLINE_BYTES = 16 * 1024 * 1024 as const;
+export const PREVIEW_MAX_INLINE_BYTES = 16 * 1024 * 1024;
 export const PREVIEW_MAX_SELECTOR_LENGTH = 1024 as const;
 export const PREVIEW_MAX_URL_LENGTH = 4096 as const;
 export const PREVIEW_DEFAULT_TIMEOUT_MS = 15_000 as const;
