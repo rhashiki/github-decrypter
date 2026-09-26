@@ -1,5 +1,6 @@
 import {
   PREVIEW_MAX_INLINE_BYTES,
+  PREVIEW_MAX_TABS_PER_SESSION,
   normalizePreviewTimeout,
   normalizePreviewUrl,
   normalizePreviewViewport,
@@ -326,6 +327,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
 
       async function openTab(urlValue: string): Promise<PreviewTabDescriptor> {
         if (closed) throw new Error('Preview browser session is closed.');
+        if (tabs.size >= PREVIEW_MAX_TABS_PER_SESSION) throw new RangeError('Preview browser tab limit reached.');
         const url = normalizePreviewUrl(urlValue);
         const target = await fetchJson(origin, '/json/new?' + encodeURIComponent(url), { method: 'PUT' }) as TargetInfo;
         if (!target.id) throw new Error('Chromium did not create a page target.');
