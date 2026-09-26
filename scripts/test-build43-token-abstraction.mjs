@@ -20,7 +20,8 @@ const build43Exports = {
 };
 const build65Exports = { ...build43Exports, './knowledge-graph': './src/knowledge-graph.ts' };
 const build66Exports = { ...build65Exports, './project-memory': './src/project-memory.ts' };
-assert.deepEqual(pkg.exports, policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports);
+const build67Exports = { ...build66Exports, './final-context': './src/final-context.ts' };
+assert.deepEqual(pkg.exports, policy.currentBuild >= 67 ? build67Exports : policy.currentBuild >= 66 ? build66Exports : policy.currentBuild >= 65 ? build65Exports : build43Exports);
 
 for (const marker of [
   'TOKEN_ABSTRACTION_BUILD = 43',
