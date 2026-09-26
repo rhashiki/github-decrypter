@@ -145,19 +145,24 @@ function asToolValue(value: unknown): ToolValue {
 export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOptions = {}): PreviewBrowserRuntime {
   const adapter = options.adapter ?? createChromiumCdpAdapter();
   const now = options.now ?? (() => new Date().toISOString());
-  const sessions = new Map<string, BrowserAdapterSession>();
+  const sessions = new Map<string, { readonly session: BrowserAdapterSession; readonly profileDir: string }>();
   let shuttingDown = false;
 
   function requireSession(sessionId: string): BrowserAdapterSession {
-    const session = sessions.get(sessionId);
-    if (!session) throw new Error('Unknown Preview browser session.');
-    return session;
+    const entry = sessions.get(sessionId);
+    if (!entry) throw new Error('Unknown Preview browser session.');
+    return entry.session;
   }
 
   async function stopSession(sessionId: string): Promise<void> {
-    const session = requireSession(sessionId);
+    const entry = sessions.get(sessionId);
+    if (!entry) throw new Error('Unknown Preview browser session.');
     sessions.delete(sessionId);
-    await session.close();
+    try {
+      await entry.session.close();
+    } finally {
+      rmSync(entry.profileDir, { recursive: true, force: true });
+    }
   }
 
   function status(): PreviewBrowserRuntimeStatus {
@@ -224,7 +229,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
             rmSync(profileDir, { recursive: true, force: true });
             throw new Error('Preview Browser Runtime adapter returned a duplicate session id.');
           }
-          sessions.set(session.descriptor.id, session);
+          sessions.set(session.descriptor.id, Object.freeze({ session, profileDir }));
           return asToolValue(session.descriptor);
         },
       }),
@@ -358,9 +363,15 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     async shutdown() {
       if (shuttingDown) return;
       shuttingDown = true;
-      const active = [...sessions.entries()];
+      const active = [...sessions.values()];
       sessions.clear();
-      await Promise.allSettled(active.map(([, session]) => session.close()));
+      await Promise.allSettled(active.map(async (entry) => {
+        try {
+          await entry.session.close();
+        } finally {
+          rmSync(entry.profileDir, { recursive: true, force: true });
+        }
+      }));
       shuttingDown = false;
     },
   });
