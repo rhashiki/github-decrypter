@@ -21,7 +21,7 @@ This audit records the repositories supplied for Vortex Ars AI source mining. It
 | `ayghri/i-have-adhd` | ADAPT | 31, 108 | action-first, low-friction response shaping and persistent presentation preferences | generic optional communication profile only; no ADHD inference, diagnosis or silent activation |
 | `different-ai/openwork` | ADAPT / REFERENCE | 90, 115, 117, 119, 123 | shareable skills/MCPs, local workspace patterns, plugin distribution/control-plane concepts | code reuse limited to MIT-eligible paths; `ee/` remains separately licensed |
 | `zhaoxuya520/reverse-skill` | ADAPT / REFERENCE | 90, 124, 127 | deterministic skill routing, scope-first workflow, evidence journals, routing regression suites | no wholesale offensive tooling; nested GPL/AGPL/third-party components require separate review |
-| `1jehuang/1jcode` | HOLD | none yet | unknown | repository could not be verified through current GitHub/web access; no assumptions or reuse |
+| `1jehuang/jcode` | **HIGH-VALUE ADAPT** | 32, 64, 66–67, 90, 115, 118, 124–125, 128 | Rust resource-efficient harness, bounded swarm/task-DAG orchestration, durable worker recovery, shared MCP process pools, local memory lifecycle, provider doctor and perf regression methodology | keep Vortex authority; no mandatory remote Jev memory, no provider/model-shopping UX, no unbounded recursive swarms |
 
 ## Highest-value implications
 
@@ -29,7 +29,8 @@ This audit records the repositories supplied for Vortex Ars AI source mining. It
 2. **Plugin/Skill architecture gains concrete upstream references.** OpenDesign, OpenWork, Langflow, Awesome MCP Servers and reverse-skill provide useful packaging, routing and workflow patterns for Build 90 while Vortex remains the authority.
 3. **Visual generation can borrow proven package concepts.** OpenDesign is especially relevant to Builds 103–105: design systems as portable packages, provenance, sandboxed preview and real artifact exports fit the existing Visual/Media roadmap.
 4. **Agent execution should remain Vortex-native.** OpenHands is useful primarily for backend-switching and agent-server/automation patterns; it does not replace Ramon, the canonical agent roster, durable jobs, Scope Lock or Tool Runtime.
-5. **Catalogs stay catalogs.** `awesome`, `free-for-dev`, `awesome-mcp-servers` and the example library in `awesome-llm-apps` are research inputs, never supply-chain shortcuts.
+5. **Jcode is a particularly strong systems reference.** Its Rust-first harness, low per-session memory target, daemon-shared MCP processes, bounded swarm ownership, durable swarm snapshots and explicit performance probes are directly useful to Vortex's Local Runtime/Concurrency/Performance roadmap. Its current remote Jev-based memory recall is not adopted as a Vortex core dependency; Vortex keeps local-first memory and provider independence.
+6. **Catalogs stay catalogs.** `awesome`, `free-for-dev`, `awesome-mcp-servers` and the example library in `awesome-llm-apps` are research inputs, never supply-chain shortcuts.
 
 ## No roadmap expansion required
 
