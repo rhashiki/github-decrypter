@@ -8,6 +8,8 @@ This is the canonical numbered roadmap for Vortex Ars AI V1. Historical Build na
 
 Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**: One Intelligence, No BYOK, Tokenless UX, Project Genesis, Zero Placeholder, Evidence Before Completion, RC by Default, Complexity Budget, Vortex Knowledge Compiler, Vortex Browser Runtime, Visual Reference, Vortex Media Engine, Security Coverage and Vortex Model Specialization.
 
+**External source reconnaissance rule (Builds 69–133):** before implementing an owning Build, consult `docs/research/EXTERNAL_REPOSITORY_BACKLOG_BUILDS_69_133.md` and audit only that Build's candidates just-in-time. Classify each reviewed source as ADOPT / ADAPT / REFERENCE / REJECT before reuse; do not bulk-audit or blindly vendor the backlog.
+
 ## Completed foundation
 
 1. **Project Fork & Independence** — ✅
