@@ -21,7 +21,7 @@ import {
   type ToolRegistration,
   type ToolValue,
 } from '@github-decrypter/tools';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -212,9 +212,16 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
           if (keys.length > 1 || (keys.length === 1 && keys[0] !== 'viewport')) throw new TypeError('Preview session start accepts only optional viewport.');
           const viewport = normalizePreviewViewport(value.viewport ?? 'desktop');
           const profileDir = mkdtempSync(join(tmpdir(), 'vortex-preview-'));
-          const session = await adapter.launch({ profileDir, viewport, executablePath: options.executablePath, now });
+          let session: BrowserAdapterSession;
+          try {
+            session = await adapter.launch({ profileDir, viewport, executablePath: options.executablePath, now });
+          } catch (error) {
+            rmSync(profileDir, { recursive: true, force: true });
+            throw error;
+          }
           if (sessions.has(session.descriptor.id)) {
             await session.close();
+            rmSync(profileDir, { recursive: true, force: true });
             throw new Error('Preview Browser Runtime adapter returned a duplicate session id.');
           }
           sessions.set(session.descriptor.id, session);
