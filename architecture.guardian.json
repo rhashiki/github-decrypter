@@ -222,8 +222,11 @@
         "@github-decrypter/github-app",
         "@github-decrypter/github-provider",
         "@github-decrypter/plan",
+        "@github-decrypter/preview",
         "@github-decrypter/protocol",
+        "@github-decrypter/scope",
         "@github-decrypter/shared",
+        "@github-decrypter/tools",
         "@github-decrypter/workspace"
       ],
       "allowedExternalDependencies": [],
