@@ -24,7 +24,7 @@ const manifestPath = path.join(root, 'apps/local/package.json');
 const originalManifest = fs.readFileSync(manifestPath, 'utf8');
 try {
   const manifest = JSON.parse(originalManifest);
-  manifest.dependencies['@github-decrypter/tools'] = 'workspace:*';
+  manifest.dependencies['@github-decrypter/forbidden-probe'] = 'workspace:*';
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   runExpecting('AG033');
 } finally {

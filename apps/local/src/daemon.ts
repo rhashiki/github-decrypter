@@ -23,6 +23,7 @@ import { createOfflineExecutionCoordinator, type OfflineExecutionCoordinator } f
 import { createProjectDetector, type ProjectDetector } from './project-detector.js';
 import { createProjectMemoryStore, type ProjectMemoryStore } from './project-memory-store.js';
 import { createProductContractStore, type ProductContractStore } from './product-contract-store.js';
+import { createPreviewBrowserRuntime, type PreviewBrowserRuntime } from './preview-browser-runtime.js';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -49,6 +50,7 @@ export interface LocalRuntimeDaemonOptions {
   readonly projectDetection?: ProjectDetector;
   readonly projectMemory?: ProjectMemoryStore;
   readonly productContracts?: ProductContractStore;
+  readonly previewBrowser?: PreviewBrowserRuntime;
   readonly git?: GitRuntime;
   readonly changeTracking?: ChangeTracker;
   readonly githubApp?: GitHubAppRuntime;
@@ -81,6 +83,7 @@ export class LocalRuntimeDaemon {
   readonly #projectDetection: ProjectDetector;
   readonly #projectMemory: ProjectMemoryStore;
   readonly #productContracts: ProductContractStore;
+  readonly #previewBrowser: PreviewBrowserRuntime;
   readonly #git: GitRuntime;
   readonly #changeTracking: ChangeTracker;
   readonly #githubApp: GitHubAppRuntime;
@@ -113,6 +116,7 @@ export class LocalRuntimeDaemon {
     this.#projectDetection = options.projectDetection ?? createProjectDetector({ workspaces: this.#workspaces, eventBus: this.#eventBus, now: this.#now });
     this.#projectMemory = options.projectMemory ?? createProjectMemoryStore({ database: this.#database, now: this.#now });
     this.#productContracts = options.productContracts ?? createProductContractStore({ database: this.#database, now: this.#now });
+    this.#previewBrowser = options.previewBrowser ?? createPreviewBrowserRuntime({ now: this.#now });
     this.#git = options.git ?? createGitRuntime({
       workspaces: this.#workspaces,
       capabilities: this.#capabilities,
@@ -167,6 +171,7 @@ export class LocalRuntimeDaemon {
   get projectDetection(): ProjectDetector { return this.#projectDetection; }
   get projectMemory(): ProjectMemoryStore { return this.#projectMemory; }
   get productContracts(): ProductContractStore { return this.#productContracts; }
+  get previewBrowser(): PreviewBrowserRuntime { return this.#previewBrowser; }
   get git(): GitRuntime { return this.#git; }
   get changeTracking(): ChangeTracker { return this.#changeTracking; }
   get githubApp(): GitHubAppRuntime { return this.#githubApp; }
@@ -280,6 +285,7 @@ export class LocalRuntimeDaemon {
       this.#closeAIRuntimeBestEffort();
       await this.#closeCapabilitiesBestEffort('startup failed');
       await this.#closeRecoveryBestEffort('startup failed');
+      await this.#closePreviewBrowserBestEffort();
       this.#closeProductContractsBestEffort();
       this.#closeProjectMemoryBestEffort();
       this.#closeProjectDetectionBestEffort();
@@ -312,6 +318,8 @@ export class LocalRuntimeDaemon {
     try { await this.#capabilities.shutdown(`runtime stopped: ${reason}`); } catch (error) { capabilityError = error; }
     let recoveryError: unknown = null;
     try { await this.#recovery.stopSession(reason); } catch (error) { recoveryError = error; }
+    let previewError: unknown = null;
+    try { await this.#previewBrowser.shutdown(); } catch (error) { previewError = error; }
     this.#productContracts.shutdown();
     this.#projectMemory.shutdown();
     this.#projectDetection.shutdown();
@@ -319,7 +327,7 @@ export class LocalRuntimeDaemon {
     this.#audit.shutdown();
     await this.#closeDatabaseBestEffort(reason);
     this.#instanceLock?.release(); this.#instanceLock = null; this.#startedAt = null;
-    const shutdownError = vaultError ?? changeTrackingError ?? capabilityError ?? recoveryError;
+    const shutdownError = vaultError ?? changeTrackingError ?? capabilityError ?? recoveryError ?? previewError;
     if (shutdownError) {
       const message = shutdownError instanceof Error ? shutdownError.message : 'runtime shutdown failed';
       await this.#transition('failed', message); throw shutdownError;
@@ -349,6 +357,7 @@ export class LocalRuntimeDaemon {
   #closeAIModelManagerBestEffort(): void { try { this.#aiModelManager.shutdown(); } catch {} }
   #closeAIInstallerBestEffort(): void { try { this.#aiInstaller.shutdown(); } catch {} }
   #closeAIRuntimeBestEffort(): void { try { this.#aiRuntime.shutdown(); } catch {} }
+  async #closePreviewBrowserBestEffort(): Promise<void> { try { await this.#previewBrowser.shutdown(); } catch {} }
   #closeProductContractsBestEffort(): void { try { this.#productContracts.shutdown(); } catch {} }
   #closeProjectMemoryBestEffort(): void { try { this.#projectMemory.shutdown(); } catch {} }
   #closeProjectDetectionBestEffort(): void { try { this.#projectDetection.shutdown(); } catch {} }

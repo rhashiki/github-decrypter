@@ -1,6 +1,6 @@
 {
   "name": "@github-decrypter/local",
-  "version": "0.0.67",
+  "version": "0.0.68",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,9 @@
     "@github-decrypter/plan": "workspace:*",
     "@github-decrypter/protocol": "workspace:*",
     "@github-decrypter/shared": "workspace:*",
-    "@github-decrypter/workspace": "workspace:*"
+    "@github-decrypter/workspace": "workspace:*",
+    "@github-decrypter/preview": "workspace:*",
+    "@github-decrypter/scope": "workspace:*",
+    "@github-decrypter/tools": "workspace:*"
   }
 }

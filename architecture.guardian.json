@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 67,
+  "currentBuild": 68,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -160,6 +160,10 @@
         "@github-decrypter/workspace"
       ],
       "environmentNeutral": true
+    },
+    "@github-decrypter/preview": {
+      "environmentNeutral": true,
+      "allowedWorkspaceDependencies": []
     }
   },
   "appRules": {
@@ -218,8 +222,11 @@
         "@github-decrypter/github-app",
         "@github-decrypter/github-provider",
         "@github-decrypter/plan",
+        "@github-decrypter/preview",
         "@github-decrypter/protocol",
+        "@github-decrypter/scope",
         "@github-decrypter/shared",
+        "@github-decrypter/tools",
         "@github-decrypter/workspace"
       ],
       "allowedExternalDependencies": [],
@@ -263,7 +270,8 @@
     "githubAppNetworkBuild": 23,
     "githubProviderNetworkBuild": 24,
     "automaticNetworkProbe": false,
-    "jobControlTransportBuild": 47
+    "jobControlTransportBuild": 47,
+    "previewRuntimeNetworkBuild": 68
   },
   "capabilityAuthority": {
     "ownerRoot": "apps/local",
@@ -1981,7 +1989,8 @@
     "agentOrchestratorBuild": 64,
     "knowledgeGraphBuild": 65,
     "projectMemoryBuild": 66,
-    "finalContextEngineBuild": 67
+    "finalContextEngineBuild": 67,
+    "previewRuntimeBuild": 68
   },
   "legacyMigrationRoots": [
     "core",
@@ -3009,5 +3018,60 @@
     "executionAuthority": false,
     "externalTransport": false,
     "legacyContextEngineDependencyAllowed": false
+  },
+  "previewRuntimeAuthority": {
+    "ownerPackage": "@github-decrypter/preview",
+    "contractSource": "packages/preview/src/index.ts",
+    "executionOwnerRoot": "apps/local",
+    "browserRuntimeSource": "apps/local/src/preview-browser-runtime.ts",
+    "browserAdapterSource": "apps/local/src/preview-browser-adapter.ts",
+    "minimumBuild": 68,
+    "schema": "gd-preview-runtime/1",
+    "sessionSchema": "gd-preview-session/1",
+    "tabSchema": "gd-preview-tab/1",
+    "pageStateSchema": "gd-preview-page-state/1",
+    "visualEvidenceSchema": "gd-visual-evidence/1",
+    "transferSchema": "gd-preview-transfer/1",
+    "browserFamily": "chromium",
+    "protocol": "cdp",
+    "localBrowserOnly": true,
+    "isolatedProfiles": true,
+    "profilePersistence": false,
+    "sessionTabLifecycle": true,
+    "deterministicCleanup": true,
+    "structuredPageState": true,
+    "visualEvidenceCapture": true,
+    "visualEvidenceReadOnly": true,
+    "screenshotInlineByDefault": true,
+    "persistentCaptureWrites": false,
+    "selectorCapture": true,
+    "fullPageCapture": true,
+    "viewportCapture": true,
+    "desktopTabletMobilePresets": true,
+    "uploadDownloadSupported": true,
+    "transferMode": "ephemeral-inline",
+    "projectFilesystemWrites": false,
+    "toolRuntimeBuild": 53,
+    "scopeLockBuild": 55,
+    "toolRuntimeRequired": true,
+    "scopeLockRequiredForMutation": true,
+    "exactScopeResourceBinding": true,
+    "capabilityVerifierRequired": true,
+    "networkCapabilityRequiredForNavigation": true,
+    "browserMutationCapability": "EXECUTE",
+    "readEvidenceCapability": "READ",
+    "capabilityGrantAuthority": false,
+    "approvalAuthority": false,
+    "validationAuthority": false,
+    "releaseAuthority": false,
+    "architectureAuthority": false,
+    "arbitraryScriptAutomation": false,
+    "systemProfileReuse": false,
+    "credentialExtraction": false,
+    "cloudBrowserRequired": false,
+    "vortexManagedBrowserServiceRequired": false,
+    "aiExecution": false,
+    "vortexManagedPaidInferenceRequired": false,
+    "legacyBrowserRuntimeDependencyAllowed": false
   }
 }
