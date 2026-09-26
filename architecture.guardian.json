@@ -270,7 +270,8 @@
     "githubAppNetworkBuild": 23,
     "githubProviderNetworkBuild": 24,
     "automaticNetworkProbe": false,
-    "jobControlTransportBuild": 47
+    "jobControlTransportBuild": 47,
+    "previewRuntimeNetworkBuild": 68
   },
   "capabilityAuthority": {
     "ownerRoot": "apps/local",
