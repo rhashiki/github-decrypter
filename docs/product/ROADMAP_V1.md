@@ -129,7 +129,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 ## Preview, browser runtime and developer experience
 
-68. **Preview Runtime** — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed.
+68. **Preview Runtime** — ✅ — expands into the bounded **Vortex Browser Runtime** foundation for generated-app Preview: Amendment 009: Browser Runtime may prefer verified deterministic site/app adapters above repeated raw clicking where available. Amendment 009: Preview Runtime owns a read-only Visual Evidence Capture adapter boundary (Iris-compatible candidate) separate from interaction authority; URLs remain network-scope governed and writes remain filesystem-scope governed.
    - isolated browser execution;
    - session/tab lifecycle;
    - deterministic resource cleanup;
