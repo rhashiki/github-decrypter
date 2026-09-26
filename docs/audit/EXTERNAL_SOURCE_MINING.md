@@ -49,7 +49,7 @@ GitHub Decrypter may aggressively reuse public-source ideas and permissively lic
 | `ayghri/i-have-adhd` | ADAPT | optional action-first communication profile for Build 108; do not infer/diagnose ADHD and do not enable by hidden profiling |
 | `different-ai/openwork` | ADAPT/REFERENCE | local skills/MCP sharing, workspace/control-plane patterns and plugin distribution; exclude `ee/` from code reuse unless separately licensed |
 | `zhaoxuya520/reverse-skill` | ADAPT/REFERENCE | client-neutral skill routing, structured scope/evidence workflow, regression-tested routing; offensive/security modules and nested copyleft components are not copied wholesale |
-| `1jehuang/1jcode` | HOLD / VERIFY | user-supplied candidate was not reachable through current GitHub/web checks on 2026-09-26; no code or license assumptions until verified |
+| `1jehuang/jcode` | HIGH-VALUE ADAPT | Rust harness efficiency, bounded swarm/task-DAG coordination, durable worker state, shared MCP process pooling, local memory lifecycle, provider/runtime diagnostics and performance benchmarking |
 
 ### Batch 2026-09-26 guardrails
 
@@ -60,7 +60,7 @@ GitHub Decrypter may aggressively reuse public-source ideas and permissively lic
 - `open-design` and `awesome-llm-apps` contain bundled/nested material; repository-level licensing never substitutes for per-file provenance review.
 - `AirLLM` is an optimization candidate, not a promise that huge models are practical on weak hardware; latency, host RAM, disk footprint and failure behavior must be benchmarked.
 - `i-have-adhd` contributes an optional communication pattern only. Vortex must not infer a medical condition from behavior or silently activate a diagnosis-labeled mode.
-- `1jehuang/1jcode` stays on hold until the repository can be verified and licensed content inspected.
+- `1jehuang/jcode` is MIT and high-value, but its provider-facing/Jev remote-memory paths are not adopted as Vortex defaults; mine the local storage, bounded orchestration, MCP pooling, recovery and performance patterns while preserving One Intelligence and Local Sovereignty.
 
 ## V1 guardrail
 
