@@ -36,7 +36,7 @@ try{
     fs.writeFileSync('apps/local/src/preview-browser-adapter.ts',originals.get('apps/local/src/preview-browser-adapter.ts').replace('--remote-debugging-address=127.0.0.1','--remote-debugging-address=0.0.0.0'));
   });
   expectFailure('AG707',()=>{
-    fs.writeFileSync('apps/local/src/preview-browser-runtime.ts',originals.get('apps/local/src/preview-browser-runtime.ts').replace('assertScopedResource(context, scopeLock, previewUrlScopeResource(url));','void url;'));
+    fs.writeFileSync('apps/local/src/preview-browser-runtime.ts',originals.get('apps/local/src/preview-browser-runtime.ts').replaceAll('assertScopedResource(', 'bypassScopedResource('));
   });
   expectFailure('AG708',()=>{
     fs.writeFileSync('apps/local/src/index.ts',originals.get('apps/local/src/index.ts')+"\nexport * from './preview-browser-adapter.js';\n");
