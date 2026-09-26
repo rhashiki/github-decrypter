@@ -279,15 +279,25 @@
       ]
     },
     {
-      "repository": "1jehuang/1jcode",
-      "license": "unverified",
-      "strategy": "REFERENCE",
-      "status": "hold-unverified",
+      "repository": "1jehuang/jcode",
+      "license": "MIT",
+      "strategy": "ADAPT",
+      "status": "high-value-candidate",
       "planned_areas": [
-        "pending repository verification"
+        "Rust harness/resource-efficiency patterns",
+        "bounded swarm and task-DAG coordination",
+        "durable agent lifecycle and crash/reload recovery",
+        "shared MCP server process pooling across sessions",
+        "local memory storage/lifecycle and bounded asynchronous recall patterns",
+        "provider/runtime readiness diagnostics",
+        "performance and memory regression benchmarks"
       ],
       "constraints": [
-        "no source reuse until repository and license are verified"
+        "do not adopt remote Jev/provider-backed memory recall as a core Vortex requirement",
+        "do not expose provider/model shopping as canonical UX",
+        "do not permit unbounded recursive swarms",
+        "Vortex Tool Runtime, Scope Lock, capabilities and canonical agents remain authoritative",
+        "per-file provenance review required before code copying"
       ]
     }
   ]
