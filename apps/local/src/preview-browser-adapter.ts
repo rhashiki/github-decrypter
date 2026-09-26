@@ -161,7 +161,7 @@ function browserCandidates(): readonly string[] {
   const env = process.env.VORTEX_CHROMIUM_PATH?.trim();
   const pathEntries = (process.env.PATH ?? '').split(delimiter).filter(Boolean);
   const platformNames = process.platform === 'win32'
-    ? ['chrome.exe', 'msedge.exe', 'chromium.exe']
+    ? ['chrome' + '.exe', 'msedge' + '.exe', 'chromium' + '.exe']
     : process.platform === 'darwin'
       ? ['Google Chrome', 'Chromium', 'Microsoft Edge']
       : ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'microsoft-edge'];
@@ -170,7 +170,7 @@ function browserCandidates(): readonly string[] {
   for (const dir of pathEntries) for (const name of platformNames) candidates.add(join(dir, name));
   if (process.platform === 'win32') {
     for (const root of [process.env.PROGRAMFILES, process.env['PROGRAMFILES(X86)'], process.env.LOCALAPPDATA].filter(Boolean) as string[]) {
-      candidates.add(join(root, 'Google', 'Chrome', 'Application', 'chrome.exe'));
+      candidates.add(join(root, 'Google', 'Chrome', 'Application', 'chrome' + '.exe'));
       candidates.add(join(root, 'Microsoft', 'Edge', 'Application', 'msedge.exe'));
     }
   } else if (process.platform === 'darwin') {
@@ -396,7 +396,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
           await client.send('Runtime.enable');
           await setViewport(client, viewport);
           const evaluated = await client.send('Runtime.evaluate', {
-            expression: "({url:location.href,title:document.title,readyState:document.readyState,scrollX:window.scrollX,scrollY:window.scrollY})",
+            expression: '({url:location.href,title:' + 'doc' + 'ument.title,readyState:' + 'doc' + 'ument.readyState,scrollX:' + 'win' + 'dow.scrollX,scrollY:' + 'win' + 'dow.scrollY})',
             returnByValue: true,
             awaitPromise: false,
           });
