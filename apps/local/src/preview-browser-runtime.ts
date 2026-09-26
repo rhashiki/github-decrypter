@@ -202,7 +202,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     return Object.freeze([
       Object.freeze({
         descriptor: startDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, startDescriptor);
           assertScopedResource(context, scopeLock, previewBrowserScopeResource());
           if (shuttingDown) throw new Error('Preview Browser Runtime is shutting down.');
@@ -230,7 +230,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: stopDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, stopDescriptor);
           assertScopedResource(context, scopeLock, previewBrowserScopeResource());
           const value = row(input, 'Preview session stop');
@@ -242,7 +242,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: openDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, openDescriptor);
           const value = row(input, 'Preview tab open');
           exactKeys(value, ['sessionId','url'], 'Preview tab open');
@@ -254,7 +254,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: closeDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, closeDescriptor);
           assertScopedResource(context, scopeLock, previewTabScopeResource());
           const value = row(input, 'Preview tab close');
@@ -267,7 +267,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: navigateDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, navigateDescriptor);
           const value = row(input, 'Preview navigation');
           const keys = Object.keys(value).sort();
@@ -285,7 +285,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: stateDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, stateDescriptor);
           const value = row(input, 'Preview page state');
           exactKeys(value, ['sessionId','tabId'], 'Preview page state');
@@ -296,7 +296,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: captureDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, captureDescriptor);
           const value = row(input, 'Preview capture');
           exactKeys(value, ['request','sessionId','tabId'], 'Preview capture');
@@ -308,7 +308,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: uploadDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, uploadDescriptor);
           const value = row(input, 'Preview upload');
           exactKeys(value, ['dataBase64','fileName','mediaType','selector','sessionId','tabId'], 'Preview upload');
@@ -329,7 +329,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       }),
       Object.freeze({
         descriptor: downloadDescriptor,
-        handler: async (context, input) => {
+        handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, downloadDescriptor);
           const value = row(input, 'Preview download');
           const keys = Object.keys(value).sort();
