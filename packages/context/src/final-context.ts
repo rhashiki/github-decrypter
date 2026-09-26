@@ -39,7 +39,7 @@ export const GENESIS_DIMENSIONS = Object.freeze([
   'privacy',
   'accessibility',
   'deployment',
-] as const);
+]);
 
 export const EXTERNAL_DEPENDENCY_STATES = Object.freeze(['unresolved', 'satisfied', 'blocked'] as const);
 export const CONTEXT_SOURCE_KINDS = Object.freeze(['repository-file', 'document'] as const);
@@ -346,7 +346,7 @@ export interface FinalContext {
 const CONTROL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const ID = /^[a-z][a-z0-9._:/#-]{0,255}$/;
 const TOKEN = /[\p{L}\p{N}][\p{L}\p{N}._:/#-]{1,63}/gu;
-const STOP_TERMS = new Set([
+const STOP_TERMS: ReadonlySet<string> = new Set([
   'a','an','and','are','as','at','be','by','for','from','has','have','in','is','it','of','on','or','that','the','this','to','was','were','will','with','you','your',
   'a','as','o','os','e','ou','de','da','das','do','dos','em','no','na','nos','nas','um','uma','uns','umas','para','por','com','sem','que','se','ser','é','ao','aos','à','às','como','mais','menos',
 ] as const);
@@ -387,7 +387,7 @@ function uniqueStrings(value: unknown, label: string, maxItems: number, maxChars
 function terms(text: string): readonly string[] {
   const matches = text.normalize('NFC').toLowerCase().match(TOKEN) ?? [];
   return Object.freeze([
-    ...new Set(matches.filter((term) => term.length >= 2 && !STOP_TERMS.has(term as never))),
+    ...new Set(matches.filter((term) => term.length >= 2 && !STOP_TERMS.has(term))),
   ].sort());
 }
 
