@@ -297,6 +297,7 @@ export interface LivePreviewDescriptor {
   readonly lastHealthyAt: string | null;
   readonly lastSettledAt: string | null;
   readonly generation: number;
+  readonly refreshCount: number;
   readonly recoveryCount: number;
   readonly maxRecoveryAttempts: typeof LIVE_PREVIEW_MAX_RECOVERY_ATTEMPTS;
   readonly nativeHmrPreferred: true;
