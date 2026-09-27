@@ -449,7 +449,7 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
               recoveryCount: record.recoveryCount,
               probedAt,
               state,
-              error: healthy ? null : 'Live Preview document is not complete.',
+              error: healthy ? null : 'Live Preview page is not complete.',
               mutationPerformed: false,
             });
             return asToolValue(result);
