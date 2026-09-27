@@ -21,8 +21,10 @@ export class BoundedTelemetryRing<T> {
     this.#capacity = capacity;
   }
 
-  push(value: T): void {
+  push(value: T): T | undefined {
+    let evicted: T | undefined;
     if (this.size >= this.#capacity) {
+      evicted = this.#items[this.#head];
       this.#head += 1;
       this.#dropped += 1;
     }
@@ -31,6 +33,7 @@ export class BoundedTelemetryRing<T> {
       this.#items = this.#items.slice(this.#head);
       this.#head = 0;
     }
+    return evicted;
   }
 
   get size(): number {
@@ -139,7 +142,10 @@ export function createPreviewTelemetryCollector(): PreviewTelemetryCollector {
       metadataOnly: true,
       queryValuesRedacted: true,
     });
-    network.push(entry);
+    const evicted = network.push(entry);
+    if (evicted && latestByRequest.get(evicted.requestId) === evicted) {
+      latestByRequest.delete(evicted.requestId);
+    }
     latestByRequest.set(requestId, entry);
   }
 
