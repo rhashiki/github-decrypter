@@ -399,7 +399,14 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         client.on('Network.requestWillBeSent', (params) => {
           const requestId = String(params?.requestId ?? '');
           if (!requestId) return;
-          if (params?.redirectResponse) collector.requestFinished(requestId);
+          if (params?.redirectResponse) {
+            collector.responseReceived({
+              requestId,
+              status: params.redirectResponse.status,
+              mimeType: params.redirectResponse.mimeType,
+            });
+            collector.requestFinished(requestId);
+          }
           collector.requestStarted({
             requestId,
             method: params?.request?.method,
