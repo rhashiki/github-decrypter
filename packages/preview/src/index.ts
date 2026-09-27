@@ -425,3 +425,188 @@ export function livePreviewTargetScopeResource(id: unknown, url: unknown): strin
 export function livePreviewSessionScopeResource(id: unknown): string {
   return 'live-preview-session:' + normalizeLivePreviewId(id);
 }
+
+
+export const PREVIEW_BRIDGE_BUILD = 70 as const;
+export const PREVIEW_BRIDGE_SCHEMA = 'gd-preview-bridge/1' as const;
+export const PREVIEW_BRIDGE_SNAPSHOT_SCHEMA = 'gd-preview-bridge-snapshot/1' as const;
+export const PREVIEW_BRIDGE_CAPTURE_REPORT_SCHEMA = 'gd-preview-bridge-capture-report/1' as const;
+export const PREVIEW_BRIDGE_CAPABILITIES_SCHEMA = 'gd-preview-bridge-capabilities/1' as const;
+
+export const PREVIEW_BRIDGE_MAX_NETWORK_ENTRIES = 128 as const;
+export const PREVIEW_BRIDGE_MAX_CONSOLE_ENTRIES = 128 as const;
+export const PREVIEW_BRIDGE_MAX_ERROR_ENTRIES = 64 as const;
+export const PREVIEW_BRIDGE_MAX_TEXT_CHARACTERS = 2_048 as const;
+export const PREVIEW_BRIDGE_MAX_DOM_NODES = 20_000 as const;
+
+export const PREVIEW_BRIDGE_TOOL_IDS = Object.freeze({
+  snapshot: 'tool:preview.bridge.snapshot',
+  captureReport: 'tool:preview.bridge.capture-report',
+} as const);
+
+export interface PreviewBridgeCapabilities {
+  readonly schema: typeof PREVIEW_BRIDGE_CAPABILITIES_SCHEMA;
+  readonly build: typeof PREVIEW_BRIDGE_BUILD;
+  readonly pageStateRead: true;
+  readonly domStructureRead: true;
+  readonly accessibilitySummaryRead: true;
+  readonly networkMetadataRead: true;
+  readonly consoleRead: true;
+  readonly runtimeErrorRead: true;
+  readonly captureMetadataRead: true;
+  readonly requestHeadersRead: false;
+  readonly responseHeadersRead: false;
+  readonly requestBodyRead: false;
+  readonly responseBodyRead: false;
+  readonly cookiesRead: false;
+  readonly storageRead: false;
+  readonly unsafeEvaluate: false;
+  readonly browserInteraction: false;
+  readonly mutationAuthority: false;
+}
+
+export interface PreviewBridgeProvenance {
+  readonly workspaceId: string;
+  readonly orchestrationId: string;
+  readonly orchestrationDigest: string;
+  readonly buildStepId: string;
+  readonly taskId: string;
+  readonly requirementId: string;
+  readonly runId: string;
+  readonly scopeLockId: string | null;
+  readonly scopeLockDigest: string | null;
+}
+
+export interface PreviewBridgeNetworkEntry {
+  readonly sequence: number;
+  readonly requestId: string;
+  readonly method: string;
+  readonly url: string;
+  readonly resourceType: string | null;
+  readonly status: number | null;
+  readonly mimeType: string | null;
+  readonly startedAtMonotonic: number | null;
+  readonly finished: boolean;
+  readonly failed: string | null;
+  readonly redirect: boolean;
+  readonly metadataOnly: true;
+  readonly queryValuesRedacted: true;
+}
+
+export interface PreviewBridgeConsoleEntry {
+  readonly sequence: number;
+  readonly level: string;
+  readonly text: string;
+  readonly timestamp: number | null;
+  readonly truncated: boolean;
+}
+
+export interface PreviewBridgeRuntimeError {
+  readonly sequence: number;
+  readonly message: string;
+  readonly timestamp: number | null;
+  readonly truncated: boolean;
+}
+
+export interface PreviewBridgeDomSummary {
+  readonly nodeCount: number;
+  readonly elementCount: number;
+  readonly interactiveElementCount: number;
+  readonly formControlCount: number;
+  readonly iframeCount: number;
+  readonly shadowRootCount: number;
+  readonly truncated: boolean;
+  readonly maxNodes: typeof PREVIEW_BRIDGE_MAX_DOM_NODES;
+}
+
+export interface PreviewBridgeAdapterSnapshot {
+  readonly page: PreviewPageState;
+  readonly dom: PreviewBridgeDomSummary;
+  readonly network: readonly PreviewBridgeNetworkEntry[];
+  readonly console: readonly PreviewBridgeConsoleEntry[];
+  readonly errors: readonly PreviewBridgeRuntimeError[];
+  readonly networkDropped: number;
+  readonly consoleDropped: number;
+  readonly errorsDropped: number;
+  readonly capturedAt: string;
+}
+
+export interface PreviewBridgeSnapshot {
+  readonly schema: typeof PREVIEW_BRIDGE_SNAPSHOT_SCHEMA;
+  readonly build: typeof PREVIEW_BRIDGE_BUILD;
+  readonly sessionId: string;
+  readonly tabId: string;
+  readonly capabilities: PreviewBridgeCapabilities;
+  readonly provenance: PreviewBridgeProvenance;
+  readonly page: PreviewPageState;
+  readonly dom: PreviewBridgeDomSummary;
+  readonly network: readonly PreviewBridgeNetworkEntry[];
+  readonly console: readonly PreviewBridgeConsoleEntry[];
+  readonly errors: readonly PreviewBridgeRuntimeError[];
+  readonly dropped: {
+    readonly network: number;
+    readonly console: number;
+    readonly errors: number;
+  };
+  readonly capturedAt: string;
+  readonly readOnly: true;
+  readonly bounded: true;
+  readonly credentialsIncluded: false;
+  readonly bodiesIncluded: false;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+}
+
+export interface PreviewBridgeCaptureMetadata {
+  readonly status: 'success' | 'failed' | 'inconclusive';
+  readonly livePreviewId: string;
+  readonly generation: number | null;
+  readonly formFactor: LivePreviewFormFactor | null;
+  readonly colorScheme: LivePreviewColorScheme | null;
+  readonly viewport: PreviewViewport | null;
+  readonly deviceScaleFactor: number | null;
+  readonly mode: PreviewCaptureMode;
+  readonly selector: string | null;
+  readonly width: number | null;
+  readonly height: number | null;
+  readonly format: PreviewCaptureFormat;
+  readonly bytes: number | null;
+  readonly settlingSucceeded: boolean;
+  readonly failureCode: string | null;
+  readonly failureMessage: string | null;
+  readonly evidenceInlineAvailable: boolean;
+  readonly evidenceDataOmitted: true;
+}
+
+export interface PreviewBridgeCaptureReport {
+  readonly schema: typeof PREVIEW_BRIDGE_CAPTURE_REPORT_SCHEMA;
+  readonly build: typeof PREVIEW_BRIDGE_BUILD;
+  readonly provenance: PreviewBridgeProvenance;
+  readonly capture: PreviewBridgeCaptureMetadata;
+  readonly reportedAt: string;
+  readonly readOnly: true;
+  readonly bounded: true;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+}
+
+export const PREVIEW_BRIDGE_CAPABILITIES: PreviewBridgeCapabilities = Object.freeze({
+  schema: PREVIEW_BRIDGE_CAPABILITIES_SCHEMA,
+  build: PREVIEW_BRIDGE_BUILD,
+  pageStateRead: true,
+  domStructureRead: true,
+  accessibilitySummaryRead: true,
+  networkMetadataRead: true,
+  consoleRead: true,
+  runtimeErrorRead: true,
+  captureMetadataRead: true,
+  requestHeadersRead: false,
+  responseHeadersRead: false,
+  requestBodyRead: false,
+  responseBodyRead: false,
+  cookiesRead: false,
+  storageRead: false,
+  unsafeEvaluate: false,
+  browserInteraction: false,
+  mutationAuthority: false,
+});

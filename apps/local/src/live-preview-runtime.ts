@@ -69,6 +69,7 @@ export interface LivePreviewRuntimeStatus {
 export interface LivePreviewRuntime {
   readonly build: typeof LIVE_PREVIEW_BUILD;
   status(): LivePreviewRuntimeStatus;
+  captureForBridge(id: string, request: VisualEvidenceRequest): Promise<LivePreviewCapture>;
   createToolRegistrations(scopeLock: ScopeLockRecord): readonly ToolRegistration[];
   shutdown(): Promise<void>;
 }
@@ -383,6 +384,35 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
     });
   }
 
+  async function captureForBridge(idValue: string, rawRequest: VisualEvidenceRequest): Promise<LivePreviewCapture> {
+    const record = requireRecord(idValue);
+    const request = normalizeVisualEvidenceRequest(rawRequest);
+    const expectedDark = record.colorScheme === 'dark';
+    if (request.darkMode !== undefined && request.darkMode !== expectedDark) {
+      throw new TypeError('Live Preview capture darkMode must match the active Live Preview color scheme.');
+    }
+    const settling = await settle(record);
+    let evidence: VisualEvidence | null = null;
+    if (settling.settled) {
+      const session = options.host.getBrowserSession(record.browserSessionId);
+      const captureRequest: VisualEvidenceRequest = Object.freeze({ ...request, darkMode: expectedDark });
+      evidence = await session.capture(record.tabId, captureRequest);
+    }
+    return Object.freeze({
+      schema: LIVE_PREVIEW_CAPTURE_SCHEMA,
+      build: LIVE_PREVIEW_BUILD,
+      id: record.id,
+      generation: record.generation,
+      formFactor: record.formFactor,
+      colorScheme: record.colorScheme,
+      settling,
+      evidence,
+      captured: evidence !== null,
+      validationAuthority: false,
+      releaseAuthority: false,
+    });
+  }
+
   function createToolRegistrations(scopeLock: ScopeLockRecord): readonly ToolRegistration[] {
     if (!scopeLock || scopeLock.schema !== 'gd-scope-lock/1' || scopeLock.status !== 'locked') {
       throw new TypeError('Live Preview requires a locked Scope Lock record.');
@@ -550,33 +580,8 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
           ensureToolContext(context, captureDescriptor);
           const value = row(input, 'Live Preview capture');
           exactKeys(value, ['id','request'], [], 'Live Preview capture');
-          const record = requireRecord(value.id);
           const request = normalizeVisualEvidenceRequest(value.request);
-          const expectedDark = record.colorScheme === 'dark';
-          if (request.darkMode !== undefined && request.darkMode !== expectedDark) {
-            throw new TypeError('Live Preview capture darkMode must match the active Live Preview color scheme.');
-          }
-          const settling = await settle(record);
-          let evidence: VisualEvidence | null = null;
-          if (settling.settled) {
-            const session = options.host.getBrowserSession(record.browserSessionId);
-            const captureRequest: VisualEvidenceRequest = Object.freeze({ ...request, darkMode: expectedDark });
-            evidence = await session.capture(record.tabId, captureRequest);
-          }
-          const result: LivePreviewCapture = Object.freeze({
-            schema: LIVE_PREVIEW_CAPTURE_SCHEMA,
-            build: LIVE_PREVIEW_BUILD,
-            id: record.id,
-            generation: record.generation,
-            formFactor: record.formFactor,
-            colorScheme: record.colorScheme,
-            settling,
-            evidence,
-            captured: evidence !== null,
-            validationAuthority: false,
-            releaseAuthority: false,
-          });
-          return asToolValue(result);
+          return asToolValue(await captureForBridge(requiredString(value.id, 'Live Preview id', 128), request));
         },
       }),
     ]);
@@ -585,6 +590,7 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
   return Object.freeze({
     build: LIVE_PREVIEW_BUILD,
     status,
+    captureForBridge,
     createToolRegistrations,
     async shutdown() {
       if (shuttingDown) return;

@@ -141,7 +141,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
 
 69. **Live Preview** — ✅ — live application state across supported desktop/tablet/mobile form factors; stable refresh/recovery behavior and long-running Preview sessions. Amendment 009: Live Preview supports deterministic desktop/tablet/mobile, dark-mode and selector/full-page visual captures after bounded visual settling.
 
-70. **Preview Bridge** — structured runtime/browser telemetry substrate: Amendment 009: Preview Bridge exposes structured DOM/runtime evidence needed for adapter verification and generated-app agent QA. Amendment 009: Preview Bridge carries structured capture status, viewport/scale/mode/selector/dimensions/format/bytes/failure metadata and task/run provenance.
+70. **Preview Bridge** — ✅ — structured runtime/browser telemetry substrate: Amendment 009: Preview Bridge exposes structured DOM/runtime evidence needed for adapter verification and generated-app agent QA. Amendment 009: Preview Bridge carries structured capture status, viewport/scale/mode/selector/dimensions/format/bytes/failure metadata and task/run provenance.
    - console/network/navigation/runtime evidence;
    - supported DOM/accessibility/component information;
    - stable element references where technically possible;

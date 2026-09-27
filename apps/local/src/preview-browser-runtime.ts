@@ -26,6 +26,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLivePreviewRuntime, type LivePreviewRuntimeStatus } from './live-preview-runtime.js';
+import { createPreviewBridgeRuntime, type PreviewBridgeRuntimeStatus } from './preview-bridge-runtime.js';
 import {
   createChromiumCdpAdapter,
   detectLocalChromiumExecutable,
@@ -64,6 +65,7 @@ export interface PreviewBrowserRuntimeStatus {
   readonly visualEvidenceReadOnly: true;
   readonly persistentFileWrites: false;
   readonly livePreview: LivePreviewRuntimeStatus;
+  readonly previewBridge: PreviewBridgeRuntimeStatus;
 }
 
 export interface PreviewBrowserRuntimeOptions {
@@ -203,6 +205,14 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     settlingPolicy: options.livePreviewSettlingPolicy,
   });
 
+  const previewBridge = createPreviewBridgeRuntime({
+    host: Object.freeze({
+      getBrowserSession: requireSession,
+      captureLivePreview: livePreview.captureForBridge,
+    }),
+    now,
+  });
+
   function status(): PreviewBrowserRuntimeStatus {
     let browserDetected = false;
     try {
@@ -225,6 +235,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       visualEvidenceReadOnly: true,
       persistentFileWrites: false,
       livePreview: livePreview.status(),
+      previewBridge: previewBridge.status(),
     });
   }
 
@@ -378,7 +389,11 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
         },
       }),
     ]);
-    return Object.freeze([...baseRegistrations, ...livePreview.createToolRegistrations(scopeLock)]);
+    return Object.freeze([
+      ...baseRegistrations,
+      ...livePreview.createToolRegistrations(scopeLock),
+      ...previewBridge.createToolRegistrations(scopeLock),
+    ]);
   }
 
   return Object.freeze({
