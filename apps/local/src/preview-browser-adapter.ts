@@ -436,9 +436,16 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
           timestamp: params?.entry?.timestamp,
         }));
 
-        await client.send('Network.enable', {});
-        await client.send('Runtime.enable', {});
-        await client.send('Log.enable', {});
+        try {
+          await client.send('Network.enable', {});
+          await client.send('Runtime.enable', {});
+          await client.send('Log.enable', {});
+        } catch (error) {
+          client.close();
+          telemetryClients.delete(tabId);
+          telemetryCollectors.delete(tabId);
+          throw error;
+        }
       }
 
       const currentViewport = (tabId: string): PreviewViewport => tabViewports.get(tabId) ?? viewport;
@@ -494,7 +501,15 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         tabs.set(tab.id, tab);
         tabViewports.set(tab.id, viewport);
         tabColorSchemes.set(tab.id, 'light');
-        await attachTelemetry(tab.id);
+        try {
+          await attachTelemetry(tab.id);
+        } catch (error) {
+          tabs.delete(tab.id);
+          tabViewports.delete(tab.id);
+          tabColorSchemes.delete(tab.id);
+          try { await fetchOk(origin, '/json/close/' + encodeURIComponent(tab.id)); } catch {}
+          throw error;
+        }
         return tab;
       }
 
