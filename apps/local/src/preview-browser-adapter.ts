@@ -259,6 +259,55 @@ async function setViewport(client: CdpClient, viewport: PreviewViewport): Promis
   });
 }
 
+function remoteObjectText(value: any): string {
+  if (!value || typeof value !== 'object') return String(value ?? '');
+  if (typeof value.value === 'string') return value.value;
+  if (value.value !== undefined && value.value !== null && typeof value.value !== 'object') return String(value.value);
+  if (typeof value.description === 'string') return value.description;
+  return typeof value.type === 'string' ? '[' + value.type + ']' : '[value]';
+}
+
+function domSummary(nodesValue: unknown): PreviewBridgeDomSummary {
+  const nodes = Array.isArray(nodesValue) ? nodesValue.slice(0, PREVIEW_BRIDGE_MAX_DOM_NODES) : [];
+  let elementCount = 0;
+  let interactiveElementCount = 0;
+  let formControlCount = 0;
+  let iframeCount = 0;
+  let shadowRootCount = 0;
+  const interactiveNames = new Set(['A','BUTTON','INPUT','SELECT','TEXTAREA','SUMMARY','DETAILS']);
+
+  for (const node of nodes as any[]) {
+    if (Number(node?.nodeType) !== 1) continue;
+    elementCount += 1;
+    const name = String(node?.nodeName ?? '').toUpperCase();
+    const attrs = Array.isArray(node?.attributes) ? node.attributes : [];
+    const attrMap = new Map<string,string>();
+    for (let index = 0; index + 1 < attrs.length; index += 2) {
+      attrMap.set(String(attrs[index]).toLowerCase(), String(attrs[index + 1]));
+    }
+    if (
+      interactiveNames.has(name)
+      || attrMap.has('role')
+      || attrMap.has('tabindex')
+      || attrMap.get('contenteditable') === 'true'
+    ) interactiveElementCount += 1;
+    if (['INPUT','SELECT','TEXTAREA','BUTTON','FORM'].includes(name)) formControlCount += 1;
+    if (name === 'IFRAME' || name === 'FRAME') iframeCount += 1;
+    if (Array.isArray(node?.shadowRoots)) shadowRootCount += node.shadowRoots.length;
+  }
+
+  return Object.freeze({
+    nodeCount: nodes.length,
+    elementCount,
+    interactiveElementCount,
+    formControlCount,
+    iframeCount,
+    shadowRootCount,
+    truncated: Array.isArray(nodesValue) && nodesValue.length > PREVIEW_BRIDGE_MAX_DOM_NODES,
+    maxNodes: PREVIEW_BRIDGE_MAX_DOM_NODES,
+  });
+}
+
 async function nodeForSelector(client: CdpClient, selector: string, timeoutMs: number): Promise<number> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -333,7 +382,64 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
       const tabs = new Map<string, PreviewTabDescriptor>();
       const tabViewports = new Map<string, PreviewViewport>();
       const tabColorSchemes = new Map<string, LivePreviewColorScheme>();
+      const telemetryClients = new Map<string, CdpClient>();
+      const telemetryCollectors = new Map<string, PreviewTelemetryCollector>();
       let closed = false;
+
+      async function attachTelemetry(tabId: string): Promise<void> {
+        telemetryClients.get(tabId)?.close();
+        telemetryClients.delete(tabId);
+        telemetryCollectors.delete(tabId);
+
+        const { client } = await targetClient(origin, tabId);
+        const collector = createPreviewTelemetryCollector();
+        telemetryClients.set(tabId, client);
+        telemetryCollectors.set(tabId, collector);
+
+        client.on('Network.requestWillBeSent', (params) => {
+          const requestId = String(params?.requestId ?? '');
+          if (!requestId) return;
+          if (params?.redirectResponse) collector.requestFinished(requestId);
+          collector.requestStarted({
+            requestId,
+            method: params?.request?.method,
+            url: params?.request?.url,
+            resourceType: params?.type,
+            timestamp: params?.timestamp,
+            redirect: Boolean(params?.redirectResponse),
+          });
+        });
+        client.on('Network.responseReceived', (params) => {
+          collector.responseReceived({
+            requestId: String(params?.requestId ?? ''),
+            status: params?.response?.status,
+            mimeType: params?.response?.mimeType,
+          });
+        });
+        client.on('Network.loadingFinished', (params) => collector.requestFinished(String(params?.requestId ?? '')));
+        client.on('Network.loadingFailed', (params) => collector.requestFailed(
+          String(params?.requestId ?? ''),
+          typeof params?.errorText === 'string' ? params.errorText : 'request failed',
+        ));
+        client.on('Runtime.consoleAPICalled', (params) => collector.consoleEntry({
+          level: params?.type,
+          text: Array.isArray(params?.args) ? params.args.map(remoteObjectText).join(' ') : '',
+          timestamp: params?.timestamp,
+        }));
+        client.on('Runtime.exceptionThrown', (params) => collector.runtimeError({
+          message: params?.exceptionDetails?.exception?.description ?? params?.exceptionDetails?.text ?? 'Runtime exception',
+          timestamp: params?.timestamp,
+        }));
+        client.on('Log.entryAdded', (params) => collector.consoleEntry({
+          level: params?.entry?.level,
+          text: params?.entry?.text,
+          timestamp: params?.entry?.timestamp,
+        }));
+
+        await client.send('Network.enable', {});
+        await client.send('Runtime.enable', {});
+        await client.send('Log.enable', {});
+      }
 
       const currentViewport = (tabId: string): PreviewViewport => tabViewports.get(tabId) ?? viewport;
       const currentColorScheme = (tabId: string): LivePreviewColorScheme => tabColorSchemes.get(tabId) ?? 'light';
@@ -388,11 +494,15 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         tabs.set(tab.id, tab);
         tabViewports.set(tab.id, viewport);
         tabColorSchemes.set(tab.id, 'light');
+        await attachTelemetry(tab.id);
         return tab;
       }
 
       async function closeTab(tabId: string): Promise<void> {
         if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
+        telemetryClients.get(tabId)?.close();
+        telemetryClients.delete(tabId);
+        telemetryCollectors.delete(tabId);
         await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId));
         tabs.delete(tabId);
         tabViewports.delete(tabId);
@@ -585,6 +695,35 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         }
       }
 
+      async function telemetrySnapshot(tabId: string): Promise<PreviewBridgeAdapterSnapshot> {
+        if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
+        const collector = telemetryCollectors.get(tabId);
+        if (!collector) throw new Error('Preview telemetry collector is unavailable for this tab.');
+
+        const page = await pageState(tabId);
+        const { client } = await targetClient(origin, tabId);
+        try {
+          await client.send('DOM.enable', {});
+          const flattened = await client.send('DOM.getFlattenedDocument', {
+            depth: -1,
+            pierce: true,
+          });
+          return Object.freeze({
+            page,
+            dom: domSummary(flattened?.nodes),
+            network: collector.network.values(),
+            console: collector.console.values(),
+            errors: collector.errors.values(),
+            networkDropped: collector.network.dropped,
+            consoleDropped: collector.console.dropped,
+            errorsDropped: collector.errors.dropped,
+            capturedAt: options.now(),
+          });
+        } finally {
+          client.close();
+        }
+      }
+
       async function upload(tabId: string, selector: string, fileName: string, bytes: Uint8Array): Promise<PreviewUploadResult> {
         if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
         if (bytes.byteLength > PREVIEW_MAX_INLINE_BYTES) throw new RangeError('Preview upload exceeds the inline byte limit.');
@@ -677,6 +816,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         setViewport: setTabViewport,
         setColorScheme: setTabColorScheme,
         reload,
+        telemetrySnapshot,
         upload,
         download,
         async close() {
@@ -685,6 +825,9 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
           for (const tabId of [...tabs.keys()]) {
             try { await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId)); } catch {}
           }
+          for (const client of telemetryClients.values()) client.close();
+          telemetryClients.clear();
+          telemetryCollectors.clear();
           tabs.clear();
           tabViewports.clear();
           tabColorSchemes.clear();
