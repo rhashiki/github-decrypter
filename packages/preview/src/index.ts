@@ -610,3 +610,221 @@ export const PREVIEW_BRIDGE_CAPABILITIES: PreviewBridgeCapabilities = Object.fre
   browserInteraction: false,
   mutationAuthority: false,
 });
+
+
+export const DEVELOPER_CONSOLE_BUILD = 71 as const;
+export const DEVELOPER_CONSOLE_SCHEMA = 'gd-developer-console/1' as const;
+export const DEVELOPER_CONSOLE_QUERY_SCHEMA = 'gd-developer-console-query/1' as const;
+export const DEVELOPER_CONSOLE_RESULT_SCHEMA = 'gd-developer-console-result/1' as const;
+export const DEVELOPER_CONSOLE_PROTOCOL_SCHEMA = 'gd-developer-console-protocol/1' as const;
+
+export const DEVELOPER_CONSOLE_SOURCES = Object.freeze(['console', 'network', 'runtime-error'] as const);
+export const DEVELOPER_CONSOLE_ORDERS = Object.freeze(['asc', 'desc'] as const);
+export const DEVELOPER_CONSOLE_DEFAULT_LIMIT = 100 as const;
+export const DEVELOPER_CONSOLE_MAX_LIMIT = 256 as const;
+export const DEVELOPER_CONSOLE_MAX_FILTER_TERMS = 32 as const;
+export const DEVELOPER_CONSOLE_MAX_FILTER_TEXT = 512 as const;
+
+export const DEVELOPER_CONSOLE_TOOL_IDS = Object.freeze({
+  query: 'tool:developer-console.query',
+  summary: 'tool:developer-console.summary',
+} as const);
+
+export type DeveloperConsoleSource = (typeof DEVELOPER_CONSOLE_SOURCES)[number];
+export type DeveloperConsoleOrder = (typeof DEVELOPER_CONSOLE_ORDERS)[number];
+
+export interface DeveloperConsoleQueryInput {
+  readonly sources?: readonly DeveloperConsoleSource[];
+  readonly levels?: readonly string[];
+  readonly methods?: readonly string[];
+  readonly text?: string;
+  readonly minStatus?: number;
+  readonly maxStatus?: number;
+  readonly afterSequence?: number;
+  readonly limit?: number;
+  readonly order?: DeveloperConsoleOrder;
+}
+
+export interface DeveloperConsoleQuery {
+  readonly schema: typeof DEVELOPER_CONSOLE_QUERY_SCHEMA;
+  readonly build: typeof DEVELOPER_CONSOLE_BUILD;
+  readonly sources: readonly DeveloperConsoleSource[];
+  readonly levels: readonly string[];
+  readonly methods: readonly string[];
+  readonly text: string | null;
+  readonly minStatus: number | null;
+  readonly maxStatus: number | null;
+  readonly afterSequence: number;
+  readonly limit: number;
+  readonly order: DeveloperConsoleOrder;
+}
+
+export interface DeveloperConsoleEntry {
+  readonly sequence: number;
+  readonly source: DeveloperConsoleSource;
+  readonly level: string | null;
+  readonly message: string;
+  readonly timestamp: number | null;
+  readonly requestId: string | null;
+  readonly method: string | null;
+  readonly url: string | null;
+  readonly resourceType: string | null;
+  readonly status: number | null;
+  readonly mimeType: string | null;
+  readonly finished: boolean | null;
+  readonly failed: string | null;
+  readonly redirect: boolean | null;
+  readonly truncated: boolean;
+  readonly metadataOnly: boolean;
+  readonly queryValuesRedacted: boolean;
+}
+
+export interface DeveloperConsoleDropped {
+  readonly network: number;
+  readonly console: number;
+  readonly errors: number;
+}
+
+export interface DeveloperConsoleTotals {
+  readonly network: number;
+  readonly console: number;
+  readonly errors: number;
+  readonly available: number;
+  readonly matched: number;
+  readonly returned: number;
+}
+
+export interface DeveloperConsoleResult {
+  readonly schema: typeof DEVELOPER_CONSOLE_RESULT_SCHEMA;
+  readonly build: typeof DEVELOPER_CONSOLE_BUILD;
+  readonly sessionId: string;
+  readonly tabId: string;
+  readonly query: DeveloperConsoleQuery;
+  readonly entries: readonly DeveloperConsoleEntry[];
+  readonly totals: DeveloperConsoleTotals;
+  readonly dropped: DeveloperConsoleDropped;
+  readonly latestSequence: number;
+  readonly nextAfterSequence: number;
+  readonly truncated: boolean;
+  readonly page: PreviewPageState;
+  readonly capturedAt: string;
+  readonly provenance: PreviewBridgeProvenance;
+  readonly readOnly: true;
+  readonly bounded: true;
+  readonly streamingByCursor: true;
+  readonly hostExecutionSeparated: true;
+  readonly credentialsIncluded: false;
+  readonly requestHeadersIncluded: false;
+  readonly responseHeadersIncluded: false;
+  readonly bodiesIncluded: false;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+}
+
+export interface DeveloperConsoleSummary {
+  readonly schema: typeof DEVELOPER_CONSOLE_SCHEMA;
+  readonly build: typeof DEVELOPER_CONSOLE_BUILD;
+  readonly sessionId: string;
+  readonly tabId: string;
+  readonly page: PreviewPageState;
+  readonly totals: {
+    readonly network: number;
+    readonly console: number;
+    readonly errors: number;
+  };
+  readonly dropped: DeveloperConsoleDropped;
+  readonly latestSequence: number;
+  readonly capturedAt: string;
+  readonly provenance: PreviewBridgeProvenance;
+  readonly readOnly: true;
+  readonly bounded: true;
+  readonly hostExecutionSeparated: true;
+  readonly mutationAuthority: false;
+  readonly browserAuthority: false;
+  readonly diagnosticsAuthority: false;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+}
+
+function normalizeDeveloperConsoleTerms(value: unknown, label: string): readonly string[] {
+  if (value === undefined) return Object.freeze([]);
+  if (!Array.isArray(value) || value.length > DEVELOPER_CONSOLE_MAX_FILTER_TERMS) {
+    throw new TypeError(label + ' must be a bounded array.');
+  }
+  const normalized = value.map((entry, index) => {
+    if (typeof entry !== 'string') throw new TypeError(label + ' entry ' + (index + 1) + ' must be a string.');
+    const text = entry.trim().toLowerCase();
+    if (!text || text.length > 64 || /[\u0000-\u001f\u007f]/.test(text)) {
+      throw new TypeError(label + ' entry is invalid.');
+    }
+    return text;
+  });
+  return Object.freeze([...new Set(normalized)].sort());
+}
+
+export function normalizeDeveloperConsoleQuery(value: unknown): DeveloperConsoleQuery {
+  if (value === undefined) value = {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('Developer Console query must be an object.');
+  }
+  const row = value as Record<string, unknown>;
+  const allowed = new Set(['sources','levels','methods','text','minStatus','maxStatus','afterSequence','limit','order']);
+  if (Object.keys(row).some((key) => !allowed.has(key))) {
+    throw new TypeError('Developer Console query fields are invalid.');
+  }
+
+  const sourceValues = row.sources === undefined
+    ? [...DEVELOPER_CONSOLE_SOURCES]
+    : row.sources;
+  if (!Array.isArray(sourceValues) || sourceValues.length === 0 || sourceValues.length > DEVELOPER_CONSOLE_SOURCES.length) {
+    throw new TypeError('Developer Console sources are invalid.');
+  }
+  const sources = sourceValues.map((source) => {
+    if (!(DEVELOPER_CONSOLE_SOURCES as readonly unknown[]).includes(source)) {
+      throw new TypeError('Developer Console source is invalid.');
+    }
+    return source as DeveloperConsoleSource;
+  });
+  const uniqueSources = Object.freeze([...new Set(sources)].sort()) as readonly DeveloperConsoleSource[];
+
+  let text: string | null = null;
+  if (row.text !== undefined) {
+    if (typeof row.text !== 'string') throw new TypeError('Developer Console text filter must be a string.');
+    const normalized = row.text.trim().toLowerCase();
+    if (!normalized || normalized.length > DEVELOPER_CONSOLE_MAX_FILTER_TEXT || /[\u0000-\u001f\u007f]/.test(normalized)) {
+      throw new TypeError('Developer Console text filter is invalid.');
+    }
+    text = normalized;
+  }
+
+  const minStatus = row.minStatus === undefined ? null : boundedInteger(row.minStatus, 'Developer Console minStatus', 100, 599);
+  const maxStatus = row.maxStatus === undefined ? null : boundedInteger(row.maxStatus, 'Developer Console maxStatus', 100, 599);
+  if (minStatus !== null && maxStatus !== null && minStatus > maxStatus) {
+    throw new RangeError('Developer Console status range is invalid.');
+  }
+
+  const afterSequence = row.afterSequence === undefined
+    ? 0
+    : boundedInteger(row.afterSequence, 'Developer Console afterSequence', 0, Number.MAX_SAFE_INTEGER);
+  const limit = row.limit === undefined
+    ? DEVELOPER_CONSOLE_DEFAULT_LIMIT
+    : boundedInteger(row.limit, 'Developer Console limit', 1, DEVELOPER_CONSOLE_MAX_LIMIT);
+  const order = row.order === undefined ? 'asc' : row.order;
+  if (!(DEVELOPER_CONSOLE_ORDERS as readonly unknown[]).includes(order)) {
+    throw new TypeError('Developer Console order is invalid.');
+  }
+
+  return Object.freeze({
+    schema: DEVELOPER_CONSOLE_QUERY_SCHEMA,
+    build: DEVELOPER_CONSOLE_BUILD,
+    sources: uniqueSources,
+    levels: normalizeDeveloperConsoleTerms(row.levels, 'Developer Console levels'),
+    methods: normalizeDeveloperConsoleTerms(row.methods, 'Developer Console methods'),
+    text,
+    minStatus,
+    maxStatus,
+    afterSequence,
+    limit,
+    order: order as DeveloperConsoleOrder,
+  });
+}
