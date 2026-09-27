@@ -45,6 +45,16 @@ export class BoundedTelemetryRing<T> {
     return Object.freeze(this.#items.slice(this.#head));
   }
 
+  replace(predicate: (value: T) => boolean, replacement: T): boolean {
+    for (let index = this.#items.length - 1; index >= this.#head; index -= 1) {
+      if (predicate(this.#items[index]!)) {
+        this.#items[index] = replacement;
+        return true;
+      }
+    }
+    return false;
+  }
+
   clear(): void {
     this.#items = [];
     this.#head = 0;
@@ -138,9 +148,10 @@ export function createPreviewTelemetryCollector(): PreviewTelemetryCollector {
     if (!previous) return;
     const next = Object.freeze({ ...previous, ...patch });
     latestByRequest.set(requestId, next);
-    const current = network.values();
-    network.clear();
-    for (const item of current) network.push(item.requestId === requestId && item.sequence === previous.sequence ? next : item);
+    network.replace(
+      (item) => item.requestId === requestId && item.sequence === previous.sequence,
+      next,
+    );
   }
 
   return Object.freeze({
