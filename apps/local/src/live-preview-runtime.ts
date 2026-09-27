@@ -335,7 +335,13 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
     }
 
     record.status = 'recovering';
-    const nextBrowser = await options.host.createBrowserSession(record.viewport);
+    let nextBrowser: BrowserAdapterSession;
+    try {
+      nextBrowser = await options.host.createBrowserSession(record.viewport);
+    } catch (error) {
+      record.status = 'degraded';
+      throw error;
+    }
     try {
       const nextTab = await nextBrowser.openTab(record.targetUrl);
       const previousSessionId = record.browserSessionId;
