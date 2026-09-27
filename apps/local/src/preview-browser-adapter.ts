@@ -6,6 +6,9 @@ import {
   normalizePreviewViewport,
   normalizeVisualEvidenceRequest,
   type LivePreviewColorScheme,
+  PREVIEW_BRIDGE_MAX_DOM_NODES,
+  type PreviewBridgeAdapterSnapshot,
+  type PreviewBridgeDomSummary,
   type PreviewDownloadResult,
   type PreviewPageState,
   type PreviewSessionDescriptor,
@@ -19,6 +22,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, delimiter, join } from 'node:path';
 import { spawn, type ChildProcess } from 'node:child_process';
+import { createPreviewTelemetryCollector, type PreviewTelemetryCollector } from './preview-telemetry.js';
 
 export interface BrowserAdapterLaunchOptions {
   readonly profileDir: string;
@@ -39,6 +43,7 @@ export interface BrowserAdapterSession {
   setViewport?(tabId: string, viewport: PreviewViewport): Promise<void>;
   setColorScheme?(tabId: string, colorScheme: LivePreviewColorScheme): Promise<void>;
   reload?(tabId: string, timeoutMs?: number): Promise<PreviewTabDescriptor>;
+  telemetrySnapshot?(tabId: string): Promise<PreviewBridgeAdapterSnapshot>;
   close(): Promise<void>;
 }
 
@@ -78,6 +83,7 @@ class CdpClient {
   #nextId = 1;
   readonly #pending = new Map<number, { resolve(value: unknown): void; reject(error: Error): void }>();
   readonly #waiters = new Map<string, Set<{ resolve(value: unknown): void; reject(error: Error): void; timer: ReturnType<typeof setTimeout> }>>();
+  readonly #listeners = new Map<string, Set<(params: any) => void>>();
 
   private constructor(socket: WebSocketLike) {
     this.#socket = socket;
@@ -118,6 +124,17 @@ class CdpClient {
     });
   }
 
+  on(method: string, listener: (params: any) => void): () => void {
+    const set = this.#listeners.get(method) ?? new Set<(params: any) => void>();
+    set.add(listener);
+    this.#listeners.set(method, set);
+    return () => {
+      const current = this.#listeners.get(method);
+      current?.delete(listener);
+      if (current?.size === 0) this.#listeners.delete(method);
+    };
+  }
+
   close(): void {
     this.#socket.close();
     this.#rejectAll(new Error('CDP client closed.'));
@@ -136,6 +153,9 @@ class CdpClient {
       return;
     }
     if (message.method) {
+      for (const listener of this.#listeners.get(message.method) ?? []) {
+        try { listener(message.params); } catch {}
+      }
       const waiters = this.#waiters.get(message.method);
       if (!waiters) return;
       this.#waiters.delete(message.method);
@@ -156,6 +176,7 @@ class CdpClient {
       }
     }
     this.#waiters.clear();
+    this.#listeners.clear();
   }
 }
 
