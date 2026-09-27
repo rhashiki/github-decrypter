@@ -255,3 +255,162 @@ export function decodePreviewInlineData(value: unknown): Uint8Array {
   if (bytes.byteLength > PREVIEW_MAX_INLINE_BYTES) throw new RangeError('Preview inline payload exceeds the byte limit.');
   return bytes;
 }
+
+
+export const LIVE_PREVIEW_BUILD = 69 as const;
+export const LIVE_PREVIEW_SCHEMA = 'gd-live-preview/1' as const;
+export const LIVE_PREVIEW_PROBE_SCHEMA = 'gd-live-preview-probe/1' as const;
+export const LIVE_PREVIEW_SETTLING_SCHEMA = 'gd-live-preview-settling/1' as const;
+export const LIVE_PREVIEW_CAPTURE_SCHEMA = 'gd-live-preview-capture/1' as const;
+
+export const LIVE_PREVIEW_FORM_FACTORS = Object.freeze(['desktop', 'tablet', 'mobile'] as const);
+export const LIVE_PREVIEW_COLOR_SCHEMES = Object.freeze(['light', 'dark'] as const);
+export const LIVE_PREVIEW_MAX_RECOVERY_ATTEMPTS = 3 as const;
+export const LIVE_PREVIEW_DEFAULT_SETTLE_MAX_WAIT_MS = 3_000 as const;
+export const LIVE_PREVIEW_DEFAULT_SETTLE_SAMPLE_INTERVAL_MS = 150 as const;
+export const LIVE_PREVIEW_DEFAULT_SETTLE_STABLE_SAMPLES = 3 as const;
+export const LIVE_PREVIEW_MAX_SETTLE_WAIT_MS = 10_000 as const;
+export const LIVE_PREVIEW_MAX_SETTLE_SAMPLE_INTERVAL_MS = 1_000 as const;
+export const LIVE_PREVIEW_MAX_SETTLE_STABLE_SAMPLES = 8 as const;
+
+export type LivePreviewFormFactor = (typeof LIVE_PREVIEW_FORM_FACTORS)[number];
+export type LivePreviewColorScheme = (typeof LIVE_PREVIEW_COLOR_SCHEMES)[number];
+
+export interface LivePreviewSettlingPolicy {
+  readonly maxWaitMs: number;
+  readonly sampleIntervalMs: number;
+  readonly requiredStableSamples: number;
+}
+
+export interface LivePreviewDescriptor {
+  readonly schema: typeof LIVE_PREVIEW_SCHEMA;
+  readonly build: typeof LIVE_PREVIEW_BUILD;
+  readonly id: string;
+  readonly status: 'ready' | 'degraded' | 'recovering';
+  readonly browserSessionId: string;
+  readonly tabId: string;
+  readonly targetUrl: string;
+  readonly formFactor: LivePreviewFormFactor;
+  readonly viewport: PreviewViewport;
+  readonly colorScheme: LivePreviewColorScheme;
+  readonly startedAt: string;
+  readonly lastHealthyAt: string | null;
+  readonly lastSettledAt: string | null;
+  readonly generation: number;
+  readonly recoveryCount: number;
+  readonly maxRecoveryAttempts: typeof LIVE_PREVIEW_MAX_RECOVERY_ATTEMPTS;
+  readonly nativeHmrPreferred: true;
+  readonly hmrOwner: 'target-dev-server';
+  readonly hostReloadRequiredForSourceChange: false;
+  readonly longRunningSession: true;
+  readonly toolRuntimeRequired: true;
+  readonly scopeLockRequiredForMutation: true;
+}
+
+export interface LivePreviewProbe {
+  readonly schema: typeof LIVE_PREVIEW_PROBE_SCHEMA;
+  readonly build: typeof LIVE_PREVIEW_BUILD;
+  readonly id: string;
+  readonly healthy: boolean;
+  readonly status: 'ready' | 'degraded';
+  readonly generation: number;
+  readonly recoveryCount: number;
+  readonly probedAt: string;
+  readonly state: PreviewPageState | null;
+  readonly error: string | null;
+  readonly mutationPerformed: false;
+}
+
+export interface LivePreviewSettlingResult {
+  readonly schema: typeof LIVE_PREVIEW_SETTLING_SCHEMA;
+  readonly build: typeof LIVE_PREVIEW_BUILD;
+  readonly settled: boolean;
+  readonly samples: number;
+  readonly stableSamples: number;
+  readonly elapsedMs: number;
+  readonly policy: LivePreviewSettlingPolicy;
+  readonly state: PreviewPageState | null;
+  readonly failure: string | null;
+  readonly bounded: true;
+}
+
+export interface LivePreviewCapture {
+  readonly schema: typeof LIVE_PREVIEW_CAPTURE_SCHEMA;
+  readonly build: typeof LIVE_PREVIEW_BUILD;
+  readonly id: string;
+  readonly generation: number;
+  readonly formFactor: LivePreviewFormFactor;
+  readonly colorScheme: LivePreviewColorScheme;
+  readonly settling: LivePreviewSettlingResult;
+  readonly evidence: VisualEvidence | null;
+  readonly captured: boolean;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+}
+
+export function normalizeLivePreviewId(value: unknown): string {
+  if (typeof value !== 'string') throw new TypeError('Live Preview id must be a string.');
+  const id = value.trim().toLowerCase();
+  if (!/^[a-z][a-z0-9._:-]{0,127}$/.test(id)) throw new TypeError('Live Preview id is invalid.');
+  return id;
+}
+
+export function normalizeLivePreviewFormFactor(value: unknown): LivePreviewFormFactor {
+  if (!(LIVE_PREVIEW_FORM_FACTORS as readonly unknown[]).includes(value)) {
+    throw new TypeError('Live Preview form factor is invalid.');
+  }
+  return value as LivePreviewFormFactor;
+}
+
+export function normalizeLivePreviewColorScheme(value: unknown): LivePreviewColorScheme {
+  if (!(LIVE_PREVIEW_COLOR_SCHEMES as readonly unknown[]).includes(value)) {
+    throw new TypeError('Live Preview color scheme is invalid.');
+  }
+  return value as LivePreviewColorScheme;
+}
+
+export function livePreviewViewport(value: unknown): PreviewViewport {
+  return normalizePreviewViewport(normalizeLivePreviewFormFactor(value));
+}
+
+export function normalizeLivePreviewSettlingPolicy(value: unknown): LivePreviewSettlingPolicy {
+  if (value === undefined) {
+    return Object.freeze({
+      maxWaitMs: LIVE_PREVIEW_DEFAULT_SETTLE_MAX_WAIT_MS,
+      sampleIntervalMs: LIVE_PREVIEW_DEFAULT_SETTLE_SAMPLE_INTERVAL_MS,
+      requiredStableSamples: LIVE_PREVIEW_DEFAULT_SETTLE_STABLE_SAMPLES,
+    });
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('Live Preview settling policy must be an object.');
+  }
+  const row = value as Record<string, unknown>;
+  if (JSON.stringify(Object.keys(row).sort()) !== JSON.stringify(['maxWaitMs','requiredStableSamples','sampleIntervalMs'])) {
+    throw new TypeError('Live Preview settling policy fields are invalid.');
+  }
+  const maxWaitMs = boundedInteger(row.maxWaitMs, 'Live Preview settle maxWaitMs', 250, LIVE_PREVIEW_MAX_SETTLE_WAIT_MS);
+  const sampleIntervalMs = boundedInteger(
+    row.sampleIntervalMs,
+    'Live Preview settle sampleIntervalMs',
+    25,
+    LIVE_PREVIEW_MAX_SETTLE_SAMPLE_INTERVAL_MS,
+  );
+  const requiredStableSamples = boundedInteger(
+    row.requiredStableSamples,
+    'Live Preview settle requiredStableSamples',
+    2,
+    LIVE_PREVIEW_MAX_SETTLE_STABLE_SAMPLES,
+  );
+  if (sampleIntervalMs * requiredStableSamples > maxWaitMs) {
+    throw new RangeError('Live Preview settling policy cannot reach stability inside maxWaitMs.');
+  }
+  return Object.freeze({ maxWaitMs, sampleIntervalMs, requiredStableSamples });
+}
+
+export function livePreviewTargetScopeResource(id: unknown, url: unknown): string {
+  return 'live-preview-target:' + normalizeLivePreviewId(id) + ':' + normalizePreviewUrl(url);
+}
+
+export function livePreviewSessionScopeResource(id: unknown): string {
+  return 'live-preview-session:' + normalizeLivePreviewId(id);
+}
