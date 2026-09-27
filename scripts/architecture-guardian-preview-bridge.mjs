@@ -142,7 +142,8 @@ if(required.every(exists)){
     'PREVIEW_BRIDGE_MAX_NETWORK_ENTRIES',
     'latestByRequest',
     'network.replace(',
-    'network.dropped',
+    '#dropped += 1',
+    'get dropped(): number',
   ]) if(!telemetry.includes(marker)) fail('AG744','Preview telemetry bounding/privacy invariant is missing.',marker);
 
   for(const marker of [
