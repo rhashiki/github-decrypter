@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 69,
+  "currentBuild": 70,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -1991,7 +1991,8 @@
     "projectMemoryBuild": 66,
     "finalContextEngineBuild": 67,
     "previewRuntimeBuild": 68,
-    "livePreviewBuild": 69
+    "livePreviewBuild": 69,
+    "previewBridgeBuild": 70
   },
   "legacyMigrationRoots": [
     "core",
@@ -2902,7 +2903,8 @@
       "lobehub/lobe-chat",
       "chartdb/chartdb",
       "tinyhumansai/openhuman",
-      "iamgio/quarkdown"
+      "iamgio/quarkdown",
+      "0xpolarzero/electrobun-browser-tools"
     ],
     "optionalToolRepos": [
       "NationalSecurityAgency/ghidra"
@@ -2919,7 +2921,8 @@
       "akitaonrails/ai-memory",
       "alexfazio/plankton",
       "DietrichGebert/ponytail",
-      "brijr/iris"
+      "brijr/iris",
+      "vitalysim/browser-bridge"
     ],
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
@@ -3141,5 +3144,85 @@
     "flowentLicenseDeclared": false,
     "flowentCodeReuseAllowed": false,
     "externalReferenceOwnsRuntimeAuthority": false
+  },
+  "previewBridgeAuthority": {
+    "ownerPackage": "@github-decrypter/preview",
+    "contractSource": "packages/preview/src/index.ts",
+    "executionOwnerRoot": "apps/local",
+    "bridgeRuntimeSource": "apps/local/src/preview-bridge-runtime.ts",
+    "telemetrySource": "apps/local/src/preview-telemetry.ts",
+    "browserRuntimeSource": "apps/local/src/preview-browser-runtime.ts",
+    "browserAdapterSource": "apps/local/src/preview-browser-adapter.ts",
+    "minimumBuild": 70,
+    "schema": "gd-preview-bridge/1",
+    "snapshotSchema": "gd-preview-bridge-snapshot/1",
+    "captureReportSchema": "gd-preview-bridge-capture-report/1",
+    "capabilitiesSchema": "gd-preview-bridge-capabilities/1",
+    "browserRuntimeBuild": 68,
+    "livePreviewBuild": 69,
+    "toolRuntimeBuild": 53,
+    "readOnly": true,
+    "bounded": true,
+    "telemetryPersistentPerTab": true,
+    "domStructureEvidence": true,
+    "accessibilitySummaryEvidence": true,
+    "networkMetadataEvidence": true,
+    "consoleEvidence": true,
+    "runtimeErrorEvidence": true,
+    "captureMetadataEvidence": true,
+    "automaticTaskRunProvenance": true,
+    "provenanceFromToolExecutionContext": true,
+    "provenanceFields": [
+      "workspaceId",
+      "orchestrationId",
+      "orchestrationDigest",
+      "buildStepId",
+      "taskId",
+      "requirementId",
+      "runId",
+      "scopeLockId",
+      "scopeLockDigest"
+    ],
+    "maxNetworkEntries": 128,
+    "maxConsoleEntries": 128,
+    "maxErrorEntries": 64,
+    "maxTextCharacters": 2048,
+    "maxDomNodes": 20000,
+    "boundedRingBuffers": true,
+    "droppedEntryAccounting": true,
+    "networkQueryValuesRedacted": true,
+    "requestHeadersCaptured": false,
+    "responseHeadersCaptured": false,
+    "requestBodiesCaptured": false,
+    "responseBodiesCaptured": false,
+    "cookiesCaptured": false,
+    "storageCaptured": false,
+    "credentialsIncluded": false,
+    "unsafeEvaluate": false,
+    "browserInteraction": false,
+    "mutationAuthority": false,
+    "validationAuthority": false,
+    "releaseAuthority": false,
+    "toolRuntimeRequired": true,
+    "readCapabilityOnly": true,
+    "scopeLockMutationRequired": false,
+    "scopeLockMayBeProvenanceOnly": true,
+    "secondBrowserRuntimeAllowed": false,
+    "browserCloudRequired": false,
+    "persistentTelemetryWrites": false,
+    "projectFilesystemWrites": false,
+    "aiExecution": false,
+    "vortexManagedPaidInferenceRequired": false,
+    "sourceTriagePath": "docs/research/BUILD_70_SOURCE_TRIAGE.md",
+    "browserBridgeSource": "vitalysim/browser-bridge",
+    "browserBridgeClassification": "direct-candidate",
+    "browserBridgeLicense": "MIT",
+    "browserBridgeAdoptionScope": "bounded-telemetry-patterns-only",
+    "browserBridgeLoggedInProfileReuseAllowed": false,
+    "electrobunSource": "0xpolarzero/electrobun-browser-tools",
+    "electrobunClassification": "reference-only",
+    "electrobunLicenseDeclared": false,
+    "electrobunCodeReuseAllowed": false,
+    "externalSourceOwnsRuntimeAuthority": false
   }
 }
