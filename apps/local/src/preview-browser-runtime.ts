@@ -11,6 +11,7 @@ import {
   previewTabScopeResource,
   previewUploadScopeResource,
   previewUrlScopeResource,
+  type LivePreviewSettlingPolicy,
   type PreviewViewport,
 } from '@github-decrypter/preview';
 import type { ScopeLockRecord } from '@github-decrypter/scope/lock';
@@ -24,6 +25,7 @@ import {
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createLivePreviewRuntime, type LivePreviewRuntimeStatus } from './live-preview-runtime.js';
 import {
   createChromiumCdpAdapter,
   detectLocalChromiumExecutable,
@@ -61,12 +63,16 @@ export interface PreviewBrowserRuntimeStatus {
   readonly directBrowserAuthorityExposed: false;
   readonly visualEvidenceReadOnly: true;
   readonly persistentFileWrites: false;
+  readonly livePreview: LivePreviewRuntimeStatus;
 }
 
 export interface PreviewBrowserRuntimeOptions {
   readonly adapter?: PreviewBrowserAdapter;
   readonly now?: () => string;
   readonly executablePath?: string;
+  readonly livePreviewSettlingPolicy?: LivePreviewSettlingPolicy;
+  readonly livePreviewMonotonicNow?: () => number;
+  readonly livePreviewSleep?: (ms: number) => Promise<void>;
 }
 
 export interface PreviewBrowserRuntime {
@@ -165,6 +171,38 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     }
   }
 
+  async function createBrowserSession(viewport: PreviewViewport): Promise<BrowserAdapterSession> {
+    if (shuttingDown) throw new Error('Preview Browser Runtime is shutting down.');
+    if (sessions.size >= PREVIEW_MAX_SESSIONS) throw new RangeError('Preview Browser Runtime session limit reached.');
+    const normalizedViewport = normalizePreviewViewport(viewport);
+    const profileDir = mkdtempSync(join(tmpdir(), 'vortex-preview-'));
+    let session: BrowserAdapterSession;
+    try {
+      session = await adapter.launch({ profileDir, viewport: normalizedViewport, executablePath: options.executablePath, now });
+    } catch (error) {
+      rmSync(profileDir, { recursive: true, force: true });
+      throw error;
+    }
+    if (sessions.has(session.descriptor.id)) {
+      try { await session.close(); } finally { rmSync(profileDir, { recursive: true, force: true }); }
+      throw new Error('Preview Browser Runtime adapter returned a duplicate session id.');
+    }
+    sessions.set(session.descriptor.id, Object.freeze({ session, profileDir }));
+    return session;
+  }
+
+  const livePreview = createLivePreviewRuntime({
+    host: Object.freeze({
+      createBrowserSession,
+      getBrowserSession: requireSession,
+      closeBrowserSession: stopSession,
+    }),
+    now,
+    monotonicNow: options.livePreviewMonotonicNow,
+    sleep: options.livePreviewSleep,
+    settlingPolicy: options.livePreviewSettlingPolicy,
+  });
+
   function status(): PreviewBrowserRuntimeStatus {
     let browserDetected = false;
     try {
@@ -186,6 +224,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       directBrowserAuthorityExposed: false,
       visualEvidenceReadOnly: true,
       persistentFileWrites: false,
+      livePreview: livePreview.status(),
     });
   }
 
@@ -204,32 +243,17 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     const uploadDescriptor = descriptor(PREVIEW_TOOL_IDS.upload, 'Upload ephemeral inline data into Preview', ['READ','EXECUTE'], true);
     const downloadDescriptor = descriptor(PREVIEW_TOOL_IDS.download, 'Download ephemeral Preview data inline', ['READ','EXECUTE','NETWORK'], true);
 
-    return Object.freeze([
+    const baseRegistrations: readonly ToolRegistration[] = Object.freeze([
       Object.freeze({
         descriptor: startDescriptor,
         handler: async (context: ToolExecutionContext, input: ToolValue) => {
           ensureToolContext(context, startDescriptor);
           assertScopedResource(context, scopeLock, previewBrowserScopeResource());
-          if (shuttingDown) throw new Error('Preview Browser Runtime is shutting down.');
-          if (sessions.size >= PREVIEW_MAX_SESSIONS) throw new RangeError('Preview Browser Runtime session limit reached.');
           const value = row(input, 'Preview session start');
           const keys = Object.keys(value);
           if (keys.length > 1 || (keys.length === 1 && keys[0] !== 'viewport')) throw new TypeError('Preview session start accepts only optional viewport.');
           const viewport = normalizePreviewViewport(value.viewport ?? 'desktop');
-          const profileDir = mkdtempSync(join(tmpdir(), 'vortex-preview-'));
-          let session: BrowserAdapterSession;
-          try {
-            session = await adapter.launch({ profileDir, viewport, executablePath: options.executablePath, now });
-          } catch (error) {
-            rmSync(profileDir, { recursive: true, force: true });
-            throw error;
-          }
-          if (sessions.has(session.descriptor.id)) {
-            await session.close();
-            rmSync(profileDir, { recursive: true, force: true });
-            throw new Error('Preview Browser Runtime adapter returned a duplicate session id.');
-          }
-          sessions.set(session.descriptor.id, Object.freeze({ session, profileDir }));
+          const session = await createBrowserSession(viewport);
           return asToolValue(session.descriptor);
         },
       }),
@@ -354,6 +378,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
         },
       }),
     ]);
+    return Object.freeze([...baseRegistrations, ...livePreview.createToolRegistrations(scopeLock)]);
   }
 
   return Object.freeze({
@@ -363,6 +388,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     async shutdown() {
       if (shuttingDown) return;
       shuttingDown = true;
+      await livePreview.shutdown();
       const active = [...sessions.values()];
       sessions.clear();
       await Promise.allSettled(active.map(async (entry) => {
