@@ -265,6 +265,16 @@ export const LIVE_PREVIEW_CAPTURE_SCHEMA = 'gd-live-preview-capture/1' as const;
 
 export const LIVE_PREVIEW_FORM_FACTORS = Object.freeze(['desktop', 'tablet', 'mobile'] as const);
 export const LIVE_PREVIEW_COLOR_SCHEMES = Object.freeze(['light', 'dark'] as const);
+export const LIVE_PREVIEW_TOOL_IDS = Object.freeze({
+  start: 'tool:preview.live.start',
+  stop: 'tool:preview.live.stop',
+  probe: 'tool:preview.live.probe',
+  refresh: 'tool:preview.live.refresh',
+  recover: 'tool:preview.live.recover',
+  setFormFactor: 'tool:preview.live.form-factor',
+  setColorScheme: 'tool:preview.live.color-scheme',
+  capture: 'tool:preview.live.capture',
+} as const);
 export const LIVE_PREVIEW_MAX_RECOVERY_ATTEMPTS = 3 as const;
 export const LIVE_PREVIEW_DEFAULT_SETTLE_MAX_WAIT_MS = 3_000 as const;
 export const LIVE_PREVIEW_DEFAULT_SETTLE_SAMPLE_INTERVAL_MS = 150 as const;
