@@ -283,7 +283,7 @@ const preview=createPreviewBrowserRuntime({
   adapter,
   now,
   executablePath:'/fake/chromium',
-  livePreviewSettlingPolicy:{maxWaitMs:200,sampleIntervalMs:25,requiredStableSamples:2},
+  livePreviewSettlingPolicy:{maxWaitMs:250,sampleIntervalMs:25,requiredStableSamples:2},
   livePreviewMonotonicNow:()=>monotonic,
   livePreviewSleep:async(ms)=>{monotonic+=ms;},
 });
