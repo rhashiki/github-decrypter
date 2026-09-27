@@ -198,10 +198,10 @@ function stateSignature(state: PreviewPageState): string {
     state.viewport.width,
     state.viewport.height,
     state.viewport.deviceScaleFactor,
-    state.document.width,
-    state.document.height,
-    state.document.scrollX,
-    state.document.scrollY,
+    state['document'].width,
+    state['document'].height,
+    state['document'].scrollX,
+    state['document'].scrollY,
     state.accessibilityNodeCount,
   ]);
 }
