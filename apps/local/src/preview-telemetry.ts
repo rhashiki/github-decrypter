@@ -165,19 +165,19 @@ export function createPreviewTelemetryCollector(): PreviewTelemetryCollector {
     console,
     errors,
     requestStarted,
-    responseReceived(input) {
+    responseReceived(input: { requestId: string; status?: number; mimeType?: string }) {
       replaceRequest(input.requestId, {
         status: Number.isFinite(input.status) ? Number(input.status) : null,
         mimeType: input.mimeType ? safeText(input.mimeType).text : null,
       });
     },
-    requestFinished(requestId) {
+    requestFinished(requestId: string) {
       replaceRequest(requestId, { finished: true });
     },
-    requestFailed(requestId, message) {
+    requestFailed(requestId: string, message?: string) {
       replaceRequest(requestId, { finished: true, failed: safeText(message ?? 'request failed').text });
     },
-    consoleEntry(input) {
+    consoleEntry(input: { level?: string; text?: unknown; timestamp?: number }) {
       const value = safeText(input.text);
       console.push(Object.freeze({
         sequence: ++sequence,
@@ -187,7 +187,7 @@ export function createPreviewTelemetryCollector(): PreviewTelemetryCollector {
         truncated: value.truncated,
       }));
     },
-    runtimeError(input) {
+    runtimeError(input: { message?: unknown; timestamp?: number }) {
       const value = safeText(input.message ?? 'Runtime error');
       errors.push(Object.freeze({
         sequence: ++sequence,
