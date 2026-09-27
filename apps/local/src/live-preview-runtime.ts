@@ -24,6 +24,7 @@ import {
   type LivePreviewSettlingResult,
   type PreviewPageState,
   type PreviewViewport,
+  type VisualEvidence,
   type VisualEvidenceRequest,
 } from '@github-decrypter/preview';
 import type { ScopeLockRecord } from '@github-decrypter/scope/lock';
@@ -344,13 +345,18 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
     }
     try {
       const nextTab = await nextBrowser.openTab(record.targetUrl);
+      const candidate: LivePreviewRecord = {
+        ...record,
+        status: 'recovering',
+        browserSessionId: nextBrowser.descriptor.id,
+        tabId: nextTab.id,
+        generation: record.generation + 1,
+        recoveryCount: record.recoveryCount + 1,
+      };
+      await setSessionColor(candidate);
+      await settle(candidate);
       const previousSessionId = record.browserSessionId;
-      record.browserSessionId = nextBrowser.descriptor.id;
-      record.tabId = nextTab.id;
-      record.generation += 1;
-      record.recoveryCount += 1;
-      await setSessionColor(record);
-      await settle(record);
+      Object.assign(record, candidate);
       try { await options.host.closeBrowserSession(previousSessionId); } catch {}
       return recordDescriptor(record);
     } catch (error) {
@@ -477,11 +483,16 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
           if (url !== record.targetUrl) throw new Error('Live Preview refresh target does not match active target.');
           assertScopedResource(context, scopeLock, livePreviewTargetScopeResource(record.id, url));
           const session = options.host.getBrowserSession(record.browserSessionId);
-          if (session.reload) await session.reload(record.tabId);
-          else await session.navigate(record.tabId, record.targetUrl);
-          record.refreshCount += 1;
-          await settle(record);
-          return asToolValue(recordDescriptor(record));
+          try {
+            if (session.reload) await session.reload(record.tabId);
+            else await session.navigate(record.tabId, record.targetUrl);
+            record.refreshCount += 1;
+            await settle(record);
+            return asToolValue(recordDescriptor(record));
+          } catch (error) {
+            record.status = 'degraded';
+            throw error;
+          }
         },
       }),
       Object.freeze({
@@ -524,8 +535,11 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
           exactKeys(value, ['colorScheme','id'], [], 'Live Preview color scheme');
           const record = requireRecord(value.id);
           assertScopedResource(context, scopeLock, livePreviewSessionScopeResource(record.id));
-          record.colorScheme = normalizeLivePreviewColorScheme(value.colorScheme);
-          await setSessionColor(record);
+          const nextColorScheme = normalizeLivePreviewColorScheme(value.colorScheme);
+          const session = options.host.getBrowserSession(record.browserSessionId);
+          if (!session.setColorScheme) throw new Error('Preview browser adapter does not support Live Preview color emulation.');
+          await session.setColorScheme(record.tabId, nextColorScheme);
+          record.colorScheme = nextColorScheme;
           await settle(record);
           return asToolValue(recordDescriptor(record));
         },
@@ -543,7 +557,7 @@ export function createLivePreviewRuntime(options: LivePreviewRuntimeOptions): Li
             throw new TypeError('Live Preview capture darkMode must match the active Live Preview color scheme.');
           }
           const settling = await settle(record);
-          let evidence = null;
+          let evidence: VisualEvidence | null = null;
           if (settling.settled) {
             const session = options.host.getBrowserSession(record.browserSessionId);
             const captureRequest: VisualEvidenceRequest = Object.freeze({ ...request, darkMode: expectedDark });
