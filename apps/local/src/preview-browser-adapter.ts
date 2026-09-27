@@ -5,6 +5,7 @@ import {
   normalizePreviewUrl,
   normalizePreviewViewport,
   normalizeVisualEvidenceRequest,
+  type LivePreviewColorScheme,
   type PreviewDownloadResult,
   type PreviewPageState,
   type PreviewSessionDescriptor,
@@ -35,6 +36,9 @@ export interface BrowserAdapterSession {
   capture(tabId: string, request: VisualEvidenceRequest): Promise<VisualEvidence>;
   upload(tabId: string, selector: string, fileName: string, bytes: Uint8Array): Promise<PreviewUploadResult>;
   download(tabId: string, selector: string, timeoutMs?: number): Promise<PreviewDownloadResult>;
+  setViewport?(tabId: string, viewport: PreviewViewport): Promise<void>;
+  setColorScheme?(tabId: string, colorScheme: LivePreviewColorScheme): Promise<void>;
+  reload?(tabId: string, timeoutMs?: number): Promise<PreviewTabDescriptor>;
   close(): Promise<void>;
 }
 
@@ -306,7 +310,19 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
       const sessionId = 'preview-session-' + randomUUID();
       const createdAt = options.now();
       const tabs = new Map<string, PreviewTabDescriptor>();
+      const tabViewports = new Map<string, PreviewViewport>();
+      const tabColorSchemes = new Map<string, LivePreviewColorScheme>();
       let closed = false;
+
+      const currentViewport = (tabId: string): PreviewViewport => tabViewports.get(tabId) ?? viewport;
+      const currentColorScheme = (tabId: string): LivePreviewColorScheme => tabColorSchemes.get(tabId) ?? 'light';
+
+      async function applyTabEmulation(client: CdpClient, tabId: string): Promise<void> {
+        await setViewport(client, currentViewport(tabId));
+        await client.send('Emulation.setEmulatedMedia', {
+          features: [{ name: 'prefers-color-scheme', value: currentColorScheme(tabId) }],
+        });
+      }
 
       const descriptor = (): PreviewSessionDescriptor => Object.freeze({
         schema: 'gd-preview-session/1',
@@ -349,6 +365,8 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
           createdAt: options.now(),
         });
         tabs.set(tab.id, tab);
+        tabViewports.set(tab.id, viewport);
+        tabColorSchemes.set(tab.id, 'light');
         return tab;
       }
 
@@ -356,6 +374,8 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
         await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId));
         tabs.delete(tabId);
+        tabViewports.delete(tabId);
+        tabColorSchemes.delete(tabId);
       }
 
       async function navigate(tabId: string, urlValue: string, timeoutValue?: number): Promise<PreviewTabDescriptor> {
@@ -365,7 +385,7 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         const { client } = await targetClient(origin, tabId);
         try {
           await client.send('Page.enable');
-          await setViewport(client, viewport);
+          await applyTabEmulation(client, tabId);
           const load = client.waitFor('Page.loadEventFired', timeoutMs);
           const result = await client.send('Page.navigate', { url });
           if (result.errorText) throw new Error('Preview navigation failed: ' + result.errorText);
@@ -394,7 +414,8 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         try {
           await client.send('Page.enable');
           await client.send('Runtime.enable');
-          await setViewport(client, viewport);
+          await applyTabEmulation(client, tabId);
+          const tabViewport = currentViewport(tabId);
           const evaluated = await client.send('Runtime.evaluate', {
             expression: '({url:location.href,title:' + 'doc' + 'ument.title,readyState:' + 'doc' + 'ument.readyState,scrollX:' + 'win' + 'dow.scrollX,scrollY:' + 'win' + 'dow.scrollY})',
             returnByValue: true,
@@ -411,10 +432,10 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
             url: normalizePreviewUrl(String(value.url ?? tabs.get(tabId)!.url)),
             title: String(value.title ?? ''),
             readyState: String(value.readyState ?? 'unknown'),
-            viewport,
+            viewport: tabViewport,
             document: Object.freeze({
-              width: Math.max(0, Math.round(Number(metrics?.cssContentSize?.width ?? metrics?.contentSize?.width ?? viewport.width))),
-              height: Math.max(0, Math.round(Number(metrics?.cssContentSize?.height ?? metrics?.contentSize?.height ?? viewport.height))),
+              width: Math.max(0, Math.round(Number(metrics?.cssContentSize?.width ?? metrics?.contentSize?.width ?? tabViewport.width))),
+              height: Math.max(0, Math.round(Number(metrics?.cssContentSize?.height ?? metrics?.contentSize?.height ?? tabViewport.height))),
               scrollX: Math.round(Number(value.scrollX ?? 0)),
               scrollY: Math.round(Number(value.scrollY ?? 0)),
             }),
@@ -435,15 +456,17 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         try {
           await client.send('Page.enable');
           await client.send('DOM.enable');
-          await setViewport(client, viewport);
+          const tabViewport = currentViewport(tabId);
+          await setViewport(client, tabViewport);
+          const captureScheme = request.darkMode === undefined ? currentColorScheme(tabId) : request.darkMode ? 'dark' : 'light';
           await client.send('Emulation.setEmulatedMedia', {
-            features: [{ name: 'prefers-color-scheme', value: request.darkMode ? 'dark' : 'light' }],
+            features: [{ name: 'prefers-color-scheme', value: captureScheme }],
           });
           let clip: { x: number; y: number; width: number; height: number; scale: number } | undefined;
           if (request.mode === 'full-page') {
             const metrics = await client.send('Page.getLayoutMetrics');
             const size = metrics?.cssContentSize ?? metrics?.contentSize;
-            clip = { x: 0, y: 0, width: Number(size?.width ?? viewport.width), height: Number(size?.height ?? viewport.height), scale: 1 };
+            clip = { x: 0, y: 0, width: Number(size?.width ?? tabViewport.width), height: Number(size?.height ?? tabViewport.height), scale: 1 };
           } else if (request.mode === 'selector') {
             const nodeId = await nodeForSelector(client, request.selector!, request.timeoutMs!);
             const box = await client.send('DOM.getBoxModel', { nodeId });
@@ -470,9 +493,9 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
             mode: request.mode,
             format: request.format,
             selector: request.selector ?? null,
-            viewport,
-            width: Math.round(clip?.width ?? viewport.width),
-            height: Math.round(clip?.height ?? viewport.height),
+            viewport: tabViewport,
+            width: Math.round(clip?.width ?? tabViewport.width),
+            height: Math.round(clip?.height ?? tabViewport.height),
             bytes,
             dataBase64,
             capturedAt: options.now(),
@@ -482,6 +505,60 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
             interactionAuthority: false,
             validationAuthority: false,
           });
+        } finally {
+          client.close();
+        }
+      }
+
+      async function setTabViewport(tabId: string, nextViewport: PreviewViewport): Promise<void> {
+        if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
+        const normalized = normalizePreviewViewport(nextViewport);
+        const { client } = await targetClient(origin, tabId);
+        try {
+          await setViewport(client, normalized);
+          tabViewports.set(tabId, normalized);
+        } finally {
+          client.close();
+        }
+      }
+
+      async function setTabColorScheme(tabId: string, colorScheme: LivePreviewColorScheme): Promise<void> {
+        if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
+        if (colorScheme !== 'light' && colorScheme !== 'dark') throw new TypeError('Preview color scheme is invalid.');
+        const { client } = await targetClient(origin, tabId);
+        try {
+          await client.send('Emulation.setEmulatedMedia', {
+            features: [{ name: 'prefers-color-scheme', value: colorScheme }],
+          });
+          tabColorSchemes.set(tabId, colorScheme);
+        } finally {
+          client.close();
+        }
+      }
+
+      async function reload(tabId: string, timeoutValue?: number): Promise<PreviewTabDescriptor> {
+        if (!tabs.has(tabId)) throw new Error('Unknown Preview tab.');
+        const timeoutMs = normalizePreviewTimeout(timeoutValue);
+        const { client } = await targetClient(origin, tabId);
+        try {
+          await client.send('Page.enable');
+          await applyTabEmulation(client, tabId);
+          const load = client.waitFor('Page.loadEventFired', timeoutMs);
+          await client.send('Page.reload', { ignoreCache: false });
+          await load;
+          const state = await pageState(tabId);
+          const next = Object.freeze({
+            schema: 'gd-preview-tab/1' as const,
+            build: 68 as const,
+            id: tabId,
+            sessionId,
+            status: 'open' as const,
+            url: state.url,
+            title: state.title,
+            createdAt: tabs.get(tabId)!.createdAt,
+          });
+          tabs.set(tabId, next);
+          return next;
         } finally {
           client.close();
         }
@@ -576,6 +653,9 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
         navigate,
         pageState,
         capture,
+        setViewport: setTabViewport,
+        setColorScheme: setTabColorScheme,
+        reload,
         upload,
         download,
         async close() {
@@ -585,6 +665,8 @@ export function createChromiumCdpAdapter(): PreviewBrowserAdapter {
             try { await fetchOk(origin, '/json/close/' + encodeURIComponent(tabId)); } catch {}
           }
           tabs.clear();
+          tabViewports.clear();
+          tabColorSchemes.clear();
           await terminateProcess(child);
           rmSync(options.profileDir, { recursive: true, force: true });
         },
