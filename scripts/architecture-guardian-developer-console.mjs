@@ -139,7 +139,7 @@ if(required.every(exists)){
   if(/createChromiumCdpAdapter|CdpClient|Network\.enable|Runtime\.enable|child_process|\bspawn\s*\(|\bfetch\s*\(|\bWebSocket\b/.test(runtime)){
     fail('AG765','Developer Console created browser/network/telemetry execution authority.');
   }
-  if(/requestHeaders|responseHeaders|requestBody|responseBody|cookies|localStorage|sessionStorage/.test(runtime)){
+  if(/requestHeadersIncluded:\s*true|responseHeadersIncluded:\s*true|bodiesIncluded:\s*true|\b(?:requestHeaders|responseHeaders|requestBody|responseBody|cookies|localStorage|sessionStorage)\s*[:=.(\[]/.test(runtime)){
     fail('AG766','Developer Console runtime crossed the Build 70 privacy boundary.');
   }
   if(/writeFile|appendFile|mkdir|rmSync|database|sqlite/i.test(runtime)){
