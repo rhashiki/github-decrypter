@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 71,
+  "currentBuild": 72,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -164,6 +164,10 @@
     "@github-decrypter/preview": {
       "environmentNeutral": true,
       "allowedWorkspaceDependencies": []
+    },
+    "@github-decrypter/diagnostics": {
+      "environmentNeutral": true,
+      "allowedWorkspaceDependencies": []
     }
   },
   "appRules": {
@@ -218,6 +222,7 @@
         "@github-decrypter/ai",
         "@github-decrypter/chat",
         "@github-decrypter/context",
+        "@github-decrypter/diagnostics",
         "@github-decrypter/git",
         "@github-decrypter/github-app",
         "@github-decrypter/github-provider",
@@ -1993,7 +1998,8 @@
     "previewRuntimeBuild": 68,
     "livePreviewBuild": 69,
     "previewBridgeBuild": 70,
-    "developerConsoleBuild": 71
+    "developerConsoleBuild": 71,
+    "problemsDiagnosticsBuild": 72
   },
   "legacyMigrationRoots": [
     "core",
@@ -2907,7 +2913,8 @@
       "iamgio/quarkdown",
       "0xpolarzero/electrobun-browser-tools",
       "AminAdineh/WebConsoleCapture",
-      "Sakil9051/devtools-clone"
+      "Sakil9051/devtools-clone",
+      "ros/console_bridge"
     ],
     "optionalToolRepos": [
       "NationalSecurityAgency/ghidra"
@@ -2926,7 +2933,9 @@
       "DietrichGebert/ponytail",
       "brijr/iris",
       "vitalysim/browser-bridge",
-      "microsoft/edge-devtools-network-console"
+      "microsoft/edge-devtools-network-console",
+      "ros/diagnostics",
+      "dreamsxin/agent-ide"
     ],
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
@@ -3290,5 +3299,80 @@
     "devtoolsCloneLicenseVerified": false,
     "devtoolsCloneCodeReuseAllowed": false,
     "externalSourceOwnsRuntimeAuthority": false
+  },
+  "problemsDiagnosticsAuthority": {
+    "ownerPackage": "@github-decrypter/diagnostics",
+    "contractSource": "packages/diagnostics/src/index.ts",
+    "runtimeOwnerRoot": "apps/local",
+    "runtimeSource": "apps/local/src/problems-diagnostics-runtime.ts",
+    "minimumBuild": 72,
+    "schema": "gd-problems-diagnostics/1",
+    "diagnosticSchema": "gd-problem-diagnostic/1",
+    "groupSchema": "gd-problem-diagnostic-group/1",
+    "correlationSchema": "gd-problem-diagnostic-correlation/1",
+    "textSchema": "gd-problem-diagnostic-text/1",
+    "reportSchema": "gd-problems-diagnostics-report/1",
+    "previewBridgeBuild": 70,
+    "developerConsoleBuild": 71,
+    "validationPipelineBuild": 57,
+    "toolRuntimeBuild": 53,
+    "sources": [
+      "runtime",
+      "browser",
+      "test",
+      "preview",
+      "validation"
+    ],
+    "severities": [
+      "info",
+      "warning",
+      "error"
+    ],
+    "maxInputs": 4096,
+    "maxEntries": 512,
+    "maxDiagnosticTextCharacters": 24000,
+    "maxDiagnosticTextResults": 256,
+    "bounded": true,
+    "deterministic": true,
+    "sourceGrounded": true,
+    "deduplication": true,
+    "sourceLocationCorrelation": true,
+    "correlationIsNotCausation": true,
+    "unmatchedDiagnosticsPreserved": true,
+    "worstSeverityPropagation": true,
+    "telemetryOwner": "preview-bridge",
+    "secondCollectorAllowed": false,
+    "validationOwner": "validation-pipeline",
+    "validationRecordVerificationAuthority": false,
+    "aggregationAuthority": true,
+    "correlationAuthority": true,
+    "rootCauseAuthority": false,
+    "rootCauseOwnerBuild": 106,
+    "autoFixAuthority": false,
+    "mutationAuthority": false,
+    "validationAuthority": false,
+    "releaseAuthority": false,
+    "architectureAuthority": false,
+    "persistentStorage": false,
+    "networkAuthority": false,
+    "filesystemAuthority": false,
+    "databaseAuthority": false,
+    "toolRuntimeRequired": true,
+    "readCapabilityOnly": true,
+    "scopeLockMayBeProvenanceOnly": true,
+    "uiOwnedByBuild72": false,
+    "uiDeferred": true,
+    "rosDiagnosticsSource": "ros/diagnostics",
+    "rosDiagnosticsClassification": "direct-candidate",
+    "rosDiagnosticsLicense": "BSD-3-Clause",
+    "rosDiagnosticsAdoptionScope": "aggregation-data-model-patterns-only",
+    "rosConsoleBridgeSource": "ros/console_bridge",
+    "rosConsoleBridgeClassification": "reference-only",
+    "rosConsoleBridgeLicense": "BSD-3-Clause",
+    "agentIdeSource": "dreamsxin/agent-ide",
+    "agentIdeClassification": "direct-candidate",
+    "agentIdeLicense": "MIT",
+    "agentIdeAdoptionScope": "problem-normalization-source-correlation-patterns-only",
+    "externalRuntimeDependency": false
   }
 }
