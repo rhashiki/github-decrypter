@@ -301,11 +301,17 @@ function cleanDiagnosticMessage(value: string): string {
 }
 
 function locationFromLine(line: string): { file: string; line: number; column: number; tail: string } | null {
-  const paren = /(.+\.[A-Za-z0-9]+)\((\d+),(\d+)\)\s*:\s*(.*)$/.exec(line);
+  const trimmed = line.trim();
+  const wrapped = /\(([^()]+\.[A-Za-z0-9]+:\d+:\d+)\)\s*$/.exec(trimmed);
+  const stack = /(?:^|\s)at\s+(.+)$/.exec(trimmed);
+  const candidate = (wrapped?.[1] ?? stack?.[1] ?? trimmed).trim();
+
+  const paren = /^(.+\.[A-Za-z0-9]+)\((\d+),(\d+)\)\s*:\s*(.*)$/.exec(candidate);
   if (paren && looksLikeSourceFile(paren[1]!)) {
     return { file: normalizeFile(paren[1]!), line: Number(paren[2]), column: Number(paren[3]), tail: paren[4] ?? '' };
   }
-  const colon = /(?:^|\bat\s+|\()((?:file:\/\/)?[^\n()]+\.[A-Za-z0-9]+):(\d+):(\d+)(?:\)?\s*[:\-]?\s*(.*))?$/.exec(line.trim());
+
+  const colon = /^((?:file:\/\/)?[^\n()]+\.[A-Za-z0-9]+):(\d+):(\d+)(?:\)?\s*[:\-]?\s*(.*))?$/.exec(candidate);
   if (colon && looksLikeSourceFile(colon[1]!.replace(/^file:\/\//,''))) {
     return { file: normalizeFile(colon[1]!), line: Number(colon[2]), column: Number(colon[3]), tail: colon[4] ?? '' };
   }
