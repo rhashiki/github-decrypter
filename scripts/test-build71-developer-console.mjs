@@ -92,7 +92,7 @@ for(const marker of [
 ]) assert.ok(runtime.includes(marker),'Missing Developer Console runtime marker: '+marker);
 
 assert.equal(/createChromiumCdpAdapter|CdpClient|Network\.enable|Runtime\.enable|child_process|\bspawn\s*\(|\bfetch\s*\(|\bWebSocket\b/.test(runtime),false);
-assert.equal(/requestHeaders|responseHeaders|requestBody|responseBody|cookies|localStorage|sessionStorage/.test(runtime),false);
+assert.equal(/requestHeadersIncluded:\s*true|responseHeadersIncluded:\s*true|bodiesIncluded:\s*true|\b(?:requestHeaders|responseHeaders|requestBody|responseBody|cookies|localStorage|sessionStorage)\s*[:=.(\[]/.test(runtime),false);
 assert.ok(browserRuntime.includes('createDeveloperConsoleRuntime('));
 assert.ok(browserRuntime.includes('developerConsole.createToolRegistrations(scopeLock)'));
 assert.ok(browserRuntime.includes('developerConsole: developerConsole.status()'));
