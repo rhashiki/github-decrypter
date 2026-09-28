@@ -243,8 +243,8 @@ function buildResult(
 ): DeveloperConsoleResult {
   const all = normalizeEntries(snapshot);
   const matched = all.filter((entry) => matches(entry, query));
-  const ordered = query.order === 'asc' ? matched : [...matched].reverse();
-  const selected = Object.freeze(ordered.slice(0, query.limit));
+  const page = matched.slice(0, query.limit);
+  const selected = Object.freeze(query.order === 'asc' ? page : [...page].reverse());
   const latestSequence = all.reduce((latest, entry) => Math.max(latest, entry.sequence), 0);
   const nextAfterSequence = selected.reduce(
     (latest, entry) => Math.max(latest, entry.sequence),
