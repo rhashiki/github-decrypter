@@ -27,6 +27,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLivePreviewRuntime, type LivePreviewRuntimeStatus } from './live-preview-runtime.js';
 import { createPreviewBridgeRuntime, type PreviewBridgeRuntimeStatus } from './preview-bridge-runtime.js';
+import { createDeveloperConsoleRuntime, type DeveloperConsoleRuntimeStatus } from './developer-console-runtime.js';
 import {
   createChromiumCdpAdapter,
   detectLocalChromiumExecutable,
@@ -66,6 +67,7 @@ export interface PreviewBrowserRuntimeStatus {
   readonly persistentFileWrites: false;
   readonly livePreview: LivePreviewRuntimeStatus;
   readonly previewBridge: PreviewBridgeRuntimeStatus;
+  readonly developerConsole: DeveloperConsoleRuntimeStatus;
 }
 
 export interface PreviewBrowserRuntimeOptions {
@@ -213,6 +215,10 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     now,
   });
 
+  const developerConsole = createDeveloperConsoleRuntime({
+    host: Object.freeze({ getBrowserSession: requireSession }),
+  });
+
   function status(): PreviewBrowserRuntimeStatus {
     let browserDetected = false;
     try {
@@ -236,6 +242,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       persistentFileWrites: false,
       livePreview: livePreview.status(),
       previewBridge: previewBridge.status(),
+      developerConsole: developerConsole.status(),
     });
   }
 
@@ -393,6 +400,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       ...baseRegistrations,
       ...livePreview.createToolRegistrations(scopeLock),
       ...previewBridge.createToolRegistrations(scopeLock),
+      ...developerConsole.createToolRegistrations(scopeLock),
     ]);
   }
 

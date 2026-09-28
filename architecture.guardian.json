@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 70,
+  "currentBuild": 71,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -1992,7 +1992,8 @@
     "finalContextEngineBuild": 67,
     "previewRuntimeBuild": 68,
     "livePreviewBuild": 69,
-    "previewBridgeBuild": 70
+    "previewBridgeBuild": 70,
+    "developerConsoleBuild": 71
   },
   "legacyMigrationRoots": [
     "core",
@@ -2904,7 +2905,9 @@
       "chartdb/chartdb",
       "tinyhumansai/openhuman",
       "iamgio/quarkdown",
-      "0xpolarzero/electrobun-browser-tools"
+      "0xpolarzero/electrobun-browser-tools",
+      "AminAdineh/WebConsoleCapture",
+      "Sakil9051/devtools-clone"
     ],
     "optionalToolRepos": [
       "NationalSecurityAgency/ghidra"
@@ -2922,7 +2925,8 @@
       "alexfazio/plankton",
       "DietrichGebert/ponytail",
       "brijr/iris",
-      "vitalysim/browser-bridge"
+      "vitalysim/browser-bridge",
+      "microsoft/edge-devtools-network-console"
     ],
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
@@ -3223,6 +3227,68 @@
     "electrobunClassification": "reference-only",
     "electrobunLicenseDeclared": false,
     "electrobunCodeReuseAllowed": false,
+    "externalSourceOwnsRuntimeAuthority": false
+  },
+  "developerConsoleAuthority": {
+    "ownerPackage": "@github-decrypter/preview",
+    "contractSource": "packages/preview/src/index.ts",
+    "executionOwnerRoot": "apps/local",
+    "runtimeSource": "apps/local/src/developer-console-runtime.ts",
+    "browserRuntimeSource": "apps/local/src/preview-browser-runtime.ts",
+    "previewBridgeRuntimeSource": "apps/local/src/preview-bridge-runtime.ts",
+    "telemetrySource": "apps/local/src/preview-telemetry.ts",
+    "minimumBuild": 71,
+    "schema": "gd-developer-console/1",
+    "querySchema": "gd-developer-console-query/1",
+    "resultSchema": "gd-developer-console-result/1",
+    "protocolSchema": "gd-developer-console-protocol/1",
+    "previewBridgeBuild": 70,
+    "toolRuntimeBuild": 53,
+    "readOnly": true,
+    "bounded": true,
+    "streamingByCursor": true,
+    "querySources": [
+      "console",
+      "network",
+      "runtime-error"
+    ],
+    "filterByLevel": true,
+    "filterByMethod": true,
+    "filterByStatus": true,
+    "filterByText": true,
+    "maxQueryLimit": 256,
+    "telemetryOwner": "preview-bridge",
+    "secondCollectorAllowed": false,
+    "hostExecutionSeparated": true,
+    "persistentStorage": false,
+    "requestHeadersIncluded": false,
+    "responseHeadersIncluded": false,
+    "requestBodiesIncluded": false,
+    "responseBodiesIncluded": false,
+    "credentialsIncluded": false,
+    "browserInteraction": false,
+    "mutationAuthority": false,
+    "diagnosticsAuthority": false,
+    "validationAuthority": false,
+    "releaseAuthority": false,
+    "architectureAuthority": false,
+    "toolRuntimeRequired": true,
+    "readCapabilityOnly": true,
+    "scopeLockMayBeProvenanceOnly": true,
+    "uiOwnedByBuild71": false,
+    "uiDeferred": true,
+    "sourceTriagePath": "docs/research/BUILD_71_SOURCE_TRIAGE.md",
+    "edgeNetworkConsoleSource": "microsoft/edge-devtools-network-console",
+    "edgeNetworkConsoleClassification": "direct-candidate",
+    "edgeNetworkConsoleLicense": "MIT",
+    "edgeNetworkConsoleAdoptionScope": "host-protocol-data-model-patterns-only",
+    "webConsoleCaptureSource": "AminAdineh/WebConsoleCapture",
+    "webConsoleCaptureClassification": "reference-only",
+    "webConsoleCaptureLicense": "MIT",
+    "devtoolsCloneSource": "Sakil9051/devtools-clone",
+    "devtoolsCloneClassification": "reference-only",
+    "devtoolsCloneLicenseVerified": false,
+    "devtoolsCloneCodeReuseAllowed": false,
     "externalSourceOwnsRuntimeAuthority": false
   }
 }
