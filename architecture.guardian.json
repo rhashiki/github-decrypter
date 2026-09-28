@@ -2901,28 +2901,31 @@
     "copyleftReferenceOnlyByDefault": true,
     "directDependencyRequiresLicenseReview": true,
     "referenceOnlyRepos": [
-      "lobehub/lobe-chat",
+      "0xpolarzero/electrobun-browser-tools",
+      "AminAdineh/WebConsoleCapture",
+      "Sakil9051/devtools-clone",
       "chartdb/chartdb",
-      "tinyhumansai/openhuman",
       "iamgio/quarkdown",
-      "0xpolarzero/electrobun-browser-tools"
+      "lobehub/lobe-chat",
+      "tinyhumansai/openhuman"
     ],
     "optionalToolRepos": [
       "NationalSecurityAgency/ghidra"
     ],
     "directCandidateRepos": [
-      "BuilderIO/mitosis",
-      "deductive-ai/MemGPT",
-      "freestylefly/awesome-gpt-image-2",
-      "jackwener/OpenCLI",
-      "alibaba/page-agent",
       "Andyyyy64/whichllm",
-      "obra/superpowers",
-      "dlvhdr/gh-dash",
+      "BuilderIO/mitosis",
+      "DietrichGebert/ponytail",
       "akitaonrails/ai-memory",
       "alexfazio/plankton",
-      "DietrichGebert/ponytail",
+      "alibaba/page-agent",
       "brijr/iris",
+      "deductive-ai/MemGPT",
+      "dlvhdr/gh-dash",
+      "freestylefly/awesome-gpt-image-2",
+      "jackwener/OpenCLI",
+      "microsoft/edge-devtools-network-console",
+      "obra/superpowers",
       "vitalysim/browser-bridge"
     ],
     "languageAdapterCandidates": [
