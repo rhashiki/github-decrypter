@@ -2901,32 +2901,32 @@
     "copyleftReferenceOnlyByDefault": true,
     "directDependencyRequiresLicenseReview": true,
     "referenceOnlyRepos": [
+      "lobehub/lobe-chat",
+      "chartdb/chartdb",
+      "tinyhumansai/openhuman",
+      "iamgio/quarkdown",
       "0xpolarzero/electrobun-browser-tools",
       "AminAdineh/WebConsoleCapture",
-      "Sakil9051/devtools-clone",
-      "chartdb/chartdb",
-      "iamgio/quarkdown",
-      "lobehub/lobe-chat",
-      "tinyhumansai/openhuman"
+      "Sakil9051/devtools-clone"
     ],
     "optionalToolRepos": [
       "NationalSecurityAgency/ghidra"
     ],
     "directCandidateRepos": [
-      "Andyyyy64/whichllm",
       "BuilderIO/mitosis",
-      "DietrichGebert/ponytail",
-      "akitaonrails/ai-memory",
-      "alexfazio/plankton",
-      "alibaba/page-agent",
-      "brijr/iris",
       "deductive-ai/MemGPT",
-      "dlvhdr/gh-dash",
       "freestylefly/awesome-gpt-image-2",
       "jackwener/OpenCLI",
-      "microsoft/edge-devtools-network-console",
+      "alibaba/page-agent",
+      "Andyyyy64/whichllm",
       "obra/superpowers",
-      "vitalysim/browser-bridge"
+      "dlvhdr/gh-dash",
+      "akitaonrails/ai-memory",
+      "alexfazio/plankton",
+      "DietrichGebert/ponytail",
+      "brijr/iris",
+      "vitalysim/browser-bridge",
+      "microsoft/edge-devtools-network-console"
     ],
     "languageAdapterCandidates": [
       "gleam-lang/gleam"
