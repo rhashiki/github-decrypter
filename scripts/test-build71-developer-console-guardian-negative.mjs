@@ -39,7 +39,7 @@ try{
   expectFailure('AG766',()=>{
     fs.writeFileSync(
       'apps/local/src/developer-console-runtime.ts',
-      originals.get('apps/local/src/developer-console-runtime.ts')+"\nconst forbidden='requestHeaders';\n",
+      originals.get('apps/local/src/developer-console-runtime.ts')+"\nconst requestHeaders = {};\n",
     );
   });
   expectFailure('AG767',()=>{
