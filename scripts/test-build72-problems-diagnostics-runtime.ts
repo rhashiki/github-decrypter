@@ -285,6 +285,10 @@ const result=await tools.invoke({
     validations:[{
       schema:'gd-validation-pipeline/1',
       status:'validated',
+      immutable:true,
+      deterministic:true,
+      validationPipeline:true,
+      mutationAuthorized:false,
       workspaceId:'workspace:diagnostics-test',
       id:'validation-fixture',
       criteria:[{
@@ -329,6 +333,7 @@ assert.ok(value.snapshot.diagnostics.some((item:any)=>item.code==='http-500'));
 assert.ok(value.snapshot.diagnostics.some((item:any)=>item.code==='telemetry-dropped'));
 assert.ok(value.snapshot.diagnostics.some((item:any)=>item.code==='validation-criterion-0001'));
 assert.ok(value.snapshot.diagnostics.some((item:any)=>item.code==='visual-settling-timeout'));
+assert.ok(value.snapshot.correlations.some((item:any)=>item.file==='src/app.ts'&&item.line===12));
 assert.equal(value.sourceStats.previewBridge,true);
 assert.equal(value.sourceStats.validationRecords,1);
 assert.equal(value.sourceStats.diagnosticTextInputs,1);
@@ -358,6 +363,10 @@ await assert.rejects(tools.invoke({
   input:{validations:[{
     schema:'gd-validation-pipeline/1',
     status:'validated',
+    immutable:true,
+    deterministic:true,
+    validationPipeline:true,
+    mutationAuthorized:false,
     workspaceId:'workspace:another',
     id:'wrong-workspace',
     criteria:[],
