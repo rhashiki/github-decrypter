@@ -529,9 +529,11 @@ for (const [key, expected] of Object.entries({
     violation('AG009', `Engineering Intelligence doctrine invariant drifted: ${key}`, { expected, actual: engineeringIntelligenceDoctrine[key] });
   }
 }
-const referenceOnlyRepos = policy.currentBuild >= 70
-  ? ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown','0xpolarzero/electrobun-browser-tools']
-  : ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown'];
+const referenceOnlyRepos = policy.currentBuild >= 71
+  ? ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown','0xpolarzero/electrobun-browser-tools','AminAdineh/WebConsoleCapture','Sakil9051/devtools-clone']
+  : policy.currentBuild >= 70
+    ? ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown','0xpolarzero/electrobun-browser-tools']
+    : ['lobehub/lobe-chat','chartdb/chartdb','tinyhumansai/openhuman','iamgio/quarkdown'];
 if (!(engineeringIntelligenceDoctrine.directCandidateRepos ?? []).includes('brijr/iris')) {
   violation('AG009', 'Iris Visual Evidence Capture direct-candidate classification is missing.');
 }
