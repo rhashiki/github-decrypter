@@ -144,25 +144,37 @@ function previewObservations(
   const observations: ProblemsDiagnosticInput[] = [];
 
   for (const error of snapshot.errors) {
-    observations.push(Object.freeze({
-      source: 'runtime',
-      severity: 'error',
-      message: error.message,
-      sourceRef: previewRef(sessionId,tabId,'runtime-error',String(error.sequence)),
-      code: 'runtime-error',
-    }));
+    const sourceRef = previewRef(sessionId,tabId,'runtime-error',String(error.sequence));
+    const located = parseDiagnosticText({ source: 'runtime', sourceRef, text: error.message });
+    if (located.length > 0) {
+      observations.push(...located.map((item) => Object.freeze({ ...item, severity: 'error' as const, code: 'runtime-error' })));
+    } else {
+      observations.push(Object.freeze({
+        source: 'runtime',
+        severity: 'error',
+        message: error.message,
+        sourceRef,
+        code: 'runtime-error',
+      }));
+    }
   }
 
   for (const entry of snapshot.console) {
     const severity = consoleSeverity(entry.level);
     if (!severity) continue;
-    observations.push(Object.freeze({
-      source: 'runtime',
-      severity,
-      message: entry.text,
-      sourceRef: previewRef(sessionId,tabId,'console',String(entry.sequence)),
-      code: 'console-'+entry.level.toLowerCase(),
-    }));
+    const sourceRef = previewRef(sessionId,tabId,'console',String(entry.sequence));
+    const located = parseDiagnosticText({ source: 'runtime', sourceRef, text: entry.text });
+    if (located.length > 0) {
+      observations.push(...located.map((item) => Object.freeze({ ...item, severity, code: 'console-'+entry.level.toLowerCase() })));
+    } else {
+      observations.push(Object.freeze({
+        source: 'runtime',
+        severity,
+        message: entry.text,
+        sourceRef,
+        code: 'console-'+entry.level.toLowerCase(),
+      }));
+    }
   }
 
   for (const entry of snapshot.network) {
@@ -201,8 +213,15 @@ function validationObservations(
   for (const value of values) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Validation diagnostic source must be an object.');
     const record = value as Record<string, ToolValue>;
-    if (record.schema !== 'gd-validation-pipeline/1' || record.status !== 'validated') {
-      throw new TypeError('Problems & Diagnostics accepts only canonical Validation Pipeline records.');
+    if (
+      record.schema !== 'gd-validation-pipeline/1'
+      || record.status !== 'validated'
+      || record.immutable !== true
+      || record.deterministic !== true
+      || record.validationPipeline !== true
+      || record.mutationAuthorized !== false
+    ) {
+      throw new TypeError('Problems & Diagnostics accepts only Validation Pipeline-shaped read evidence.');
     }
     if (record.workspaceId !== workspaceId) throw new Error('Validation diagnostic source belongs to a different workspace.');
     if (!Array.isArray(record.criteria)) throw new TypeError('Validation diagnostic criteria are invalid.');
