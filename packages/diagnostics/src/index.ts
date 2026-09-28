@@ -4,6 +4,11 @@ export const PROBLEMS_DIAGNOSTIC_SCHEMA = 'gd-problem-diagnostic/1' as const;
 export const PROBLEMS_DIAGNOSTIC_GROUP_SCHEMA = 'gd-problem-diagnostic-group/1' as const;
 export const PROBLEMS_DIAGNOSTIC_CORRELATION_SCHEMA = 'gd-problem-diagnostic-correlation/1' as const;
 export const PROBLEMS_DIAGNOSTIC_TEXT_SCHEMA = 'gd-problem-diagnostic-text/1' as const;
+export const PROBLEMS_DIAGNOSTICS_REPORT_SCHEMA = 'gd-problems-diagnostics-report/1' as const;
+
+export const PROBLEMS_DIAGNOSTICS_TOOL_IDS = Object.freeze({
+  aggregate: 'tool:problems-diagnostics.aggregate',
+} as const);
 
 export const PROBLEMS_DIAGNOSTIC_SOURCES = Object.freeze([
   'runtime',
@@ -93,6 +98,42 @@ export interface ProblemsDiagnosticsInput {
   readonly workspaceId: string;
   readonly observations: readonly ProblemsDiagnosticInput[];
   readonly maxEntries?: number;
+}
+
+export interface ProblemsDiagnosticsProvenance {
+  readonly workspaceId: string;
+  readonly orchestrationId: string;
+  readonly orchestrationDigest: string;
+  readonly buildStepId: string;
+  readonly taskId: string;
+  readonly requirementId: string;
+  readonly runId: string;
+  readonly scopeLockId: string | null;
+  readonly scopeLockDigest: string | null;
+}
+
+export interface ProblemsDiagnosticsReport {
+  readonly schema: typeof PROBLEMS_DIAGNOSTICS_REPORT_SCHEMA;
+  readonly build: typeof PROBLEMS_DIAGNOSTICS_BUILD;
+  readonly snapshot: ProblemsDiagnosticsSnapshot;
+  readonly provenance: ProblemsDiagnosticsProvenance;
+  readonly sourceStats: {
+    readonly previewBridge: boolean;
+    readonly validationRecords: number;
+    readonly diagnosticTextInputs: number;
+    readonly previewCaptureReports: number;
+    readonly previewTelemetryDropped: number;
+  };
+  readonly capturedAt: string;
+  readonly readOnly: true;
+  readonly aggregationAuthority: true;
+  readonly correlationAuthority: true;
+  readonly rootCauseAuthority: false;
+  readonly autoFixAuthority: false;
+  readonly mutationAuthority: false;
+  readonly validationAuthority: false;
+  readonly releaseAuthority: false;
+  readonly persistence: false;
 }
 
 export interface ProblemsDiagnosticsSnapshot {
