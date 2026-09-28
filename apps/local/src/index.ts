@@ -31,6 +31,7 @@ export * from './project-memory-store.js';
 export * from './product-contract-store.js';
 export * from './preview-browser-runtime.js';
 export * from './developer-console-runtime.js';
+export * from './problems-diagnostics-runtime.js';
 export * from './project-detector.js';
 export * from './recovery-engine.js';
 export * from './secrets-vault.js';

@@ -28,6 +28,7 @@ import { join } from 'node:path';
 import { createLivePreviewRuntime, type LivePreviewRuntimeStatus } from './live-preview-runtime.js';
 import { createPreviewBridgeRuntime, type PreviewBridgeRuntimeStatus } from './preview-bridge-runtime.js';
 import { createDeveloperConsoleRuntime, type DeveloperConsoleRuntimeStatus } from './developer-console-runtime.js';
+import { createProblemsDiagnosticsRuntime, type ProblemsDiagnosticsRuntimeStatus } from './problems-diagnostics-runtime.js';
 import {
   createChromiumCdpAdapter,
   detectLocalChromiumExecutable,
@@ -68,6 +69,7 @@ export interface PreviewBrowserRuntimeStatus {
   readonly livePreview: LivePreviewRuntimeStatus;
   readonly previewBridge: PreviewBridgeRuntimeStatus;
   readonly developerConsole: DeveloperConsoleRuntimeStatus;
+  readonly problemsDiagnostics: ProblemsDiagnosticsRuntimeStatus;
 }
 
 export interface PreviewBrowserRuntimeOptions {
@@ -219,6 +221,11 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
     host: Object.freeze({ getBrowserSession: requireSession }),
   });
 
+  const problemsDiagnostics = createProblemsDiagnosticsRuntime({
+    host: Object.freeze({ getBrowserSession: requireSession }),
+    now,
+  });
+
   function status(): PreviewBrowserRuntimeStatus {
     let browserDetected = false;
     try {
@@ -243,6 +250,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       livePreview: livePreview.status(),
       previewBridge: previewBridge.status(),
       developerConsole: developerConsole.status(),
+      problemsDiagnostics: problemsDiagnostics.status(),
     });
   }
 
@@ -401,6 +409,7 @@ export function createPreviewBrowserRuntime(options: PreviewBrowserRuntimeOption
       ...livePreview.createToolRegistrations(scopeLock),
       ...previewBridge.createToolRegistrations(scopeLock),
       ...developerConsole.createToolRegistrations(scopeLock),
+      ...problemsDiagnostics.createToolRegistrations(scopeLock),
     ]);
   }
 

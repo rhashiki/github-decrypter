@@ -149,7 +149,7 @@ Constitutional Amendment 005 adopts the **Complete Product Generation Doctrine**
    - context consumable by Viktor and later Perception/Visual Build without creating a second authority.
 
 71. **Developer Console** — ✅
-72. **Problems & Diagnostics** — aggregates runtime, browser, test and Preview diagnostics with source correlation where possible.
+72. **Problems & Diagnostics** — ✅ — aggregates runtime, browser, test and Preview diagnostics with source correlation where possible.
 73. **Code Explorer** — expands into **Code Intelligence**, including Codebase Onboarding and LSP/Index specialist methods for factual entry-point, definition/reference, dependency and execution-path explanation: Amendment 009: Code Intelligence may consume framework-neutral component identity, database schema graphs, optional binary-analysis evidence and extensible language/LSP adapters.
    - AST-aware navigation;
    - definitions/references/symbols;

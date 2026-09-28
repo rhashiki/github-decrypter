@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".."
+  },
+  "include": [
+    "../packages/plan/src/**/*.ts",
+    "../packages/build/src/**/*.ts",
+    "../packages/scope/src/**/*.ts",
+    "../packages/tools/src/**/*.ts",
+    "../packages/preview/src/**/*.ts",
+    "../packages/diagnostics/src/**/*.ts",
+    "../apps/local/src/**/*.ts",
+    "./test-build72-problems-diagnostics-runtime.ts"
+  ]
+}
