@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   buildCodeIntelligenceIndex,
+  buildCodeDependencyGraph,
   queryCodeIntelligence,
   CODE_INTELLIGENCE_SCHEMA,
   CODE_INTELLIGENCE_MAX_FILE_CHARS,
@@ -34,6 +35,15 @@ assert.ok(index.imports.some((item) => item.specifier === './helper' && item.res
 assert.ok(index.imports.some((item) => item.specifier === './optional' && item.resolved === false));
 assert.equal(index.occurrences.some((item) => item.name === 'Widget' && item.binding === 'declaration'), true);
 
+const dependencies = buildCodeDependencyGraph(index);
+assert.equal(dependencies.edges.length, 2);
+assert.equal(dependencies.edges.find((edge) => edge.specifier === './helper')?.target, 'src/helper.ts');
+assert.equal(dependencies.edges.find((edge) => edge.specifier === './optional')?.target, null);
+assert.equal(dependencies.edges.find((edge) => edge.specifier === './optional')?.resolution, 'unresolved');
+assert.equal(dependencies.semanticClaims, false);
+assert.equal(dependencies.networkAuthority, false);
+assert.equal(dependencies.mutationAuthority, false);
+assert.throws(() => buildCodeDependencyGraph(index, 2049));
 const defs = queryCodeIntelligence(index, { kind: 'definitions', term: 'make' });
 assert.equal(defs.totalMatches, 2, 'Index returns a local import binding and the original export without pretending semantic linkage');
 assert.equal(defs.matches[0]?.location.line, 1);

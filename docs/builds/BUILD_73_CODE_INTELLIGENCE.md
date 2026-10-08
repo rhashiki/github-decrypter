@@ -11,6 +11,8 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 - Deterministic file/source ordering and rejected unsupported extensions.
 - No full source payload retained in results, no raw secrets, no network access.
 - AST declarations vs syntactic uses explicitly distinguished.
+- Bounded syntax-grounded dependency edges between **already supplied/indexed** local sources; unresolved imports remain explicitly unresolved.
+- Graph never claims semantic/type-correct import binding or fetches dependencies.
 - Imports are recorded, but no unverified dependency resolution is asserted.
 - No inference, expensive semantic indexer, background daemon, binary execution, mutation, persistence or deployment.
 

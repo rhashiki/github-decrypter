@@ -270,3 +270,6 @@ export function queryCodeIntelligence(index: CodeIntelligenceIndex, query: CodeI
     semanticResolution: false,
   });
 }
+
+export { buildCodeDependencyGraph, CODE_DEPENDENCY_GRAPH_SCHEMA, CODE_DEPENDENCY_MAX_EDGES } from './graph.js';
+export type { CodeDependencyGraph, CodeDependencyEdge } from './graph.js';
