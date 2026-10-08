@@ -36,3 +36,13 @@ This work remains **pre-merge**, not a completed Build 73. No GitHub-hosted auto
 - **Observed focused evidence:** 12/12 behavioral checks of the exact committed folder helper after stripping TypeScript annotations. Checks covered allowed/disallowed paths, mixed roots, duplicate paths, file-size denial, and 64-file bound.
 - **Not yet demonstrated:** complete repository dependency install, TypeScript checks, full Build 73 runtime/security tests, earlier build regression suite, or Vite production bundle. The local execution environment has Node 22/TypeScript available but cannot resolve github.com and has no mounted repository checkout. Source inspection and isolated helper tests do **not** establish passing monorepo gates.
 - Acceptance remains blocked until a Node 22/pnpm host with the repository checkout runs `pnpm install --no-frozen-lockfile && pnpm run validate:server` and supplies the actual complete `reports/server-validation-73.json` result. Do not merge PR #106 or start Build 74 based on partial tests.
+
+
+## Continuation — source-grounded ESM dependency resolution (2026-10-08)
+
+- Added indexed-only source substitution for TypeScript-backed `.js`, `.jsx`, `.mjs`, and `.cjs` import specifiers, including `index.mts` and `index.cts` directory candidates. No filesystem reads or claims about external dependencies.
+- Added an explicit `specifierTruncated` marker when an import specifier exceeds 512 characters. The dependency graph must return `unresolved` for such imports; otherwise an incomplete prefix can falsely match a file.
+- Expanded the committed Build 73 regression to cover mixed JS/TS aliases, missing imports, and truncated imports.
+- **Additional isolated evidence:** eight graph-routing cases and four truncated-import/contract checks passed using executable JavaScript derived directly from the branch's TypeScript helper. The committed TypeScript test suite is **not yet executed**, so this is not complete Build 73 validation.
+- Linked Supabase project `lovable-decrypter` is accessible and active; Build 73 does not require a DB migration or Edge deployment. No Supabase resources were modified.
+- Full server checkout validation remains blocked in this environment by inaccessible GitHub DNS and unavailable remote package registry. PR #106 stays draft and no Build 74 code is authorized.
