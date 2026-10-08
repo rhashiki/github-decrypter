@@ -133,7 +133,7 @@ export function DiffViewer() {
                         <span className="diffv-lineno">{row.oldLine ?? ''}</span>
                         <span className="diffv-lineno">{row.newLine ?? ''}</span>
                         <span className="diffv-marker">{row.kind === 'added' ? '+' : row.kind === 'removed' ? '−' : ' '}</span>
-                        <code>{row.text || ' '}</code>
+                        <code>{row.text || ' '}{row.missingFinalNewline ? '  ↵ (no final newline)' : ''}</code>
                       </div>
                     ))}
                   </div>
