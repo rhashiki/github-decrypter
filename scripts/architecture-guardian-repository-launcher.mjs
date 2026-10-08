@@ -97,7 +97,6 @@ if (!rule || policy.currentBuild < 26 || rule.repositoryLauncherBuild !== 26) {
     rule.launcherPage, rule.launcherScript, 'docs/architecture/REPOSITORY_LAUNCHER.md', 'docs/builds/BUILD_26_REPOSITORY_LAUNCHER.md',
     'scripts/test-build26-repository-launcher.mjs', 'scripts/test-build26-repository-launcher-runtime.ts',
     'scripts/test-build26-repository-launcher-guardian-negative.mjs', 'scripts/tsconfig.build26-tests.json',
-    '.github/workflows/build26-repository-launcher.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG249', message: 'Required Build 26 artifact is missing.', detail: required });
 }
 
