@@ -6,8 +6,10 @@ import {
   buildCodeIntelligenceIndex,
   buildCodeDependencyGraph,
   queryCodeIntelligence,
+  resolveCodeSemantics,
   type CodeFileInput,
   type CodeIntelligenceQuery,
+  type CodeSemanticRequest,
 } from '@github-decrypter/code-intelligence';
 import { asWorkspaceId } from '@github-decrypter/workspace';
 import {
@@ -50,10 +52,27 @@ function dataRow(value: ToolValue, label: string): Record<string, ToolValue> {
   return value as Record<string, ToolValue>;
 }
 
-function queryOf(raw: ToolValue): CodeIntelligenceQuery {
+function queryOf(raw: ToolValue): CodeIntelligenceQuery | CodeSemanticRequest {
   const input = dataRow(raw, 'Code Intelligence query');
-  if (Object.keys(input).some((key) => !['kind','term','path','limit'].includes(key))) {
+  const semantic = input.kind === 'semantic-definitions' || input.kind === 'semantic-references';
+  const allowedFields = semantic ? ['kind','path','line','column','limit'] : ['kind','term','path','limit'];
+  if (Object.keys(input).some((key) => !allowedFields.includes(key))) {
     throw new TypeError('Code Intelligence query contains unknown fields.');
+  }
+  if (semantic) {
+    if (typeof input.path !== 'string' || typeof input.line !== 'number' || typeof input.column !== 'number'
+      || !Number.isInteger(input.line) || !Number.isInteger(input.column) || input.line < 1 || input.column < 1
+      || input.line > 1_000_000 || input.column > 1_000_000
+      || typeof input.limit !== 'undefined' && !Number.isInteger(input.limit)) {
+      throw new TypeError('Code Intelligence semantic query fields are invalid.');
+    }
+    return {
+      kind: input.kind as CodeSemanticRequest['kind'],
+      path: verifiedPath(input.path),
+      line: input.line,
+      column: input.column,
+      ...(typeof input.limit === 'number' ? { limit: input.limit } : {}),
+    };
   }
   if (typeof input.kind !== 'string' || !['definitions','occurrences','imports','calls'].includes(input.kind)
     || typeof input.term !== 'string' || typeof input.path !== 'undefined' && typeof input.path !== 'string'
@@ -139,7 +158,9 @@ export function createCodeIntelligenceToolRegistrations(
           files.push({ path, content });
         }
         const index = buildCodeIntelligenceIndex(files);
-        const result = queryCodeIntelligence(index, query);
+        const result = query.kind === 'semantic-definitions' || query.kind === 'semantic-references'
+          ? resolveCodeSemantics(files, query)
+          : queryCodeIntelligence(index, query);
         const dependencies = buildCodeDependencyGraph(index);
         return JSON.parse(JSON.stringify({
           ...result,
@@ -149,7 +170,7 @@ export function createCodeIntelligenceToolRegistrations(
           scopeLockId: context.sourceScopeLockId,
           indexedFiles: index.files,
           dependencies,
-          syntacticOnly: true,
+          syntacticOnly: query.kind !== 'semantic-definitions' && query.kind !== 'semantic-references',
           readCapabilityVerified: true,
           mutationAuthority: false,
         })) as ToolValue;

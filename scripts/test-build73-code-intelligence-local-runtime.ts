@@ -37,6 +37,12 @@ try {
   assert.equal(row.semanticResolution,false);
   assert.equal((row.matches as unknown[]).length,1);
   assert.equal(JSON.stringify(row).includes('=> 4'),false);
+  const sem = await registration.handler(ctx, { paths:['src/app.ts'], query:{kind:'semantic-definitions',path:'src/app.ts',line:2,column:2} });
+  assert.equal((sem as Record<string,unknown>).resolution,'resolved');
+  assert.equal((sem as Record<string,unknown>).syntacticOnly,false);
+  await assert.rejects(()=>registration.handler(ctx, {
+    paths:['src/app.ts'],query:{kind:'semantic-definitions',path:'../other.ts',line:1,column:1},
+  }));
   await assert.rejects(()=>registration.handler({...ctx,verifiedCapabilities:[]} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler({...ctx,mutationAuthorized:true} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler({...ctx,sourceScopeLockId:'another'} as ToolExecutionContext,input));

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   buildCodeIntelligenceIndex,
   buildCodeDependencyGraph,
+  resolveCodeSemantics,
   queryCodeIntelligence,
   CODE_INTELLIGENCE_SCHEMA,
   CODE_INTELLIGENCE_MAX_FILE_CHARS,
@@ -44,6 +45,34 @@ assert.equal(dependencies.semanticClaims, false);
 assert.equal(dependencies.networkAuthority, false);
 assert.equal(dependencies.mutationAuthority, false);
 assert.throws(() => buildCodeDependencyGraph(index, 2049));
+
+const semanticDefinition = resolveCodeSemantics(files, {
+  kind: 'semantic-definitions', path: 'src/main.ts', line: 3, column: 16,
+});
+assert.equal(semanticDefinition.resolution, 'resolved');
+assert.deepEqual(semanticDefinition.definitions, [{ path: 'src/helper.ts', line: 1, column: 17 }]);
+assert.equal(semanticDefinition.hostFilesystemAccess, false);
+assert.equal(semanticDefinition.networkAuthority, false);
+assert.equal(semanticDefinition.mutationAuthority, false);
+const semanticReferences = resolveCodeSemantics(files, {
+  kind: 'semantic-references', path: 'src/main.ts', line: 3, column: 16,
+});
+assert.equal(semanticReferences.resolution, 'resolved');
+assert.equal(semanticReferences.totalReferences, 4);
+assert.ok(semanticReferences.references.some((item) => item.path === 'src/main.ts' && item.line === 2));
+assert.ok(semanticReferences.references.some((item) => item.path === 'src/helper.ts' && item.line === 1));
+const missingSemantic = resolveCodeSemantics(files, {
+  kind: 'semantic-definitions', path: 'src/main.ts', line: 4, column: 14,
+});
+assert.equal(missingSemantic.resolution, 'unresolved');
+assert.deepEqual(missingSemantic.definitions, []);
+assert.throws(() => resolveCodeSemantics(files, {
+  kind: 'semantic-definitions', path: '../outside.ts', line: 1, column: 1,
+}));
+assert.throws(() => resolveCodeSemantics(files, {
+  kind: 'semantic-definitions', path: 'src/main.ts', line: 1, column: 9999,
+}));
+
 const defs = queryCodeIntelligence(index, { kind: 'definitions', term: 'make' });
 assert.equal(defs.totalMatches, 2, 'Index returns a local import binding and the original export without pretending semantic linkage');
 assert.equal(defs.matches[0]?.location.line, 1);

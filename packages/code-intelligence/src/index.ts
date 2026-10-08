@@ -273,3 +273,6 @@ export function queryCodeIntelligence(index: CodeIntelligenceIndex, query: CodeI
 
 export { buildCodeDependencyGraph, CODE_DEPENDENCY_GRAPH_SCHEMA, CODE_DEPENDENCY_MAX_EDGES } from './graph.js';
 export type { CodeDependencyGraph, CodeDependencyEdge } from './graph.js';
+
+export { resolveCodeSemantics, CODE_SEMANTIC_SCHEMA, CODE_SEMANTIC_MAX_RESULTS } from './semantic.js';
+export type { CodeSemanticRequest, CodeSemanticResult } from './semantic.js';
