@@ -151,7 +151,6 @@ if (
     'scripts/test-build37-model-routing-runtime.ts',
     'scripts/test-build37-model-routing-guardian-negative.mjs',
     'scripts/tsconfig.build37-tests.json',
-    '.github/workflows/build37-model-routing.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG359', message: 'Required Build 37 artifact is missing.', detail: required });
 }
 

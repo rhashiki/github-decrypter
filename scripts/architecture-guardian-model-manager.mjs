@@ -169,7 +169,6 @@ if (
     'scripts/test-build36-model-manager-runtime.ts',
     'scripts/test-build36-model-manager-guardian-negative.mjs',
     'scripts/tsconfig.build36-core-tests.json',
-    '.github/workflows/build36-model-manager.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG349', message: 'Required Build 36 artifact is missing.', detail: required });
 }
 

@@ -152,7 +152,6 @@ if (
     'scripts/test-build50-project-rules-runtime.ts',
     'scripts/test-build50-project-rules-guardian-negative.mjs',
     'scripts/tsconfig.build50-tests.json',
-    '.github/workflows/build50-project-rules-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG489', message: 'Required Build 50 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

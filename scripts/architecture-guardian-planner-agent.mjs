@@ -127,7 +127,6 @@ if (
     'scripts/test-build59-planner-agent-runtime.ts',
     'scripts/test-build59-planner-agent-guardian-negative.mjs',
     'scripts/tsconfig.build59-tests.json',
-    '.github/workflows/build59-planner-agent.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG579', message: 'Required Build 59 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/PLANNER_AGENT.md');

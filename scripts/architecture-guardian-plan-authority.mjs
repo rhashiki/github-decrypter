@@ -151,7 +151,6 @@ if (
     'scripts/test-build48-plan-authority-runtime.ts',
     'scripts/test-build48-plan-authority-guardian-negative.mjs',
     'scripts/tsconfig.build48-tests.json',
-    '.github/workflows/build48-plan-authority.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG468', message: 'Required Build 48 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

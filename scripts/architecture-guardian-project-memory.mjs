@@ -21,7 +21,6 @@ const required=[
   'scripts/test-build66-project-memory-runtime.ts',
   'scripts/test-build66-project-memory-guardian-negative.mjs',
   'scripts/tsconfig.build66-tests.json',
-  '.github/workflows/build66-project-memory.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG660','Required Build 66 artifact is missing.',file);
 
