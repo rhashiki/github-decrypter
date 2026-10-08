@@ -69,7 +69,8 @@ export function buildCodeDependencyGraph(index: CodeIntelligenceIndex, maxEdges:
   const files = new Set(index.files.map((entry) => entry.path));
   const edges: CodeDependencyEdge[] = [];
   for (const item of index.imports.slice(0, maxEdges)) {
-    const target = candidatePaths(item.location.path, item.specifier).find((candidate) => files.has(candidate)) ?? null;
+    const target = item.specifierTruncated ? null
+      : candidatePaths(item.location.path, item.specifier).find((candidate) => files.has(candidate)) ?? null;
     edges.push(Object.freeze({
       source: item.location,
       specifier: item.specifier,
