@@ -7,7 +7,7 @@ const studio = JSON.parse(read('apps/studio/package.json'));
 assert.equal(architecture.currentBuild, 74);
 assert.equal(architecture.phaseGates.diffViewerBuild, 74);
 assert.equal(root.version, '0.0.74');
-assert.equal(studio.version, '0.0.74');
+assert.equal(studio.version, '0.0.64'); // Stable Studio shell identity; Build 74 is an additional surface.
 assert.equal(architecture.diffViewerAuthority.readOnly, true);
 assert.equal(architecture.diffViewerAuthority.explicitUserSuppliedTextOnly, true);
 for (const key of [
