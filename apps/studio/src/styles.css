@@ -959,3 +959,9 @@ a { color: var(--gd-color-accent); }
 
 .codeex-file-input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 .codeex-line input[type="number"] { max-width:84px; flex:0 0 76px; }
+
+.codeex-map { padding:12px;border:1px solid var(--gd-color-border);border-radius:9px;display:flex;flex-direction:column;gap:7px; }
+.codeex-map h2 { font-size:14px;margin:0; }
+.codeex-map p { color:var(--gd-color-text-muted);font-size:11px;margin:0; }
+.codeex-map button { display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;text-align:left; }
+.codeex-map button span { color:var(--gd-color-text-muted);font-size:11px; }

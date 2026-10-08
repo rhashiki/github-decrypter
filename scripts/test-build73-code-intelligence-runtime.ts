@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   buildCodeIntelligenceIndex,
   buildCodeDependencyGraph,
+  buildCodebaseOnboarding,
   resolveCodeSemantics,
   queryCodeIntelligence,
   CODE_INTELLIGENCE_SCHEMA,
@@ -37,6 +38,17 @@ assert.ok(index.imports.some((item) => item.specifier === './helper' && item.res
 assert.ok(index.imports.some((item) => item.specifier === './optional' && item.resolved === false));
 assert.equal(index.occurrences.some((item) => item.name === 'Widget' && item.binding === 'declaration'), true);
 
+const overview = buildCodebaseOnboarding(index);
+assert.equal(overview.projectCoverage, 'supplied-sources-only');
+assert.equal(overview.inferredEntrypointsOnly, true);
+assert.equal(overview.executionPathVerified, false);
+assert.equal(overview.codeExecution, false);
+assert.equal(overview.mutationAuthority, false);
+assert.equal(overview.files.length, 2);
+assert.equal(overview.files.find(item=>item.path==='src/helper.ts')?.indexedInboundImports, 1);
+assert.ok(overview.entrypointHints.some(item=>item.path==='src/main.ts' && item.reason==='conventional-filename'));
+assert.equal(overview.entrypointHints.some(item=>item.path==='src/helper.ts'), false);
+assert.throws(()=>buildCodebaseOnboarding({} as never));
 const dependencies = buildCodeDependencyGraph(index);
 assert.equal(dependencies.edges.length, 2);
 assert.equal(dependencies.edges.find((edge) => edge.specifier === './helper')?.target, 'src/helper.ts');

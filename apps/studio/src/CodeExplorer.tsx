@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind } from '@github-decrypter/code-intelligence';
+import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind, CodebaseOnboarding } from '@github-decrypter/code-intelligence';
 
 interface SourceEntry { readonly id: number; readonly path: string; readonly content: string }
 type SearchResult = { readonly mode:'syntax'; readonly data:CodeIntelligenceResult } | { readonly mode:'semantic'; readonly data:CodeSemanticResult };
@@ -11,6 +11,7 @@ export function CodeExplorer() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [active,setActive] = useState(1);
   const [index,setIndex] = useState<CodeIntelligenceIndex|null>(null);
+  const [overview,setOverview] = useState<CodebaseOnboarding|null>(null);
   const [result,setResult] = useState<SearchResult|null>(null);
   const [term,setTerm] = useState('');
   const [kind,setKind] = useState<CodeQueryKind>('definitions');
@@ -19,7 +20,7 @@ export function CodeExplorer() {
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string|null>(null);
   const selected=files.find((file)=>file.id===active) ?? files[0]!;
-  function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setResult(null);setError(null); }
+  function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setOverview(null);setResult(null);setError(null); }
   function update(field:'path'|'content',value:string) {
     edit(files.map(file=>file.id===active?{...file,[field]:value}:file));
   }
@@ -70,9 +71,10 @@ export function CodeExplorer() {
     if(busy)return;
     setBusy(true);setError(null);
     try {
-      const {buildCodeIntelligenceIndex}=await import('@github-decrypter/code-intelligence');
-      setIndex(buildCodeIntelligenceIndex(sources()));setResult(null);
-    }catch(cause){setIndex(null);setError(errorText(cause));}finally{setBusy(false);}
+      const {buildCodeIntelligenceIndex,buildCodebaseOnboarding}=await import('@github-decrypter/code-intelligence');
+      const nextIndex=buildCodeIntelligenceIndex(sources());
+      setIndex(nextIndex);setOverview(buildCodebaseOnboarding(nextIndex));setResult(null);
+    }catch(cause){setIndex(null);setOverview(null);setError(errorText(cause));}finally{setBusy(false);}
   }
   async function search() {
     if(!index)return;
@@ -143,6 +145,18 @@ export function CodeExplorer() {
       {index&&<section aria-label="Code intelligence results" className="codeex-results">
         <div className="codeex-metrics"><span>{index.files.length} files</span><span>{index.symbols.length} symbols</span>
           <span>{index.imports.length} imports</span><span>{index.calls.length} calls</span></div>
+        {overview&&<div className="codeex-map" aria-label="Codebase onboarding">
+          <h2>Codebase onboarding · supplied files only</h2>
+          <p>Suggested starting points are filename/import hints, not verified execution paths.</p>
+          {overview.entrypointHints.slice(0,8).map(hint=><button key={hint.path} type="button"
+            title={hint.reason} onClick={()=>{
+              const selectedFile=files.find(file=>file.path===hint.path);
+              if(selectedFile)setActive(selectedFile.id);
+            }}>
+            {hint.path} <span>{hint.reason==='conventional-filename'?'Conventional entry':'No indexed importers'}</span>
+          </button>)}
+          <p>{overview.importedEdgeCount} local links · {overview.unresolvedImportCount} unresolved imports</p>
+        </div>}
         <div className="codeex-line">
           <input aria-label="Search code" placeholder="Search name…" maxLength={160} value={term} onChange={event=>setTerm(event.target.value)} />
           <select aria-label="Search type" value={kind} onChange={event=>setKind(event.target.value as CodeQueryKind)}>

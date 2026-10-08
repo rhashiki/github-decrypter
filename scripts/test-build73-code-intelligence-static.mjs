@@ -27,6 +27,7 @@ assert.ok(explorer.includes('importSourceFiles'));
 assert.ok(explorer.includes('file.text()'));
 assert.ok(explorer.includes("type=\"file\""));
 assert.ok(explorer.includes('Go to definition'));
+assert.ok(explorer.includes('Codebase onboarding · supplied files only'));
 assert.equal(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b/.test(explorer),false);
 assert.ok(fs.readFileSync('apps/studio/src/App.tsx','utf8').includes('<CodeExplorer />'));
 assert.ok(root.scripts.guardian.includes('architecture-guardian-code-intelligence.mjs'));

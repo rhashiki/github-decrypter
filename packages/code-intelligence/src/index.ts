@@ -288,3 +288,6 @@ export type { CodeDependencyGraph, CodeDependencyEdge } from './graph.js';
 
 export { resolveCodeSemantics, CODE_SEMANTIC_SCHEMA, CODE_SEMANTIC_MAX_RESULTS } from './semantic.js';
 export type { CodeSemanticRequest, CodeSemanticResult } from './semantic.js';
+
+export { buildCodebaseOnboarding, CODEBASE_ONBOARDING_SCHEMA } from './onboarding.js';
+export type { CodebaseOnboarding, IndexedFileOverview, EntrypointHint } from './onboarding.js';

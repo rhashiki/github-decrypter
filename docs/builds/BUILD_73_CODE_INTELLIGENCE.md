@@ -27,6 +27,9 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 - Branch-local `currentBuild`/version/Guardian policy staged as 73 for CI. Mark the canonical roadmap ✅ and merge **only after** all gates pass.
 - Build 74 is not authorized until Build 73 is complete.
 
+## Codebase onboarding (bounded)
+Entry-point hints use filename conventions and inbound edges among only supplied files; missing imports remain unresolved. Every hint explicitly reports `executionVerified: false`. The product must not claim to know a runtime execution path without later verified execution evidence.
+
 ## Studio integration (staged)
 The Studio now has an interactive **local scratchpad** Code Explorer after onboarding. Users manually paste or explicitly import TS/JS files (up to 8 files, bounded); AST analysis and semantic navigation operate in the browser with no network or persistence. This is not a connected repository reader. Secure workspace file transport is pending.
 
