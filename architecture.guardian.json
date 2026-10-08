@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 72,
+  "currentBuild": 73,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -168,6 +168,10 @@
     "@github-decrypter/diagnostics": {
       "environmentNeutral": true,
       "allowedWorkspaceDependencies": []
+    },
+    "@github-decrypter/code-intelligence": {
+      "environmentNeutral": true,
+      "allowedWorkspaceDependencies": []
     }
   },
   "appRules": {
@@ -221,6 +225,7 @@
       "allowedWorkspaceDependencies": [
         "@github-decrypter/ai",
         "@github-decrypter/chat",
+        "@github-decrypter/code-intelligence",
         "@github-decrypter/context",
         "@github-decrypter/diagnostics",
         "@github-decrypter/git",
@@ -1999,7 +2004,8 @@
     "livePreviewBuild": 69,
     "previewBridgeBuild": 70,
     "developerConsoleBuild": 71,
-    "problemsDiagnosticsBuild": 72
+    "problemsDiagnosticsBuild": 72,
+    "codeIntelligenceBuild": 73
   },
   "legacyMigrationRoots": [
     "core",
@@ -3374,5 +3380,29 @@
     "agentIdeLicense": "MIT",
     "agentIdeAdoptionScope": "problem-normalization-source-correlation-patterns-only",
     "externalRuntimeDependency": false
+  },
+  "codeIntelligenceAuthority": {
+    "minimumBuild": 73,
+    "schema": "gd-code-intelligence/1",
+    "toolId": "code-intelligence.query",
+    "readCapabilityOnly": true,
+    "registeredWorkspaceRequired": true,
+    "sourceGrounded": true,
+    "astBacked": true,
+    "semanticResolution": false,
+    "dependencyResolution": false,
+    "unverifiedCallGraph": false,
+    "mutating": false,
+    "networkAuthority": false,
+    "secondaryExecutionAuthority": false,
+    "persistentIndex": false,
+    "maxFiles": 256,
+    "maxToolFiles": 64,
+    "maxFileCharacters": 256000,
+    "maxTotalCharacters": 4000000,
+    "maxAstNodes": 150000,
+    "maxResults": 256,
+    "externalSourceAdoption": "patterns-only",
+    "sourceTriage": "docs/research/BUILD_73_SOURCE_TRIAGE.md"
   }
 }

@@ -1,0 +1,25 @@
+import fs from 'node:fs';
+const policy=JSON.parse(fs.readFileSync('architecture.guardian.json','utf8'));
+const issues=[];
+const code=fs.readFileSync('packages/code-intelligence/src/index.ts','utf8');
+const runtime=fs.readFileSync('apps/local/src/code-intelligence-runtime.ts','utf8');
+const local=JSON.parse(fs.readFileSync('apps/local/package.json','utf8'));
+const auth=policy.codeIntelligenceAuthority;
+if(policy.currentBuild!==73||policy.phaseGates.codeIntelligenceBuild!==73)issues.push('Build 73 gate missing');
+for(const [key,expect] of Object.entries({
+ readCapabilityOnly:true,registeredWorkspaceRequired:true,astBacked:true,sourceGrounded:true,
+ semanticResolution:false,dependencyResolution:false,unverifiedCallGraph:false,mutating:false,
+ networkAuthority:false,secondaryExecutionAuthority:false,persistentIndex:false,
+ maxFiles:256,maxToolFiles:64,maxFileCharacters:256000,maxTotalCharacters:4000000,maxAstNodes:150000,maxResults:256,
+}))if(auth?.[key]!==expect)issues.push('Code Intelligence authority drift: '+key);
+if(!policy.packageRules?.['@github-decrypter/code-intelligence']?.environmentNeutral)issues.push('Environment-neutral package not guarded');
+if(!policy.appRules?.['@github-decrypter/local']?.allowedWorkspaceDependencies?.includes('@github-decrypter/code-intelligence'))issues.push('Unapproved local runtime dependency');
+if(local.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*')issues.push('No local runtime code intelligence dependency');
+for(const token of ['CODE_INTELLIGENCE_SCHEMA','buildCodeIntelligenceIndex','queryCodeIntelligence','semanticTypeResolution: false','mutationAuthority: false','networkAuthority: false'])if(!code.includes(token))issues.push('Missing index contract '+token);
+for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
+for(const [file,s] of [['core',code],['runtime',runtime]]){
+  if(/\\bfetch\\s*\\(|\\bWebSocket\\b|\\bchild_process\\b|\\bspawn\\s*\\(/.test(s))issues.push(file+' gained network/process authority');
+}
+if(/mutationAuthority:\\s*true|semanticTypeResolution:\\s*true|callGraphResolution:\\s*true/.test(code+runtime))issues.push('Unsupported authority claim');
+console.log(JSON.stringify({ok:issues.length===0,schema:'gd-build73-guardian/1',build:73,issues},null,2));
+if(issues.length)process.exit(1);

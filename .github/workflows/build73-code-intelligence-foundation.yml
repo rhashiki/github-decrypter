@@ -29,3 +29,7 @@ jobs:
       - run: pnpm --filter @github-decrypter/code-intelligence run typecheck
       - run: pnpm exec tsc -p scripts/tsconfig.build73-tests.json
       - run: pnpm exec tsx scripts/test-build73-code-intelligence-runtime.ts
+      - run: pnpm --filter @github-decrypter/local run typecheck
+      - run: pnpm exec tsx scripts/test-build73-code-intelligence-local-runtime.ts
+      - run: pnpm run guardian
+      - run: node scripts/test-build73-code-intelligence-static.mjs
