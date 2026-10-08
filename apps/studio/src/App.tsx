@@ -18,6 +18,7 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import { EnvironmentDoctor, type EnvironmentDoctorOutcome } from './EnvironmentDoctor.js';
 import { JobsCenter } from './JobsCenter.js';
 const CodeExplorer = lazy(() => import('./CodeExplorer.js').then((module) => ({ default: module.CodeExplorer })));
+const DiffViewer = lazy(() => import('./DiffViewer.js').then((module) => ({ default: module.DiffViewer })));
 
 import { OnboardingFlow } from './OnboardingFlow.js';
 import { ViktorToggle } from './ViktorToggle.js';
@@ -40,7 +41,7 @@ const FUTURE_MODES = Object.freeze([
   { label: 'Workflow', detail: 'Planned' },
 ]);
 
-type WorkspaceSurface = 'overview' | 'jobs' | 'code';
+type WorkspaceSurface = 'overview' | 'jobs' | 'code' | 'diff';
 
 function runtimeStatusLabel(outcome: EnvironmentDoctorOutcome): string {
   if (outcome === 'ready') return 'Diagnostic ready';
@@ -75,7 +76,9 @@ export function StudioApp() {
         ? 'Jobs Center'
         : workspaceSurface === 'code'
           ? 'Code Explorer · scratchpad'
-          : 'Overview';
+          : workspaceSurface === 'diff'
+            ? 'Diff Viewer · local comparison'
+            : 'Overview';
 
   function retakeOnboarding(): void {
     setProfile(null);
@@ -115,6 +118,9 @@ export function StudioApp() {
               {mode.label}
             </button>
           ))}
+          <button className={workspaceSurface === 'diff' ? 'studio-mode is-active' : 'studio-mode'} type="button"
+            disabled={!workspaceReady} title="Compare explicitly supplied local texts without committing"
+            onClick={() => setWorkspaceSurface('diff')}>Diff</button>
         </nav>
 
         <div className="studio-layout-actions" aria-label="Layout controls">
@@ -172,6 +178,12 @@ export function StudioApp() {
           onClick={() => setWorkspaceSurface('code')}>
           <span aria-hidden="true">&lt;/&gt;</span>
           <span className="studio-visually-hidden">Code Explorer</span>
+        </button>
+        <button className={workspaceReady && workspaceSurface === 'diff' ? 'studio-activity-item is-active' : 'studio-activity-item'}
+          type="button" disabled={!workspaceReady} aria-current={workspaceReady && workspaceSurface === 'diff' ? 'page' : undefined}
+          title={workspaceReady ? 'Diff Viewer · local text comparison' : 'Complete onboarding to use Diff Viewer'}
+          onClick={() => setWorkspaceSurface('diff')}>
+          <span aria-hidden="true">±</span><span className="studio-visually-hidden">Diff Viewer</span>
         </button>
         <button className="studio-activity-item" type="button" disabled title="Live Preview · Build 68">
           <span aria-hidden="true">◫</span>
@@ -296,6 +308,8 @@ export function StudioApp() {
             <JobsCenter />
           ) : workspaceSurface === 'code' ? (
             <Suspense fallback={<div role="status">Loading local Code Explorer…</div>}><CodeExplorer /></Suspense>
+          ) : workspaceSurface === 'diff' ? (
+            <Suspense fallback={<div role="status">Loading local Diff Viewer…</div>}><DiffViewer /></Suspense>
           ) : (
             <>
               <section className="studio-overview" aria-labelledby="studio-overview-title">
