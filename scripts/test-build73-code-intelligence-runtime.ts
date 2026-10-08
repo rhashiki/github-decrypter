@@ -59,6 +59,37 @@ assert.equal(dependencies.networkAuthority, false);
 assert.equal(dependencies.mutationAuthority, false);
 assert.throws(() => buildCodeDependencyGraph(index, 2049));
 
+const esmImportsIndex = buildCodeIntelligenceIndex([
+  {path:'src/main.ts',content:[
+    "import { make } from './helper.js';",
+    "import View from './view.jsx';",
+    "import { esm } from './module.mjs';",
+    "import { legacy } from './legacy.cjs';",
+    "import { nested } from './nested';",
+    "import { unresolved } from './missing.js';",
+  ].join('\\n')},
+  {path:'src/helper.ts',content:'export const make = 1;'},
+  {path:'src/helper.js',content:'export const make = 2;'},
+  {path:'src/view.tsx',content:'const View = () => null; export default View;'},
+  {path:'src/module.mts',content:'export const esm = 1;'},
+  {path:'src/legacy.cts',content:'export const legacy = 1;'},
+  {path:'src/nested/index.mts',content:'export const nested = 1;'},
+]);
+const esmGraph = buildCodeDependencyGraph(esmImportsIndex);
+for (const [specifier, target] of [
+  ['./helper.js', 'src/helper.ts'],
+  ['./view.jsx', 'src/view.tsx'],
+  ['./module.mjs', 'src/module.mts'],
+  ['./legacy.cjs', 'src/legacy.cts'],
+  ['./nested', 'src/nested/index.mts'],
+  ['./missing.js', null],
+] as const) {
+  assert.equal(esmGraph.edges.find(edge => edge.specifier === specifier)?.target, target);
+}
+assert.equal(esmGraph.filesystemReads, false);
+assert.equal(esmGraph.semanticClaims, false);
+
+
 const semanticDefinition = resolveCodeSemantics(files, {
   kind: 'semantic-definitions', path: 'src/main.ts', line: 3, column: 16,
 });
