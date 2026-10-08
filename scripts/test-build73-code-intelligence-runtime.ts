@@ -35,14 +35,14 @@ assert.ok(index.imports.some((item) => item.specifier === './optional' && item.r
 assert.equal(index.occurrences.some((item) => item.name === 'Widget' && item.binding === 'declaration'), true);
 
 const defs = queryCodeIntelligence(index, { kind: 'definitions', term: 'make' });
-assert.equal(defs.totalMatches, 1);
+assert.equal(defs.totalMatches, 2, 'Index returns a local import binding and the original export without pretending semantic linkage');
 assert.equal(defs.matches[0]?.location.line, 1);
 assert.equal(defs.semanticResolution, false);
 const occ = queryCodeIntelligence(index, { kind: 'occurrences', term: 'make', limit: 1 });
 assert.equal(occ.truncated, true);
 assert.equal(occ.matches.length, 1);
 assert.equal(queryCodeIntelligence(index, { kind: 'imports', term: 'optional' }).totalMatches, 1);
-assert.equal(queryCodeIntelligence(index, { kind: 'definitions', term: 'make', path: 'src/main.ts' }).totalMatches, 0);
+assert.equal(queryCodeIntelligence(index, { kind: 'definitions', term: 'make', path: 'src/main.ts' }).totalMatches, 1);
 assert.equal(JSON.stringify(index).includes('return 42;'), false, 'Full source must not be returned');
 
 assert.throws(() => buildCodeIntelligenceIndex([{ path: '../outside.ts', content: '' }]));
