@@ -5,7 +5,7 @@ const root=JSON.parse(fs.readFileSync('package.json','utf8'));
 const local=JSON.parse(fs.readFileSync('apps/local/package.json','utf8'));
 const studio=JSON.parse(fs.readFileSync('apps/studio/package.json','utf8'));
 const pkg=JSON.parse(fs.readFileSync('packages/code-intelligence/package.json','utf8'));
-for(const file of ['docs/builds/BUILD_73_CODE_INTELLIGENCE.md','docs/research/BUILD_73_SOURCE_TRIAGE.md','packages/code-intelligence/src/index.ts','apps/local/src/code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-local-runtime.ts','scripts/architecture-guardian-code-intelligence.mjs','.github/workflows/build73-code-intelligence-foundation.yml'])assert.ok(fs.existsSync(file),file);
+for(const file of ['docs/builds/BUILD_73_CODE_INTELLIGENCE.md','docs/research/BUILD_73_SOURCE_TRIAGE.md','packages/code-intelligence/src/index.ts','apps/local/src/code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-local-runtime.ts','scripts/architecture-guardian-code-intelligence.mjs'])assert.ok(fs.existsSync(file),file);
 assert.equal(policy.currentBuild,73);
 assert.equal(root.version,'0.0.73');
 assert.equal(local.version,'0.0.73');

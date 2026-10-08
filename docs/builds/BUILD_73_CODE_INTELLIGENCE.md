@@ -38,3 +38,6 @@ The Local Runtime daemon composes the Code Intelligence registration with canoni
 
 ## Boundaries
 Code Intelligence is evidence and navigation, not a second compiler, root-cause authority (Build 106), Validation authority (Build 57), or mutating executor. No changes to legacy Supabase are necessary for this build.
+
+## Server-side validation (no GitHub Actions)
+The repository prohibits `.github/workflows` and workflow-write authority. Validate with `pnpm install --no-frozen-lockfile && pnpm run validate:server` in a Node 22/pnpm server or isolated checkout; use `pnpm run validate:build73` for focused Build 73 verification. No CI event trigger, workflow dispatch, or GitHub-hosted runner is needed.
