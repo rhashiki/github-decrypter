@@ -60,6 +60,8 @@ try {
   await assert.rejects(()=>registration.handler({...ctx,scopeLock:false} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler(ctx,{paths:['../outside.ts'],query:{kind:'definitions',term:'hi'}}));
   await assert.rejects(()=>registration.handler(ctx,{paths:['.git/config.ts'],query:{kind:'definitions',term:'hi'}}));
+  await assert.rejects(()=>registration.handler(ctx,{paths:['.GIT/config.ts'],query:{kind:'definitions',term:'hi'}}));
+  await assert.rejects(()=>registration.handler(ctx,{paths:['src/Node_Modules/x.ts'],query:{kind:'definitions',term:'hi'}}));
   symlinkSync(join(outside,'hidden.ts'),join(root,'src','linked.ts'));
   await assert.rejects(()=>registration.handler(ctx,{paths:['src/linked.ts'],query:{kind:'definitions',term:'forbidden'}}));
   linkSync(join(root,'src','app.ts'),join(root,'src','hard.ts'));
