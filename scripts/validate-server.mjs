@@ -3,6 +3,14 @@ import {existsSync,readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 
 const root=resolve(import.meta.dirname,'..');
+
+// Acceptance reports must identify the exact Git checkout they validated.
+function gitOutput(args) {
+ const result=spawnSync('git',args,{cwd:root,encoding:'utf8',timeout:10000});
+ return result.status===0 && !result.error ? result.stdout.trim() : null;
+}
+const sourceCommit=gitOutput(['rev-parse','HEAD']);
+const trackedTreeCleanBefore=gitOutput(['status','--porcelain','--untracked-files=no'])==='';
 const version=JSON.parse(readFileSync(resolve(root,'architecture.guardian.json'),'utf8')).currentBuild;
 const targeted=process.argv.includes('--build73') || process.argv.includes('--current');
 if(process.argv.includes('--build73') && version!==73){console.error('Build 73 validation requires Build 73 checkout.');process.exit(2);}
@@ -29,11 +37,17 @@ for(const [label,binary,args] of jobs){
  results.push({label,ok,durationMs:Date.now()-start,status:run.status,error:run.error?.message??null});
  if(!ok)break;
 }
-const report={schema:'gd-server-validation/1',build:version,executedLocally:true,
+const sourceCommitStable=sourceCommit!==null && /^[a-f0-9]{40}$/.test(sourceCommit)
+ && gitOutput(['rev-parse','HEAD'])===sourceCommit;
+const trackedTreeCleanAfter=gitOutput(['status','--porcelain','--untracked-files=no'])==='';
+const accepted=results.length===jobs.length && results.every(x=>x.ok)
+ && sourceCommitStable && trackedTreeCleanBefore && trackedTreeCleanAfter;
+const report={schema:'gd-server-validation/2',build:version,executedLocally:true,
  usesGitHubActions:false,scope:targeted?'current-build':'full-regression',
- ok:results.every(x=>x.ok),results};
+ sourceCommit,sourceCommitStable,trackedTreeCleanBefore,trackedTreeCleanAfter,
+ ok:accepted,results};
 const reportPath=resolve(root,'reports','server-validation-'+version+'.json');
 mkdirSync(resolve(root,'reports'),{recursive:true});
 writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,reportPath},null,2));
-if(!results.every(x=>x.ok))process.exit(1);
+if(!accepted)process.exit(1);
