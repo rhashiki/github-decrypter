@@ -28,7 +28,9 @@ if(!daemon.includes('...createCodeIntelligenceToolRegistrations({ workspaces: th
   issues.push('Code Intelligence missing from daemon tool registration composition');
 if(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b|\bindexedDB\b/.test(explorer))
   issues.push('Code Explorer gained unauthorized browser network/filesystem/persistence');
-if(!explorer.includes('local scratchpad'))issues.push('Scratchpad lacks explicit source boundary');
+if(!explorer.includes('local scratchpad') || !explorer.includes('importSourceFiles')
+  || !explorer.includes('file.text()') || !explorer.includes('Go to definition'))
+  issues.push('Scratchpad lacks user-initiated import or semantic navigation');
 for(const token of ['CODE_INTELLIGENCE_SCHEMA','buildCodeIntelligenceIndex','queryCodeIntelligence','semanticTypeResolution: false','mutationAuthority: false','networkAuthority: false'])if(!code.includes(token))issues.push('Missing index contract '+token);
 for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId','openSync','readSync','fstatSync','O_NOFOLLOW','realpathSync','closeSync'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
 for(const [file,s] of [['core',code],['runtime',runtime]]){

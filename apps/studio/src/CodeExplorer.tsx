@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind } from '@github-decrypter/code-intelligence';
 
 interface SourceEntry { readonly id: number; readonly path: string; readonly content: string }
@@ -8,11 +8,14 @@ function errorText(cause:unknown):string { return (cause instanceof Error ? caus
 
 export function CodeExplorer() {
   const [files,setFiles] = useState<SourceEntry[]>([{id:1,path:'src/example.ts',content:''}]);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [active,setActive] = useState(1);
   const [index,setIndex] = useState<CodeIntelligenceIndex|null>(null);
   const [result,setResult] = useState<SearchResult|null>(null);
   const [term,setTerm] = useState('');
   const [kind,setKind] = useState<CodeQueryKind>('definitions');
+  const [positionLine,setPositionLine] = useState('1');
+  const [positionColumn,setPositionColumn] = useState('1');
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string|null>(null);
   const selected=files.find((file)=>file.id===active) ?? files[0]!;
@@ -29,6 +32,34 @@ export function CodeExplorer() {
     if(files.length===1)return;
     const next=files.filter(file=>file.id!==active);
     edit(next);setActive(next[0]!.id);
+  }
+  async function importSourceFiles(picked: readonly File[]) {
+    if(!picked.length || busy)return;
+    setBusy(true);
+    setError(null);
+    try {
+      if(picked.length>MAX_FILES)throw new Error('Choose at most eight source files.');
+      if(picked.some(file=>file.size>400000 || !/\\.(?:[cm]?[jt]s|[jt]sx)$/i.test(file.name))) {
+        throw new Error('Select only bounded JS/TS source files (max 400 KB per file).');
+      }
+      const existing=files.length===1 && !files[0]!.content.trim() ? [] : files;
+      if(existing.length+picked.length>MAX_FILES)throw new Error('The scratchpad supports at most eight files.');
+      const known=new Set(existing.map(file=>file.path));
+      const imported:SourceEntry[]=[];
+      let id=Math.max(0,...existing.map(file=>file.id));
+      for(const file of picked) {
+        const name='src/'+file.name;
+        if(known.has(name))throw new Error('Duplicate source file name: '+file.name);
+        known.add(name);
+        const content=await file.text();
+        if(content.length>100000)throw new Error('A selected source exceeds 100,000 characters.');
+        imported.push({id:++id,path:name,content});
+      }
+      const next=[...existing,...imported];
+      if(next.reduce((sum,file)=>sum+file.content.length,0)>400000)throw new Error('Scratchpad text budget exceeded.');
+      edit(next);
+      setActive(imported[0]!.id);
+    }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
   }
   function sources() {
     if(files.some(file=>!file.content.trim()))throw new Error('Fill all source files or remove the empty ones.');
@@ -57,6 +88,8 @@ export function CodeExplorer() {
       setResult({mode:'semantic',data:resolveCodeSemantics(sources(),{kind:mode,path,line,column,limit:64})});
       const file=files.find(item=>item.path===path);
       if(file)setActive(file.id);
+      setPositionLine(String(line));
+      setPositionColumn(String(column));
       setError(null);
     }catch(cause){setError(errorText(cause));}
   }
@@ -73,6 +106,16 @@ export function CodeExplorer() {
       <div className="codeex-workspace">
         <nav className="codeex-files" aria-label="Scratchpad sources">
           <div><strong>Sources</strong><button type="button" onClick={addFile} disabled={files.length>=MAX_FILES}>+ Add</button></div>
+          <input ref={fileInput} className="codeex-file-input" tabIndex={-1} type="file" multiple
+            accept=".ts,.tsx,.js,.jsx,.mts,.cts,.mjs,.cjs"
+            aria-label="Select JavaScript or TypeScript files"
+            onChange={event=>{
+              const picked=Array.from(event.currentTarget.files ?? []);
+              event.currentTarget.value='';
+              void importSourceFiles(picked);
+            }}/>
+          <button type="button" disabled={busy || files.length>=MAX_FILES}
+            onClick={()=>fileInput.current?.click()}>Import .ts / .js</button>
           {files.map(file=><button type="button" key={file.id}
             className={file.id===active?'is-active':''} aria-current={file.id===active?'true':undefined}
             title={file.path} onClick={()=>setActive(file.id)}>{file.path}</button>)}
@@ -108,6 +151,21 @@ export function CodeExplorer() {
           </select>
           <button type="button" onClick={()=>void search()}>Find</button>
         </div>
+        <div className="codeex-line" aria-label="Semantic source location">
+          <span>Position:</span>
+          <label htmlFor="codeex-line">Line</label>
+          <input id="codeex-line" type="number" min="1" step="1" value={positionLine}
+            onChange={event=>setPositionLine(event.target.value)}/>
+          <label htmlFor="codeex-column">Column</label>
+          <input id="codeex-column" type="number" min="1" step="1" value={positionColumn}
+            onChange={event=>setPositionColumn(event.target.value)}/>
+          <button type="button" onClick={()=>void navigate(selected.path,Number(positionLine),Number(positionColumn),'semantic-definitions')}>
+            Go to definition
+          </button>
+          <button type="button" onClick={()=>void navigate(selected.path,Number(positionLine),Number(positionColumn),'semantic-references')}>
+            Find references
+          </button>
+        </div>
         <div className="codeex-hits">
           {result?.mode==='syntax'?<>
             <h2>{result.data.totalMatches} matches</h2>
@@ -124,6 +182,7 @@ export function CodeExplorer() {
               <code>{location.path}:{location.line}:{location.column}</code>
               <button type="button" onClick={()=>{
                 const file=files.find(item=>item.path===location.path);if(file)setActive(file.id);
+                setPositionLine(String(location.line));setPositionColumn(String(location.column));
               }}>Open file ↗</button>
             </div>)}
           </>:<>

@@ -956,3 +956,6 @@ a { color: var(--gd-color-accent); }
 .codeex-hits h2 { font-size:14px; }
 .codeex-hit { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-top:1px solid var(--gd-color-border-subtle);padding:8px 0;overflow-wrap:anywhere; }
 @media(max-width:760px) { .codeex-workspace { grid-template-columns:1fr; }.codeex-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+.codeex-file-input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.codeex-line input[type="number"] { max-width:84px; flex:0 0 76px; }
