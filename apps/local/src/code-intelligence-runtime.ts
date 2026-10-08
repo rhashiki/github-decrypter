@@ -4,6 +4,7 @@ import {
   CODE_INTELLIGENCE_MAX_FILE_CHARS,
   CODE_INTELLIGENCE_MAX_TOTAL_CHARS,
   buildCodeIntelligenceIndex,
+  buildCodeDependencyGraph,
   queryCodeIntelligence,
   type CodeFileInput,
   type CodeIntelligenceQuery,
@@ -139,6 +140,7 @@ export function createCodeIntelligenceToolRegistrations(
         }
         const index = buildCodeIntelligenceIndex(files);
         const result = queryCodeIntelligence(index, query);
+        const dependencies = buildCodeDependencyGraph(index);
         return JSON.parse(JSON.stringify({
           ...result,
           workspaceId: context.workspaceId,
@@ -146,6 +148,7 @@ export function createCodeIntelligenceToolRegistrations(
           invocationId: context.invocationId,
           scopeLockId: context.sourceScopeLockId,
           indexedFiles: index.files,
+          dependencies,
           syntacticOnly: true,
           readCapabilityVerified: true,
           mutationAuthority: false,
