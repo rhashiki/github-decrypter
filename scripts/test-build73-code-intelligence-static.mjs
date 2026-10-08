@@ -41,6 +41,10 @@ assert.ok(root.scripts.ci.includes('check:build73'));
 assert.ok(root.scripts['check:build73'].includes('test-build73-code-explorer-folder.ts'));
 assert.equal(fs.existsSync('.github/workflows'),false);
 const independentValidator = fs.readFileSync('scripts/validate-server.mjs','utf8');
+assert.ok(independentValidator.includes("gitOutput(['status','--porcelain','--untracked-files=all'])"),
+  'Commit-bound validation must reject untracked sources on both sides of the run.');
+assert.equal(independentValidator.includes("'--untracked-files=no'"),false,
+  'Validation must never ignore untracked source files.');
 for (const token of [
   "const sourceCommit=gitOutput(['rev-parse','HEAD'])",
   "trackedTreeCleanBefore",
