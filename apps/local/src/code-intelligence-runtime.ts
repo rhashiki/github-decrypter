@@ -38,7 +38,7 @@ function verifiedPath(path: unknown): string {
   const normalized = path.replace(/\\/g, '/');
   const parts = normalized.split('/');
   if (normalized.startsWith('/') || /^[a-zA-Z]:/.test(normalized)
-    || parts.some((part) => !part || part === '.' || part === '..' || EXCLUDED.has(part) || SENSITIVE.test(part))
+    || parts.some((part) => !part || part === '.' || part === '..' || EXCLUDED.has(part.toLowerCase()) || SENSITIVE.test(part))
     || !SOURCE_SUFFIX.test(normalized)) {
     throw new TypeError('Code Intelligence source path is unsafe or unsupported.');
   }
