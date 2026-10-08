@@ -187,7 +187,9 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
         }));
       }
       if (ts.isCallExpression(node)) {
-        const expression = node.expression.getText(file).slice(0, 160);
+        const expression = ts.isIdentifier(node.expression) ? node.expression.text
+          : ts.isPropertyAccessExpression(node.expression) ? node.expression.name.text
+          : '<dynamic-call>';
         calls.push(Object.freeze({
           expression,
           location: locationOf(entry.path, file, node.expression),
