@@ -38,6 +38,8 @@ assert.equal(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b/.test(e
 assert.ok(fs.readFileSync('apps/studio/src/App.tsx','utf8').includes('<CodeExplorer />'));
 assert.ok(root.scripts.guardian.includes('architecture-guardian-code-intelligence.mjs'));
 assert.ok(root.scripts.ci.includes('check:build73'));
+assert.ok(root.scripts['check:build73'].includes('test-build73-code-explorer-folder.ts'));
+assert.equal(fs.existsSync('.github/workflows'),false);
 const code=fs.readFileSync('packages/code-intelligence/src/index.ts','utf8');
 const runtime=fs.readFileSync('apps/local/src/code-intelligence-runtime.ts','utf8');
 assert.ok(code.includes('CODE_INTELLIGENCE_BUILD = 73'));
