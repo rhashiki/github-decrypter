@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { readExplicitlySelectedFolder, CODE_EXPLORER_FOLDER_MAX_FILES } from './code-explorer-folder.js';
+import { readExplicitlySelectedFolder, safeSelectedFolderPath, CODE_EXPLORER_FOLDER_MAX_FILES } from './code-explorer-folder.js';
 import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind, CodebaseOnboarding } from '@github-decrypter/code-intelligence';
 
 interface SourceEntry { readonly id: number; readonly path: string; readonly content: string }
@@ -23,6 +23,7 @@ export function CodeExplorer() {
   const [kind,setKind] = useState<CodeQueryKind>('definitions');
   const [positionLine,setPositionLine] = useState('1');
   const [positionColumn,setPositionColumn] = useState('1');
+  const [navigationEpoch,setNavigationEpoch] = useState(0);
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string|null>(null);
   const selected=files.find((file)=>file.id===active) ?? files[0]!;
@@ -42,7 +43,16 @@ export function CodeExplorer() {
     area.setSelectionRange(position,position);
     area.scrollTop=Math.max(0,(target.line-4)*19);
     pendingLocation.current=null;
-  },[selected.path,positionLine,positionColumn,result]);
+  },[selected.path,positionLine,positionColumn,result,navigationEpoch]);
+  function jumpToLocation(path:string,line:number,column:number) {
+    const target=files.find(file=>file.path===path);
+    if (!target) return;
+    pendingLocation.current={path,line,column};
+    setActive(target.id);
+    setPositionLine(String(line));
+    setPositionColumn(String(column));
+    setNavigationEpoch(epoch=>epoch+1);
+  }
   function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setOverview(null);setResult(null);setError(null); }
   function update(field:'path'|'content',value:string) {
     setImportNotice(null);
@@ -75,7 +85,8 @@ export function CodeExplorer() {
       const imported:SourceEntry[]=[];
       let id=Math.max(0,...existing.map(file=>file.id));
       for(const file of picked) {
-        const name='src/'+file.name;
+        const name=safeSelectedFolderPath('selection/src/'+file.name);
+        if(!name)throw new Error('Unsafe or sensitive source file name: '+file.name);
         if(known.has(name))throw new Error('Duplicate source file name: '+file.name);
         known.add(name);
         const content=await file.text();
@@ -128,11 +139,7 @@ export function CodeExplorer() {
     try {
       const {resolveCodeSemantics}=await import('@github-decrypter/code-intelligence');
       setResult({mode:'semantic',data:resolveCodeSemantics(sources(),{kind:mode,path,line,column,limit:64})});
-      const file=files.find(item=>item.path===path);
-      if(file)setActive(file.id);
-      pendingLocation.current={path,line,column};
-      setPositionLine(String(line));
-      setPositionColumn(String(column));
+      jumpToLocation(path,line,column);
       setError(null);
     }catch(cause){setError(errorText(cause));}
   }
@@ -247,9 +254,7 @@ export function CodeExplorer() {
             {locations.map((location,i)=><div className="codeex-hit" key={i}>
               <code>{location.path}:{location.line}:{location.column}</code>
               <button type="button" onClick={()=>{
-                const file=files.find(item=>item.path===location.path);if(file)setActive(file.id);
-                pendingLocation.current=location;
-                setPositionLine(String(location.line));setPositionColumn(String(location.column));
+                jumpToLocation(location.path,location.line,location.column);
               }}>Open file ↗</button>
             </div>)}
           </>:<>
