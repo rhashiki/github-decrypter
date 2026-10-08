@@ -32,6 +32,7 @@ export interface CodeOccurrence {
 }
 export interface CodeImport {
   readonly specifier: string;
+  readonly specifierTruncated: boolean;
   readonly location: CodeLocation;
   readonly resolved: false;
 }
@@ -185,6 +186,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
           && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         imports.push(Object.freeze({
           specifier: node.moduleSpecifier.text.slice(0, 512),
+          specifierTruncated: node.moduleSpecifier.text.length > 512,
           location: locationOf(entry.path, file, node.moduleSpecifier),
           resolved: false,
         }));
@@ -203,6 +205,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
         if (node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments[0] && ts.isStringLiteral(node.arguments[0])) {
           imports.push(Object.freeze({
             specifier: node.arguments[0].text.slice(0, 512),
+            specifierTruncated: node.arguments[0].text.length > 512,
             location: locationOf(entry.path, file, node.arguments[0]),
             resolved: false,
           }));
