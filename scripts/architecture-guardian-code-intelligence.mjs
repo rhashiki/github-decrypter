@@ -40,7 +40,7 @@ if(!explorer.includes('local scratchpad') || !explorer.includes('importSourceFil
   || !explorer.includes('file.text()') || !explorer.includes('Go to definition'))
   issues.push('Scratchpad lacks user-initiated import or semantic navigation');
 for(const token of ['CODE_INTELLIGENCE_SCHEMA','buildCodeIntelligenceIndex','queryCodeIntelligence','semanticTypeResolution: false','mutationAuthority: false','networkAuthority: false'])if(!code.includes(token))issues.push('Missing index contract '+token);
-for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId','openSync','readSync','fstatSync','O_NOFOLLOW','realpathSync','closeSync'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
+for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId','sourceScopeLockDigest !== scopeLock.lockDigest.hex','context.workspaceId !== scopeLock.workspaceId','sourceOrchestrationDigest !== scopeLock.sourceOrchestrationDigest.hex','openSync','readSync','fstatSync','O_NOFOLLOW','realpathSync','closeSync'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
 for(const [file,s] of [['core',code],['runtime',runtime]]){
   if(/\bfetch\s*\(|\bWebSocket\b|\bchild_process\b|\bspawn\s*\(/.test(s))issues.push(file+' gained network/process authority');
 }

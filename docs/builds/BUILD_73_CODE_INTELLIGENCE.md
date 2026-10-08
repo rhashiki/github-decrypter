@@ -12,6 +12,7 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 - Deterministic file/source ordering and rejected unsupported extensions.
 - No full source payload retained in results, no raw secrets, no network access.
 - Local source reads use bounded descriptors with no-follow where supported, inode/revalidation checks and workspace containment.
+- Context verification binds READ to **workspace identity, source orchestration ID/digest, locked Scope Lock ID/digest** before any file is read; mismatches fail closed.
 - AST declarations vs syntactic uses explicitly distinguished.
 - On-demand TypeScript semantic definitions/references resolved with an in-memory compiler host restricted to indexed files (no OS filesystem access, no libs, no writes, no external module resolution).
 - Missing/unknown symbol binding remains `unresolved` rather than producing a guessed link.

@@ -84,7 +84,7 @@ export function CodeExplorer() {
     }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
   }
   function sources() {
-    if(files.some(file=>!file.content.trim()))throw new Error('Fill all source files or remove the empty ones.');
+    if(files.every(file=>!file.content.trim()))throw new Error('Add source code to at least one file before analyzing.');
     if(files.reduce((sum,file)=>sum+file.content.length,0)>400000)throw new Error('Maximum 400,000 characters.');
     return files.map(file=>({path:file.path,content:file.content}));
   }

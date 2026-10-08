@@ -18,14 +18,20 @@ try {
     get: () => ({rootPath:root}),
     resolveExistingPath: (_id:unknown,path:string) => join(root,path),
   } as unknown as CodeIntelligenceLocalOptions['workspaces'];
-  const lock={schema:'gd-scope-lock/1',id:'lock-73',status:'locked'} as unknown as ScopeLockRecord;
+  const workspaceId='gd_ws_11111111-1111-1111-1111-111111111111';
+  const digest='a'.repeat(64), orchestrationDigest='b'.repeat(64);
+  const lock={schema:'gd-scope-lock/1',id:'lock-73',status:'locked',workspaceId,
+    sourceOrchestrationId:'orchestrator-73',sourceOrchestrationDigest:{algorithm:'sha256',hex:orchestrationDigest},
+    lockDigest:{algorithm:'sha256',hex:digest},
+  } as unknown as ScopeLockRecord;
   const registration=createCodeIntelligenceToolRegistrations({workspaces},lock)[0]!;
   assert.equal(registration.descriptor.id,CODE_INTELLIGENCE_TOOL_ID);
   assert.equal(registration.descriptor.mutating,false);
   assert.deepEqual(registration.descriptor.requiredCapabilities,['READ']);
   const ctx={
-    schema:TOOL_RUNTIME_SCHEMA, tool:registration.descriptor,workspaceId:'gd_ws_11111111-1111-1111-1111-111111111111',
+    schema:TOOL_RUNTIME_SCHEMA, tool:registration.descriptor,workspaceId,
     verifiedCapabilities:['READ'],mutationAuthorized:false,sourceScopeLockId:'lock-73',
+    sourceScopeLockDigest:digest,sourceOrchestrationDigest:orchestrationDigest,scopeLock:true,
     sourceOrchestrationId:'orchestrator-73',invocationId:'invoke-73',
   } as unknown as ToolExecutionContext;
   const input={paths:['src/app.ts'],query:{kind:'definitions',term:'hello'}};
@@ -47,6 +53,11 @@ try {
   await assert.rejects(()=>registration.handler({...ctx,verifiedCapabilities:[]} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler({...ctx,mutationAuthorized:true} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler({...ctx,sourceScopeLockId:'another'} as ToolExecutionContext,input));
+  await assert.rejects(()=>registration.handler({...ctx,sourceScopeLockDigest:'0'.repeat(64)} as ToolExecutionContext,input));
+  await assert.rejects(()=>registration.handler({...ctx,workspaceId:'gd_ws_22222222-2222-2222-2222-222222222222'} as ToolExecutionContext,input));
+  await assert.rejects(()=>registration.handler({...ctx,sourceOrchestrationDigest:'0'.repeat(64)} as ToolExecutionContext,input));
+  await assert.rejects(()=>registration.handler({...ctx,sourceOrchestrationId:'different'} as ToolExecutionContext,input));
+  await assert.rejects(()=>registration.handler({...ctx,scopeLock:false} as ToolExecutionContext,input));
   await assert.rejects(()=>registration.handler(ctx,{paths:['../outside.ts'],query:{kind:'definitions',term:'hi'}}));
   await assert.rejects(()=>registration.handler(ctx,{paths:['.git/config.ts'],query:{kind:'definitions',term:'hi'}}));
   symlinkSync(join(outside,'hidden.ts'),join(root,'src','linked.ts'));

@@ -95,7 +95,11 @@ export function createCodeIntelligenceToolRegistrations(
   options: CodeIntelligenceLocalOptions,
   scopeLock: ScopeLockRecord,
 ): readonly ToolRegistration[] {
-  if (!options?.workspaces || !scopeLock || scopeLock.schema !== 'gd-scope-lock/1' || scopeLock.status !== 'locked') {
+  if (!options?.workspaces || !scopeLock || scopeLock.schema !== 'gd-scope-lock/1' || scopeLock.status !== 'locked'
+    || scopeLock.lockDigest?.algorithm !== 'sha256' || !/^[0-9a-f]{64}$/.test(scopeLock.lockDigest.hex)
+    || !scopeLock.workspaceId || !scopeLock.sourceOrchestrationId
+    || scopeLock.sourceOrchestrationDigest?.algorithm !== 'sha256'
+    || !/^[0-9a-f]{64}$/.test(scopeLock.sourceOrchestrationDigest.hex)) {
     throw new TypeError('Code Intelligence requires canonical workspace and locked Scope Lock context.');
   }
   const descriptor: ToolDescriptor = Object.freeze({
@@ -112,8 +116,13 @@ export function createCodeIntelligenceToolRegistrations(
           || !context.verifiedCapabilities.includes('READ') || context.mutationAuthorized) {
           throw new Error('Code Intelligence requires a verified Tool Runtime READ invocation.');
         }
-        if (context.sourceScopeLockId !== scopeLock.id) {
-          throw new Error('Code Intelligence invocation belongs to a different Scope Lock.');
+        if (context.sourceScopeLockId !== scopeLock.id
+          || context.sourceScopeLockDigest !== scopeLock.lockDigest.hex
+          || context.workspaceId !== scopeLock.workspaceId
+          || context.sourceOrchestrationId !== scopeLock.sourceOrchestrationId
+          || context.sourceOrchestrationDigest !== scopeLock.sourceOrchestrationDigest.hex
+          || context.scopeLock !== true) {
+          throw new Error('Code Intelligence invocation must match the active workspace, orchestration and Scope Lock digests.');
         }
         const input = dataRow(raw, 'Code Intelligence');
         if (Object.keys(input).some((key) => !['paths','query'].includes(key))) {
