@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": { "rootDir": ".." },
+  "include": ["test-build73-code-intelligence-runtime.ts", "../packages/code-intelligence/src/**/*.ts"]
+}
