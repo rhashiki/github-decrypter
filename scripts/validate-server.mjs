@@ -10,7 +10,9 @@ function gitOutput(args) {
  return result.status===0 && !result.error ? result.stdout.trim() : null;
 }
 const sourceCommit=gitOutput(['rev-parse','HEAD']);
-const trackedTreeCleanBefore=gitOutput(['status','--porcelain','--untracked-files=no'])==='';
+// An untracked source can change test results without changing HEAD. Ignore only Git-ignored
+// artifacts (node_modules, reports, dist), never newly created source files.
+const trackedTreeCleanBefore=gitOutput(['status','--porcelain','--untracked-files=all'])==='';
 const version=JSON.parse(readFileSync(resolve(root,'architecture.guardian.json'),'utf8')).currentBuild;
 const targeted=process.argv.includes('--build73') || process.argv.includes('--current');
 if(process.argv.includes('--build73') && version!==73){console.error('Build 73 validation requires Build 73 checkout.');process.exit(2);}
@@ -39,7 +41,7 @@ for(const [label,binary,args] of jobs){
 }
 const sourceCommitStable=sourceCommit!==null && /^[a-f0-9]{40}$/.test(sourceCommit)
  && gitOutput(['rev-parse','HEAD'])===sourceCommit;
-const trackedTreeCleanAfter=gitOutput(['status','--porcelain','--untracked-files=no'])==='';
+const trackedTreeCleanAfter=gitOutput(['status','--porcelain','--untracked-files=all'])==='';
 const accepted=results.length===jobs.length && results.every(x=>x.ok)
  && sourceCommitStable && trackedTreeCleanBefore && trackedTreeCleanAfter;
 const report={schema:'gd-server-validation/2',build:version,executedLocally:true,
