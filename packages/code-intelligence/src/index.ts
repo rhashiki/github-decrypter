@@ -79,18 +79,18 @@ export interface CodeIntelligenceResult {
   readonly semanticResolution: false;
 }
 
-const EXTENSIONS = /\\.(?:[cm]?[jt]s|[jt]sx)$/i;
+const EXTENSIONS = /\.(?:[cm]?[jt]s|[jt]sx)$/i;
 const BLOCKED_SEGMENTS = new Set([
   '.git', 'node_modules', '.next', '.cache', 'dist', 'build', 'coverage',
   '.ssh', '.aws', '.config', '.vscode', '.idea',
 ]);
-const SENSITIVE_FILE = /^(?:\\.env(?:\\..*)?|id_(?:rsa|ed25519|ecdsa)|.*\\.(?:pem|key|p12|pfx)|credentials(?:\\..*)?|secrets(?:\\..*)?)$/i;
+const SENSITIVE_FILE = /^(?:\.env(?:\..*)?|id_(?:rsa|ed25519|ecdsa)|.*\.(?:pem|key|p12|pfx)|credentials(?:\..*)?|secrets(?:\..*)?)$/i;
 
 function canonicalPath(value: string): string {
-  if (typeof value !== 'string' || !value || value.length > 2048 || /[\\u0000-\\u001f\\u007f]/.test(value)) {
+  if (typeof value !== 'string' || !value || value.length > 2048 || /[\u0000-\u001f\u007f]/.test(value)) {
     throw new TypeError('Code Intelligence requires a bounded workspace-relative source path.');
   }
-  const normalized = value.replace(/\\\\/g, '/');
+  const normalized = value.replace(/\\/g, '/');
   if (normalized.startsWith('/') || /^[A-Za-z]:/.test(normalized)) {
     throw new TypeError('Absolute source paths are prohibited.');
   }
@@ -105,9 +105,9 @@ function canonicalPath(value: string): string {
 }
 
 function scriptKind(path: string): ts.ScriptKind {
-  if (/\\.tsx$/i.test(path)) return ts.ScriptKind.TSX;
-  if (/\\.jsx$/i.test(path)) return ts.ScriptKind.JSX;
-  if (/\\.[cm]?js$/i.test(path)) return ts.ScriptKind.JS;
+  if (/\.tsx$/i.test(path)) return ts.ScriptKind.TSX;
+  if (/\.jsx$/i.test(path)) return ts.ScriptKind.JSX;
+  if (/\.[cm]?js$/i.test(path)) return ts.ScriptKind.JS;
   return ts.ScriptKind.TS;
 }
 
@@ -158,7 +158,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
     const file = ts.createSourceFile(entry.path, entry.content, ts.ScriptTarget.Latest, true, scriptKind(entry.path));
     summary.push(Object.freeze({
       path: entry.path,
-      language: /\\.[cm]?jsx?$/i.test(entry.path) ? 'javascript' : 'typescript',
+      language: /\.[cm]?jsx?$/i.test(entry.path) ? 'javascript' : 'typescript',
       lines: file.getLineAndCharacterOfPosition(file.end).line + 1,
     }));
     const declarations = new Set<number>();
