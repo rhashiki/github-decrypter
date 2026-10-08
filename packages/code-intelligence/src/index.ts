@@ -84,7 +84,7 @@ export interface CodeIntelligenceResult {
 const EXTENSIONS = /\.(?:[cm]?[jt]s|[jt]sx)$/i;
 const BLOCKED_SEGMENTS = new Set([
   '.git', 'node_modules', '.next', '.cache', 'dist', 'build', 'coverage',
-  '.ssh', '.aws', '.config', '.vscode', '.idea',
+  '.ssh', '.aws', '.config', '.vscode', '.idea', 'secrets',
 ]);
 const SENSITIVE_FILE = /^(?:\.env(?:\..*)?|id_(?:rsa|ed25519|ecdsa)|.*\.(?:pem|key|p12|pfx)|credentials(?:\..*)?|secrets(?:\..*)?)$/i;
 
@@ -97,7 +97,7 @@ function canonicalPath(value: string): string {
     throw new TypeError('Absolute source paths are prohibited.');
   }
   const parts = normalized.split('/');
-  if (parts.some((part) => !part || part === '.' || part === '..' || BLOCKED_SEGMENTS.has(part))) {
+  if (parts.some((part) => !part || part === '.' || part === '..' || BLOCKED_SEGMENTS.has(part.toLowerCase()))) {
     throw new TypeError('Unsafe or noncanonical source path.');
   }
   if (parts.some((part) => SENSITIVE_FILE.test(part)) || !EXTENSIONS.test(normalized)) {
