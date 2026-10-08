@@ -924,3 +924,35 @@ a { color: var(--gd-color-accent); }
 @media (max-width: 600px) {
   .studio-doctor-check { flex-direction: column; }
 }
+
+
+/* Build 73: local scratchpad; no filesystem, GitHub or network transport */
+.codeex { display:grid;gap:16px;min-width:0;font-size:13px;padding-bottom:32px; }
+.codeex header small { color:rgb(169 144 255);text-transform:uppercase;letter-spacing:.1em; }
+.codeex header h1 { font-size:24px;margin:7px 0; }
+.codeex header p { margin:0;color:var(--gd-color-text-muted); }
+.codeex-note { padding:11px;border-left:3px solid rgb(130 106 216);background:rgb(110 90 180 / 12%);line-height:1.5; }
+.codeex-workspace { display:grid;grid-template-columns:minmax(110px,27%) minmax(0,1fr);border:1px solid var(--gd-color-border);border-radius:10px;overflow:hidden; }
+.codeex-files { background:rgb(14 16 23);padding:10px;display:flex;flex-direction:column;gap:5px;min-width:0; }
+.codeex-files>div { display:flex;justify-content:space-between;align-items:center;gap:5px; }
+.codeex-files button { text-align:left;text-overflow:ellipsis;overflow:hidden;white-space:nowrap; }
+.codeex-files>button { border:0;background:transparent;color:var(--gd-color-text-muted);padding:8px;border-radius:6px; }
+.codeex-files>button.is-active { background:rgb(116 85 215 / 26%);color:var(--gd-color-text); }
+.codeex-editor { display:grid;gap:8px;min-width:0;padding:12px; }
+.codeex-editor label { color:var(--gd-color-text-muted);font-size:11px; }
+.codeex-line { display:flex;flex-wrap:wrap;align-items:center;gap:8px; }
+.codeex input,.codeex textarea,.codeex select { min-width:0;background:rgb(11 13 20);color:var(--gd-color-text);border:1px solid var(--gd-color-border);border-radius:7px;padding:8px; }
+.codeex-line input { flex:1; }
+.codeex textarea { resize:vertical;min-height:195px;line-height:1.55;font-family:ui-monospace,Consolas,monospace;font-size:12px; }
+.codeex button { border:1px solid var(--gd-color-border);border-radius:7px;background:rgb(58 53 79 / 45%);color:var(--gd-color-text);padding:7px 10px;cursor:pointer; }
+.codeex button:disabled { cursor:not-allowed;opacity:.45; }
+.codeex-bottom { justify-content:space-between;font-size:11px;color:var(--gd-color-text-muted); }
+.codeex .codeex-primary { background:linear-gradient(115deg,rgb(113 79 207),rgb(45 100 187));border:0;color:white;font-weight:700;padding:10px 12px; }
+.codeex-error { padding:10px;border:1px solid rgb(190 73 85 / 60%);background:rgb(130 37 53 / 15%);border-radius:7px; }
+.codeex-results { display:grid;gap:12px; }
+.codeex-metrics { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px; }
+.codeex-metrics span { border:1px solid var(--gd-color-border);border-radius:7px;padding:10px;text-align:center;font-size:11px; }
+.codeex-hits { border:1px solid var(--gd-color-border);border-radius:8px;min-height:70px;padding:12px; }
+.codeex-hits h2 { font-size:14px; }
+.codeex-hit { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-top:1px solid var(--gd-color-border-subtle);padding:8px 0;overflow-wrap:anywhere; }
+@media(max-width:760px) { .codeex-workspace { grid-template-columns:1fr; }.codeex-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }

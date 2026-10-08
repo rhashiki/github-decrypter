@@ -14,9 +14,11 @@ import {
   WorkbenchTabBar,
   WorkbenchTopBar,
 } from '@github-decrypter/ui';
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { EnvironmentDoctor, type EnvironmentDoctorOutcome } from './EnvironmentDoctor.js';
 import { JobsCenter } from './JobsCenter.js';
+const CodeExplorer = lazy(() => import('./CodeExplorer.js').then((module) => ({ default: module.CodeExplorer })));
+
 import { OnboardingFlow } from './OnboardingFlow.js';
 import { ViktorToggle } from './ViktorToggle.js';
 import {
@@ -28,7 +30,6 @@ import { parseStudioLaunchContext, STUDIO_BUILD, STUDIO_VERSION } from './studio
 const RESERVED_SURFACES = Object.freeze([
   { label: 'Developer Console', build: 71 },
   { label: 'Problems & Diagnostics', build: 72 },
-  { label: 'Code Explorer', build: 73 },
   { label: 'Terminal', build: 75 },
   { label: 'Git Panel', build: 76 },
 ]);
@@ -39,7 +40,7 @@ const FUTURE_MODES = Object.freeze([
   { label: 'Workflow', detail: 'Planned' },
 ]);
 
-type WorkspaceSurface = 'overview' | 'jobs';
+type WorkspaceSurface = 'overview' | 'jobs' | 'code';
 
 function runtimeStatusLabel(outcome: EnvironmentDoctorOutcome): string {
   if (outcome === 'ready') return 'Diagnostic ready';
@@ -72,7 +73,9 @@ export function StudioApp() {
       ? 'Environment Doctor'
       : workspaceSurface === 'jobs'
         ? 'Jobs Center'
-        : 'Overview';
+        : workspaceSurface === 'code'
+          ? 'Code Explorer · scratchpad'
+          : 'Overview';
 
   function retakeOnboarding(): void {
     setProfile(null);
@@ -99,13 +102,14 @@ export function StudioApp() {
         </div>
 
         <nav className="studio-mode-switcher" aria-label="Studio modes">
-          <button className="studio-mode is-active" type="button" aria-current="page">Agent</button>
+          <button className={workspaceSurface === "code" ? "studio-mode" : "studio-mode is-active"} type="button" onClick={() => setWorkspaceSurface("overview")}>Agent</button>
           {FUTURE_MODES.map((mode) => (
             <button
-              className="studio-mode"
+              className={mode.label === 'Code' && workspaceSurface === 'code' ? 'studio-mode is-active' : 'studio-mode'}
               type="button"
-              disabled
-              title={mode.detail}
+              disabled={mode.label !== 'Code' || !workspaceReady}
+              title={mode.label === 'Code' ? 'Local scratchpad, not connected to repository' : mode.detail}
+              onClick={() => { if (mode.label === 'Code') setWorkspaceSurface('code'); }}
               key={mode.label}
             >
               {mode.label}
@@ -161,7 +165,11 @@ export function StudioApp() {
           <span className="studio-visually-hidden">Jobs Center</span>
         </button>
         <span className="studio-activity-divider" />
-        <button className="studio-activity-item" type="button" disabled title="Code Explorer · Build 73">
+        <button className={workspaceReady && workspaceSurface === 'code' ? 'studio-activity-item is-active' : 'studio-activity-item'}
+          type="button" disabled={!workspaceReady}
+          aria-current={workspaceReady && workspaceSurface === 'code' ? 'page' : undefined}
+          title={workspaceReady ? 'Code Explorer · local scratchpad' : 'Complete onboarding to use Code Explorer'}
+          onClick={() => setWorkspaceSurface('code')}>
           <span aria-hidden="true">&lt;/&gt;</span>
           <span className="studio-visually-hidden">Code Explorer</span>
         </button>
@@ -286,6 +294,8 @@ export function StudioApp() {
             />
           ) : workspaceSurface === 'jobs' ? (
             <JobsCenter />
+          ) : workspaceSurface === 'code' ? (
+            <Suspense fallback={<div role="status">Loading local Code Explorer…</div>}><CodeExplorer /></Suspense>
           ) : (
             <>
               <section className="studio-overview" aria-labelledby="studio-overview-title">

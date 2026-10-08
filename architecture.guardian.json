@@ -177,6 +177,7 @@
   "appRules": {
     "@github-decrypter/studio": {
       "allowedWorkspaceDependencies": [
+        "@github-decrypter/code-intelligence",
         "@github-decrypter/protocol",
         "@github-decrypter/ui"
       ],
@@ -3403,6 +3404,9 @@
     "maxAstNodes": 150000,
     "maxResults": 256,
     "externalSourceAdoption": "patterns-only",
-    "sourceTriage": "docs/research/BUILD_73_SOURCE_TRIAGE.md"
+    "sourceTriage": "docs/research/BUILD_73_SOURCE_TRIAGE.md",
+    "studioScratchpad": "user-pasted-source-only",
+    "studioRepositoryTransport": false,
+    "studioFilesystemAccess": false
   }
 }

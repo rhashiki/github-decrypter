@@ -5,6 +5,9 @@ const code=fs.readFileSync('packages/code-intelligence/src/index.ts','utf8');
 const runtime=fs.readFileSync('apps/local/src/code-intelligence-runtime.ts','utf8');
 const semantic=fs.readFileSync('packages/code-intelligence/src/semantic.ts','utf8');
 const local=JSON.parse(fs.readFileSync('apps/local/package.json','utf8'));
+const studio=JSON.parse(fs.readFileSync('apps/studio/package.json','utf8'));
+const explorer=fs.readFileSync('apps/studio/src/CodeExplorer.tsx','utf8');
+const daemon=fs.readFileSync('apps/local/src/daemon.ts','utf8');
 const auth=policy.codeIntelligenceAuthority;
 if(policy.currentBuild!==73||policy.phaseGates.codeIntelligenceBuild!==73)issues.push('Build 73 gate missing');
 for(const [key,expect] of Object.entries({
@@ -16,6 +19,16 @@ for(const [key,expect] of Object.entries({
 if(!policy.packageRules?.['@github-decrypter/code-intelligence']?.environmentNeutral)issues.push('Environment-neutral package not guarded');
 if(!policy.appRules?.['@github-decrypter/local']?.allowedWorkspaceDependencies?.includes('@github-decrypter/code-intelligence'))issues.push('Unapproved local runtime dependency');
 if(local.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*')issues.push('No local runtime code intelligence dependency');
+if(studio.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*'
+  || !policy.appRules?.['@github-decrypter/studio']?.allowedWorkspaceDependencies?.includes('@github-decrypter/code-intelligence'))
+  issues.push('Studio scratchpad dependency not guarded');
+if(auth?.studioRepositoryTransport!==false || auth?.studioFilesystemAccess!==false)
+  issues.push('Code Explorer must not claim direct repo or filesystem transport');
+if(!daemon.includes('...createCodeIntelligenceToolRegistrations({ workspaces: this.#workspaces }, scopeLock)'))
+  issues.push('Code Intelligence missing from daemon tool registration composition');
+if(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b|\bindexedDB\b/.test(explorer))
+  issues.push('Code Explorer gained unauthorized browser network/filesystem/persistence');
+if(!explorer.includes('local scratchpad'))issues.push('Scratchpad lacks explicit source boundary');
 for(const token of ['CODE_INTELLIGENCE_SCHEMA','buildCodeIntelligenceIndex','queryCodeIntelligence','semanticTypeResolution: false','mutationAuthority: false','networkAuthority: false'])if(!code.includes(token))issues.push('Missing index contract '+token);
 for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId','openSync','readSync','fstatSync','O_NOFOLLOW','realpathSync','closeSync'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
 for(const [file,s] of [['core',code],['runtime',runtime]]){

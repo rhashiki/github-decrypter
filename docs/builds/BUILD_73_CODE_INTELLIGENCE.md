@@ -27,5 +27,10 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 - Branch-local `currentBuild`/version/Guardian policy staged as 73 for CI. Mark the canonical roadmap ✅ and merge **only after** all gates pass.
 - Build 74 is not authorized until Build 73 is complete.
 
+## Studio integration (staged)
+The Studio now has an interactive **local scratchpad** Code Explorer after onboarding. Users manually provide TS/JS text (up to 8 files, bounded); AST analysis and semantic navigation operate in the browser with no network or persistence. This is not a connected repository reader. Secure workspace file transport is pending.
+
+The Local Runtime daemon composes the Code Intelligence registration with canonical Tool Runtime preview/diagnostics tools using a supplied Scope Lock, without new HTTP endpoints or grants.
+
 ## Boundaries
 Code Intelligence is evidence and navigation, not a second compiler, root-cause authority (Build 106), Validation authority (Build 57), or mutating executor. No changes to legacy Supabase are necessary for this build.
