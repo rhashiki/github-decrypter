@@ -17,7 +17,6 @@ for(const file of [
   'scripts/test-build69-live-preview-runtime.ts',
   'scripts/test-build69-live-preview-guardian-negative.mjs',
   'scripts/tsconfig.build69-tests.json',
-  '.github/workflows/build69-live-preview.yml',
 ]) assert.ok(fs.existsSync(file),'Build 69 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

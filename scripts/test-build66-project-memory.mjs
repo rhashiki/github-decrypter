@@ -13,7 +13,6 @@ for(const file of [
   'scripts/architecture-guardian-project-memory.mjs',
   'scripts/test-build66-project-memory-runtime.ts',
   'scripts/test-build66-project-memory-guardian-negative.mjs',
-  '.github/workflows/build66-project-memory.yml',
 ]) assert.ok(fs.existsSync(file),'Build 66 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

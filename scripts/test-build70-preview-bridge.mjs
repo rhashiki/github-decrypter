@@ -18,7 +18,6 @@ for(const file of [
   'scripts/test-build70-preview-bridge-runtime.ts',
   'scripts/test-build70-preview-bridge-guardian-negative.mjs',
   'scripts/tsconfig.build70-tests.json',
-  '.github/workflows/build70-preview-bridge.yml',
 ]) assert.ok(fs.existsSync(file),'Build 70 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

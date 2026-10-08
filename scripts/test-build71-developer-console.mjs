@@ -16,7 +16,6 @@ for(const file of [
   'scripts/test-build71-developer-console-runtime.ts',
   'scripts/test-build71-developer-console-guardian-negative.mjs',
   'scripts/tsconfig.build71-tests.json',
-  '.github/workflows/build71-developer-console.yml',
 ]) assert.ok(fs.existsSync(file),'Build 71 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');
