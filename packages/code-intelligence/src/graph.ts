@@ -42,11 +42,20 @@ function candidatePaths(importer: string, specifier: string): readonly string[] 
   const base = stack.join('/');
   if (!base || base.startsWith('/')) return [];
   const explicit = /\.[cm]?[jt]sx?$/i.test(base);
-  if (explicit) return [base];
+  // TypeScript resolves source files behind runtime-oriented .js/.mjs/.cjs specifiers.
+  // Match *only* files present in the bounded AST index; never consult the host disk.
+  if (explicit) {
+    if (base.endsWith('.jsx')) return [base.slice(0,-4)+'.tsx',base];
+    if (base.endsWith('.js')) return [base.slice(0,-3)+'.ts',base.slice(0,-3)+'.tsx',base];
+    if (base.endsWith('.mjs')) return [base.slice(0,-4)+'.mts',base];
+    if (base.endsWith('.cjs')) return [base.slice(0,-4)+'.cts',base];
+    return [base];
+  }
   return [
-    base + '.ts', base + '.tsx', base + '.js', base + '.jsx',
-    base + '.mts', base + '.cts', base + '.mjs', base + '.cjs',
-    base + '/index.ts', base + '/index.tsx', base + '/index.js', base + '/index.jsx',
+    base + '.ts', base + '.tsx', base + '.mts', base + '.cts',
+    base + '.js', base + '.jsx', base + '.mjs', base + '.cjs',
+    base + '/index.ts', base + '/index.tsx', base + '/index.mts', base + '/index.cts',
+    base + '/index.js', base + '/index.jsx', base + '/index.mjs', base + '/index.cjs',
   ];
 }
 
