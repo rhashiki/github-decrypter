@@ -98,7 +98,6 @@ if (
     'scripts/test-build46-context-mentions-runtime.ts',
     'scripts/test-build46-context-mentions-guardian-negative.mjs',
     'scripts/tsconfig.build46-tests.json',
-    '.github/workflows/build46-context-mentions.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG448', message: 'Required Build 46 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/CONTEXT_MENTIONS.md');

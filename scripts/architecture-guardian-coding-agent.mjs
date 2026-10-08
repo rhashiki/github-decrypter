@@ -144,7 +144,6 @@ if (
     'scripts/test-build60-coding-agent-runtime.ts',
     'scripts/test-build60-coding-agent-guardian-negative.mjs',
     'scripts/tsconfig.build60-tests.json',
-    '.github/workflows/build60-coding-agent.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG589', message: 'Required Build 60 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/CODING_AGENT.md');

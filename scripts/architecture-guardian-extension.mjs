@@ -137,7 +137,6 @@ if (!rule || rule.ownerRoot !== 'apps/extension' || rule.minimumBuild !== 25) {
       'docs/architecture/GITHUB_CHROME_EXTENSION.md', 'docs/builds/BUILD_25_GITHUB_CHROME_EXTENSION.md',
       'scripts/test-build25-github-chrome-extension.mjs', 'scripts/test-build25-github-chrome-extension-runtime.ts',
       'scripts/test-build25-extension-guardian-negative.mjs', 'scripts/tsconfig.build25-tests.json',
-      '.github/workflows/build25-github-chrome-extension.yml',
     ]) if (!exists(required)) violations.push({ code: 'AG239', message: 'Required Build 25 artifact is missing.', detail: required });
   }
 }

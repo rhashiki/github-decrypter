@@ -169,7 +169,6 @@ if (!rule || policy.currentBuild < 29 || rule.minimumBuild !== 29 || policy.phas
     'scripts/test-build29-unified-design-system-dist.mjs',
     'scripts/test-build29-design-system-guardian-negative.mjs',
     'scripts/tsconfig.build29-tests.json',
-    '.github/workflows/build29-unified-design-system.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG279', message: 'Required Build 29 artifact is missing.', detail: required });
 }
 

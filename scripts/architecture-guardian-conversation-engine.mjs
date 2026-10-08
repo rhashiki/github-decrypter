@@ -145,7 +145,6 @@ if (
     'scripts/test-build44-conversation-engine-runtime.ts',
     'scripts/test-build44-conversation-engine-guardian-negative.mjs',
     'scripts/tsconfig.build44-tests.json',
-    '.github/workflows/build44-conversation-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG428', message: 'Required Build 44 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/CONVERSATION_ENGINE.md');

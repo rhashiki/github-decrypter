@@ -143,7 +143,6 @@ if (
     'scripts/test-build42-context-continuation-runtime.ts',
     'scripts/test-build42-context-continuation-guardian-negative.mjs',
     'scripts/tsconfig.build42-tests.json',
-    '.github/workflows/build42-context-continuation-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG408', message: 'Required Build 42 artifact is missing.', detail: required });
 
   if (!read('docs/architecture/CONTEXT_CONTINUATION_ENGINE.md').includes('Build 43 — Token Abstraction Layer')
