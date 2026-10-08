@@ -18,8 +18,8 @@ if(local.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*')i
 for(const token of ['CODE_INTELLIGENCE_SCHEMA','buildCodeIntelligenceIndex','queryCodeIntelligence','semanticTypeResolution: false','mutationAuthority: false','networkAuthority: false'])if(!code.includes(token))issues.push('Missing index contract '+token);
 for(const token of ['resolveExistingPath','verifiedCapabilities.includes(\'READ\')','mutating: false','lstatSync','sourceScopeLockId'])if(!runtime.includes(token))issues.push('Missing runtime gate '+token);
 for(const [file,s] of [['core',code],['runtime',runtime]]){
-  if(/\\bfetch\\s*\\(|\\bWebSocket\\b|\\bchild_process\\b|\\bspawn\\s*\\(/.test(s))issues.push(file+' gained network/process authority');
+  if(/\bfetch\s*\(|\bWebSocket\b|\bchild_process\b|\bspawn\s*\(/.test(s))issues.push(file+' gained network/process authority');
 }
-if(/mutationAuthority:\\s*true|semanticTypeResolution:\\s*true|callGraphResolution:\\s*true/.test(code+runtime))issues.push('Unsupported authority claim');
+if(/mutationAuthority:\s*true|semanticTypeResolution:\s*true|callGraphResolution:\s*true/.test(code+runtime))issues.push('Unsupported authority claim');
 console.log(JSON.stringify({ok:issues.length===0,schema:'gd-build73-guardian/1',build:73,issues},null,2));
 if(issues.length)process.exit(1);
