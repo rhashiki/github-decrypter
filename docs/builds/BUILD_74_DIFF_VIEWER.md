@@ -35,9 +35,9 @@ This Build 74 is the honest **local text comparison** slice. Connecting reposito
 The branch contains the complete bounded local Diff Viewer UI, the pure deterministic comparison model, CSS, architecture gate and permanent Build 74 regression tests. The existing Build 73 historical gate was adjusted to remain active when the root version advances to Build 74, without weakening its read-only authority.
 
 **Executed focused evidence, not full acceptance:**
-- 49 assertions of the actual committed Build 74 test file passed against the committed model transformed by TypeScript type erasure for isolated JavaScript execution.
+- 448 assertions of the actual committed Build 74 test file passed against the committed model transformed by TypeScript type erasure for isolated JavaScript execution.
 - The committed static Build 74 assertion script passed against the fetched branch file set.
 - The Build 74 Architecture Guardian passed against those same fetched files with no errors.
-- 14 additional focused behavioral cases of the model passed.
+- 14 additional focused behavioral cases of the model passed. The committed suite now includes 200 deterministic randomized reconstruction checks and one 800-line stress case.
 
 **Still required before acceptance:** local/server installation, actual TypeScript compilation of the entire monorepo, real `pnpm run ci` historical regressions through Build 74 and Studio Vite build. The current container cannot resolve GitHub DNS or fetch package registry dependencies, so no claim of a passing final acceptance suite has been made.
