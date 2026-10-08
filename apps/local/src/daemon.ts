@@ -24,6 +24,9 @@ import { createProjectDetector, type ProjectDetector } from './project-detector.
 import { createProjectMemoryStore, type ProjectMemoryStore } from './project-memory-store.js';
 import { createProductContractStore, type ProductContractStore } from './product-contract-store.js';
 import { createPreviewBrowserRuntime, type PreviewBrowserRuntime } from './preview-browser-runtime.js';
+import { createCodeIntelligenceToolRegistrations } from './code-intelligence-runtime.js';
+import type { ScopeLockRecord } from '@github-decrypter/scope/lock';
+import type { ToolRegistration } from '@github-decrypter/tools';
 import { createCrashPowerRecovery, type CrashPowerRecovery } from './recovery-engine.js';
 import { createSecretsVault, type SecretsVault } from './secrets-vault.js';
 import { createLocalRuntimeHttpServer } from './server.js';
@@ -172,6 +175,14 @@ export class LocalRuntimeDaemon {
   get projectMemory(): ProjectMemoryStore { return this.#projectMemory; }
   get productContracts(): ProductContractStore { return this.#productContracts; }
   get previewBrowser(): PreviewBrowserRuntime { return this.#previewBrowser; }
+
+  /** Central Tool Runtime registration; does not grant capabilities or expose HTTP routes. */
+  createToolRegistrations(scopeLock: ScopeLockRecord): readonly ToolRegistration[] {
+    return Object.freeze([
+      ...this.#previewBrowser.createToolRegistrations(scopeLock),
+      ...createCodeIntelligenceToolRegistrations({ workspaces: this.#workspaces }, scopeLock),
+    ]);
+  }
   get git(): GitRuntime { return this.#git; }
   get changeTracking(): ChangeTracker { return this.#changeTracking; }
   get githubApp(): GitHubAppRuntime { return this.#githubApp; }

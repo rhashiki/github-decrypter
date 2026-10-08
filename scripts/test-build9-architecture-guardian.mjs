@@ -28,10 +28,10 @@ assert.equal(policy.product, 'GitHub Decrypter');
 assert.equal(policy.northStar.sourceSha256, '256c9677407ef3cc5608d62908fb39fbe24e618b799192ab89f315033b90c718');
 assert.equal(policy.northStar.requiredPrinciples.length, 22);
 assert.equal(policy.northStar.requiredRoadmapBlocks.length, 11);
-assert.ok(Array.isArray(policy.workflow.writePermissionAllowlist));
-for (const workflow of policy.workflow.writePermissionAllowlist) {
-  assert.ok(policy.workflow.writeScopes?.[workflow], `write-allowlisted workflow requires an explicit scope: ${workflow}`);
-}
+assert.equal(policy.workflow.enabled, false, 'GitHub automation must be disabled permanently');
+assert.deepEqual(policy.workflow.writePermissionAllowlist, [], 'No automation may receive write authority');
+assert.deepEqual(policy.workflow.writeScopes, {}, 'No automation write scope may be configured');
+assert.equal(fs.existsSync('.github/workflows'), false, 'No GitHub automation folder may exist');
 assert.equal(policy.phaseGates.localDaemonBuild, 10);
 assert.equal(policy.phaseGates.extensionActivationBuild, 25);
 assert.equal(policy.phaseGates.studioReactBuild, 27);
@@ -115,5 +115,6 @@ console.log(JSON.stringify({
   northStarRoadmapBlocks: 11,
   phaseGates: policy.phaseGates,
   workflowWriteAllowlist: policy.workflow.writePermissionAllowlist,
-  scopedWorkflowWritesRequired: true,
+  scopedWorkflowWritesRequired: false,
+  githubAutomationForbidden: true,
 }, null, 2));

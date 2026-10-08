@@ -746,24 +746,14 @@ if (currentBuild < phase.extensionActivationBuild && exists('manifest.json')) {
   if ((manifest.host_permissions ?? []).length > 0) violation('AG064', `Extension host permissions arrived before Build ${phase.extensionActivationBuild}.`);
 }
 
-// Workflow mutation authority is fail-closed until an explicit allowlist amendment.
-const workflowFiles = walkFiles('.github/workflows', (absolute) => /\.ya?ml$/.test(absolute));
-for (const absolute of workflowFiles) {
-  const relativeFile = rel(absolute);
-  const source = fs.readFileSync(absolute, 'utf8');
-  const allowlisted = new Set(policy.workflow?.writePermissionAllowlist ?? []).has(relativeFile);
-  if (!allowlisted) {
-    for (const permission of policy.workflow?.forbiddenWritePermissions ?? []) {
-      const writePattern = new RegExp(`(^|\\n)\\s*${permission.replace('-', '\\-')}\\s*:\\s*write\\s*(?:#.*)?(?=\\n|$)`, 'i');
-      if (writePattern.test(source)) {
-        violation('AG070', `Workflow gained write permission without Architecture Guardian allowlist: ${permission}`, relativeFile);
-      }
-    }
-  }
-  if (currentBuild < phase.releaseAuthorityBuild) {
-    if (/(^|\n)\s*release\s*:/i.test(source)) violation('AG071', `Release-trigger authority arrived before Build ${phase.releaseAuthorityBuild}.`, relativeFile);
-    if (/(^|\n)\s*tags\s*:\s*(?:\n|\[).*\bv\*?/is.test(source)) violation('AG072', `Version-tag publication trigger arrived before Build ${phase.releaseAuthorityBuild}.`, relativeFile);
-  }
+// GitHub-hosted automation is categorically forbidden. Do not parse or approve workflow files.
+if (exists('.github/workflows')) {
+  violation('AG070', 'GitHub automation workflow directory is forbidden, including empty directories.', '.github/workflows');
+}
+if (policy.workflow?.enabled !== false
+    || (policy.workflow?.writePermissionAllowlist ?? []).length !== 0
+    || Object.keys(policy.workflow?.writeScopes ?? {}).length !== 0) {
+  violation('AG071', 'GitHub automation cannot be enabled or granted write authority.');
 }
 
 // Build numbering stays integer and roadmap stage matches the repository gate.

@@ -9,6 +9,7 @@ export * from './attachment-store.js';
 export * from './audit-ledger.js';
 export * from './capability-security.js';
 export * from './change-tracker.js';
+export * from './code-intelligence-runtime.js';
 export * from './config.js';
 export * from './conversation-store.js';
 export * from './database-path.js';

@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const policy=JSON.parse(fs.readFileSync('architecture.guardian.json','utf8'));
+const root=JSON.parse(fs.readFileSync('package.json','utf8'));
+const local=JSON.parse(fs.readFileSync('apps/local/package.json','utf8'));
+const studio=JSON.parse(fs.readFileSync('apps/studio/package.json','utf8'));
+const pkg=JSON.parse(fs.readFileSync('packages/code-intelligence/package.json','utf8'));
+for(const file of ['docs/builds/BUILD_73_CODE_INTELLIGENCE.md','docs/research/BUILD_73_SOURCE_TRIAGE.md','packages/code-intelligence/src/index.ts','apps/local/src/code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-runtime.ts','scripts/test-build73-code-intelligence-local-runtime.ts','scripts/architecture-guardian-code-intelligence.mjs'])assert.ok(fs.existsSync(file),file);
+assert.equal(policy.currentBuild,73);
+assert.equal(root.version,'0.0.73');
+assert.equal(local.version,'0.0.73');
+assert.equal(pkg.version,'0.0.73');
+assert.equal(pkg.name,'@github-decrypter/code-intelligence');
+assert.equal(policy.phaseGates.codeIntelligenceBuild,73);
+assert.equal(policy.packageRules[pkg.name].environmentNeutral,true);
+assert.deepEqual(policy.packageRules[pkg.name].allowedWorkspaceDependencies,[]);
+assert.ok(policy.appRules[local.name].allowedWorkspaceDependencies.includes(pkg.name));
+assert.equal(local.dependencies[pkg.name],'workspace:*');
+assert.equal(studio.dependencies[pkg.name],'workspace:*');
+assert.ok(policy.appRules[studio.name].allowedWorkspaceDependencies.includes(pkg.name));
+assert.equal(policy.codeIntelligenceAuthority.studioRepositoryTransport,false);
+assert.equal(policy.codeIntelligenceAuthority.studioFilesystemAccess,false);
+assert.ok(fs.readFileSync('apps/local/src/daemon.ts','utf8').includes('...createCodeIntelligenceToolRegistrations({ workspaces: this.#workspaces }, scopeLock)'));
+const explorer=fs.readFileSync('apps/studio/src/CodeExplorer.tsx','utf8');
+assert.ok(explorer.includes('local scratchpad'));
+assert.ok(explorer.includes('importSourceFiles'));
+assert.ok(explorer.includes('file.text()'));
+assert.ok(explorer.includes("type=\"file\""));
+assert.ok(explorer.includes('Go to definition'));
+assert.ok(explorer.includes('Open local folder'));
+const folder = fs.readFileSync('apps/studio/src/code-explorer-folder.ts','utf8');
+assert.ok(folder.includes('readExplicitlySelectedFolder'));
+assert.ok(folder.includes('webkitRelativePath'));
+assert.ok(folder.includes("'node_modules'"));
+assert.equal(/\bfetch\s*\(|\bWebSocket\b|\blocalStorage\b|\bindexedDB\b/.test(folder),false);
+assert.ok(explorer.includes('Codebase onboarding · supplied files only'));
+assert.equal(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b/.test(explorer),false);
+assert.ok(fs.readFileSync('apps/studio/src/App.tsx','utf8').includes('<CodeExplorer />'));
+assert.ok(root.scripts.guardian.includes('architecture-guardian-code-intelligence.mjs'));
+assert.ok(root.scripts.ci.includes('check:build73'));
+assert.ok(root.scripts['check:build73'].includes('test-build73-code-explorer-folder.ts'));
+assert.equal(fs.existsSync('.github/workflows'),false);
+const independentValidator = fs.readFileSync('scripts/validate-server.mjs','utf8');
+assert.ok(independentValidator.includes("gitOutput(['status','--porcelain','--untracked-files=all'])"),
+  'Commit-bound validation must reject untracked sources on both sides of the run.');
+assert.equal(independentValidator.includes("'--untracked-files=no'"),false,
+  'Validation must never ignore untracked source files.');
+for (const token of [
+  "const sourceCommit=gitOutput(['rev-parse','HEAD'])",
+  "trackedTreeCleanBefore",
+  "trackedTreeCleanAfter",
+  "sourceCommitStable",
+  "schema:'gd-server-validation/2'",
+  "ok:accepted",
+]) assert.ok(independentValidator.includes(token), 'Missing commit-bound independent validation guard: '+token);
+
+const code=fs.readFileSync('packages/code-intelligence/src/index.ts','utf8');
+const runtime=fs.readFileSync('apps/local/src/code-intelligence-runtime.ts','utf8');
+assert.ok(code.includes('CODE_INTELLIGENCE_BUILD = 73'));
+assert.ok(code.includes('semanticTypeResolution: false'));
+assert.ok(code.includes('mutationAuthority: false'));
+assert.ok(runtime.includes('resolveExistingPath'));
+assert.ok(runtime.includes('verifiedCapabilities.includes(\'READ\')'));
+assert.ok(runtime.includes('context.sourceScopeLockDigest !== scopeLock.lockDigest.hex'));
+assert.ok(runtime.includes('context.workspaceId !== scopeLock.workspaceId'));
+assert.ok(runtime.includes('context.sourceOrchestrationDigest !== scopeLock.sourceOrchestrationDigest.hex'));
+assert.ok(runtime.includes('mutating: false'));
+for (const guard of ['openSync', 'readSync', 'fstatSync', 'realpathSync', 'O_NOFOLLOW', 'closeSync']) {
+  assert.ok(runtime.includes(guard), 'Missing bounded descriptor reader: '+guard);
+}
+assert.equal(runtime.includes("readFileSync(filename"), false);
+assert.equal(/\bfetch\s*\(|\bWebSocket\b|\bchild_process\b|\bspawn\s*\(/.test(runtime),false);
+console.log(JSON.stringify({ok:true,build:73,security:'read-only',status:'pre-merge checks'}));

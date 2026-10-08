@@ -24,8 +24,8 @@ try {
   fs.rmSync(protocolProbe, { force: true });
 }
 
-// 2. Separate negative fixture proves that a forbidden workflow is rejected
-// without writing any workflow file inside the repository.
+// 2. A policy-only negative fixture checks automation remains disabled
+// without creating any hosted automation definitions, even temporarily.
 const forbiddenProbe = spawnSync(process.execPath,
   [path.join(root, 'scripts/test-build11-workflow-guardian-negative.mjs')],
   { cwd: root, encoding: 'utf8' });

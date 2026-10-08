@@ -1,0 +1,273 @@
+import { useEffect, useRef, useState } from 'react';
+import { readExplicitlySelectedFolder, safeSelectedFolderPath, CODE_EXPLORER_FOLDER_MAX_FILES } from './code-explorer-folder.js';
+import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind, CodebaseOnboarding } from '@github-decrypter/code-intelligence';
+
+interface SourceEntry { readonly id: number; readonly path: string; readonly content: string }
+type SearchResult = { readonly mode:'syntax'; readonly data:CodeIntelligenceResult } | { readonly mode:'semantic'; readonly data:CodeSemanticResult };
+const MAX_FILES = CODE_EXPLORER_FOLDER_MAX_FILES;
+const MAX_INDIVIDUAL_FILES = 8;
+function errorText(cause:unknown):string { return (cause instanceof Error ? cause.message : 'Analysis failed.').slice(0,200); }
+
+export function CodeExplorer() {
+  const [files,setFiles] = useState<SourceEntry[]>([{id:1,path:'src/example.ts',content:''}]);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const folderInput = useRef<HTMLInputElement>(null);
+  const sourceInput = useRef<HTMLTextAreaElement>(null);
+  const pendingLocation = useRef<{ readonly path:string; readonly line:number; readonly column:number } | null>(null);
+  const [importNotice,setImportNotice] = useState<string|null>(null);
+  const [active,setActive] = useState(1);
+  const [index,setIndex] = useState<CodeIntelligenceIndex|null>(null);
+  const [overview,setOverview] = useState<CodebaseOnboarding|null>(null);
+  const [result,setResult] = useState<SearchResult|null>(null);
+  const [term,setTerm] = useState('');
+  const [kind,setKind] = useState<CodeQueryKind>('definitions');
+  const [positionLine,setPositionLine] = useState('1');
+  const [positionColumn,setPositionColumn] = useState('1');
+  const [navigationEpoch,setNavigationEpoch] = useState(0);
+  const [busy,setBusy] = useState(false);
+  const [error,setError] = useState<string|null>(null);
+  const selected=files.find((file)=>file.id===active) ?? files[0]!;
+  useEffect(()=>{
+    const target=pendingLocation.current,area=sourceInput.current;
+    if(!target || !area || selected.path!==target.path)return;
+    const text=selected.content;
+    let start=0;
+    for(let i=1;i<target.line;i++){
+      const end=text.indexOf('\n',start);
+      if(end<0){start=text.length;break;}
+      start=end+1;
+    }
+    const lineEnd=text.indexOf('\n',start);
+    const position=Math.max(start,Math.min(lineEnd<0?text.length:lineEnd,start+target.column-1));
+    area.focus();
+    area.setSelectionRange(position,position);
+    area.scrollTop=Math.max(0,(target.line-4)*19);
+    pendingLocation.current=null;
+  },[selected.path,positionLine,positionColumn,result,navigationEpoch]);
+  function jumpToLocation(path:string,line:number,column:number) {
+    const target=files.find(file=>file.path===path);
+    if (!target) return;
+    pendingLocation.current={path,line,column};
+    setActive(target.id);
+    setPositionLine(String(line));
+    setPositionColumn(String(column));
+    setNavigationEpoch(epoch=>epoch+1);
+  }
+  function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setOverview(null);setResult(null);setError(null); }
+  function update(field:'path'|'content',value:string) {
+    setImportNotice(null);
+    edit(files.map(file=>file.id===active?{...file,[field]:value}:file));
+  }
+  function addFile() {
+    if(files.length>=MAX_FILES)return;
+    const id=Math.max(...files.map(file=>file.id))+1;
+    setImportNotice(null);
+    edit([...files,{id,path:'src/scratch-'+id+'.ts',content:''}]);setActive(id);
+  }
+  function removeFile() {
+    if(files.length===1)return;
+    const next=files.filter(file=>file.id!==active);
+    setImportNotice(null);
+    edit(next);setActive(next[0]!.id);
+  }
+  async function importSourceFiles(picked: readonly File[]) {
+    if(!picked.length || busy)return;
+    setBusy(true);
+    setError(null);
+    try {
+      if(picked.length>MAX_INDIVIDUAL_FILES)throw new Error('Choose at most eight source files at a time.');
+      if(picked.some(file=>file.size>400000 || !/\\.(?:[cm]?[jt]s|[jt]sx)$/i.test(file.name))) {
+        throw new Error('Select only bounded JS/TS source files (max 400 KB per file).');
+      }
+      const existing=files.length===1 && !files[0]!.content.trim() ? [] : files;
+      if(existing.length+picked.length>MAX_FILES)throw new Error('The scratchpad supports at most 64 files.');
+      const known=new Set(existing.map(file=>file.path));
+      const imported:SourceEntry[]=[];
+      let id=Math.max(0,...existing.map(file=>file.id));
+      for(const file of picked) {
+        const name=safeSelectedFolderPath('selection/src/'+file.name);
+        if(!name)throw new Error('Unsafe or sensitive source file name: '+file.name);
+        if(known.has(name))throw new Error('Duplicate source file name: '+file.name);
+        known.add(name);
+        const content=await file.text();
+        if(content.length>100000)throw new Error('A selected source exceeds 100,000 characters.');
+        imported.push({id:++id,path:name,content});
+      }
+      const next=[...existing,...imported];
+      if(next.reduce((sum,file)=>sum+file.content.length,0)>400000)throw new Error('Scratchpad text budget exceeded.');
+      edit(next);
+      setActive(imported[0]!.id);
+      setImportNotice('Imported '+imported.length+' explicitly selected files.');
+    }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
+  }
+  async function importFolder(picked: readonly File[]) {
+    if(!picked.length || busy)return;
+    setBusy(true);
+    setError(null);
+    try {
+      const imported = await readExplicitlySelectedFolder(picked);
+      const next = imported.files.map((file,i)=>({id:i+1,path:file.path,content:file.content}));
+      edit(next);
+      setActive(1);
+      setImportNotice('Loaded '+next.length+' source files from your selected folder.'
+        +(imported.skippedCount ? ' '+imported.skippedCount+' eligible files were skipped by the 64-file limit.' : ''));
+    }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
+  }
+  function sources() {
+    if(files.every(file=>!file.content.trim()))throw new Error('Add source code to at least one file before analyzing.');
+    if(files.reduce((sum,file)=>sum+file.content.length,0)>400000)throw new Error('Maximum 400,000 characters.');
+    return files.map(file=>({path:file.path,content:file.content}));
+  }
+  async function analyze() {
+    if(busy)return;
+    setBusy(true);setError(null);
+    try {
+      const {buildCodeIntelligenceIndex,buildCodebaseOnboarding}=await import('@github-decrypter/code-intelligence');
+      const nextIndex=buildCodeIntelligenceIndex(sources());
+      setIndex(nextIndex);setOverview(buildCodebaseOnboarding(nextIndex));setResult(null);
+    }catch(cause){setIndex(null);setOverview(null);setError(errorText(cause));}finally{setBusy(false);}
+  }
+  async function search() {
+    if(!index)return;
+    try {
+      const {queryCodeIntelligence}=await import('@github-decrypter/code-intelligence');
+      setResult({mode:'syntax',data:queryCodeIntelligence(index,{kind,term,limit:64})});setError(null);
+    }catch(cause){setError(errorText(cause));}
+  }
+  async function navigate(path:string,line:number,column:number,mode:'semantic-definitions'|'semantic-references') {
+    if(!index)return;
+    try {
+      const {resolveCodeSemantics}=await import('@github-decrypter/code-intelligence');
+      setResult({mode:'semantic',data:resolveCodeSemantics(sources(),{kind:mode,path,line,column,limit:64})});
+      jumpToLocation(path,line,column);
+      setError(null);
+    }catch(cause){setError(errorText(cause));}
+  }
+  const locations=result?.mode==='semantic'?
+    (result.data.request.kind==='semantic-definitions'?result.data.definitions:result.data.references):[];
+  return (
+    <section className="codeex" aria-labelledby="codeex-title">
+      <header>
+        <small>Build 73 · local scratchpad</small>
+        <h1 id="codeex-title">Code Explorer</h1>
+        <p>AST navigation, definitions and references for JavaScript and TypeScript.</p>
+      </header>
+      <p className="codeex-note" role="note">Only code you paste or explicitly select from your device is analyzed in this browser session. No automatic GitHub/Local Runtime access; no code is uploaded, executed or saved.</p>
+      <div className="codeex-workspace">
+        <nav className="codeex-files" aria-label="Scratchpad sources">
+          <div><strong>Sources</strong><button type="button" onClick={addFile} disabled={files.length>=MAX_FILES}>+ Add</button></div>
+          <input ref={fileInput} className="codeex-file-input" tabIndex={-1} type="file" multiple
+            accept=".ts,.tsx,.js,.jsx,.mts,.cts,.mjs,.cjs"
+            aria-label="Select JavaScript or TypeScript files"
+            onChange={event=>{
+              const picked=Array.from(event.currentTarget.files ?? []);
+              event.currentTarget.value='';
+              void importSourceFiles(picked);
+            }}/>
+          <button type="button" disabled={busy || files.length>=MAX_FILES}
+            onClick={()=>fileInput.current?.click()}>Import files</button>
+          <input {...{webkitdirectory: ''}} ref={folderInput} className="codeex-file-input" tabIndex={-1}
+            type="file" multiple aria-label="Select a local source folder"
+            onChange={event=>{
+              const picked=Array.from(event.currentTarget.files ?? []);
+              event.currentTarget.value='';
+              void importFolder(picked);
+            }}/>
+          <button type="button" disabled={busy} onClick={()=>folderInput.current?.click()}>
+            Open local folder
+          </button>
+          {files.map(file=><button type="button" key={file.id}
+            className={file.id===active?'is-active':''} aria-current={file.id===active?'true':undefined}
+            title={file.path} onClick={()=>setActive(file.id)}>{file.path}</button>)}
+        </nav>
+        <div className="codeex-editor">
+          <label htmlFor="codeex-path">File path</label>
+          <div className="codeex-line">
+            <input id="codeex-path" value={selected.path} maxLength={2048} spellCheck={false}
+              onChange={event=>update('path',event.target.value)}/>
+            <button type="button" onClick={removeFile} disabled={files.length===1}>Remove</button>
+          </div>
+          <label htmlFor="codeex-source">Source code</label>
+          <textarea ref={sourceInput} id="codeex-source" value={selected.content} maxLength={100000} spellCheck={false}
+            onChange={event=>update('content',event.target.value)}
+            placeholder="Paste TypeScript or JavaScript here. Add files to resolve relative imports."/>
+          <div className="codeex-line codeex-bottom">
+            <span>{files.length} / {MAX_FILES} files · {selected.content.length} chars</span>
+            <button className="codeex-primary" type="button" disabled={busy} onClick={()=>void analyze()}>
+              {busy?'Analyzing…':'Analyze sources'}
+            </button>
+          </div>
+        </div>
+      </div>
+      {importNotice&&<p className="codeex-note" role="status">{importNotice}</p>}
+      {error&&<p className="codeex-error" role="alert">{error}</p>}
+      {index&&<section aria-label="Code intelligence results" className="codeex-results">
+        <div className="codeex-metrics"><span>{index.files.length} files</span><span>{index.symbols.length} symbols</span>
+          <span>{index.imports.length} imports</span><span>{index.calls.length} calls</span></div>
+        {overview&&<div className="codeex-map" aria-label="Codebase onboarding">
+          <h2>Codebase onboarding · supplied files only</h2>
+          <p>Suggested starting points are filename/import hints, not verified execution paths.</p>
+          {overview.entrypointHints.slice(0,8).map(hint=><button key={hint.path} type="button"
+            title={hint.reason} onClick={()=>{
+              const selectedFile=files.find(file=>file.path===hint.path);
+              if(selectedFile)setActive(selectedFile.id);
+            }}>
+            {hint.path} <span>{hint.reason==='conventional-filename'?'Conventional entry':'No indexed importers'}</span>
+          </button>)}
+          <p>{overview.importedEdgeCount} local links · {overview.unresolvedImportCount} unresolved imports</p>
+        </div>}
+        <div className="codeex-line">
+          <input aria-label="Search code" placeholder="Search name…" maxLength={160} value={term} onChange={event=>setTerm(event.target.value)} />
+          <select aria-label="Search type" value={kind} onChange={event=>setKind(event.target.value as CodeQueryKind)}>
+            <option value="definitions">Declarations</option><option value="occurrences">Occurrences</option>
+            <option value="imports">Imports</option><option value="calls">Calls</option>
+          </select>
+          <button type="button" onClick={()=>void search()}>Find</button>
+        </div>
+        <div className="codeex-line" aria-label="Semantic source location">
+          <span>Position:</span>
+          <label htmlFor="codeex-line">Line</label>
+          <input id="codeex-line" type="number" min="1" step="1" value={positionLine}
+            onChange={event=>setPositionLine(event.target.value)}/>
+          <label htmlFor="codeex-column">Column</label>
+          <input id="codeex-column" type="number" min="1" step="1" value={positionColumn}
+            onChange={event=>setPositionColumn(event.target.value)}/>
+          <button type="button" onClick={()=>void navigate(selected.path,Number(positionLine),Number(positionColumn),'semantic-definitions')}>
+            Go to definition
+          </button>
+          <button type="button" onClick={()=>void navigate(selected.path,Number(positionLine),Number(positionColumn),'semantic-references')}>
+            Find references
+          </button>
+        </div>
+        <div className="codeex-hits">
+          {result?.mode==='syntax'?<>
+            <h2>{result.data.totalMatches} matches</h2>
+            {result.data.matches.map((hit,i)=><div className="codeex-hit" key={i}>
+              <code>{'name' in hit?hit.name:'specifier' in hit?hit.specifier:hit.expression}</code>
+              <button type="button" onClick={()=>void navigate(hit.location.path,hit.location.line,hit.location.column,'semantic-definitions')}>
+                {hit.location.path}:{hit.location.line} ↗
+              </button>
+            </div>)}
+            {result.data.truncated&&<p>Showing first 64 results.</p>}
+          </>:result?.mode==='semantic'?<>
+            <h2>{result.data.symbolName ?? 'Symbol'} · {result.data.resolution}</h2>
+            {locations.map((location,i)=><div className="codeex-hit" key={i}>
+              <code>{location.path}:{location.line}:{location.column}</code>
+              <button type="button" onClick={()=>{
+                jumpToLocation(location.path,location.line,location.column);
+              }}>Open file ↗</button>
+            </div>)}
+          </>:<>
+            <h2>Indexed declarations · click to find references</h2>
+            {index.symbols.slice(0,64).map((symbol,i)=><div className="codeex-hit" key={i}>
+              <code>{symbol.name}</code>
+              <button type="button" onClick={()=>void navigate(symbol.location.path,symbol.location.line,symbol.location.column,'semantic-references')}>
+                {symbol.location.path}:{symbol.location.line} · references
+              </button>
+            </div>)}
+          </>}
+        </div>
+      </section>}
+    </section>
+  );
+}

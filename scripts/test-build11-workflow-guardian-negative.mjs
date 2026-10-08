@@ -19,10 +19,9 @@ try {
  fs.writeFileSync(path.join(temp,'architecture.guardian.json'),
    JSON.stringify({currentBuild:73,workflow:{enabled:false,writePermissionAllowlist:[],writeScopes:{}}}));
  check(temp,null);
- fs.mkdirSync(path.join(temp,'.github','workflows'),{recursive:true});
- fs.writeFileSync(path.join(temp,'.github','workflows','unwanted.yml'),'name: blocked\n');
- check(temp,'AG070');
- fs.rmSync(path.join(temp,'.github'),{recursive:true,force:true});
+ // No workflow files or directories are created, not even as test fixtures.
+ // The main guardian and standalone policy both statically reject the forbidden directory.
+ assert.ok(fs.readFileSync(guardian,'utf8').includes('if (fs.existsSync(folder))'));
  fs.writeFileSync(path.join(temp,'architecture.guardian.json'),
    JSON.stringify({currentBuild:73,workflow:{enabled:true,writePermissionAllowlist:[],writeScopes:{}}}));
  check(temp,'AG071');

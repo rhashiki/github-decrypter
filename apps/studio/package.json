@@ -12,7 +12,8 @@
     "@github-decrypter/protocol": "workspace:*",
     "@github-decrypter/ui": "workspace:*",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "@github-decrypter/code-intelligence": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.2.18",

@@ -1,0 +1,13 @@
+{
+  "name": "@github-decrypter/code-intelligence",
+  "version": "0.0.73",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "typescript": "^5.9.2"
+  }
+}
