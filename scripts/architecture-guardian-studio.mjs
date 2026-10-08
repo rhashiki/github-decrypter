@@ -149,6 +149,10 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
   const expectedWorkspaceDependencies = policy.currentBuild >= rule.designSystemBuild
     ? ['@github-decrypter/protocol', '@github-decrypter/ui']
     : ['@github-decrypter/protocol'];
+  if (policy.currentBuild >= (policy.phaseGates?.codeIntelligenceBuild ?? 73)) {
+    expectedWorkspaceDependencies.push('@github-decrypter/code-intelligence');
+    expectedWorkspaceDependencies.sort();
+  }
   if (
     !studioRule
     || JSON.stringify(studioRule.allowedWorkspaceDependencies) !== JSON.stringify(expectedWorkspaceDependencies)
@@ -171,7 +175,6 @@ if (!rule || policy.currentBuild < 27 || rule.minimumBuild !== 27) {
     'scripts/test-build27-react-studio-runtime.ts',
     'scripts/test-build27-react-studio-guardian-negative.mjs',
     'scripts/tsconfig.build27-tests.json',
-    '.github/workflows/build27-react-studio-foundation.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG259', message: 'Required Build 27 artifact is missing.', detail: required });
 }
 

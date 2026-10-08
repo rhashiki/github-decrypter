@@ -14,7 +14,6 @@ for(const file of [
   'scripts/test-build67-context-engine-final-runtime.ts',
   'scripts/test-build67-context-engine-final-guardian-negative.mjs',
   'scripts/tsconfig.build67-tests.json',
-  '.github/workflows/build67-context-engine-final.yml',
 ]) assert.ok(fs.existsSync(file),'Build 67 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

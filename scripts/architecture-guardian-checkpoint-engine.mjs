@@ -146,7 +146,6 @@ if (
     'scripts/test-build56-checkpoint-engine-runtime.ts',
     'scripts/test-build56-checkpoint-engine-guardian-negative.mjs',
     'scripts/tsconfig.build56-tests.json',
-    '.github/workflows/build56-checkpoint-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG549', message: 'Required Build 56 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

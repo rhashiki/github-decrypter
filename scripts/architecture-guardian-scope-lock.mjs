@@ -130,7 +130,7 @@ if (
   for (const required of [
     'packages/scope/src/lock.ts', 'packages/tools/src/index.ts', 'docs/architecture/SCOPE_LOCK.md', 'docs/builds/BUILD_55_SCOPE_LOCK.md',
     'scripts/architecture-guardian-scope-lock.mjs', 'scripts/test-build55-scope-lock.mjs', 'scripts/test-build55-scope-lock-runtime.ts',
-    'scripts/test-build55-scope-lock-guardian-negative.mjs', 'scripts/tsconfig.build55-tests.json', '.github/workflows/build55-scope-lock.yml',
+    'scripts/test-build55-scope-lock-guardian-negative.mjs', 'scripts/tsconfig.build55-tests.json',
   ]) if (!exists(required)) violations.push({ code: 'AG539', message: 'Required Build 55 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

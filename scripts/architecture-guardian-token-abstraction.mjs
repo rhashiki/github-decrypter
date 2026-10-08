@@ -144,7 +144,6 @@ if (
     'scripts/test-build43-token-abstraction-runtime.ts',
     'scripts/test-build43-token-abstraction-guardian-negative.mjs',
     'scripts/tsconfig.build43-tests.json',
-    '.github/workflows/build43-token-abstraction-layer.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG418', message: 'Required Build 43 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/TOKEN_ABSTRACTION_LAYER.md');

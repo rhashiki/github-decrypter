@@ -147,7 +147,6 @@ if (
     'scripts/test-build52-build-orchestrator-runtime.ts',
     'scripts/test-build52-build-orchestrator-guardian-negative.mjs',
     'scripts/tsconfig.build52-tests.json',
-    '.github/workflows/build52-build-orchestrator.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG509', message: 'Required Build 52 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

@@ -147,7 +147,6 @@ if (
 
   const architectureDoc = read('docs/architecture/REVIEW_AGENT.md');
   const buildDoc = read('docs/builds/BUILD_63_REVIEW_AGENT.md');
-  const workflow = read('.github/workflows/build63-review-agent.yml');
   for (const phrase of [
     'Review Agent != Architecture Guardian',
     'Review Agent != Validation Pipeline',
@@ -158,10 +157,6 @@ if (
   ]) if (!architectureDoc.includes(phrase)) violations.push({ code: 'AG619', message: 'Review Agent architecture documentation is incomplete.', detail: phrase });
   if (!buildDoc.includes('Build 63 — Review Agent') || !buildDoc.includes('Build 64 — Agent Orchestrator')) {
     violations.push({ code: 'AG619', message: 'Build 63 documentation is missing or has wrong successor ownership.' });
-  }
-  if (!workflow.includes('pnpm run guardian') || !workflow.includes('pnpm run ci')
-      || !workflow.includes('guard-viktor-explicit-activation.mjs') || !workflow.includes('test-build5-rebrand.mjs')) {
-    violations.push({ code: 'AG619', message: 'Build 63 workflow does not preserve the required accumulated gate.' });
   }
 }
 

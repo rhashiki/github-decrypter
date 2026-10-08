@@ -22,7 +22,6 @@ const required=[
   'scripts/test-build67-context-engine-final-runtime.ts',
   'scripts/test-build67-context-engine-final-guardian-negative.mjs',
   'scripts/tsconfig.build67-tests.json',
-  '.github/workflows/build67-context-engine-final.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG680','Required Build 67 artifact is missing.',file);
 

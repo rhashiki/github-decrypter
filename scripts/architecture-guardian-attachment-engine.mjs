@@ -116,7 +116,6 @@ if (
     'scripts/test-build45-attachment-engine-runtime.ts',
     'scripts/test-build45-attachment-engine-guardian-negative.mjs',
     'scripts/tsconfig.build45-tests.json',
-    '.github/workflows/build45-attachment-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG438', message: 'Required Build 45 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/ATTACHMENT_ENGINE.md');

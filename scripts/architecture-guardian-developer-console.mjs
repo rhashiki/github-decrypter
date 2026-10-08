@@ -24,7 +24,6 @@ const required=[
   'scripts/test-build71-developer-console-runtime.ts',
   'scripts/test-build71-developer-console-guardian-negative.mjs',
   'scripts/tsconfig.build71-tests.json',
-  '.github/workflows/build71-developer-console.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG760','Required Build 71 artifact is missing.',file);
 

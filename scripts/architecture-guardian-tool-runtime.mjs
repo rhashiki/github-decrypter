@@ -114,7 +114,7 @@ if (
     'packages/tools/src/index.ts', 'docs/architecture/TOOL_RUNTIME.md', 'docs/builds/BUILD_53_TOOL_RUNTIME.md',
     'scripts/architecture-guardian-tool-runtime.mjs', 'scripts/test-build53-tool-runtime.mjs',
     'scripts/test-build53-tool-runtime-runtime.ts', 'scripts/test-build53-tool-runtime-guardian-negative.mjs',
-    'scripts/tsconfig.build53-tests.json', '.github/workflows/build53-tool-runtime.yml',
+    'scripts/tsconfig.build53-tests.json',
   ]) if (!exists(required)) violations.push({ code: 'AG519', message: 'Required Build 53 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

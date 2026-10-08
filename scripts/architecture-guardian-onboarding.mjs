@@ -136,7 +136,6 @@ if (!rule || policy.currentBuild < 31 || rule.minimumBuild !== 31 || policy.phas
     'scripts/test-build31-onboarding-dist.mjs',
     'scripts/test-build31-onboarding-guardian-negative.mjs',
     'scripts/tsconfig.build31-tests.json',
-    '.github/workflows/build31-onboarding.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG299', message: 'Required Build 31 artifact is missing.', detail: required });
 }
 

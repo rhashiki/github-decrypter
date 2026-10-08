@@ -24,17 +24,13 @@ try {
   fs.rmSync(protocolProbe, { force: true });
 }
 
-// 2. Workflow write authority must remain explicit and allowlisted.
-const workflow = path.join(root, '.github/workflows/build9-architecture-guardian.yml');
-const workflowOriginal = fs.readFileSync(workflow, 'utf8');
-try {
-  const mutated = workflowOriginal.replace('contents: read', 'contents: write');
-  assert.notEqual(mutated, workflowOriginal, 'workflow fixture did not contain read-only contents permission');
-  fs.writeFileSync(workflow, mutated);
-  runGuardianExpecting('AG070');
-} finally {
-  fs.writeFileSync(workflow, workflowOriginal);
-}
+// 2. Separate negative fixture proves that a forbidden workflow is rejected
+// without writing any workflow file inside the repository.
+const forbiddenProbe = spawnSync(process.execPath,
+  [path.join(root, 'scripts/test-build11-workflow-guardian-negative.mjs')],
+  { cwd: root, encoding: 'utf8' });
+assert.equal(forbiddenProbe.status, 0, 'No-automation guard fixture failed.\\n'+forbiddenProbe.stdout+'\\n'+forbiddenProbe.stderr);
+assert.ok(forbiddenProbe.stdout.includes('noWriteAuthority'), 'Missing no-automation evidence.');
 
 // 3. Historical Studio gate must still prove React/Vite would have been rejected before Build 27.
 // Build 27 legitimately owns main.tsx now, so replay the policy at Build 26 instead of deleting real Studio files.

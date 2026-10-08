@@ -149,7 +149,6 @@ if (
     'scripts/test-build40-task-graph-runtime.ts',
     'scripts/test-build40-task-graph-guardian-negative.mjs',
     'scripts/tsconfig.build40-tests.json',
-    '.github/workflows/build40-task-graph-compiler.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG388', message: 'Required Build 40 artifact is missing.', detail: required });
 
   if (!read('docs/architecture/TASK_GRAPH_COMPILER.md').includes('Build 41 — Hierarchical Context Engine')

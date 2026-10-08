@@ -144,7 +144,6 @@ if (
     'scripts/test-build61-database-agent-runtime.ts',
     'scripts/test-build61-database-agent-guardian-negative.mjs',
     'scripts/tsconfig.build61-tests.json',
-    '.github/workflows/build61-database-agent.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG599', message: 'Required Build 61 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/DATABASE_AGENT.md');

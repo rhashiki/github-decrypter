@@ -79,7 +79,9 @@
     "check:build69": "node scripts/test-build69-live-preview.mjs && tsc -p scripts/tsconfig.build69-tests.json && tsx scripts/test-build69-live-preview-runtime.ts && node scripts/test-build69-live-preview-guardian-negative.mjs",
     "check:build70": "node scripts/test-build70-preview-bridge.mjs && tsc -p scripts/tsconfig.build70-tests.json && tsx scripts/test-build70-preview-bridge-runtime.ts && node scripts/test-build70-preview-bridge-guardian-negative.mjs",
     "check:build71": "node scripts/test-build71-developer-console.mjs && tsc -p scripts/tsconfig.build71-tests.json && tsx scripts/test-build71-developer-console-runtime.ts && node scripts/test-build71-developer-console-guardian-negative.mjs",
-    "check:build72": "node scripts/test-build72-problems-diagnostics.mjs && tsc -p scripts/tsconfig.build72-tests.json && tsx scripts/test-build72-problems-diagnostics-runtime.ts && node scripts/test-build72-problems-diagnostics-guardian-negative.mjs"
+    "check:build72": "node scripts/test-build72-problems-diagnostics.mjs && tsc -p scripts/tsconfig.build72-tests.json && tsx scripts/test-build72-problems-diagnostics-runtime.ts && node scripts/test-build72-problems-diagnostics-guardian-negative.mjs",
+    "validate:server": "node scripts/validate-server.mjs",
+    "validate:current": "node scripts/validate-server.mjs --current"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

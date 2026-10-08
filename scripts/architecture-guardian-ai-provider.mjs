@@ -177,7 +177,6 @@ if (
     'scripts/test-build33-ai-provider-api-runtime.ts',
     'scripts/test-build33-ai-provider-guardian-negative.mjs',
     'scripts/tsconfig.build33-tests.json',
-    '.github/workflows/build33-ai-provider-api.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG319', message: 'Required Build 33 artifact is missing.', detail: required });
 }
 

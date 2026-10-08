@@ -17,7 +17,6 @@ for(const file of [
   'scripts/test-build72-problems-diagnostics-runtime.ts',
   'scripts/test-build72-problems-diagnostics-guardian-negative.mjs',
   'scripts/tsconfig.build72-tests.json',
-  '.github/workflows/build72-problems-diagnostics.yml',
 ]) assert.ok(fs.existsSync(file),'Build 72 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

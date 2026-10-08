@@ -142,7 +142,6 @@ if (
     'scripts/test-build49-decision-engine-runtime.ts',
     'scripts/test-build49-decision-engine-guardian-negative.mjs',
     'scripts/tsconfig.build49-tests.json',
-    '.github/workflows/build49-decision-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG478', message: 'Required Build 49 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

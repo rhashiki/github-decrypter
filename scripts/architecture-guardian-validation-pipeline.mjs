@@ -127,7 +127,6 @@ if (
     'scripts/test-build57-validation-pipeline-runtime.ts',
     'scripts/test-build57-validation-pipeline-guardian-negative.mjs',
     'scripts/tsconfig.build57-tests.json',
-    '.github/workflows/build57-validation-pipeline.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG559', message: 'Required Build 57 artifact is missing.', detail: required });
 
   const amendment = read('docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md');

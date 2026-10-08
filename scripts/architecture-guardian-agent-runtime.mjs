@@ -145,7 +145,6 @@ if (
     'scripts/test-build58-agent-runtime-runtime.ts',
     'scripts/test-build58-agent-runtime-guardian-negative.mjs',
     'scripts/tsconfig.build58-tests.json',
-    '.github/workflows/build58-agent-runtime.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG569', message: 'Required Build 58 artifact is missing.', detail: required });
 
   const amendment = read('docs/product/CONSTITUTION_AMENDMENT_001_NORTH_STAR.md');

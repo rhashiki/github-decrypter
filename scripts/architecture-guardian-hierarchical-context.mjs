@@ -144,7 +144,6 @@ if (
     'scripts/test-build41-hierarchical-context-runtime.ts',
     'scripts/test-build41-hierarchical-context-guardian-negative.mjs',
     'scripts/tsconfig.build41-tests.json',
-    '.github/workflows/build41-hierarchical-context-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG398', message: 'Required Build 41 artifact is missing.', detail: required });
 
   if (!read('docs/architecture/HIERARCHICAL_CONTEXT_ENGINE.md').includes('Build 42 — Context Continuation Engine')

@@ -161,7 +161,6 @@ if (!rule || policy.currentBuild < 28 || policy.phaseGates?.pwaBuild !== 28 || r
     'scripts/test-build28-pwa-dist.mjs',
     'scripts/test-build28-pwa-guardian-negative.mjs',
     'scripts/tsconfig.build28-tests.json',
-    '.github/workflows/build28-pwa.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG269', message: 'Required Build 28 artifact is missing.', detail: required });
 }
 

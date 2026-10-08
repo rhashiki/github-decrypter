@@ -15,7 +15,6 @@ for(const file of [
   'scripts/test-build68-preview-runtime-runtime.ts',
   'scripts/test-build68-preview-runtime-guardian-negative.mjs',
   'scripts/tsconfig.build68-tests.json',
-  '.github/workflows/build68-preview-runtime.yml',
 ]) assert.ok(fs.existsSync(file),'Build 68 artifact missing: '+file);
 
 const policy=json('architecture.guardian.json');

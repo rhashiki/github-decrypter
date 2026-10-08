@@ -160,7 +160,6 @@ if (!rule || policy.currentBuild < 30 || rule.minimumBuild !== 30 || policy.phas
     'scripts/test-build30-ide-layout-dist.mjs',
     'scripts/test-build30-ide-layout-guardian-negative.mjs',
     'scripts/tsconfig.build30-tests.json',
-    '.github/workflows/build30-ide-layout.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG289', message: 'Required Build 30 artifact is missing.', detail: required });
 }
 

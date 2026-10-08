@@ -132,7 +132,6 @@ if (
     'scripts/test-build54-scope-intelligence-runtime.ts',
     'scripts/test-build54-scope-intelligence-guardian-negative.mjs',
     'scripts/tsconfig.build54-tests.json',
-    '.github/workflows/build54-scope-intelligence.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG529', message: 'Required Build 54 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

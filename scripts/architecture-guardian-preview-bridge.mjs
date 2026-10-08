@@ -25,7 +25,6 @@ const required=[
   'scripts/test-build70-preview-bridge-runtime.ts',
   'scripts/test-build70-preview-bridge-guardian-negative.mjs',
   'scripts/tsconfig.build70-tests.json',
-  '.github/workflows/build70-preview-bridge.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG740','Required Build 70 artifact is missing.',file);
 

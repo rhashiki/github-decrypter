@@ -87,7 +87,7 @@ assert.ok(exists('docs/product/BRAND_IDENTITY.md'));
 assert.ok(exists('docs/builds/BUILD_5_GITHUB_DECRYPTER_REBRAND.md'));
 assert.ok(exists('GITHUB_DECRYPTER_ORIGIN.md'), 'lineage record must remain');
 assert.ok(!exists('.github/workflows/build4-lovable-decoupling.yml'), 'completed Build 4 workflow must not remain active CI authority');
-assert.ok(exists('.github/workflows/build5-github-decrypter-rebrand.yml'));
+assert.ok(!exists('.github/workflows'), 'GitHub automation workflows are prohibited; use server validation');
 
 console.log(JSON.stringify({
   ok: true,

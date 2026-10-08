@@ -22,7 +22,6 @@ const required=[
   'scripts/test-build68-preview-runtime-runtime.ts',
   'scripts/test-build68-preview-runtime-guardian-negative.mjs',
   'scripts/tsconfig.build68-tests.json',
-  '.github/workflows/build68-preview-runtime.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG700','Required Build 68 artifact is missing.',file);
 

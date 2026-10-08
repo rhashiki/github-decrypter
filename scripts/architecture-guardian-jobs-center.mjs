@@ -169,7 +169,6 @@ if (
     'scripts/test-build47-jobs-center-runtime.ts',
     'scripts/test-build47-jobs-center-guardian-negative.mjs',
     'scripts/tsconfig.build47-tests.json',
-    '.github/workflows/build47-jobs-center.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG458', message: 'Required Build 47 artifact is missing.', detail: required });
 
   const architectureDoc = read('docs/architecture/JOBS_CENTER.md');

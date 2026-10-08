@@ -24,7 +24,6 @@ const required=[
   'scripts/test-build72-problems-diagnostics-runtime.ts',
   'scripts/test-build72-problems-diagnostics-guardian-negative.mjs',
   'scripts/tsconfig.build72-tests.json',
-  '.github/workflows/build72-problems-diagnostics.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG780','Required Build 72 artifact is missing.',file);
 

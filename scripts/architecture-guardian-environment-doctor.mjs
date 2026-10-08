@@ -156,7 +156,6 @@ if (!rule || policy.currentBuild < 32 || rule.minimumBuild !== 32 || policy.phas
     'scripts/test-build32-environment-doctor-dist.mjs',
     'scripts/test-build32-environment-doctor-guardian-negative.mjs',
     'scripts/tsconfig.build32-tests.json',
-    '.github/workflows/build32-environment-doctor.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG309', message: 'Required Build 32 artifact is missing.', detail: required });
 }
 

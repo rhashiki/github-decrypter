@@ -132,7 +132,6 @@ if (
     'scripts/test-build39-requirement-compiler-runtime.ts',
     'scripts/test-build39-requirement-compiler-guardian-negative.mjs',
     'scripts/tsconfig.build39-tests.json',
-    '.github/workflows/build39-requirement-compiler.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG378', message: 'Required Build 39 artifact is missing.', detail: required });
 
   if (!read('docs/architecture/REQUIREMENT_COMPILER.md').includes('Build 40 — Task Graph Compiler')

@@ -143,7 +143,6 @@ if (!rule || rule.ownerRoot !== 'apps/local' || rule.contractPackage !== '@githu
       'scripts/test-build24-github-provider-runtime.ts',
       'scripts/test-build24-github-provider-guardian-negative.mjs',
       'scripts/tsconfig.build24-tests.json',
-      '.github/workflows/build24-github-provider.yml',
     ]) {
       if (!fs.existsSync(path.join(root, required))) violations.push({ code: 'AG229', message: 'Required Build 24 artifact is missing.', detail: required });
     }

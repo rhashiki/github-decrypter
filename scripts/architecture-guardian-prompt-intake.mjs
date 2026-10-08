@@ -130,7 +130,6 @@ if (
     'scripts/test-build38-prompt-intake-runtime.ts',
     'scripts/test-build38-prompt-intake-guardian-negative.mjs',
     'scripts/tsconfig.build38-tests.json',
-    '.github/workflows/build38-prompt-intake-engine.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG368', message: 'Required Build 38 artifact is missing.', detail: required });
 
   if (!read('docs/architecture/PROMPT_INTAKE_ENGINE.md').includes('Build 39 — Requirement Compiler')
