@@ -82,7 +82,8 @@
     "check:build72": "node scripts/test-build72-problems-diagnostics.mjs && tsc -p scripts/tsconfig.build72-tests.json && tsx scripts/test-build72-problems-diagnostics-runtime.ts && node scripts/test-build72-problems-diagnostics-guardian-negative.mjs",
     "check:build73": "node scripts/test-build73-code-intelligence-static.mjs && pnpm --filter @github-decrypter/code-intelligence run typecheck && pnpm --filter @github-decrypter/local run typecheck && tsc -p scripts/tsconfig.build73-tests.json && tsx scripts/test-build73-code-intelligence-runtime.ts && tsx scripts/test-build73-code-intelligence-local-runtime.ts && node scripts/architecture-guardian-code-intelligence.mjs && tsx scripts/test-build73-code-explorer-folder.ts",
     "validate:server": "node scripts/validate-server.mjs",
-    "validate:build73": "node scripts/validate-server.mjs --build73"
+    "validate:build73": "node scripts/validate-server.mjs --build73",
+    "validate:current": "node scripts/validate-server.mjs --current"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
