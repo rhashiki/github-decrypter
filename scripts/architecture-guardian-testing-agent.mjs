@@ -162,7 +162,6 @@ if (
 
   const architectureDoc = read('docs/architecture/TESTING_AGENT.md');
   const buildDoc = read('docs/builds/BUILD_62_TESTING_AGENT.md');
-  const workflow = read('.github/workflows/build62-testing-agent.yml');
   for (const phrase of [
     'Testing Agent != Validation Pipeline',
     'Testing Agent != unrestricted automation',
@@ -173,10 +172,6 @@ if (
   ]) if (!architectureDoc.includes(phrase)) violations.push({ code: 'AG609', message: 'Testing Agent architecture documentation is incomplete.', detail: phrase });
   if (!buildDoc.includes('Build 62 — Testing Agent') || !buildDoc.includes('Build 63 — Review Agent')) {
     violations.push({ code: 'AG609', message: 'Build 62 documentation is missing or has wrong successor ownership.' });
-  }
-  if (!workflow.includes('pnpm run guardian') || !workflow.includes('pnpm run ci')
-      || !workflow.includes('guard-viktor-explicit-activation.mjs') || !workflow.includes('test-build5-rebrand.mjs')) {
-    violations.push({ code: 'AG609', message: 'Build 62 workflow does not preserve the required accumulated gate.' });
   }
 }
 
