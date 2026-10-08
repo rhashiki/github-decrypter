@@ -15,7 +15,7 @@ const jobs=[
  ['Studio TypeScript','pnpm',['--filter','@github-decrypter/studio','run','typecheck']],
  ['Studio production bundle','pnpm',['--filter','@github-decrypter/studio','run','build']],
 ];
-if(!targeted) jobs.splice(3,0,['Historical regression suite','pnpm',['run','ci']]);
+if(!targeted) jobs.splice(2,1,['Historical regression suite','pnpm',['run','ci']]);
 if(existsSync(resolve(root,'.github','workflows'))){
  console.error('Forbidden GitHub workflow directory exists.');process.exit(1);
 }
@@ -34,6 +34,6 @@ const report={schema:'gd-server-validation/1',build:version,executedLocally:true
  ok:results.every(x=>x.ok),results};
 const reportPath=resolve(root,'reports','server-validation-'+version+'.json');
 mkdirSync(resolve(root,'reports'),{recursive:true});
-writeFileSync(reportPath,JSON.stringify(report,null,2)+'\\n','utf8');
+writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,reportPath},null,2));
 if(!results.every(x=>x.ok))process.exit(1);
