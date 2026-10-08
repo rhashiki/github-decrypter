@@ -22,6 +22,8 @@ if(local.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*')i
 if(studio.dependencies?.['@github-decrypter/code-intelligence']!=='workspace:*'
   || !policy.appRules?.['@github-decrypter/studio']?.allowedWorkspaceDependencies?.includes('@github-decrypter/code-intelligence'))
   issues.push('Studio scratchpad dependency not guarded');
+if(auth?.indexedTypeScriptSemanticNavigation!==true || auth?.externalSemanticLinkage!==false)
+  issues.push('Indexed-only TypeScript semantic boundary is not declared');
 if(auth?.studioRepositoryTransport!==false || auth?.studioFilesystemAccess!==false)
   issues.push('Code Explorer must not claim direct repo or filesystem transport');
 if(!daemon.includes('...createCodeIntelligenceToolRegistrations({ workspaces: this.#workspaces }, scopeLock)'))

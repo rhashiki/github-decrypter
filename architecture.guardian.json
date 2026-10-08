@@ -3407,6 +3407,8 @@
     "sourceTriage": "docs/research/BUILD_73_SOURCE_TRIAGE.md",
     "studioScratchpad": "user-pasted-source-only",
     "studioRepositoryTransport": false,
-    "studioFilesystemAccess": false
+    "studioFilesystemAccess": false,
+    "indexedTypeScriptSemanticNavigation": true,
+    "externalSemanticLinkage": false
   }
 }

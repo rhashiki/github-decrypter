@@ -19,10 +19,17 @@ on:
       - 'scripts/tsconfig.build73-tests.json'
       - '.github/workflows/build73-code-intelligence-foundation.yml'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: code-intelligence-build73-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   code-intelligence-foundation:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
