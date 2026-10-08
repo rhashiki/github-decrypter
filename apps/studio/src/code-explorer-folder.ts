@@ -57,17 +57,17 @@ export async function readExplicitlySelectedFolder(files: readonly ExplicitlySel
     }
     const relative = file.webkitRelativePath;
     if (typeof relative !== 'string' || !relative.includes('/')) continue;
+    roots.add(relative.split('/')[0]!);
     const path = safeSelectedFolderPath(relative);
     if (!path) continue;
-    roots.add(relative.split('/')[0]!);
     eligible.push({path,file});
   }
   if (roots.size > 1) throw new TypeError('Only one explicitly selected folder is supported.');
   eligible.sort((a,b)=>a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
-  const selected = eligible.slice(0,CODE_EXPLORER_FOLDER_MAX_FILES);
-  if (new Set(selected.map(item=>item.path)).size!==selected.length) {
+  if (new Set(eligible.map(item=>item.path)).size!==eligible.length) {
     throw new TypeError('Duplicate relative source paths were selected.');
   }
+  const selected = eligible.slice(0,CODE_EXPLORER_FOLDER_MAX_FILES);
   if (!selected.length) throw new Error('The selected folder has no eligible JavaScript/TypeScript source files.');
   const loaded: SelectedFolderSource[]=[];
   let chars=0;
