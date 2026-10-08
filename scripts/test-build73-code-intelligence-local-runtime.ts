@@ -34,7 +34,7 @@ try {
   const row=result as Record<string,unknown>;
   assert.equal(row.readCapabilityVerified,true);
   assert.equal(row.mutationAuthority,false);
-  assert.equal(row.semanticResolution,undefined);
+  assert.equal(row.semanticResolution,false);
   assert.equal((row.matches as unknown[]).length,1);
   assert.equal(JSON.stringify(row).includes('=> 4'),false);
   await assert.rejects(()=>registration.handler({...ctx,verifiedCapabilities:[]} as ToolExecutionContext,input));
