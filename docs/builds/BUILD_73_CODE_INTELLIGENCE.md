@@ -41,3 +41,5 @@ Code Intelligence is evidence and navigation, not a second compiler, root-cause 
 
 ## Server-side validation (no GitHub Actions)
 The repository prohibits `.github/workflows` and workflow-write authority. Validate with `pnpm install --no-frozen-lockfile && pnpm run validate:server` in a Node 22/pnpm server or isolated checkout; use `pnpm run validate:build73` for focused Build 73 verification. No CI event trigger, workflow dispatch, or GitHub-hosted runner is needed.
+
+Semantic search and reference result links position the source editor caret at the grounded line/column. This navigation remains browser-only and uses only the explicitly loaded source set.

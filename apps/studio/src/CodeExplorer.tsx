@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { readExplicitlySelectedFolder, CODE_EXPLORER_FOLDER_MAX_FILES } from './code-explorer-folder.js';
 import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind, CodebaseOnboarding } from '@github-decrypter/code-intelligence';
 
@@ -12,6 +12,8 @@ export function CodeExplorer() {
   const [files,setFiles] = useState<SourceEntry[]>([{id:1,path:'src/example.ts',content:''}]);
   const fileInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
+  const sourceInput = useRef<HTMLTextAreaElement>(null);
+  const pendingLocation = useRef<{ readonly path:string; readonly line:number; readonly column:number } | null>(null);
   const [importNotice,setImportNotice] = useState<string|null>(null);
   const [active,setActive] = useState(1);
   const [index,setIndex] = useState<CodeIntelligenceIndex|null>(null);
@@ -24,6 +26,23 @@ export function CodeExplorer() {
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string|null>(null);
   const selected=files.find((file)=>file.id===active) ?? files[0]!;
+  useEffect(()=>{
+    const target=pendingLocation.current,area=sourceInput.current;
+    if(!target || !area || selected.path!==target.path)return;
+    const text=selected.content;
+    let start=0;
+    for(let i=1;i<target.line;i++){
+      const end=text.indexOf('\\n',start);
+      if(end<0){start=text.length;break;}
+      start=end+1;
+    }
+    const lineEnd=text.indexOf('\\n',start);
+    const position=Math.max(start,Math.min(lineEnd<0?text.length:lineEnd,start+target.column-1));
+    area.focus();
+    area.setSelectionRange(position,position);
+    area.scrollTop=Math.max(0,(target.line-4)*19);
+    pendingLocation.current=null;
+  },[selected.path,positionLine,positionColumn,result]);
   function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setOverview(null);setResult(null);setError(null); }
   function update(field:'path'|'content',value:string) {
     setImportNotice(null);
@@ -111,6 +130,7 @@ export function CodeExplorer() {
       setResult({mode:'semantic',data:resolveCodeSemantics(sources(),{kind:mode,path,line,column,limit:64})});
       const file=files.find(item=>item.path===path);
       if(file)setActive(file.id);
+      pendingLocation.current={path,line,column};
       setPositionLine(String(line));
       setPositionColumn(String(column));
       setError(null);
@@ -161,7 +181,7 @@ export function CodeExplorer() {
             <button type="button" onClick={removeFile} disabled={files.length===1}>Remove</button>
           </div>
           <label htmlFor="codeex-source">Source code</label>
-          <textarea id="codeex-source" value={selected.content} maxLength={100000} spellCheck={false}
+          <textarea ref={sourceInput} id="codeex-source" value={selected.content} maxLength={100000} spellCheck={false}
             onChange={event=>update('content',event.target.value)}
             placeholder="Paste TypeScript or JavaScript here. Add files to resolve relative imports."/>
           <div className="codeex-line codeex-bottom">
@@ -228,6 +248,7 @@ export function CodeExplorer() {
               <code>{location.path}:{location.line}:{location.column}</code>
               <button type="button" onClick={()=>{
                 const file=files.find(item=>item.path===location.path);if(file)setActive(file.id);
+                pendingLocation.current=location;
                 setPositionLine(String(location.line));setPositionColumn(String(location.column));
               }}>Open file ↗</button>
             </div>)}

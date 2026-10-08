@@ -965,3 +965,7 @@ a { color: var(--gd-color-accent); }
 .codeex-map p { color:var(--gd-color-text-muted);font-size:11px;margin:0; }
 .codeex-map button { display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;text-align:left; }
 .codeex-map button span { color:var(--gd-color-text-muted);font-size:11px; }
+
+.codeex-input textarea:focus,
+.codeex-editor textarea:focus { outline:2px solid rgb(122 103 225 / 70%); outline-offset:2px; }
+.codeex-map button:hover { border-color:rgb(133 113 234 / 64%); }
