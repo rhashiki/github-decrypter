@@ -93,7 +93,7 @@ There is still no generic SQL, coding, tool, Git, model, connectivity-control, c
 pnpm --filter @github-decrypter/local start
 ```
 
-The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, Project Detection ownership, Git Runtime ownership, Human-vs-AI attribution boundaries, GitHub App authority, GitHub Provider read-only scope, Extension/Repository Launcher authority, React Studio/PWA ownership, Unified Design System ownership, phase gates, sensitive persistence rules, outbound-network restrictions and the narrow write scope of the generated project-map workflow.
+The Architecture Guardian enforces product authorities, app/package boundaries, SQLite ownership, durable-job ownership, recovery ownership, Offline Execution ownership, Capability Security ownership, Secrets Vault ownership, Approval Transactions ownership, Audit Ledger ownership, Workspace Manager ownership, Project Detection ownership, Git Runtime ownership, Human-vs-AI attribution boundaries, GitHub App authority, GitHub Provider read-only scope, Extension/Repository Launcher authority, React Studio/PWA ownership, Unified Design System ownership, phase gates, sensitive persistence rules, outbound-network restrictions and the permanent prohibition of GitHub-hosted automation workflow files.
 
 ## North Star
 
@@ -210,3 +210,7 @@ GitHub Decrypter originated from a snapshot of its predecessor project but has i
 ## Repository
 
 `rhashiki/github-decrypter`
+
+## Independent server-side validation
+
+GitHub Actions is prohibited for every build. No `.github/workflows` directory is allowed. On a private Node 22/pnpm server, after installing dependencies, use `pnpm run validate:current` for the current build or `pnpm run validate:server` to execute architecture checks, cumulative regression tests, TypeScript checks and a Studio production bundle. JSON results are written locally to `reports/server-validation-<build>.json`. GitHub is used for source-control operations, not test orchestration.

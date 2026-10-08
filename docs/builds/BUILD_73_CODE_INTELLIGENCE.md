@@ -1,6 +1,6 @@
 # Build 73 — Code Intelligence 
 
-Status: **IN PROGRESS — Build 73 staged on PR branch only; main remains Build 72 until cumulative CI passes**.
+Status: **IN PROGRESS — Build 73 staged on PR branch only; main remains Build 72 until independent server-side validation passes**.
 
 ## Product authority
 Read-only facts from the canonical registered local workspace: syntax symbols, imports, syntactic identifier occurrences, source line/column, bounded query results and source provenance. Respect Build 53 Tool Runtime READ capability and Build 19 Workspace Manager's canonical path containment. No raw Studio filesystem access.
@@ -24,8 +24,8 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 ## Next mandatory integration / gates
 - Connect the approved local Tool Runtime registration to a user-facing Code Explorer surface through an explicitly scoped future transport; current direct workspace-file selection remains headless.
 - Extend beyond TypeScript/JavaScript through explicit future language/LSP adapters; maintain honest unresolved status for external packages and unsupported files.
-- Static, runtime and negative security tests, Architecture Guardian, cumulative Builds 4–73 TypeScript/CI and PR merge evidence.
-- Branch-local `currentBuild`/version/Guardian policy staged as 73 for CI. Mark the canonical roadmap ✅ and merge **only after** all gates pass.
+- Static, runtime and negative security tests, Architecture Guardian, cumulative Builds 4–73 TypeScript/server validation and PR merge evidence.
+- Branch-local `currentBuild`/version/Guardian policy staged as 73 for independent validation. Mark the canonical roadmap ✅ and merge **only after** all gates pass.
 - Build 74 is not authorized until Build 73 is complete.
 
 ## Codebase onboarding (bounded)

@@ -389,3 +389,5 @@ Adopted amendments include:
 - `CONSTITUTION_AMENDMENT_003_VIKTOR_EXPLICIT_ACTIVATION.md`
 - `CONSTITUTION_AMENDMENT_004_ARCHITECTURAL_INTEGRITY_HEIMDALL.md`
 - `CONSTITUTION_AMENDMENT_005_COMPLETE_PRODUCT_GENERATION.md`
+
+**Validation delivery constraint (2026-10-08):** All roadmap tests, quality gates and CI Matrix evidence must execute independently on a private Node/pnpm server, never via GitHub Actions. No repository workflow files or workflow-write grants are permitted.

@@ -15,7 +15,7 @@ const jobs=[
  ['Studio TypeScript','pnpm',['--filter','@github-decrypter/studio','run','typecheck']],
  ['Studio production bundle','pnpm',['--filter','@github-decrypter/studio','run','build']],
 ];
-if(!targeted) jobs.splice(3,0,['Historical regression suite','pnpm',['run','ci']]);
+if(!targeted) jobs.splice(2,1,['Historical regression suite','pnpm',['run','ci']]);
 if(existsSync(resolve(root,'.github','workflows'))){
  console.error('Forbidden GitHub workflow directory exists.');process.exit(1);
 }
