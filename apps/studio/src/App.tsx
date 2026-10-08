@@ -105,7 +105,7 @@ export function StudioApp() {
         </div>
 
         <nav className="studio-mode-switcher" aria-label="Studio modes">
-          <button className={workspaceSurface === "code" ? "studio-mode" : "studio-mode is-active"} type="button" onClick={() => setWorkspaceSurface("overview")}>Agent</button>
+          <button className={workspaceSurface === "overview" || workspaceSurface === "jobs" ? "studio-mode is-active" : "studio-mode"} type="button" onClick={() => setWorkspaceSurface("overview")}>Agent</button>
           {FUTURE_MODES.map((mode) => (
             <button
               className={mode.label === 'Code' && workspaceSurface === 'code' ? 'studio-mode is-active' : 'studio-mode'}
