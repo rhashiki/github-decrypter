@@ -67,7 +67,7 @@ const esmImportsIndex = buildCodeIntelligenceIndex([
     "import { legacy } from './legacy.cjs';",
     "import { nested } from './nested';",
     "import { unresolved } from './missing.js';",
-  ].join('\\n')},
+  ].join('\n')},
   {path:'src/helper.ts',content:'export const make = 1;'},
   {path:'src/helper.js',content:'export const make = 2;'},
   {path:'src/view.tsx',content:'const View = () => null; export default View;'},
