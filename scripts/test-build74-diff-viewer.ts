@@ -75,4 +75,34 @@ assert.ok(safeLabels.startsWith('--- old forged\n+++ new hdr'));
 assert.equal(Object.isFrozen(replaced), true);
 assert.equal(Object.isFrozen(replaced.hunks), true);
 assert.equal(Object.isFrozen(replaced.hunks[0]), true);
+
+let seed = 73474;
+const random = (): number => {
+  seed = (1664525 * seed + 1013904223) >>> 0;
+  return seed / 4294967296;
+};
+const vocabulary = ['alpha\n', 'beta\n', '\n', 'gamma\n', 'delta'];
+for (let caseIndex = 0; caseIndex < 200; caseIndex++) {
+  const sample = () => Array.from(
+    { length: Math.floor(random() * 8) },
+    () => vocabulary[Math.floor(random() * vocabulary.length)]!,
+  ).join('');
+  const before = sample();
+  const after = sample();
+  const diff = compareExplicitTexts(before, after, { context: 12 });
+  if (diff.unchanged) { assert.equal(before, after); continue; }
+  const beforeRebuilt = diff.hunks.flatMap(hunk => hunk.rows).filter(row => row.oldLine !== null)
+    .map(row => row.text + (row.missingFinalNewline ? '' : '\n')).join('');
+  const afterRebuilt = diff.hunks.flatMap(hunk => hunk.rows).filter(row => row.newLine !== null)
+    .map(row => row.text + (row.missingFinalNewline ? '' : '\n')).join('');
+  assert.equal(beforeRebuilt, before, 'Before reconstruction case ' + caseIndex);
+  assert.equal(afterRebuilt, after, 'After reconstruction case ' + caseIndex);
+}
+const maximalBefore = Array.from({length:800}, (_,index) => 'A' + String(index).padStart(3,'0') + '-'.repeat(110) + '\n').join('');
+const maximalAfter = Array.from({length:800}, (_,index) => 'B' + String(index).padStart(3,'0') + '-'.repeat(110) + '\n').join('');
+const maximalDiff = compareExplicitTexts(maximalBefore, maximalAfter, { context: 0 });
+assert.equal(maximalDiff.removed, 800);
+assert.equal(maximalDiff.added, 800);
+assert.equal(maximalDiff.truncated, false);
+
 console.log(JSON.stringify({ ok: true, build: 74, suite: 'bounded-read-only-text-diff' }));
