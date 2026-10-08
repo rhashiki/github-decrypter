@@ -10,6 +10,7 @@ export interface DiffRow {
   readonly oldLine: number | null;
   readonly newLine: number | null;
   readonly text: string;
+  readonly missingFinalNewline: boolean;
 }
 export interface DiffHunk {
   readonly oldStart: number;
@@ -38,7 +39,8 @@ function boundedLines(source: string, side: string): string[] {
   if (typeof source !== 'string' || source.length > DIFF_VIEWER_MAX_CHARACTERS) {
     throw new RangeError(side + ' source exceeds the 100,000-character diff limit.');
   }
-  const lines = source.replace(/\r\n/g, '\n').split('\n');
+  // Keep final-newline presence in line tokens; no phantom empty line for an empty file.
+  const lines = source.replace(/\r\n/g, '\n').match(/[^\n]*\n|[^\n]+$/g) ?? [];
   if (lines.length > DIFF_VIEWER_MAX_LINES) {
     throw new RangeError(side + ' source exceeds the 800-line diff limit.');
   }
@@ -77,19 +79,24 @@ export function compareExplicitTexts(
     }
   }
   const rows: DiffRow[] = [];
+  const row = (kind: DiffRowKind, oldLine: number | null, newLine: number | null, token: string): DiffRow => ({
+    kind, oldLine, newLine,
+    text: token.endsWith('\n') ? token.slice(0, -1) : token,
+    missingFinalNewline: !token.endsWith('\n'),
+  });
   let i = 0;
   let j = 0;
   let added = 0;
   let removed = 0;
   while (i < n || j < m) {
     if (i < n && j < m && oldLines[i] === newLines[j]) {
-      rows.push({ kind: 'context', oldLine: i + 1, newLine: j + 1, text: oldLines[i]! });
+      rows.push(row('context', i + 1, j + 1, oldLines[i]!));
       i++; j++;
     } else if (i < n && (j === m || lcs[(i + 1) * stride + j]! >= lcs[i * stride + j + 1]!)) {
-      rows.push({ kind: 'removed', oldLine: i + 1, newLine: null, text: oldLines[i]! });
+      rows.push(row('removed', i + 1, null, oldLines[i]!));
       removed++; i++;
     } else {
-      rows.push({ kind: 'added', oldLine: null, newLine: j + 1, text: newLines[j]! });
+      rows.push(row('added', null, j + 1, newLines[j]!));
       added++; j++;
     }
   }
@@ -143,6 +150,7 @@ export function unifiedDiffPreview(result: DiffResult, oldLabel = 'original', ne
       + ' +' + hunk.newStart + ',' + hunk.newCount + ' @@');
     for (const row of hunk.rows) {
       lines.push((row.kind === 'added' ? '+' : row.kind === 'removed' ? '-' : ' ') + row.text);
+      if (row.missingFinalNewline) lines.push('\\ No newline at end of file');
     }
   }
   if (result.truncated) lines.push('# Preview truncated: ' + result.totalHunks + ' hunks; ' + result.hunks.length + ' shown.');
