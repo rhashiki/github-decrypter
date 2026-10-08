@@ -10,7 +10,7 @@ const explorer=fs.readFileSync('apps/studio/src/CodeExplorer.tsx','utf8');
 const folder=fs.readFileSync('apps/studio/src/code-explorer-folder.ts','utf8');
 const daemon=fs.readFileSync('apps/local/src/daemon.ts','utf8');
 const auth=policy.codeIntelligenceAuthority;
-if(policy.currentBuild!==73||policy.phaseGates.codeIntelligenceBuild!==73)issues.push('Build 73 gate missing');
+if(policy.currentBuild<73||policy.phaseGates.codeIntelligenceBuild!==73)issues.push('Build 73 gate missing');
 for(const [key,expect] of Object.entries({
  readCapabilityOnly:true,registeredWorkspaceRequired:true,astBacked:true,sourceGrounded:true,
  semanticResolution:false,dependencyResolution:false,unverifiedCallGraph:false,mutating:false,

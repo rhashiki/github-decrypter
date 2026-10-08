@@ -6,6 +6,7 @@ import { registerStudioPwa } from './pwa.js';
 import './styles.css';
 import './jobs-center.css';
 import './viktor-toggle.css';
+import './diff-viewer.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Vortex Ars Studio root element is missing.');

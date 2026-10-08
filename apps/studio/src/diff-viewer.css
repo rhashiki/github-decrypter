@@ -1,0 +1,47 @@
+/* Build 74 — local, explicit, read-only text comparison */
+.diffv{display:grid;gap:16px;min-width:0;padding-bottom:32px;font-size:13px}
+.diffv-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.diffv-heading small{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:rgb(166 143 255)}
+.diffv-heading h1{font-size:24px;margin:6px 0}
+.diffv-heading p{margin:0;color:var(--gd-color-text-muted);line-height:1.5}
+.diffv-readonly{white-space:nowrap;border:1px solid rgb(133 113 234 / 40%);border-radius:20px;padding:6px 10px;color:rgb(187 170 255);font-size:10px;letter-spacing:.07em}
+.diffv button,.diffv select,.diffv textarea{background:rgb(12 14 22);color:var(--gd-color-text);border:1px solid var(--gd-color-border);border-radius:7px}
+.diffv button{padding:8px 11px;cursor:pointer}
+.diffv button:focus-visible,.diffv textarea:focus-visible,.diffv select:focus-visible,.diffv-file:focus-within{outline:2px solid rgb(145 109 239);outline-offset:2px}
+.diffv button:disabled{opacity:.5;cursor:not-allowed}
+.diffv-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.diffv-toolbar label{color:var(--gd-color-text-muted)}
+.diffv select{padding:8px}
+.diffv .diffv-primary{background:linear-gradient(115deg,rgb(112 77 212),rgb(38 104 191));font-weight:700;border:0}
+.diffv-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.diffv-side{min-width:0;display:flex;flex-direction:column;gap:8px;border:1px solid var(--gd-color-border);border-radius:10px;padding:12px;background:rgb(12 14 21 / 50%)}
+.diffv-side-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.diffv-side-heading>label:first-child{font-weight:700}
+.diffv-file{position:relative;overflow:hidden;cursor:pointer;padding:7px 9px;border:1px solid var(--gd-color-border);border-radius:7px;font-size:11px}
+.diffv-file input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.diffv-name{font-size:11px;color:var(--gd-color-text-muted);overflow-wrap:anywhere}
+.diffv-side textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:230px;line-height:1.55;padding:10px;font:12px/1.55 ui-monospace,Consolas,monospace}
+.diffv-count{font-size:11px;color:var(--gd-color-text-muted);text-align:right}
+.diffv-error{padding:11px;border:1px solid rgb(193 89 102 / 50%);border-radius:8px;background:rgb(132 35 54 / 17%)}
+.diffv-results{display:grid;gap:12px;min-width:0}
+.diffv-summary{display:flex;align-items:center;flex-wrap:wrap;gap:16px;border:1px solid var(--gd-color-border);border-radius:9px;padding:12px}
+.diffv-summary span{font-variant-numeric:tabular-nums}
+.diffv-add{color:rgb(125 208 148)}
+.diffv-del{color:rgb(231 136 144)}
+.diffv-unchanged{color:var(--gd-color-text-muted)}
+.diffv-hunks{display:grid;gap:10px;min-width:0;max-height:650px;overflow:auto;border-radius:9px}
+.diffv-hunk{min-width:0;border:1px solid var(--gd-color-border);border-radius:8px;overflow:hidden}
+.diffv-hunk-head{padding:8px 12px;background:rgb(93 71 165 / 16%);color:rgb(172 155 255);font:12px ui-monospace,Consolas,monospace}
+.diffv-lines{overflow-x:auto}
+.diffv-row{display:grid;grid-template-columns:45px 45px 25px minmax(max-content,1fr);min-width:max-content;line-height:1.6;font:12px/1.6 ui-monospace,Consolas,monospace}
+.diffv-row span,.diffv-row code{padding:3px 6px;white-space:pre;tab-size:4}
+.diffv-lineno{text-align:right;color:var(--gd-color-text-muted);border-right:1px solid rgb(255 255 255 / 5%)}
+.diffv-added{background:rgb(29 106 67 / 22%)}
+.diffv-removed{background:rgb(139 53 60 / 22%)}
+.diffv-context{background:rgb(19 21 28)}
+.diffv-marker{text-align:center}
+.diffv-export{border:1px solid var(--gd-color-border);border-radius:8px;padding:12px}
+.diffv-export summary{cursor:pointer}
+.diffv-export textarea{margin-top:10px;width:100%;box-sizing:border-box;padding:10px;font:12px/1.45 ui-monospace,Consolas,monospace;resize:vertical}
+.diffv-export small{display:block;margin-top:7px;color:var(--gd-color-text-muted)}
+@media(max-width:760px){.diffv-inputs{grid-template-columns:1fr}.diffv-heading{flex-direction:column}.diffv-side textarea{min-height:160px}}
