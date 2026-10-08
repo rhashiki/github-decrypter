@@ -6,6 +6,8 @@
   "include": [
     "test-build73-code-intelligence-runtime.ts",
     "test-build73-code-intelligence-local-runtime.ts",
-    "../packages/code-intelligence/src/**/*.ts"
+    "../packages/code-intelligence/src/**/*.ts",
+    "test-build73-code-explorer-folder.ts",
+    "../apps/studio/src/code-explorer-folder.ts"
   ]
 }

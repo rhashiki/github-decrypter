@@ -13,6 +13,7 @@ on:
       - 'apps/local/src/code-intelligence-runtime.ts'
       - 'apps/local/src/daemon.ts'
       - 'apps/studio/src/CodeExplorer.tsx'
+      - 'apps/studio/src/code-explorer-folder.ts'
       - 'apps/studio/src/App.tsx'
       - 'apps/studio/package.json'
       - 'architecture.guardian.json'
@@ -43,6 +44,7 @@ jobs:
       - run: pnpm exec tsc -p scripts/tsconfig.build73-tests.json
       - run: pnpm exec tsx scripts/test-build73-code-intelligence-runtime.ts
       - run: pnpm --filter @github-decrypter/local run typecheck
+      - run: pnpm exec tsx scripts/test-build73-code-explorer-folder.ts
       - run: pnpm --filter @github-decrypter/studio run typecheck
       - run: pnpm --filter @github-decrypter/studio run build
       - run: pnpm exec tsx scripts/test-build73-code-intelligence-local-runtime.ts

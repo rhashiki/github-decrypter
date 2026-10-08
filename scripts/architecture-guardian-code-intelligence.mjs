@@ -7,6 +7,7 @@ const semantic=fs.readFileSync('packages/code-intelligence/src/semantic.ts','utf
 const local=JSON.parse(fs.readFileSync('apps/local/package.json','utf8'));
 const studio=JSON.parse(fs.readFileSync('apps/studio/package.json','utf8'));
 const explorer=fs.readFileSync('apps/studio/src/CodeExplorer.tsx','utf8');
+const folder=fs.readFileSync('apps/studio/src/code-explorer-folder.ts','utf8');
 const daemon=fs.readFileSync('apps/local/src/daemon.ts','utf8');
 const auth=policy.codeIntelligenceAuthority;
 if(policy.currentBuild!==73||policy.phaseGates.codeIntelligenceBuild!==73)issues.push('Build 73 gate missing');
@@ -30,6 +31,11 @@ if(!daemon.includes('...createCodeIntelligenceToolRegistrations({ workspaces: th
   issues.push('Code Intelligence missing from daemon tool registration composition');
 if(/\bfetch\s*\(|\bWebSocket\b|\bFileReader\b|\blocalStorage\b|\bindexedDB\b/.test(explorer))
   issues.push('Code Explorer gained unauthorized browser network/filesystem/persistence');
+if(!folder.includes('readExplicitlySelectedFolder') || !folder.includes('webkitRelativePath')
+  || !explorer.includes('Open local folder'))
+  issues.push('Explicit browser folder import not bounded and registered');
+if(/\bfetch\s*\(|\bWebSocket\b|\bindexedDB\b|\blocalStorage\b/.test(folder))
+  issues.push('Folder selector added network or persistence authority');
 if(!explorer.includes('local scratchpad') || !explorer.includes('importSourceFiles')
   || !explorer.includes('file.text()') || !explorer.includes('Go to definition'))
   issues.push('Scratchpad lacks user-initiated import or semantic navigation');

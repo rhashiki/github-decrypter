@@ -1,14 +1,18 @@
 import { useRef, useState } from 'react';
+import { readExplicitlySelectedFolder, CODE_EXPLORER_FOLDER_MAX_FILES } from './code-explorer-folder.js';
 import type { CodeIntelligenceIndex, CodeIntelligenceResult, CodeSemanticResult, CodeQueryKind, CodebaseOnboarding } from '@github-decrypter/code-intelligence';
 
 interface SourceEntry { readonly id: number; readonly path: string; readonly content: string }
 type SearchResult = { readonly mode:'syntax'; readonly data:CodeIntelligenceResult } | { readonly mode:'semantic'; readonly data:CodeSemanticResult };
-const MAX_FILES = 8;
+const MAX_FILES = CODE_EXPLORER_FOLDER_MAX_FILES;
+const MAX_INDIVIDUAL_FILES = 8;
 function errorText(cause:unknown):string { return (cause instanceof Error ? cause.message : 'Analysis failed.').slice(0,200); }
 
 export function CodeExplorer() {
   const [files,setFiles] = useState<SourceEntry[]>([{id:1,path:'src/example.ts',content:''}]);
   const fileInput = useRef<HTMLInputElement>(null);
+  const folderInput = useRef<HTMLInputElement>(null);
+  const [importNotice,setImportNotice] = useState<string|null>(null);
   const [active,setActive] = useState(1);
   const [index,setIndex] = useState<CodeIntelligenceIndex|null>(null);
   const [overview,setOverview] = useState<CodebaseOnboarding|null>(null);
@@ -22,16 +26,19 @@ export function CodeExplorer() {
   const selected=files.find((file)=>file.id===active) ?? files[0]!;
   function edit(next:SourceEntry[]) { setFiles(next);setIndex(null);setOverview(null);setResult(null);setError(null); }
   function update(field:'path'|'content',value:string) {
+    setImportNotice(null);
     edit(files.map(file=>file.id===active?{...file,[field]:value}:file));
   }
   function addFile() {
     if(files.length>=MAX_FILES)return;
     const id=Math.max(...files.map(file=>file.id))+1;
+    setImportNotice(null);
     edit([...files,{id,path:'src/scratch-'+id+'.ts',content:''}]);setActive(id);
   }
   function removeFile() {
     if(files.length===1)return;
     const next=files.filter(file=>file.id!==active);
+    setImportNotice(null);
     edit(next);setActive(next[0]!.id);
   }
   async function importSourceFiles(picked: readonly File[]) {
@@ -39,12 +46,12 @@ export function CodeExplorer() {
     setBusy(true);
     setError(null);
     try {
-      if(picked.length>MAX_FILES)throw new Error('Choose at most eight source files.');
+      if(picked.length>MAX_INDIVIDUAL_FILES)throw new Error('Choose at most eight source files at a time.');
       if(picked.some(file=>file.size>400000 || !/\\.(?:[cm]?[jt]s|[jt]sx)$/i.test(file.name))) {
         throw new Error('Select only bounded JS/TS source files (max 400 KB per file).');
       }
       const existing=files.length===1 && !files[0]!.content.trim() ? [] : files;
-      if(existing.length+picked.length>MAX_FILES)throw new Error('The scratchpad supports at most eight files.');
+      if(existing.length+picked.length>MAX_FILES)throw new Error('The scratchpad supports at most 64 files.');
       const known=new Set(existing.map(file=>file.path));
       const imported:SourceEntry[]=[];
       let id=Math.max(0,...existing.map(file=>file.id));
@@ -60,6 +67,20 @@ export function CodeExplorer() {
       if(next.reduce((sum,file)=>sum+file.content.length,0)>400000)throw new Error('Scratchpad text budget exceeded.');
       edit(next);
       setActive(imported[0]!.id);
+      setImportNotice('Imported '+imported.length+' explicitly selected files.');
+    }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
+  }
+  async function importFolder(picked: readonly File[]) {
+    if(!picked.length || busy)return;
+    setBusy(true);
+    setError(null);
+    try {
+      const imported = await readExplicitlySelectedFolder(picked);
+      const next = imported.files.map((file,i)=>({id:i+1,path:file.path,content:file.content}));
+      edit(next);
+      setActive(1);
+      setImportNotice('Loaded '+next.length+' source files from your selected folder.'
+        +(imported.skippedCount ? ' '+imported.skippedCount+' eligible files were skipped by the 64-file limit.' : ''));
     }catch(cause){setError(errorText(cause));}finally{setBusy(false);}
   }
   function sources() {
@@ -104,7 +125,7 @@ export function CodeExplorer() {
         <h1 id="codeex-title">Code Explorer</h1>
         <p>AST navigation, definitions and references for JavaScript and TypeScript.</p>
       </header>
-      <p className="codeex-note" role="note">Only text entered here is analyzed, in this browser session. Repository scanning is not connected. No code is uploaded, executed or saved.</p>
+      <p className="codeex-note" role="note">Only code you paste or explicitly select from your device is analyzed in this browser session. No automatic GitHub/Local Runtime access; no code is uploaded, executed or saved.</p>
       <div className="codeex-workspace">
         <nav className="codeex-files" aria-label="Scratchpad sources">
           <div><strong>Sources</strong><button type="button" onClick={addFile} disabled={files.length>=MAX_FILES}>+ Add</button></div>
@@ -117,7 +138,17 @@ export function CodeExplorer() {
               void importSourceFiles(picked);
             }}/>
           <button type="button" disabled={busy || files.length>=MAX_FILES}
-            onClick={()=>fileInput.current?.click()}>Import .ts / .js</button>
+            onClick={()=>fileInput.current?.click()}>Import files</button>
+          <input {...{webkitdirectory: ''}} ref={folderInput} className="codeex-file-input" tabIndex={-1}
+            type="file" multiple aria-label="Select a local source folder"
+            onChange={event=>{
+              const picked=Array.from(event.currentTarget.files ?? []);
+              event.currentTarget.value='';
+              void importFolder(picked);
+            }}/>
+          <button type="button" disabled={busy} onClick={()=>folderInput.current?.click()}>
+            Open local folder
+          </button>
           {files.map(file=><button type="button" key={file.id}
             className={file.id===active?'is-active':''} aria-current={file.id===active?'true':undefined}
             title={file.path} onClick={()=>setActive(file.id)}>{file.path}</button>)}
@@ -141,6 +172,7 @@ export function CodeExplorer() {
           </div>
         </div>
       </div>
+      {importNotice&&<p className="codeex-note" role="status">{importNotice}</p>}
       {error&&<p className="codeex-error" role="alert">{error}</p>}
       {index&&<section aria-label="Code intelligence results" className="codeex-results">
         <div className="codeex-metrics"><span>{index.files.length} files</span><span>{index.symbols.length} symbols</span>

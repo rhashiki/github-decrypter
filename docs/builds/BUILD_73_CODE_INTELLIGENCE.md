@@ -31,7 +31,7 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 Entry-point hints use filename conventions and inbound edges among only supplied files; missing imports remain unresolved. Every hint explicitly reports `executionVerified: false`. The product must not claim to know a runtime execution path without later verified execution evidence.
 
 ## Studio integration (staged)
-The Studio now has an interactive **local scratchpad** Code Explorer after onboarding. Users manually paste or explicitly import TS/JS files (up to 8 files, bounded); AST analysis and semantic navigation operate in the browser with no network or persistence. This is not a connected repository reader. Secure workspace file transport is pending.
+The Studio now has an interactive **local scratchpad** Code Explorer after onboarding. Users paste source, explicitly import selected TS/JS files, or choose a local folder in the browser (up to 64 source files, bounded); AST analysis and semantic navigation operate in the browser with no network or persistence. Folder selection preserves relative paths for local import resolution, excludes secret/vendor directories, and leaves each file on the user's device. It is not automatic GitHub or Local Runtime repository access. Secure workspace file transport is pending.
 
 The Local Runtime daemon composes the Code Intelligence registration with canonical Tool Runtime preview/diagnostics tools using a supplied Scope Lock, without new HTTP endpoints or grants.
 
