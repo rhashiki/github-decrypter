@@ -12,8 +12,9 @@ function gitOutput(args) {
 const sourceCommit=gitOutput(['rev-parse','HEAD']);
 const trackedTreeCleanBefore=gitOutput(['status','--porcelain','--untracked-files=no'])==='';
 const version=JSON.parse(readFileSync(resolve(root,'architecture.guardian.json'),'utf8')).currentBuild;
-const targeted=process.argv.includes('--build73') || process.argv.includes('--current');
+const targeted=process.argv.includes('--build73') || process.argv.includes('--build74') || process.argv.includes('--current');
 if(process.argv.includes('--build73') && version!==73){console.error('Build 73 validation requires Build 73 checkout.');process.exit(2);}
+if(process.argv.includes('--build74') && version!==74){console.error('Build 74 validation requires Build 74 checkout.');process.exit(2);}
 const jobs=[
  ['No GitHub automation',process.execPath,['scripts/architecture-guardian-workflow-write.mjs']],
  ['Architecture checks', 'pnpm',['run','guardian']],
