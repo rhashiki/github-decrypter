@@ -34,6 +34,13 @@ await assert.rejects(()=>readExplicitlySelectedFolder([
   file('repo/src/main.ts','a'),file('other/src/more.ts','b'),
 ]),/one explicitly selected folder/);
 await assert.rejects(()=>readExplicitlySelectedFolder([
+  file('repo/src/main.ts','a'),file('other/.git/hidden.ts','b'),
+]),/one explicitly selected folder/);
+await assert.rejects(()=>readExplicitlySelectedFolder([
+  ...Array.from({length:64},(_,i)=>file('repo/src/file-'+i+'.ts','ok')),
+  file('repo/src/file-0.ts','duplicate'),
+]),/Duplicate/);
+await assert.rejects(()=>readExplicitlySelectedFolder([
   file('repo/src/main.ts','a'),file('repo/src/main.ts','b'),
 ]),/Duplicate/);
 await assert.rejects(()=>readExplicitlySelectedFolder([file('repo/.git/config.js','abc')]),/no eligible/);
