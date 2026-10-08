@@ -1,0 +1,33 @@
+name: Build 73 — Code Intelligence Foundation
+
+on:
+  push:
+    branches:
+      - build/73-code-intelligence
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/code-intelligence/**'
+      - 'scripts/test-build73-code-intelligence-runtime.ts'
+      - 'scripts/tsconfig.build73-tests.json'
+      - '.github/workflows/build73-code-intelligence-foundation.yml'
+
+jobs:
+  code-intelligence-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: package.json
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @github-decrypter/code-intelligence run typecheck
+      - run: pnpm exec tsc -p scripts/tsconfig.build73-tests.json
+      - run: pnpm exec tsx scripts/test-build73-code-intelligence-runtime.ts
