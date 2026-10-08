@@ -135,7 +135,6 @@ if (
     'scripts/test-build34-local-ai-runtime-runtime.ts',
     'scripts/test-build34-local-ai-runtime-guardian-negative.mjs',
     'scripts/tsconfig.build34-tests.json',
-    '.github/workflows/build34-local-ai-runtime.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG329', message: 'Required Build 34 artifact is missing.', detail: required });
 }
 

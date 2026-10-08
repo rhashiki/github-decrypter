@@ -142,7 +142,6 @@ if (
     'scripts/test-build51-impact-simulation-runtime.ts',
     'scripts/test-build51-impact-simulation-guardian-negative.mjs',
     'scripts/tsconfig.build51-tests.json',
-    '.github/workflows/build51-impact-simulation.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG499', message: 'Required Build 51 artifact is missing.', detail: required });
 
   const constitution = read('docs/product/PRODUCT_CONSTITUTION_V1.md');

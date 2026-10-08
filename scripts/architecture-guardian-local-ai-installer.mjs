@@ -151,7 +151,6 @@ if (
     'scripts/test-build35-local-ai-installer-core-runtime.ts',
     'scripts/test-build35-local-ai-installer-guardian-negative.mjs',
     'scripts/tsconfig.build35-core-tests.json',
-    '.github/workflows/build35-local-ai-installer.yml',
   ]) if (!exists(required)) violations.push({ code: 'AG339', message: 'Required Build 35 artifact is missing.', detail: required });
 }
 

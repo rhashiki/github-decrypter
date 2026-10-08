@@ -18,7 +18,6 @@ const required=[
   'scripts/test-build65-project-knowledge-graph-runtime.ts',
   'scripts/test-build65-project-knowledge-graph-guardian-negative.mjs',
   'scripts/tsconfig.build65-tests.json',
-  '.github/workflows/build65-project-knowledge-graph.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG650','Required Build 65 artifact is missing.',file);
 

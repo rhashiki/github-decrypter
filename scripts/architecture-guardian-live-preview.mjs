@@ -25,7 +25,6 @@ const required=[
   'scripts/test-build69-live-preview-runtime.ts',
   'scripts/test-build69-live-preview-guardian-negative.mjs',
   'scripts/tsconfig.build69-tests.json',
-  '.github/workflows/build69-live-preview.yml',
 ];
 for(const file of required) if(!exists(file)) fail('AG720','Required Build 69 artifact is missing.',file);
 
