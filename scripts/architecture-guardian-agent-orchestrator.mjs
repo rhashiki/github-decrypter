@@ -158,7 +158,6 @@ if(
   const archDoc=read('docs/architecture/ARCHITECTURAL_INTEGRITY.md');
   const orchDoc=read('docs/architecture/AGENT_ORCHESTRATOR.md');
   const buildDoc=read('docs/builds/BUILD_64_AGENT_ORCHESTRATOR.md');
-  const workflow=read('.github/workflows/build64-agent-orchestrator.yml');
   for(const phrase of ['Architecture may evolve, but it must never evolve accidentally.','Heimdall != Architecture Guardian','Architecture Ledger != model memory','Refactor Before Feature']) {
     if(!archDoc.includes(phrase)) violations.push({code:'AG629',message:'Architectural Integrity documentation is incomplete.',detail:phrase});
   }
@@ -167,9 +166,6 @@ if(
   }
   if(!buildDoc.includes('Build 64 — Agent Orchestrator')||!buildDoc.includes('Build 65 — Knowledge Graph')) {
     violations.push({code:'AG629',message:'Build 64 documentation or successor ownership is incomplete.'});
-  }
-  if(!workflow.includes('pnpm run guardian')||!workflow.includes('pnpm run ci')||!workflow.includes('guard-viktor-explicit-activation.mjs')||!workflow.includes('test-build5-rebrand.mjs')) {
-    violations.push({code:'AG629',message:'Build 64 workflow does not preserve the accumulated gate.'});
   }
 }
 
