@@ -37,6 +37,7 @@ try {
   assert.equal(row.semanticResolution,false);
   assert.equal((row.matches as unknown[]).length,1);
   assert.equal(JSON.stringify(row).includes('=> 4'),false);
+  assert.ok((row.dependencies as Record<string,unknown>).edges);
   const sem = await registration.handler(ctx, { paths:['src/app.ts'], query:{kind:'semantic-definitions',path:'src/app.ts',line:2,column:2} });
   assert.equal((sem as Record<string,unknown>).resolution,'resolved');
   assert.equal((sem as Record<string,unknown>).syntacticOnly,false);

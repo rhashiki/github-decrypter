@@ -9,7 +9,9 @@ on:
       - main
     paths:
       - 'packages/code-intelligence/**'
-      - 'scripts/test-build73-code-intelligence-runtime.ts'
+      - 'scripts/test-build73-code-intelligence-*.ts'
+      - 'apps/local/src/code-intelligence-runtime.ts'
+      - 'architecture.guardian.json'
       - 'scripts/tsconfig.build73-tests.json'
       - '.github/workflows/build73-code-intelligence-foundation.yml'
 

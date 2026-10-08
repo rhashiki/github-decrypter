@@ -25,5 +25,9 @@ assert.ok(code.includes('mutationAuthority: false'));
 assert.ok(runtime.includes('resolveExistingPath'));
 assert.ok(runtime.includes('verifiedCapabilities.includes(\'READ\')'));
 assert.ok(runtime.includes('mutating: false'));
+for (const guard of ['openSync', 'readSync', 'fstatSync', 'realpathSync', 'O_NOFOLLOW', 'closeSync']) {
+  assert.ok(runtime.includes(guard), 'Missing bounded descriptor reader: '+guard);
+}
+assert.equal(runtime.includes("readFileSync(filename"), false);
 assert.equal(/\bfetch\s*\(|\bWebSocket\b|\bchild_process\b|\bspawn\s*\(/.test(runtime),false);
 console.log(JSON.stringify({ok:true,build:73,security:'read-only',status:'pre-merge checks'}));

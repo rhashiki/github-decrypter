@@ -52,6 +52,8 @@ const semanticDefinition = resolveCodeSemantics(files, {
 assert.equal(semanticDefinition.resolution, 'resolved');
 assert.deepEqual(semanticDefinition.definitions, [{ path: 'src/helper.ts', line: 1, column: 17 }]);
 assert.equal(semanticDefinition.hostFilesystemAccess, false);
+assert.equal(semanticDefinition.compiler, 'typescript-program-memory-only');
+assert.equal(semanticDefinition.localFilesOnly, true);
 assert.equal(semanticDefinition.networkAuthority, false);
 assert.equal(semanticDefinition.mutationAuthority, false);
 const semanticReferences = resolveCodeSemantics(files, {

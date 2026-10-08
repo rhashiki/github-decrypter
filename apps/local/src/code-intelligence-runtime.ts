@@ -1,5 +1,5 @@
-import { lstatSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { constants, closeSync, fstatSync, lstatSync, openSync, readSync, realpathSync } from 'node:fs';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import {
   CODE_INTELLIGENCE_MAX_FILE_CHARS,
   CODE_INTELLIGENCE_MAX_TOTAL_CHARS,
@@ -130,6 +130,8 @@ export function createCodeIntelligenceToolRegistrations(
         const workspace = options.workspaces.get(workspaceId);
         if (!workspace) throw new Error('Code Intelligence workspace is not registered.');
         const files: CodeFileInput[] = [];
+        const canonicalRoot = realpathSync(workspace.rootPath);
+        if (canonicalRoot !== workspace.rootPath) throw new Error('Workspace root canonical identity has changed.');
         let bytes = 0;
         for (const path of paths) {
           const parts = path.split('/');
@@ -143,19 +145,46 @@ export function createCodeIntelligenceToolRegistrations(
             }
           }
           const filename = options.workspaces.resolveExistingPath(workspaceId, path);
-          const stat = lstatSync(filename);
-          if (!stat.isFile() || stat.size > CODE_INTELLIGENCE_MAX_FILE_CHARS * 4) {
-            throw new RangeError('Code Intelligence source is not a bounded regular file.');
+          // A bounded file descriptor prevents an attacker from enlarging or replacing a
+          // previously checked path between lstat and unbounded readFileSync.
+          const fd = openSync(filename, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+          try {
+            const before = fstatSync(fd, { bigint: true });
+            const maxFileBytes = CODE_INTELLIGENCE_MAX_FILE_CHARS * 4;
+            if (!before.isFile() || before.nlink !== 1n || before.size > BigInt(maxFileBytes)) {
+              throw new RangeError('Code Intelligence requires a bounded single-link regular file.');
+            }
+            bytes += Number(before.size);
+            if (bytes > CODE_INTELLIGENCE_MAX_TOTAL_CHARS * 4) {
+              throw new RangeError('Code Intelligence aggregate source bytes exceed the bound.');
+            }
+            const buffer = Buffer.alloc(Number(before.size) + 1);
+            let read = 0;
+            while (read < buffer.length) {
+              const received = readSync(fd, buffer, read, buffer.length - read, null);
+              if (!received) break;
+              read += received;
+            }
+            const after = fstatSync(fd, { bigint: true });
+            const pathAfter = lstatSync(filename, { bigint: true });
+            const canonicalAfter = realpathSync(filename);
+            const relation = relative(canonicalRoot, canonicalAfter);
+            if (canonicalAfter !== filename || isAbsolute(relation) || relation === '..'
+              || relation.startsWith('..' + sep) || pathAfter.isSymbolicLink()
+              || pathAfter.dev !== before.dev || pathAfter.ino !== before.ino
+              || pathAfter.nlink !== 1n || after.dev !== before.dev || after.ino !== before.ino
+              || after.size !== before.size || after.mtimeNs !== before.mtimeNs
+              || read !== Number(before.size)) {
+              throw new Error('Code Intelligence source changed or escaped during bounded read.');
+            }
+            const content = buffer.subarray(0, read).toString('utf8');
+            if (content.length > CODE_INTELLIGENCE_MAX_FILE_CHARS) {
+              throw new RangeError('Code Intelligence source text exceeds the bound.');
+            }
+            files.push({ path, content });
+          } finally {
+            closeSync(fd);
           }
-          bytes += stat.size;
-          if (bytes > CODE_INTELLIGENCE_MAX_TOTAL_CHARS * 4) {
-            throw new RangeError('Code Intelligence aggregate source bytes exceed the bound.');
-          }
-          const content = readFileSync(filename, 'utf8');
-          if (content.length > CODE_INTELLIGENCE_MAX_FILE_CHARS) {
-            throw new RangeError('Code Intelligence source text exceeds the bound.');
-          }
-          files.push({ path, content });
         }
         const index = buildCodeIntelligenceIndex(files);
         const result = query.kind === 'semantic-definitions' || query.kind === 'semantic-references'
