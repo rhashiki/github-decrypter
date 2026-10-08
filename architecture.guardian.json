@@ -1,6 +1,6 @@
 {
   "schema": "gd-architecture-guardian/1",
-  "currentBuild": 73,
+  "currentBuild": 74,
   "product": "GitHub Decrypter",
   "namespace": "gd-",
   "authorities": [
@@ -1984,7 +1984,8 @@
     "previewBridgeBuild": 70,
     "developerConsoleBuild": 71,
     "problemsDiagnosticsBuild": 72,
-    "codeIntelligenceBuild": 73
+    "codeIntelligenceBuild": 73,
+    "diffViewerBuild": 74
   },
   "legacyMigrationRoots": [
     "core",
@@ -3388,5 +3389,21 @@
     "studioFilesystemAccess": false,
     "indexedTypeScriptSemanticNavigation": true,
     "externalSemanticLinkage": false
+  },
+  "diffViewerAuthority": {
+    "readOnly": true,
+    "explicitUserSuppliedTextOnly": true,
+    "studioRepositoryTransport": false,
+    "studioFilesystemAccess": false,
+    "remoteNetworkAccess": false,
+    "storagePersistence": false,
+    "mutationAuthority": false,
+    "applyPatch": false,
+    "maxCharactersPerSide": 100000,
+    "maxLinesPerSide": 800,
+    "maxHunks": 64,
+    "sourceGrounded": true,
+    "previewMayBeTruncated": true,
+    "unverifiedRuntimeChanges": false
   }
 }
