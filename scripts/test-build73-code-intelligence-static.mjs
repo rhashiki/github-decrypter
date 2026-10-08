@@ -40,6 +40,16 @@ assert.ok(root.scripts.guardian.includes('architecture-guardian-code-intelligenc
 assert.ok(root.scripts.ci.includes('check:build73'));
 assert.ok(root.scripts['check:build73'].includes('test-build73-code-explorer-folder.ts'));
 assert.equal(fs.existsSync('.github/workflows'),false);
+const independentValidator = fs.readFileSync('scripts/validate-server.mjs','utf8');
+for (const token of [
+  "const sourceCommit=gitOutput(['rev-parse','HEAD'])",
+  "trackedTreeCleanBefore",
+  "trackedTreeCleanAfter",
+  "sourceCommitStable",
+  "schema:'gd-server-validation/2'",
+  "ok:accepted",
+]) assert.ok(independentValidator.includes(token), 'Missing commit-bound independent validation guard: '+token);
+
 const code=fs.readFileSync('packages/code-intelligence/src/index.ts','utf8');
 const runtime=fs.readFileSync('apps/local/src/code-intelligence-runtime.ts','utf8');
 assert.ok(code.includes('CODE_INTELLIGENCE_BUILD = 73'));
