@@ -27,7 +27,7 @@ export interface CodeDependencyGraph {
 
 function candidatePaths(importer: string, specifier: string): readonly string[] {
   if (!specifier.startsWith('./') && !specifier.startsWith('../')) return [];
-  if (specifier.length > 512 || /[\\u0000-\\u001f\\u007f\\\\?#]/.test(specifier)) return [];
+  if (specifier.length > 512 || /[\u0000-\u001f\u007f\\?#]/.test(specifier)) return [];
   const stack = importer.split('/').slice(0, -1);
   for (const part of specifier.split('/')) {
     if (part === '.' || part === '') continue;
@@ -41,7 +41,7 @@ function candidatePaths(importer: string, specifier: string): readonly string[] 
   }
   const base = stack.join('/');
   if (!base || base.startsWith('/')) return [];
-  const explicit = /\\.[cm]?[jt]sx?$/i.test(base);
+  const explicit = /\.[cm]?[jt]sx?$/i.test(base);
   if (explicit) return [base];
   return [
     base + '.ts', base + '.tsx', base + '.js', base + '.jsx',
