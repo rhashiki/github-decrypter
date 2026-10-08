@@ -29,6 +29,7 @@ assert.equal(index.mutationAuthority, false);
 assert.equal(index.filesystemAuthority, false);
 assert.equal(index.networkAuthority, false);
 assert.equal(index.persistence, false);
+assert.equal(index.droppedOversizedIdentifiers, 0);
 assert.ok(index.symbols.some((symbol) => symbol.name === 'Widget' && symbol.kind === 'ClassDeclaration'));
 assert.ok(index.symbols.some((symbol) => symbol.name === 'make' && symbol.location.path === 'src/helper.ts'));
 assert.ok(index.calls.some((call) => call.expression === 'make'));
@@ -97,6 +98,17 @@ assert.throws(() => buildCodeIntelligenceIndex([{ path: 'src/a.ts', content: 'x'
 assert.throws(() => buildCodeIntelligenceIndex([{ path: 'src/a.ts', content: '' }, { path: 'src/a.ts', content: '' }]));
 assert.throws(() => queryCodeIntelligence(index, { kind: 'imports', term: 'make', limit: 257 }));
 assert.throws(() => queryCodeIntelligence(index, { kind: 'imports', term: '' }));
+assert.throws(() => queryCodeIntelligence(index, { kind: 'definitions', term: 'make', injectedSecret: 'must-not-echo' } as never));
+assert.throws(() => queryCodeIntelligence(index, { kind: 'definitions', term: 'make\ninject' }));
+const oversizedName = 'x'.repeat(900);
+const boundedIndex = buildCodeIntelligenceIndex([{
+  path:'src/big.ts',
+  content:'export const '+oversizedName+' = 1;\n'+oversizedName+'();',
+}]);
+assert.ok(boundedIndex.droppedOversizedIdentifiers >= 2);
+assert.ok(boundedIndex.symbols.every(item => item.name.length <= 160));
+assert.ok(boundedIndex.occurrences.every(item => item.name.length <= 160));
+assert.ok(boundedIndex.calls.every(item => item.expression.length <= 160));
 const reversed = buildCodeIntelligenceIndex([...files].reverse());
 assert.deepEqual(index, reversed, 'Index output is deterministic for equivalent source sets');
 

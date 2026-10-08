@@ -7,6 +7,7 @@ export const CODE_INTELLIGENCE_MAX_FILE_CHARS = 256_000 as const;
 export const CODE_INTELLIGENCE_MAX_TOTAL_CHARS = 4_000_000 as const;
 export const CODE_INTELLIGENCE_MAX_AST_NODES = 150_000 as const;
 export const CODE_INTELLIGENCE_MAX_QUERY_RESULTS = 256 as const;
+export const CODE_INTELLIGENCE_MAX_IDENTIFIER_CHARS = 160 as const;
 
 export type SourceLanguage = 'typescript' | 'javascript';
 export type CodeQueryKind = 'definitions' | 'occurrences' | 'imports' | 'calls';
@@ -52,6 +53,7 @@ export interface CodeIntelligenceIndex {
   readonly occurrences: readonly CodeOccurrence[];
   readonly imports: readonly CodeImport[];
   readonly calls: readonly CodeCall[];
+  readonly droppedOversizedIdentifiers: number;
   readonly astBacked: true;
   readonly semanticTypeResolution: false;
   readonly dependencyResolution: false;
@@ -153,6 +155,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
   const calls: CodeCall[] = [];
   const summary: CodeIndexedFile[] = [];
   let nodeCount = 0;
+  let droppedOversizedIdentifiers = 0;
 
   for (const entry of normalized) {
     const file = ts.createSourceFile(entry.path, entry.content, ts.ScriptTarget.Latest, true, scriptKind(entry.path));
@@ -169,7 +172,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
       }
 
       const definition = identifierName(node);
-      if (definition) {
+      if (definition && definition.text.length <= CODE_INTELLIGENCE_MAX_IDENTIFIER_CHARS) {
         declarations.add(definition.getStart(file));
         symbols.push(Object.freeze({
           name: definition.text,
@@ -187,9 +190,11 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
         }));
       }
       if (ts.isCallExpression(node)) {
-        const expression = ts.isIdentifier(node.expression) ? node.expression.text
+        const rawName = ts.isIdentifier(node.expression) ? node.expression.text
           : ts.isPropertyAccessExpression(node.expression) ? node.expression.name.text
           : '<dynamic-call>';
+        const expression = rawName.length <= CODE_INTELLIGENCE_MAX_IDENTIFIER_CHARS
+          ? rawName : '<oversized-identifier>';
         calls.push(Object.freeze({
           expression,
           location: locationOf(entry.path, file, node.expression),
@@ -204,7 +209,9 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
         }
       }
       if (ts.isIdentifier(node)) {
-        occurrences.push(Object.freeze({
+        if (node.text.length > CODE_INTELLIGENCE_MAX_IDENTIFIER_CHARS) {
+          droppedOversizedIdentifiers += 1;
+        } else occurrences.push(Object.freeze({
           name: node.text,
           location: locationOf(entry.path, file, node),
           binding: declarations.has(node.getStart(file)) ? 'declaration' : 'unresolved',
@@ -225,6 +232,7 @@ export function buildCodeIntelligenceIndex(files: readonly CodeFileInput[]): Cod
     occurrences: Object.freeze(occurrences.sort(bySource)),
     imports: Object.freeze(imports.sort(bySource)),
     calls: Object.freeze(calls.sort(bySource)),
+    droppedOversizedIdentifiers,
     astBacked: true,
     semanticTypeResolution: false,
     dependencyResolution: false,
@@ -241,6 +249,10 @@ export function queryCodeIntelligence(index: CodeIntelligenceIndex, query: CodeI
   if (!index || index.schema !== CODE_INTELLIGENCE_SCHEMA || !query || typeof query.term !== 'string'
       || !query.term.trim() || query.term.length > 160) {
     throw new TypeError('Invalid Code Intelligence index or query.');
+  }
+  if (Object.keys(query).some((key) => !['kind','term','path','limit'].includes(key))
+      || /[\u0000-\u001f\u007f]/.test(query.term)) {
+    throw new TypeError('Code Intelligence query contains unsafe or unknown fields.');
   }
   if (!['definitions', 'occurrences', 'imports', 'calls'].includes(query.kind)) {
     throw new TypeError('Unsupported Code Intelligence query kind.');
@@ -261,7 +273,7 @@ export function queryCodeIntelligence(index: CodeIntelligenceIndex, query: CodeI
   });
   return Object.freeze({
     schema: 'gd-code-intelligence-query/1',
-    query: Object.freeze({ ...query, term: query.term.trim(), limit, ...(path ? { path } : {}) }),
+    query: Object.freeze({ kind: query.kind, term: query.term.trim(), limit, ...(path ? { path } : {}) }),
     matches: Object.freeze(matches.slice(0, limit)),
     totalMatches: matches.length,
     truncated: matches.length > limit,

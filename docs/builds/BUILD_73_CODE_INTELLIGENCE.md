@@ -8,6 +8,7 @@ Read-only facts from the canonical registered local workspace: syntax symbols, i
 ## First implementation slice
 - Environment-neutral `@github-decrypter/code-intelligence` contract and TypeScript/JavaScript AST index.
 - Bounded file count, file size, aggregate bytes, query sizes and result counts.
+- Oversized symbol identifiers are omitted with a dropped-count signal; source names and call expressions cannot make responses unbounded.
 - Deterministic file/source ordering and rejected unsupported extensions.
 - No full source payload retained in results, no raw secrets, no network access.
 - Local source reads use bounded descriptors with no-follow where supported, inode/revalidation checks and workspace containment.
