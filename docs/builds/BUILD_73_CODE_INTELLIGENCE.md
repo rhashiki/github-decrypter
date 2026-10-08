@@ -43,3 +43,14 @@ Code Intelligence is evidence and navigation, not a second compiler, root-cause 
 The repository prohibits `.github/workflows` and workflow-write authority. Validate with `pnpm install --no-frozen-lockfile && pnpm run validate:server` in a Node 22/pnpm server or isolated checkout; use `pnpm run validate:build73` for focused Build 73 verification. No CI event trigger, workflow dispatch, or GitHub-hosted runner is needed.
 
 Semantic search and reference result links position the source editor caret at the grounded line/column. This navigation remains browser-only and uses only the explicitly loaded source set.
+
+
+## Validation provenance gate (Build 73 continuation)
+
+The independent Node/pnpm validator now emits `gd-server-validation/2` with the exact `sourceCommit`, commit-stability evidence and clean tracked-source-tree checks before and after the suite. It fails closed if the suite fails, the Git checkout is unavailable, the commit changes during validation, or tracked source files differ from the tested commit.
+
+The additional validator logic passed four isolated behavioral scenarios (success, dirty checkout, commit drift, and failed test command). This is **not** proof that the Build 73 full monorepo suite, Studio bundle, or historical regressions passed.
+
+The dependency graph also resolves indexed TypeScript sources from runtime-style JS import paths, including `.mjs` → `.mts`, without claiming external module resolution. Truncated import specifiers are explicitly marked and never converted into edges, preventing false-positive source links.
+
+**Release state remains blocked:** PR #106 must stay draft until `pnpm run validate:server` passes in a clean Node 22/pnpm Git checkout at the exact proposed merge SHA, yielding `reports/server-validation-73.json`. This is a server/local process only and uses no hosted automation. Build 74 remains unauthorized.
