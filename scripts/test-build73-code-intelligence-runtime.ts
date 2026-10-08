@@ -89,6 +89,16 @@ for (const [specifier, target] of [
 assert.equal(esmGraph.filesystemReads, false);
 assert.equal(esmGraph.semanticClaims, false);
 
+const longSpecifierPrefix = './' + 'a'.repeat(507) + '.js'; // exactly 512 characters
+const oversizedSpecifierIndex = buildCodeIntelligenceIndex([
+  {path:'src/main.ts',content:"import { value } from '" + longSpecifierPrefix + "-suffix';"},
+  {path:'src/' + 'a'.repeat(507) + '.ts',content:'export const value = 1;'},
+]);
+assert.equal(oversizedSpecifierIndex.imports[0]?.specifierTruncated,true);
+assert.equal(buildCodeDependencyGraph(oversizedSpecifierIndex).edges[0]?.target,null,
+  'A truncated source specifier may not invent an indexed dependency');
+
+
 
 const semanticDefinition = resolveCodeSemantics(files, {
   kind: 'semantic-definitions', path: 'src/main.ts', line: 3, column: 16,
