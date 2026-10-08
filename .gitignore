@@ -15,4 +15,7 @@ training/decrypter-coder/checkpoints/
 training/decrypter-coder/**/*.safetensors
 training/decrypter-coder/**/adapter_model.bin
 training/decrypter-coder/**/pytorch_model.bin
-\n# Local-only server validation reports and Studio output\nreports/server-validation-*.json\napps/studio/dist/\n
+
+# Local-only server validation reports and Studio output
+reports/server-validation-*.json
+apps/studio/dist/

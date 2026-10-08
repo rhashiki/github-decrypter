@@ -32,11 +32,11 @@ export function CodeExplorer() {
     const text=selected.content;
     let start=0;
     for(let i=1;i<target.line;i++){
-      const end=text.indexOf('\\n',start);
+      const end=text.indexOf('\n',start);
       if(end<0){start=text.length;break;}
       start=end+1;
     }
-    const lineEnd=text.indexOf('\\n',start);
+    const lineEnd=text.indexOf('\n',start);
     const position=Math.max(start,Math.min(lineEnd<0?text.length:lineEnd,start+target.column-1));
     area.focus();
     area.setSelectionRange(position,position);

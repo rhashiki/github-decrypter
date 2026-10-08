@@ -34,6 +34,6 @@ const report={schema:'gd-server-validation/1',build:version,executedLocally:true
  ok:results.every(x=>x.ok),results};
 const reportPath=resolve(root,'reports','server-validation-'+version+'.json');
 mkdirSync(resolve(root,'reports'),{recursive:true});
-writeFileSync(reportPath,JSON.stringify(report,null,2)+'\\n','utf8');
+writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,reportPath},null,2));
 if(!results.every(x=>x.ok))process.exit(1);
